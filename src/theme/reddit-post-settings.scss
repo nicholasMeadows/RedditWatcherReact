@@ -1,0 +1,8 @@
+.reddit-post-settings-ion-content{
+    --background: var(--background-color);    
+}
+.reddit-post-settings-ion-content > ion-item{
+    --background: var(--background-color);
+    --color: white;
+    --border-color: var(--app-border-color)
+}

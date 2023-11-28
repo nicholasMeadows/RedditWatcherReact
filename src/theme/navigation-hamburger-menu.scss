@@ -1,0 +1,23 @@
+ion-toolbar {
+    --background: var(--toolbar-background);
+    --color: var(--toolbar-color);
+    --border-color: var(--app-border-color);
+    --border-width: 0 0 0.2em 0;
+}
+
+.side-bar-menu {
+    --background: var(--toolbar-background);
+    --color: var(--toolbar-color);
+}
+
+.side-bar-menu>ion-item {
+    --background: var(--toolbar-background);
+    --color: var(--toolbar-color);
+    --border-color: var(--app-border-color);
+}
+.side-bar-menu-bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}

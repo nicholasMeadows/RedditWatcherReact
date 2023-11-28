@@ -1,0 +1,25 @@
+.loadingContentRootWrapper {
+    position: relative;
+    top: 50%;
+    transform: translate(0,-50%);
+}
+
+.loadingContentSpinner {
+    left: 50%;
+    transform: translate(-50%);
+    --color: var(--text-color);
+}
+
+.loadingContentText {
+    margin: 0;
+    text-align: center;
+    color: var(--text-color);
+}
+
+.loading-content-ion-content {
+    --background: var(--background-color);    
+}
+.loading-content-ion-content>* {
+    --background: var(--background-color);    
+    --color: var(--app-color);
+}

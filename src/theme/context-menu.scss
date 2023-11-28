@@ -1,0 +1,70 @@
+.context-menu {
+    background: #545454;
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.context-menu > div {
+    border-left: 0;
+    border-right: 0;
+    border-top: 0.1em;
+    border-bottom: 0em;
+    border-style: solid;
+    border-color: white;
+}
+
+.context-menu > div:first-child{
+    border-top: 0px;
+}
+
+.context-menu-button {
+    padding: 0.6em 0.8em 0.6em 0.8em;
+}
+
+.context-menu-button-label {
+    color: white;
+    margin: 0px;
+}
+
+.expandable-context-sub-menu:after {
+    content: '\02795\fe0e';
+    /* Unicode character for "plus" sign (+) */
+    font-size: 13px;
+    color: #ffffff;
+    float: right;
+    margin-left: 5px;
+}
+
+.expandable-context-sub-menu-active:after {
+    content: "\2796\fe0e";
+    float: right;
+    /* Unicode character for "minus" sign (-) */
+}
+
+.context-menu-sub-menu {
+    padding-top: 0.2em;
+    padding-left: 0.5em;
+    max-height: 0px;
+    overflow: hidden;
+    transition: max-height 500ms ease-out;
+}
+
+.context-menu-sub-menu-open {
+    max-height: var(--context-menu-sub-menu-height);
+}
+
+.context-menu-sub-menu-item {
+    border-left: 0;
+    border-right: 0;
+    border-top: 0.1em;
+    border-bottom: 0em;
+    border-style: solid;
+    border-color: white;
+    padding: 0.4em 0em 0.4em 0em;
+}
+.context-menu-sub-menu-item:first-child {
+    border-top: 0px;
+}

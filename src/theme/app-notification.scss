@@ -1,0 +1,58 @@
+.app-notification-root {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    z-index: 4000000;
+    margin-right: 2em;
+    margin-left: 1em;
+    margin-bottom: 0.7em;
+    max-width: 50%;
+
+    @media(max-width: 801px) {
+        left: 0px;
+        max-width: 100%;
+    }
+}
+
+.notification-box {
+    border-radius: 0.8em;
+    border: black solid 0.2em;
+    background: gray;
+    padding-left: 1em;
+    padding-right: 1em;
+    margin-bottom: 0.2em;
+    margin-top: 0.2em;
+}
+
+.notification-text {
+    font-size: 1.2em;
+    text-align: center;
+}
+
+.show-notification {
+    animation: fadeIn 0.5s
+}
+
+.hid-notification {
+    animation: fadeOut 0.5s
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
