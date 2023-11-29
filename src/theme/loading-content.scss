@@ -1,25 +1,32 @@
-.loadingContentRootWrapper {
-    position: relative;
-    top: 50%;
-    transform: translate(0,-50%);
-}
-
-.loadingContentSpinner {
-    left: 50%;
-    transform: translate(-50%);
-    --color: var(--text-color);
-}
-
 .loadingContentText {
     margin: 0;
+    margin-top: 0.5em;
+    font-size: 1.2em;
+    font-weight: bold;
     text-align: center;
     color: var(--text-color);
 }
 
-.loading-content-ion-content {
-    --background: var(--background-color);    
+.loading-wrapper {
+    position:relative;
+    top:50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: inline-block;
 }
-.loading-content-ion-content>* {
-    --background: var(--background-color);    
-    --color: var(--app-color);
-}
+
+.loader {
+    border: 0.6em solid #c1c1c1; /* Light grey */
+    border-top: 0.6em solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 2em;
+    height: 2em;
+    animation: spin 2s linear infinite;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }

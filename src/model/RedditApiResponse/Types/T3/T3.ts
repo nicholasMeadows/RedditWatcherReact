@@ -10,6 +10,6 @@ export interface T3 {
   domain: string;
   url: string;
   permalink: string;
-  media_metadata: Map<string, MediaMetadata> | undefined;
+  media_metadata: { [key: string]: MediaMetadata } | undefined;
   crosspost_parent_list: Array<T3> | undefined;
 }

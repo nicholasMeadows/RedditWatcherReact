@@ -1,9 +1,9 @@
+import { v4 as uuidV4 } from "uuid";
+import store from "../../redux/store";
 import { Attachment } from "../Post/Attachment";
 import { Post } from "../Post/Post";
-import { v4 as uuidV4 } from "uuid";
-import { Subreddit } from "../Subreddit/Subreddit";
-import store from "../../redux/store";
 import { T3 } from "../RedditApiResponse/Types/T3/T3";
+import { Subreddit } from "../Subreddit/Subreddit";
 
 const DOMAIN_REDGIFS = "redgifs.com";
 const DOMAIN_IMGUR1 = "i.imgur.com";
@@ -190,9 +190,8 @@ function convertMediaMetadata(post: T3): Array<Attachment> {
   const mediaMetadata = post.media_metadata;
 
   if (mediaMetadata != null) {
-    console.log("mediaMetadata", mediaMetadata, "func", mediaMetadata.keys);
-    for (const key of mediaMetadata.keys()) {
-      const mediaMetadataObj = mediaMetadata.get(key);
+    Object.keys(mediaMetadata).forEach((key) => {
+      const mediaMetadataObj = mediaMetadata[key];
       if (mediaMetadataObj != undefined) {
         const mediaType = mediaMetadataObj.m;
         const mediaMetadataItem = mediaMetadataObj.s;
@@ -215,7 +214,7 @@ function convertMediaMetadata(post: T3): Array<Attachment> {
           attachments.push(attachment);
         }
       }
-    }
+    });
   } else {
     const crossPostParents = post.crosspost_parent_list;
     if (crossPostParents != null && crossPostParents.length > 0) {

@@ -3,6 +3,7 @@ import {
   LOADING_CONTENT_ROUTE,
   MODIFY_SUBREDDIT_LISTS_ROUTE,
   MODIFY_SUBREDDIT_QUEUE_ROUTE,
+  NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT,
   POST_ROW_ROUTE,
   REDDIT_POST_SETTINGS_ROUTE,
   REDDIT_SIGNIN_ROUTE,
@@ -10,36 +11,36 @@ import {
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
-import { loadAppConfig } from "../redux/slice/AppConfigSlice";
 import { setLoadingText } from "../redux/slice/LoadingPageSlice";
 import { authenticateReddit } from "../redux/slice/RedditClientSlice";
 import store, { useAppDispatch, useAppSelector } from "../redux/store";
 import { startLoopingForPosts } from "../service/RedditService";
 import NavigationHambugerMenu from "./NavigationHambugerMenu";
 
-import { loadSubredditLists } from "../redux/slice/RedditListsSlice";
-import ContextMenu from "./ContextMenu";
-import { closeContextMenu } from "../redux/slice/ContextMenuSlice";
-import AppNotification from "./AppNotification";
-import {
-  goToNextPost,
-  goToPreviousPost,
-} from "../redux/slice/SinglePostPageSlice";
+import { KeepAwake } from "@capacitor-community/keep-awake";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import LoadingContent from "./LoadingContent";
-import RedditSignin from "./SettingsPages/RedditSignin";
-import ModifySubredditQueue from "./ModifySubredditQueue";
-import PostRowCollectionView from "./PostPagesAndElements/PostRowCollectionView";
-import RedditPostSettings from "./SettingsPages/RedditPostSettings";
-import ModifySubredditLists from "./ModifySubredditListsPagesAndElements/ModifySubredditLists";
-import SinglePostView from "./PostPagesAndElements/SinglePostView";
-import RedditWatcherSettings from "./SettingsPages/RedditWatcherSettings";
+import { loadAppConfig } from "../redux/slice/AppConfigSlice";
+import { closeContextMenu } from "../redux/slice/ContextMenuSlice";
 import {
   setPageName,
   setShowBackButton,
 } from "../redux/slice/NavigationDrawerSlice";
+import { loadSubredditLists } from "../redux/slice/RedditListsSlice";
 import { clearSearchResults } from "../redux/slice/RedditSearchSlice";
-import { KeepAwake } from "@capacitor-community/keep-awake";
+import {
+  goToNextPost,
+  goToPreviousPost,
+} from "../redux/slice/SinglePostPageSlice";
+import AppNotification from "./AppNotification";
+import ContextMenu from "./ContextMenu";
+import LoadingContent from "./LoadingContent";
+import ModifySubredditLists from "./ModifySubredditListsPagesAndElements/ModifySubredditLists";
+import ModifySubredditQueue from "./ModifySubredditQueue";
+import PostRowCollectionView from "./PostPagesAndElements/PostRowCollectionView";
+import SinglePostView from "./PostPagesAndElements/SinglePostView";
+import RedditPostSettings from "./SettingsPages/RedditPostSettings";
+import RedditSignin from "./SettingsPages/RedditSignin";
+import RedditWatcherSettings from "./SettingsPages/RedditWatcherSettings";
 
 const RouterView: React.FC = () => {
   const navigate = useNavigate();
@@ -194,17 +195,16 @@ const RouterView: React.FC = () => {
 
   return (
     <div style={{ width: "100%", height: "100%" }}>
-      <>
-        <NavigationHambugerMenu />
-        <AppNotification />
-      </>
+      <NavigationHambugerMenu />
+      <AppNotification />
       <ContextMenu />
-      {/* redditAuthStatus == RedditAuthenticationStatus.AUTHENTICATED
-              ? "56px"
-              : "0px", */}
       <div
         style={{
-          height: "100%",
+          height: `calc(100% - ${
+            redditAuthStatus == RedditAuthenticationStatus.AUTHENTICATED
+              ? NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT
+              : "0px"
+          })`,
           width: "100%",
         }}
       >

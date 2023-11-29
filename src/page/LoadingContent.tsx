@@ -4,14 +4,9 @@ const LoadingContent: React.FC = () => {
   const loadingText = useAppSelector((state) => state.loadingPage.loadingText);
   return (
     <>
-      <div className="loading-content-ion-content">
-        <div className="loadingContentRootWrapper">
-          {/* <IonSpinner
-            name="circular"
-            className="loadingContentSpinner"
-          ></IonSpinner> */}
-          <h4 className="loadingContentText">{loadingText}</h4>
-        </div>
+      <div className="loading-wrapper">
+        <div className="loader"></div>
+        <p className="loadingContentText">{loadingText}</p>
       </div>
     </>
   );

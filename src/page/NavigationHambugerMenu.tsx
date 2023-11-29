@@ -16,33 +16,129 @@
 // import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
 // import { useNavigate } from "react-router-dom";
 
+import { useNavigate } from "react-router-dom";
+import {
+  MODIFY_SUBREDDIT_LISTS_ROUTE,
+  MODIFY_SUBREDDIT_QUEUE_ROUTE,
+  NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT,
+  POST_ROW_ROUTE,
+  REDDIT_POST_SETTINGS_ROUTE,
+  REDDIT_SIGNIN_ROUTE,
+} from "../RedditWatcherConstants";
+import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
+import { useAppSelector } from "../redux/store";
+// import { useAppSelector } from "../redux/store";
+
 const NavigationHambugerMenu: React.FC = () => {
   // const dispatch = useAppDispatch();
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   // const pageName = useAppSelector((state) => state.navigationDrawer.pageName);
   // const showBackButton = useAppSelector(
   //   (state) => state.navigationDrawer.showBackButton
   // );
-  // const redditAuthStatus = useAppSelector(
-  //   (state) => state.redditClient.redditAuthenticationStatus
-  // );
+  const redditAuthStatus = useAppSelector(
+    (state) => state.redditClient.redditAuthenticationStatus
+  );
   // const fileSelectorRef = useRef(null);
 
-  // const closeMenu = () => {
-  //   (document.getElementById("ionMenuDrawer") as any).close();
-  // };
+  const closeMenu = () => {
+    // (document.getElementById("ionMenuDrawer") as any).close();
+  };
 
-  // const navigateTo = (pathName: string) => {
-  //   closeMenu();
-  //   if (window.location.href.endsWith(POST_ROW_ROUTE)) {
-  //     navigate(pathName);
-  //   } else {
-  //     // navigate.replace(pathName);
-  //   }
-  // };
+  const navigateTo = (pathName: string) => {
+    closeMenu();
+    if (window.location.href.endsWith(POST_ROW_ROUTE)) {
+      navigate(pathName);
+    } else {
+      // navigate.replace(pathName);
+    }
+  };
 
   return (
     <>
+      <div
+        style={{
+          height: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT} - 0.2em)`,
+          maxHeight: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT} - 0.2em)`,
+        }}
+        className="top-bar"
+      >
+        <div className="hamburger-icon">
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+
+        <div className="back-arrow">&#10132;</div>
+        <h1 className="tool-bar-title">Reddit Watcher</h1>
+      </div>
+
+      <div className="drawer-background"></div>
+      <div className="drawer-popout">
+        <div
+          className="drawer-popout-header"
+          style={{
+            height: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT} - 0.2em)`,
+            maxHeight: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT} - 0.2em)`,
+          }}
+        >
+          <h1>Reddit Watcher</h1>
+        </div>
+
+        {redditAuthStatus == RedditAuthenticationStatus.AUTHENTICATED && (
+          <div className="drawer-popout-main">
+            <div
+              className="drawer-popout-item"
+              onClick={() => {
+                navigateTo(POST_ROW_ROUTE);
+              }}
+            >
+              <p>Home</p>
+            </div>
+            <div
+              className="drawer-popout-item"
+              onClick={() => {
+                navigateTo(MODIFY_SUBREDDIT_LISTS_ROUTE);
+              }}
+            >
+              <p>Modify Subreddit Lists</p>
+            </div>
+            <div
+              className="drawer-popout-item"
+              onClick={() => {
+                navigateTo(MODIFY_SUBREDDIT_QUEUE_ROUTE);
+              }}
+            >
+              <p>Modify Subreddit Queue</p>
+            </div>
+            <div
+              className="drawer-popout-item"
+              onClick={() => navigateTo(REDDIT_POST_SETTINGS_ROUTE)}
+            >
+              <p>Reddit Post Settings</p>
+            </div>
+            <div
+              className="drawer-popout-item"
+              onClick={() => navigateTo(REDDIT_SIGNIN_ROUTE)}
+            >
+              <p>Reddit Auth</p>
+            </div>
+            <div className="drawer-popout-item">
+              <p>Dark Mode</p>
+            </div>
+          </div>
+        )}
+
+        <div className="drawer-popout-footer">
+          <div className="drawer-popout-item">
+            <p>Import Config</p>
+          </div>
+          <div className="drawer-popout-item">
+            <p>Export Config</p>
+          </div>
+        </div>
+      </div>
+
       {/* <IonMenu contentId="main-content" id="ionMenuDrawer">
         <IonHeader>
           <IonToolbar>
