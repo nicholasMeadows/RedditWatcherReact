@@ -1,21 +1,3 @@
-// import { useRef } from "react";
-// import {
-//   MODIFY_SUBREDDIT_LISTS_ROUTE,
-//   MODIFY_SUBREDDIT_QUEUE_ROUTE,
-//   POST_ROW_ROUTE,
-//   REDDIT_POST_SETTINGS_ROUTE,
-//   REDDIT_SIGNIN_ROUTE,
-//   REDDIT_WATCHER_SETTINGS_ROUTE,
-// } from "../RedditWatcherConstants";
-// import store, { useAppDispatch, useAppSelector } from "../redux/store";
-// import {
-//   exportAppConfig,
-//   importAppConfig,
-//   toggleDarkMode,
-// } from "../redux/slice/AppConfigSlice";
-// import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
-// import { useNavigate } from "react-router-dom";
-
 import { useNavigate } from "react-router-dom";
 import {
   MODIFY_SUBREDDIT_LISTS_ROUTE,
@@ -26,27 +8,30 @@ import {
   REDDIT_SIGNIN_ROUTE,
 } from "../RedditWatcherConstants";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
-import { useAppSelector } from "../redux/store";
-// import { useAppSelector } from "../redux/store";
-
+import { useAppDispatch, useAppSelector } from "../redux/store";
+import { useRef, useState } from "react";
+import {
+  exportAppConfig,
+  importAppConfig,
+  toggleDarkMode,
+} from "../redux/slice/AppConfigSlice";
 const NavigationHambugerMenu: React.FC = () => {
-  // const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  // const pageName = useAppSelector((state) => state.navigationDrawer.pageName);
-  // const showBackButton = useAppSelector(
-  //   (state) => state.navigationDrawer.showBackButton
-  // );
+  const pageName = useAppSelector((state) => state.navigationDrawer.pageName);
+  const darkMode = useAppSelector((state) => state.appConfig.darkMode);
+  const showBackButton = useAppSelector(
+    (state) => state.navigationDrawer.showBackButton
+  );
   const redditAuthStatus = useAppSelector(
     (state) => state.redditClient.redditAuthenticationStatus
   );
-  // const fileSelectorRef = useRef(null);
 
-  const closeMenu = () => {
-    // (document.getElementById("ionMenuDrawer") as any).close();
-  };
+  const [popoutDrawerOpen, setPopoutDrawerOpen] = useState(false);
+  const fileSelectorRef = useRef(null);
 
   const navigateTo = (pathName: string) => {
-    closeMenu();
+    setPopoutDrawerOpen(false);
     if (window.location.href.endsWith(POST_ROW_ROUTE)) {
       navigate(pathName);
     } else {
@@ -63,82 +48,137 @@ const NavigationHambugerMenu: React.FC = () => {
         }}
         className="top-bar"
       >
-        <div className="hamburger-icon">
-          <div></div>
-          <div></div>
-          <div></div>
-        </div>
-
-        <div className="back-arrow">&#10132;</div>
-        <h1 className="tool-bar-title">Reddit Watcher</h1>
-      </div>
-
-      <div className="drawer-background"></div>
-      <div className="drawer-popout">
         <div
-          className="drawer-popout-header"
-          style={{
-            height: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT} - 0.2em)`,
-            maxHeight: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT} - 0.2em)`,
+          className="hamburger-icon"
+          onClick={() => {
+            setPopoutDrawerOpen(!popoutDrawerOpen);
           }}
         >
-          <h1>Reddit Watcher</h1>
+          <div></div>
+          <div></div>
+          <div></div>
         </div>
 
-        {redditAuthStatus == RedditAuthenticationStatus.AUTHENTICATED && (
-          <div className="drawer-popout-main">
-            <div
-              className="drawer-popout-item"
-              onClick={() => {
-                navigateTo(POST_ROW_ROUTE);
-              }}
-            >
-              <p>Home</p>
-            </div>
-            <div
-              className="drawer-popout-item"
-              onClick={() => {
-                navigateTo(MODIFY_SUBREDDIT_LISTS_ROUTE);
-              }}
-            >
-              <p>Modify Subreddit Lists</p>
-            </div>
-            <div
-              className="drawer-popout-item"
-              onClick={() => {
-                navigateTo(MODIFY_SUBREDDIT_QUEUE_ROUTE);
-              }}
-            >
-              <p>Modify Subreddit Queue</p>
-            </div>
-            <div
-              className="drawer-popout-item"
-              onClick={() => navigateTo(REDDIT_POST_SETTINGS_ROUTE)}
-            >
-              <p>Reddit Post Settings</p>
-            </div>
-            <div
-              className="drawer-popout-item"
-              onClick={() => navigateTo(REDDIT_SIGNIN_ROUTE)}
-            >
-              <p>Reddit Auth</p>
-            </div>
-            <div className="drawer-popout-item">
-              <p>Dark Mode</p>
-            </div>
-          </div>
-        )}
+        <div
+          className="back-arrow"
+          hidden={!showBackButton}
+          style={{ visibility: `${showBackButton ? "visible" : "hidden"}` }}
+          onClick={() => {
+            navigate(-1);
+          }}
+        >
+          &#10132;
+        </div>
+        <h1 className="tool-bar-title">{pageName}</h1>
+      </div>
 
-        <div className="drawer-popout-footer">
-          <div className="drawer-popout-item">
-            <p>Import Config</p>
+      <div style={{ visibility: `${popoutDrawerOpen ? "visible" : "hidden"}` }}>
+        <div
+          className="drawer-background"
+          onClick={() => {
+            setPopoutDrawerOpen(false);
+          }}
+        ></div>
+        <div
+          className={`drawer-popout ${
+            popoutDrawerOpen ? "drawer-popout-open" : ""
+          }`}
+        >
+          <div
+            className="drawer-popout-header"
+            style={{
+              height: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT} - 0.2em)`,
+              maxHeight: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT} - 0.2em)`,
+            }}
+          >
+            <h1>Reddit Watcher</h1>
           </div>
-          <div className="drawer-popout-item">
-            <p>Export Config</p>
+
+          {redditAuthStatus == RedditAuthenticationStatus.AUTHENTICATED && (
+            <div className="drawer-popout-main">
+              <div
+                className="drawer-popout-item"
+                onClick={() => {
+                  navigateTo(POST_ROW_ROUTE);
+                }}
+              >
+                <p>Home</p>
+              </div>
+              <div
+                className="drawer-popout-item"
+                onClick={() => {
+                  navigateTo(MODIFY_SUBREDDIT_LISTS_ROUTE);
+                }}
+              >
+                <p>Modify Subreddit Lists</p>
+              </div>
+              <div
+                className="drawer-popout-item"
+                onClick={() => {
+                  navigateTo(MODIFY_SUBREDDIT_QUEUE_ROUTE);
+                }}
+              >
+                <p>Modify Subreddit Queue</p>
+              </div>
+              <div
+                className="drawer-popout-item"
+                onClick={() => navigateTo(REDDIT_POST_SETTINGS_ROUTE)}
+              >
+                <p>Reddit Post Settings</p>
+              </div>
+              <div
+                className="drawer-popout-item"
+                onClick={() => navigateTo(REDDIT_SIGNIN_ROUTE)}
+              >
+                <p>Reddit Auth</p>
+              </div>
+              <div className="drawer-popout-item flex cursor-default">
+                <p>Dark Mode</p>
+
+                <label className="switch">
+                  <input
+                    type="checkbox"
+                    checked={darkMode}
+                    onChange={() => dispatch(toggleDarkMode())}
+                  />
+                  <span className="slider round"></span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          <div className="drawer-popout-footer">
+            <div
+              className="drawer-popout-item"
+              onClick={() => {
+                (
+                  fileSelectorRef.current as unknown as HTMLInputElement
+                ).click();
+              }}
+            >
+              <input
+                type="file"
+                style={{ display: "hidden" }}
+                hidden={true}
+                ref={fileSelectorRef}
+                onInput={(event) => {
+                  const input = event.target as HTMLInputElement;
+                  if (input.files != undefined) {
+                    dispatch(importAppConfig(input.files[0]));
+                  }
+                }}
+              />
+              <p>Import Config</p>
+            </div>
+            <div
+              className="drawer-popout-item"
+              onClick={() => dispatch(exportAppConfig())}
+            >
+              <p>Export Config</p>
+            </div>
           </div>
         </div>
       </div>
-
       {/* <IonMenu contentId="main-content" id="ionMenuDrawer">
         <IonHeader>
           <IonToolbar>

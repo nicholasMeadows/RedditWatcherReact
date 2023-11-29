@@ -1,12 +1,11 @@
 import { BrowserRouter } from "react-router-dom";
 
 /* Theme variables */
-import "./theme/global.css";
 import "./theme/loading-content.scss";
 import "./theme/modify-subreddit-lists.scss";
 import "./theme/post-rows.scss";
 import "./theme/variables.css";
-import "./theme/global.css";
+import "./theme/global.scss";
 import "./theme/post-rows.scss";
 import "./theme/search-reddit-bar.scss";
 import "./theme/context-menu.scss";
