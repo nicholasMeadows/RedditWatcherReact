@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   MODIFY_SUBREDDIT_LISTS_ROUTE,
   MODIFY_SUBREDDIT_QUEUE_ROUTE,
@@ -6,6 +6,7 @@ import {
   POST_ROW_ROUTE,
   REDDIT_POST_SETTINGS_ROUTE,
   REDDIT_SIGNIN_ROUTE,
+  SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
 import { useAppDispatch, useAppSelector } from "../redux/store";
@@ -15,9 +16,11 @@ import {
   importAppConfig,
   toggleDarkMode,
 } from "../redux/slice/AppConfigSlice";
+import { setPostRowAndCurrentPost } from "../redux/slice/SinglePostPageSlice";
 const NavigationHambugerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const pageName = useAppSelector((state) => state.navigationDrawer.pageName);
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
   const showBackButton = useAppSelector(
@@ -35,7 +38,7 @@ const NavigationHambugerMenu: React.FC = () => {
     if (window.location.href.endsWith(POST_ROW_ROUTE)) {
       navigate(pathName);
     } else {
-      // navigate.replace(pathName);
+      navigate(pathName, { replace: true });
     }
   };
 
@@ -64,6 +67,14 @@ const NavigationHambugerMenu: React.FC = () => {
           hidden={!showBackButton}
           style={{ visibility: `${showBackButton ? "visible" : "hidden"}` }}
           onClick={() => {
+            if (location.pathname == SINGPLE_POST_ROUTE) {
+              dispatch(
+                setPostRowAndCurrentPost({
+                  postRow: undefined,
+                  postToShow: undefined,
+                })
+              );
+            }
             navigate(-1);
           }}
         >

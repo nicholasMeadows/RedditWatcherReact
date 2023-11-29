@@ -140,7 +140,10 @@ const RouterView: React.FC = () => {
       const redditCredentials = store.getState().appConfig.redditCredentials;
       if (redditCredentials == undefined) {
         navigate(REDDIT_SIGNIN_ROUTE);
-      } else {
+      } else if (
+        redditAuthStatus == RedditAuthenticationStatus.NOT_YET_AUTHED ||
+        redditAuthStatus == RedditAuthenticationStatus.AUTHENTICATION_DENIED
+      ) {
         const username = redditCredentials.username;
         const password = redditCredentials.password;
         const clientId = redditCredentials.clientId;
@@ -160,7 +163,13 @@ const RouterView: React.FC = () => {
         }
       }
     }
-  }, [dispatch, navigate, configLoaded, subredditListsLoaded]);
+  }, [
+    dispatch,
+    navigate,
+    configLoaded,
+    subredditListsLoaded,
+    redditAuthStatus,
+  ]);
 
   useEffect(() => {
     if (redditAuthStatus == RedditAuthenticationStatus.AUTHENTICATION_DENIED) {
