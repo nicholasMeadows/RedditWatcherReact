@@ -23,283 +23,300 @@
 // import SelectSubredditIterationMethodOptionsEnum from "../../model/config/enums/SelectSubredditIterationMethodOptionsEnum";
 // import ContentFilteringOptionEnum from "../../model/config/enums/ContentFilteringOptionEnum";
 
-const RedditWatcherSettings: React.FC = () => {
-  //   const dispatch = useAppDispatch();
+import ContentFilteringOptionEnum from "../../model/config/enums/ContentFilteringOptionEnum";
+import PostRowScrollOptionsEnum from "../../model/config/enums/PostRowScrollOptionsEnum";
+import RandomIterationSelectWeightOptionsEnum from "../../model/config/enums/RandomIterationSelectWeightOptionsEnum";
+import RowIncrementOptionsEnum from "../../model/config/enums/RowIncrementOptionsEnum";
+import SelectSubredditIterationMethodOptionsEnum from "../../model/config/enums/SelectSubredditIterationMethodOptionsEnum";
+import SelectSubredditListMenuSortOptionEnum from "../../model/config/enums/SelectSubredditListMenuSortOptionEnum";
+import SelectedSubredditListSortOptionEnum from "../../model/config/enums/SelectedSubredditListSortOptionEnum";
+import SortOrderDirectionOptionsEnum from "../../model/config/enums/SortOrderDirectionOptionsEnum";
+import SubredditSortOrderOptionsEnum from "../../model/config/enums/SubredditSortOrderOptionsEnum";
+import {
+  setConcatRedditUrlMaxLength,
+  setContentFiltering,
+  setPostRowScrollOption,
+  setPostRowsToShowInView,
+  setPostsToShowInRow,
+  setRandomIterationSelectWeightOption,
+  setRowIncrementOption,
+  setSelectSubredditIterationMethodOption,
+  setSelectSubredditListMenuSortOption,
+  setSelectedSubredditListSortOption,
+  setSortOrderDirectionOption,
+  setSubredditSortOrderOption,
+} from "../../redux/slice/AppConfigSlice";
+import { useAppDispatch, useAppSelector } from "../../redux/store";
 
-  //   const subredditSortOrderOption = useAppSelector(
-  //     (state) => state.appConfig.subredditSortOrderOption
-  //   );
-  //   const rowIncrementOption = useAppSelector(
-  //     (state) => state.appConfig.rowIncrementOption
-  //   );
-  //   const postRowScrollOption = useAppSelector(
-  //     (state) => state.appConfig.postRowScrollOption
-  //   );
-  //   const selectedSubredditListSortOption = useAppSelector(
-  //     (state) => state.appConfig.selectedSubredditListSortOption
-  //   );
-  //   const randomIterationSelectWeightOption = useAppSelector(
-  //     (state) => state.appConfig.randomIterationSelectWeightOption
-  //   );
-  //   const selectSubredditListMenuSortOption = useAppSelector(
-  //     (state) => state.appConfig.selectSubredditListMenuSortOption
-  //   );
-  //   const sortOrderDirectionOption = useAppSelector(
-  //     (state) => state.appConfig.sortOrderDirectionOption
-  //   );
-  //   const selectSubredditIterationMethodOption = useAppSelector(
-  //     (state) => state.appConfig.selectSubredditIterationMethodOption
-  //   );
-  //   const concatRedditUrlMaxLength = useAppSelector(
-  //     (state) => state.appConfig.concatRedditUrlMaxLength
-  //   );
-  //   const concatRedditUrlMaxLengthValidationError = useAppSelector(
-  //     (state) => state.appConfig.concatRedditUrlMaxLengthValidationError
-  //   );
-  //   const contentFiltering = useAppSelector(
-  //     (state) => state.appConfig.contentFiltering
-  //   );
-  //   const postsToShowInRow = useAppSelector(
-  //     (state) => state.appConfig.postsToShowInRow
-  //   );
-  //   const postsToShowInRowValidationError = useAppSelector(
-  //     (state) => state.appConfig.postsToShowInRowValidationError
-  //   );
-  //   const postRowsToShowInView = useAppSelector(
-  //     (state) => state.appConfig.postRowsToShowInView
-  //   );
-  //   const postRowsToShowInViewValidationError = useAppSelector(
-  //     (state) => state.appConfig.postRowsToShowInViewValidationError
-  //   );
+const RedditWatcherSettings: React.FC = () => {
+  const dispatch = useAppDispatch();
+
+  const subredditSortOrderOption = useAppSelector(
+    (state) => state.appConfig.subredditSortOrderOption
+  );
+  const rowIncrementOption = useAppSelector(
+    (state) => state.appConfig.rowIncrementOption
+  );
+  const postRowScrollOption = useAppSelector(
+    (state) => state.appConfig.postRowScrollOption
+  );
+  const selectedSubredditListSortOption = useAppSelector(
+    (state) => state.appConfig.selectedSubredditListSortOption
+  );
+  const randomIterationSelectWeightOption = useAppSelector(
+    (state) => state.appConfig.randomIterationSelectWeightOption
+  );
+  const selectSubredditListMenuSortOption = useAppSelector(
+    (state) => state.appConfig.selectSubredditListMenuSortOption
+  );
+  const sortOrderDirectionOption = useAppSelector(
+    (state) => state.appConfig.sortOrderDirectionOption
+  );
+  const selectSubredditIterationMethodOption = useAppSelector(
+    (state) => state.appConfig.selectSubredditIterationMethodOption
+  );
+  const concatRedditUrlMaxLength = useAppSelector(
+    (state) => state.appConfig.concatRedditUrlMaxLength
+  );
+  const concatRedditUrlMaxLengthValidationError = useAppSelector(
+    (state) => state.appConfig.concatRedditUrlMaxLengthValidationError
+  );
+  const contentFiltering = useAppSelector(
+    (state) => state.appConfig.contentFiltering
+  );
+  const postsToShowInRow = useAppSelector(
+    (state) => state.appConfig.postsToShowInRow
+  );
+  const postsToShowInRowValidationError = useAppSelector(
+    (state) => state.appConfig.postsToShowInRowValidationError
+  );
+  const postRowsToShowInView = useAppSelector(
+    (state) => state.appConfig.postRowsToShowInView
+  );
+  const postRowsToShowInViewValidationError = useAppSelector(
+    (state) => state.appConfig.postRowsToShowInViewValidationError
+  );
 
   return (
     <>
       <div className="reddit-watcher-settings-ion-content">
-        {/* <IonItem>
-          <IonSelect
-            label="Subreddit Sort"
-            labelPlacement="floating"
+        <div className="settings-item">
+          <label className="select-label">Subreddit Sort</label>
+          <select
             value={subredditSortOrderOption}
-            onIonChange={(event) =>
-              dispatch(setSubredditSortOrderOption(event.detail.value))
+            onChange={(event) =>
+              dispatch(setSubredditSortOrderOption(event.target.value))
             }
+            className="select"
           >
             {Object.entries(SubredditSortOrderOptionsEnum).map((key) => {
               return (
-                <IonSelectOption key={key[0]} value={key[1]}>
+                <option key={key[0]} value={key[1]}>
                   {key[1]}
-                </IonSelectOption>
+                </option>
               );
             })}
-          </IonSelect>
-        </IonItem>
-
-        <IonItem>
-          <IonSelect
-            label="Row Increment"
-            labelPlacement="floating"
+          </select>
+        </div>
+        <div className="settings-item">
+          <label className="select-label">Row Increment</label>
+          <select
             value={rowIncrementOption}
-            onIonChange={(event) =>
-              dispatch(setRowIncrementOption(event.detail.value))
+            onChange={(event) =>
+              dispatch(setRowIncrementOption(event.target.value))
             }
+            className="select"
           >
             {Object.entries(RowIncrementOptionsEnum).map((key) => {
               return (
-                <IonSelectOption key={key[0]} value={key[1]}>
+                <option key={key[0]} value={key[1]}>
                   {key[1]}
-                </IonSelectOption>
+                </option>
               );
             })}
-          </IonSelect>
-        </IonItem>
-
-        <IonItem>
-          <IonSelect
-            label="Post Row Scroll"
-            labelPlacement="floating"
+          </select>
+        </div>
+        <div className="settings-item">
+          <label className="select-label">Post Row Scroll</label>
+          <select
             value={postRowScrollOption}
-            onIonChange={(event) =>
-              dispatch(setPostRowScrollOption(event.detail.value))
+            onChange={(event) =>
+              dispatch(setPostRowScrollOption(event.target.value))
             }
+            className="select"
           >
             {Object.entries(PostRowScrollOptionsEnum).map((key) => {
               return (
-                <IonSelectOption key={key[0]} value={key[1]}>
+                <option key={key[0]} value={key[1]}>
                   {key[1]}
-                </IonSelectOption>
+                </option>
               );
             })}
-          </IonSelect>
-        </IonItem>
-
-        <IonItem>
-          <IonSelect
-            label="Subreddit list Sort"
-            labelPlacement="floating"
+          </select>
+        </div>
+        <div className="settings-item">
+          <label className="select-label">Subreddit list Sort</label>
+          <select
             value={selectedSubredditListSortOption}
-            onIonChange={(event) =>
-              dispatch(setSelectedSubredditListSortOption(event.detail.value))
+            onChange={(event) =>
+              dispatch(setSelectedSubredditListSortOption(event.target.value))
             }
+            className="select"
           >
             {Object.entries(SelectedSubredditListSortOptionEnum).map((key) => {
               return (
-                <IonSelectOption key={key[0]} value={key[1]}>
+                <option key={key[0]} value={key[1]}>
                   {key[1]}
-                </IonSelectOption>
+                </option>
               );
             })}
-          </IonSelect>
-        </IonItem>
-
-        <IonItem>
-          <IonSelect
-            label="Random Iteration Weight"
-            labelPlacement="floating"
+          </select>
+        </div>
+        <div className="settings-item">
+          <label className="select-label">Random Iteration Weight</label>
+          <select
             value={randomIterationSelectWeightOption}
-            onIonChange={(event) =>
-              dispatch(setRandomIterationSelectWeightOption(event.detail.value))
+            onChange={(event) =>
+              dispatch(setRandomIterationSelectWeightOption(event.target.value))
             }
+            className="select"
           >
             {Object.entries(RandomIterationSelectWeightOptionsEnum).map(
               (key) => {
                 return (
-                  <IonSelectOption key={key[0]} value={key[1]}>
+                  <option key={key[0]} value={key[1]}>
                     {key[1]}
-                  </IonSelectOption>
+                  </option>
                 );
               }
             )}
-          </IonSelect>
-        </IonItem>
-
-        <IonItem>
-          <IonSelect
-            label="Select Subreddit List Menu Sort"
-            labelPlacement="floating"
+          </select>
+        </div>
+        <div className="settings-item">
+          <label className="select-label">
+            Select Subreddit List Menu Sort
+          </label>
+          <select
             value={selectSubredditListMenuSortOption}
-            onIonChange={(event) =>
-              dispatch(setSelectSubredditListMenuSortOption(event.detail.value))
+            onChange={(event) =>
+              dispatch(setSelectSubredditListMenuSortOption(event.target.value))
             }
+            className="select"
           >
             {Object.entries(SelectSubredditListMenuSortOptionEnum).map(
               (key) => {
                 return (
-                  <IonSelectOption key={key[0]} value={key[1]}>
+                  <option key={key[0]} value={key[1]}>
                     {key[1]}
-                  </IonSelectOption>
+                  </option>
                 );
               }
             )}
-          </IonSelect>
-        </IonItem>
-
-        <IonItem>
-          <IonSelect
-            label="Sort order Direction"
-            labelPlacement="floating"
+          </select>
+        </div>
+        <div className="settings-item">
+          <label className="select-label">Sort order Direction</label>
+          <select
             value={sortOrderDirectionOption}
-            onIonChange={(event) =>
-              dispatch(setSortOrderDirectionOption(event.detail.value))
+            onChange={(event) =>
+              dispatch(setSortOrderDirectionOption(event.target.value))
             }
+            className="select"
           >
             {Object.entries(SortOrderDirectionOptionsEnum).map((key) => {
               return (
-                <IonSelectOption key={key[0]} value={key[1]}>
+                <option key={key[0]} value={key[1]}>
                   {key[1]}
-                </IonSelectOption>
+                </option>
               );
             })}
-          </IonSelect>
-        </IonItem>
-
-        <IonItem>
-          <IonSelect
-            label="Select Subreddit Iteration method"
-            labelPlacement="floating"
+          </select>
+        </div>
+        <div className="settings-item">
+          <label className="select-label">
+            Select Subreddit Iteration method
+          </label>
+          <select
             value={selectSubredditIterationMethodOption}
-            onIonChange={(event) =>
+            onChange={(event) =>
               dispatch(
-                setSelectSubredditIterationMethodOption(event.detail.value)
+                setSelectSubredditIterationMethodOption(event.target.value)
               )
             }
+            className="select"
           >
             {Object.entries(SelectSubredditIterationMethodOptionsEnum).map(
               (key) => {
                 return (
-                  <IonSelectOption key={key[0]} value={key[1]}>
+                  <option key={key[0]} value={key[1]}>
                     {key[1]}
-                  </IonSelectOption>
+                  </option>
                 );
               }
             )}
-          </IonSelect>
-        </IonItem>
-
-        <IonItem>
-          <IonInput
-            label="Reddit URL Max Length"
-            labelPlacement="floating"
+          </select>
+        </div>
+        <div className="settings-item">
+          <label className="select-label">Reddit URL Max Length</label>
+          <input
             value={concatRedditUrlMaxLength}
+            className="input"
             type="number"
-            onIonChange={(event) =>
-              dispatch(setConcatRedditUrlMaxLength(event.detail.value))
+            onChange={(event) =>
+              dispatch(setConcatRedditUrlMaxLength(event.target.value))
             }
-          ></IonInput>
-        </IonItem>
-        {concatRedditUrlMaxLengthValidationError != undefined && (
-          <IonText style={{ color: "red", marginLeft: "16px" }}>
+          />
+          <p className="settings-item-error">
             {concatRedditUrlMaxLengthValidationError}
-          </IonText>
-        )}
+          </p>
+        </div>
 
-        <IonItem>
-          <IonSelect
-            label="Content Filtering"
-            labelPlacement="floating"
+        <div className="settings-item">
+          <label className="select-label">Content Filtering</label>
+          <select
             value={contentFiltering}
-            onIonChange={(event) =>
-              dispatch(setContentFiltering(event.detail.value))
+            onChange={(event) =>
+              dispatch(setContentFiltering(event.target.value))
             }
+            className="select"
           >
             {Object.entries(ContentFilteringOptionEnum).map((key) => {
               return (
-                <IonSelectOption key={key[0]} value={key[1]}>
+                <option key={key[0]} value={key[1]}>
                   {key[1]}
-                </IonSelectOption>
+                </option>
               );
             })}
-          </IonSelect>
-        </IonItem>
-
-        <IonItem>
-          <IonInput
-            label="Posts to Show In Row"
-            labelPlacement="floating"
+          </select>
+        </div>
+        <div className="settings-item">
+          <label className="select-label">Posts to Show In Row</label>
+          <input
             value={postsToShowInRow}
+            className="input"
             type="number"
-            onIonChange={(event) =>
-              dispatch(setPostsToShowInRow(event.detail.value))
+            onChange={(event) =>
+              dispatch(setPostsToShowInRow(event.target.value))
             }
-          ></IonInput>
-        </IonItem>
-        <IonText style={{ color: "red", marginLeft: "16px" }}>
-          {postsToShowInRowValidationError}
-        </IonText>
-
-        <IonItem>
-          <IonInput
-            label="Post Rows to Show In View"
-            labelPlacement="floating"
+          />
+          <p className="settings-item-error">
+            {postsToShowInRowValidationError}
+          </p>
+        </div>
+        <div className="settings-item">
+          <label className="select-label">Post Rows to Show In View</label>
+          <input
             value={postRowsToShowInView}
+            className="input"
             type="number"
-            onIonChange={(event) =>
-              dispatch(setPostRowsToShowInView(event.detail.value))
+            onChange={(event) =>
+              dispatch(setPostRowsToShowInView(event.target.value))
             }
-          ></IonInput>
-        </IonItem>
-        <IonText style={{ color: "red", marginLeft: "16px" }}>
-          {postRowsToShowInViewValidationError}
-        </IonText> */}
+          />
+          <p className="settings-item-error">
+            {postRowsToShowInViewValidationError}
+          </p>
+        </div>
       </div>
     </>
   );

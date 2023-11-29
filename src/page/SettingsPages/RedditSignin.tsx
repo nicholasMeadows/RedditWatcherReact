@@ -50,6 +50,7 @@ const RedditSignin: React.FC = () => {
             onChange={(event) => dispatch(setUsername(event.target.value))}
           ></input>
         </div>
+
         <div className="signin-input">
           <input
             placeholder="Password"

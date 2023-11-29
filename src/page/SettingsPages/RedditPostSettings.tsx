@@ -9,101 +9,110 @@
 //   setUserFrontPagePostSortOrderOption,
 // } from "../../redux/slice/AppConfigSlice";
 
-const RedditPostSettings: React.FC = () => {
-  //   const dispatch = useAppDispatch();
+import PostSortOrderOptionsEnum from "../../model/config/enums/PostSortOrderOptionsEnum";
+import TopTimeFrameOptionsEnum from "../../model/config/enums/TopTimeFrameOptionsEnum";
+import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
+import {
+  setPostSortOrderOption,
+  setRedditApiItemLimit,
+  setTopTimeFrameOption,
+  setUserFrontPagePostSortOrderOption,
+} from "../../redux/slice/AppConfigSlice";
+import { useAppDispatch, useAppSelector } from "../../redux/store";
 
-  //   const postSortOrder = useAppSelector(
-  //     (state) => state.appConfig.postSortOrderOption
-  //   );
-  //   const topTimeFrameOption = useAppSelector(
-  //     (state) => state.appConfig.topTimeFrameOption
-  //   );
-  //   const userFrontPagePostSortOrderOption = useAppSelector(
-  //     (state) => state.appConfig.userFrontPagePostSortOrderOption
-  //   );
-  //   const redditApiItemLimit = useAppSelector(
-  //     (state) => state.appConfig.redditApiItemLimit
-  //   );
-  //   const redditApiLimitValidationError = useAppSelector(
-  //     (state) => state.appConfig.redditApiItemLimitValidationError
-  //   );
+const RedditPostSettings: React.FC = () => {
+  const dispatch = useAppDispatch();
+
+  const postSortOrder = useAppSelector(
+    (state) => state.appConfig.postSortOrderOption
+  );
+  const topTimeFrameOption = useAppSelector(
+    (state) => state.appConfig.topTimeFrameOption
+  );
+  const userFrontPagePostSortOrderOption = useAppSelector(
+    (state) => state.appConfig.userFrontPagePostSortOrderOption
+  );
+  const redditApiItemLimit = useAppSelector(
+    (state) => state.appConfig.redditApiItemLimit
+  );
+  const redditApiLimitValidationError = useAppSelector(
+    (state) => state.appConfig.redditApiItemLimitValidationError
+  );
 
   return (
     <>
-      <div className="reddit-post-settings-ion-content">
-        {/* <IonItem>
-          <IonSelect
-            label="Post Sort Order"
-            labelPlacement="floating"
+      <div className="reddit-post-settings">
+        <div className="settings-item">
+          <label className="select-label">Post Sort Order</label>
+          <select
             value={postSortOrder}
-            onIonChange={(event) =>
-              dispatch(setPostSortOrderOption(event.detail.value))
+            onChange={(event) =>
+              dispatch(setPostSortOrderOption(event.target.value))
             }
+            className="select"
           >
             {Object.entries(PostSortOrderOptionsEnum).map((key) => {
               return (
-                <IonSelectOption key={key[0]} value={key[1]}>
+                <option key={key[0]} value={key[1]}>
                   {key[1]}
-                </IonSelectOption>
+                </option>
               );
             })}
-          </IonSelect>
-        </IonItem>
+          </select>
+        </div>
 
-        <IonItem>
-          <IonSelect
-            label="Top Time Frame"
-            labelPlacement="floating"
+        <div className="settings-item">
+          <label className="select-label">Top Time Frame</label>
+          <select
             value={topTimeFrameOption}
-            onIonChange={(event) =>
-              dispatch(setTopTimeFrameOption(event.detail.value))
+            onChange={(event) =>
+              dispatch(setTopTimeFrameOption(event.target.value))
             }
+            className="select"
           >
             {Object.entries(TopTimeFrameOptionsEnum).map((key) => {
               return (
-                <IonSelectOption key={key[0]} value={key[1]}>
+                <option key={key[0]} value={key[1]}>
                   {key[1]}
-                </IonSelectOption>
+                </option>
               );
             })}
-          </IonSelect>
-        </IonItem>
+          </select>
+        </div>
 
-        <IonItem>
-          <IonSelect
-            label="User front Page Option"
-            labelPlacement="floating"
+        <div className="settings-item">
+          <label className="select-label">User Front Page Sort Option</label>
+          <select
             value={userFrontPagePostSortOrderOption}
-            onIonChange={(event) =>
-              dispatch(setUserFrontPagePostSortOrderOption(event.detail.value))
+            onChange={(event) =>
+              dispatch(setUserFrontPagePostSortOrderOption(event.target.value))
             }
+            className="select"
           >
             {Object.entries(UserFrontPagePostSortOrderOptionsEnum).map(
               (key) => {
                 return (
-                  <IonSelectOption key={key[0]} value={key[1]}>
+                  <option key={key[0]} value={key[1]}>
                     {key[1]}
-                  </IonSelectOption>
+                  </option>
                 );
               }
             )}
-          </IonSelect>
-        </IonItem>
+          </select>
+        </div>
 
-        <IonItem>
-          <IonInput
-            label="Reddit API Limit"
-            labelPlacement="floating"
+        <div className="settings-item">
+          <label className="select-label">Reddit API Limit</label>
+          <input
             value={redditApiItemLimit}
+            className="input"
             type="number"
-            onIonChange={(event) =>
-              dispatch(setRedditApiItemLimit(event.detail.value))
+            onChange={(event) =>
+              dispatch(setRedditApiItemLimit(event.target.value))
             }
-          ></IonInput>
-        </IonItem>
-        <IonText style={{ color: "red", marginLeft: "16px" }}>
-          {redditApiLimitValidationError}
-        </IonText> */}
+          />
+          <p className="settings-item-error">{redditApiLimitValidationError}</p>
+        </div>
       </div>
     </>
   );

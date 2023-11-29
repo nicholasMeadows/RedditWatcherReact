@@ -1,46 +1,50 @@
 .modify-subreddit-queue-ion-content {
-    --background: var(--background-color);
+  --background: var(--background-color);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
 }
 
 .modify-subreddit-queue-root {
-    color: var(--text-color);
-    width: 100%;
-    height: 100%;
+  color: var(--text-color);
+  width: 100%;
+  height: 100%;
 }
 
 .empty-subreddit-queue-text {
-    position: relative;
-    text-align: center;
-    top: 50%;
-    transform: translate((0%, -50%));
+  position: relative;
+  text-align: center;
+  top: 50%;
+  transform: translate((0%, -50%));
 }
 
 .subreddit-queue-item {
-    border-top: 0.01em solid var(--app-border-color);
-    border-bottom: 0.01em solid var(--app-border-color);
-    padding: 0 1em 0 1em;
-    display: flex;
-    flex-direction: row;
-    flex-grow: 1;
-    width: 100%;
+  border-top: 0.01em solid var(--app-border-color);
+  border-bottom: 0.01em solid var(--app-border-color);
+  padding: 0 1em 0 1em;
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  width: 100%;
 }
 
 .subreddit-queue-item-controls {
-    display: flex;
-    flex-direction: row;
-    margin-left: auto;
+  display: flex;
+  flex-direction: row;
+  margin-left: auto;
 }
 
 .queue-item-control-delete {
-    align-self: center;
-    font-size: 2.5em;
-    margin-right: 0.5em;
+  align-self: center;
+  font-size: 2.5em;
+  margin-right: 0.5em;
 }
 
 .queue-item-control-move-up-down {
-    font-size: 3em;
-    rotate: 90deg;
+  font-size: 3em;
+  rotate: 90deg;
 }
 .queue-item-control-move-down-margin-left {
-    margin-left: 0.5em;
+  margin-left: 0.5em;
 }

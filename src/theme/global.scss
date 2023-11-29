@@ -27,13 +27,6 @@ a {
   flex-grow: 1;
 }
 
-.input {
-  font-size: 1.5em;
-  width: 100%;
-  min-height: 1.3em;
-  max-height: 1.5em;
-}
-
 .text-align-center {
   text-align: center;
 }
@@ -47,21 +40,6 @@ a {
 }
 .cursor-default {
   cursor: default;
-}
-
-input {
-  padding: 5px;
-  font-size: 16px;
-  border-width: 1px;
-  border-color: #cccccc;
-  background-color: #ffffff;
-  color: #000000;
-  border-style: solid;
-  border-radius: 6px;
-  box-shadow: 0px 0px 5px rgba(66, 66, 66, 0.75);
-}
-input:focus {
-  outline: none;
 }
 
 button {
@@ -93,4 +71,60 @@ button[disabled] {
 
 .root-app {
   background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.settings-item {
+  margin-top: 0.3em;
+  position: relative;
+  height: 3em;
+  margin-bottom: 0.3em;
+}
+.select {
+  background-color: transparent;
+  color: var(--text-color);
+  height: 100%;
+  width: 100%;
+  border-color: var(--app-border-color);
+  border-style: solid;
+  border-width: 0 0 0.2em 0;
+  padding-top: 1em;
+  font-size: 1.2em;
+  padding-left: 0.6em;
+}
+.select > option {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+.select-label {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  margin-left: 1em;
+  font-size: 1em;
+}
+.input {
+  background-color: transparent;
+  border-color: var(--app-border-color);
+  border-style: solid;
+  border-width: 0 0 0.2em 0;
+  border-radius: 0px;
+  color: var(--text-color);
+  padding-top: 01em;
+  padding-left: 0.8em;
+  font-size: 1.2em;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+input:focus {
+  outline: none;
+}
+
+.settings-item-error {
+  color: red;
+  padding: 0px;
+  margin: 0;
+  margin-left: 1em;
+  font-size: 1.1em;
 }

@@ -1,8 +1,8 @@
-.reddit-post-settings-ion-content{
-    --background: var(--background-color);    
-}
-.reddit-post-settings-ion-content > ion-item{
-    --background: var(--background-color);
-    --color: white;
-    --border-color: var(--app-border-color)
+.reddit-post-settings {
+  --background: var(--background-color);
+  width: 100%;
+  height: 100%;
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
 }

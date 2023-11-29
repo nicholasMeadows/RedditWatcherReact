@@ -6,6 +6,7 @@ import {
   POST_ROW_ROUTE,
   REDDIT_POST_SETTINGS_ROUTE,
   REDDIT_SIGNIN_ROUTE,
+  REDDIT_WATCHER_SETTINGS_ROUTE,
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
@@ -130,6 +131,12 @@ const NavigationHambugerMenu: React.FC = () => {
                 }}
               >
                 <p>Modify Subreddit Queue</p>
+              </div>
+              <div
+                className="drawer-popout-item"
+                onClick={() => navigateTo(REDDIT_WATCHER_SETTINGS_ROUTE)}
+              >
+                <p> Reddit Watcher Settings</p>
               </div>
               <div
                 className="drawer-popout-item"
