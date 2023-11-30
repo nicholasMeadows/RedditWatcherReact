@@ -1,13 +1,13 @@
 import { MouseEvent, useRef } from "react";
+import SubredditListContextMenuEvent from "../../model/Events/SubredditListContextMenuEvent";
+import SubredditListItemContextMenuEvent from "../../model/Events/SubredditListItemContextMenuEvent";
 import { SubredditLists } from "../../model/SubredditList/SubredditLists";
-import { toggleSubredditListSelected } from "../../redux/slice/RedditListsSlice";
-import { useAppDispatch } from "../../redux/store";
 import {
   setSubredditListContextMenuEvent,
   setSubredditListItemContextMenuEvent,
 } from "../../redux/slice/ContextMenuSlice";
-import SubredditListItemContextMenuEvent from "../../model/Events/SubredditListItemContextMenuEvent";
-import SubredditListContextMenuEvent from "../../model/Events/SubredditListContextMenuEvent";
+import { toggleSubredditListSelected } from "../../redux/slice/RedditListsSlice";
+import { useAppDispatch } from "../../redux/store";
 
 type Props = {
   subredditList: SubredditLists;
@@ -78,31 +78,29 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
         }  accordion-background`}
         ref={panelDivRef}
       >
-        <div>
-          {subredditList.subreddits.map((subreddit) => (
-            <p
-              className="text-color"
-              key={subreddit.subredditUuid}
-              onContextMenu={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                const subredditListItemContextMenuEvent: SubredditListItemContextMenuEvent =
-                  {
-                    subreddit: subreddit,
-                    x: event.clientX,
-                    y: event.clientY,
-                  };
-                dispatch(
-                  setSubredditListItemContextMenuEvent({
-                    event: subredditListItemContextMenuEvent,
-                  })
-                );
-              }}
-            >
-              {subreddit.displayName}
-            </p>
-          ))}
-        </div>
+        {subredditList.subreddits.map((subreddit) => (
+          <p
+            className="text-color subreddit-name-text"
+            key={subreddit.subredditUuid}
+            onContextMenu={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              const subredditListItemContextMenuEvent: SubredditListItemContextMenuEvent =
+                {
+                  subreddit: subreddit,
+                  x: event.clientX,
+                  y: event.clientY,
+                };
+              dispatch(
+                setSubredditListItemContextMenuEvent({
+                  event: subredditListItemContextMenuEvent,
+                })
+              );
+            }}
+          >
+            {subreddit.displayName}
+          </p>
+        ))}
       </div>
     </>
   );

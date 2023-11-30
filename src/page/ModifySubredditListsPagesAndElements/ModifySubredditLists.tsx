@@ -1,4 +1,5 @@
-import { useAppDispatch, useAppSelector } from "../../redux/store";
+import { useEffect, useState } from "react";
+import { ModifySubredditListMode } from "../../model/ModifySubredditListMode";
 import {
   createOrModifyList,
   deleteList,
@@ -9,18 +10,14 @@ import {
   setCreateUpdateInputValue,
   showCreateListBox,
 } from "../../redux/slice/RedditListsSlice";
+import { useAppDispatch, useAppSelector } from "../../redux/store";
+import ModifySubredditListAccordion from "./ModifySubredditListAccordion";
 import SearchRedditBar from "./SearchRedditBar";
-import { useEffect, useState } from "react";
-import ModifySubredditListAccordian from "./ModifySubredditListAccordion";
-import { ModifySubredditListMode } from "../../model/ModifySubredditListMode";
 
 const ModifySubredditLists: React.FC = () => {
   const dispatch = useAppDispatch();
   const subredditLists = useAppSelector(
     (state) => state.subredditLists.subredditLists
-  );
-  const searchResults = useAppSelector(
-    (state) => state.redditSearch.searchResults
   );
 
   const showModifyListBox = useAppSelector(
@@ -44,7 +41,7 @@ const ModifySubredditLists: React.FC = () => {
 
   useEffect(() => {
     dispatch(resetModifyListBox());
-  });
+  }, [dispatch]);
 
   const [subredditListUuidClicked, setSubredditListUuidClicked] = useState<
     string | undefined
@@ -52,7 +49,8 @@ const ModifySubredditLists: React.FC = () => {
   return (
     <>
       {showModifyListBox && (
-        <div className="create-update-list-grayed-out-background">
+        <>
+          <div className="create-update-list-grayed-out-background"></div>
           <div className="modify-list-box">
             <h4 className="modify-list-header">{modifyListBoxTitle}</h4>
 
@@ -74,7 +72,7 @@ const ModifySubredditLists: React.FC = () => {
                 <p className="create-update-list-input-error">
                   {createUpdateInputValidationError}
                 </p>
-                <div className="flex flex-row">
+                <div className="flex flex-row create-update-button-box">
                   <button
                     disabled={
                       createUpdateInputValue.length == 0 ||
@@ -92,7 +90,7 @@ const ModifySubredditLists: React.FC = () => {
             )}
             {modifyListMode == ModifySubredditListMode.DELETE && (
               <>
-                <div className="flex flex-row">
+                <div className="flex flex-row create-update-button-box">
                   <button onClick={() => dispatch(deleteList())}>Yes</button>
                   <button onClick={() => dispatch(resetModifyListBox())}>
                     Cancel
@@ -101,73 +99,58 @@ const ModifySubredditLists: React.FC = () => {
               </>
             )}
           </div>
-        </div>
+        </>
       )}
 
-      <div className="modify-subreddit-list-root background">
-        <div
-          style={{ zIndex: "10" }}
-          className={
-            "reddit-search-bar-wrapper" +
-            (searchResults.length > 0
-              ? " reddit-search-bar-wrapper-expanded"
-              : "")
-          }
-        >
-          <SearchRedditBar />
+      <div className="max-width-height-percentage flex flex-column">
+        <SearchRedditBar />
+        <div className="subredditListsExpander">
+          {subredditLists.map((subredditList) => (
+            <ModifySubredditListAccordion
+              key={subredditList.subredditListUuid}
+              subredditList={subredditList}
+              subredditListUuidClicked={subredditListUuidClicked}
+              accordionOnClick={() => {
+                if (
+                  subredditList.subredditListUuid == subredditListUuidClicked
+                ) {
+                  setSubredditListUuidClicked(undefined);
+                } else {
+                  setSubredditListUuidClicked(subredditList.subredditListUuid);
+                }
+              }}
+            />
+          ))}
         </div>
 
-        <div className="max-width-height-percentage flex flex-column">
-          <div className="subredditListsExpander">
-            {subredditLists.map((subredditList) => (
-              <ModifySubredditListAccordian
-                key={subredditList.subredditListUuid}
-                subredditList={subredditList}
-                subredditListUuidClicked={subredditListUuidClicked}
-                accordionOnClick={() => {
-                  if (
-                    subredditList.subredditListUuid == subredditListUuidClicked
-                  ) {
-                    setSubredditListUuidClicked(undefined);
-                  } else {
-                    setSubredditListUuidClicked(
-                      subredditList.subredditListUuid
-                    );
-                  }
-                }}
-              />
-            ))}
+        <div className="modify-subreddit-list-button-box flex flex-wrap button-box">
+          <div className="modify-subreddit-list-button-box flex flex-column flex-grow">
+            <button
+              className="flex-grow"
+              onClick={() => dispatch(showCreateListBox())}
+            >
+              Create new List
+            </button>
+            <button
+              className="flex-grow"
+              onClick={() => dispatch(selectAllLists(undefined))}
+            >
+              Select All Lists
+            </button>
           </div>
-
-          <div className="flex flex-wrap button-box">
-            <div className="flex flex-column flex-grow">
-              <button
-                className="flex-grow"
-                onClick={() => dispatch(showCreateListBox())}
-              >
-                Create new List
-              </button>
-              <button
-                className="flex-grow"
-                onClick={() => dispatch(selectAllLists(undefined))}
-              >
-                Select All Lists
-              </button>
-            </div>
-            <div className="flex flex-column flex-grow">
-              <button
-                className="flex-grow"
-                onClick={() => dispatch(deselectAllLists(undefined))}
-              >
-                Deselect All Lists
-              </button>
-              <button
-                className="flex-grow"
-                onClick={() => dispatch(selectRandomLists())}
-              >
-                Select Random Lists
-              </button>
-            </div>
+          <div className="modify-subreddit-list-button-box flex flex-column flex-grow">
+            <button
+              className="flex-grow"
+              onClick={() => dispatch(deselectAllLists(undefined))}
+            >
+              Deselect All Lists
+            </button>
+            <button
+              className="flex-grow"
+              onClick={() => dispatch(selectRandomLists())}
+            >
+              Select Random Lists
+            </button>
           </div>
         </div>
       </div>

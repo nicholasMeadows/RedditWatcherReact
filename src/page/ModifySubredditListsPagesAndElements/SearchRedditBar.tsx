@@ -1,11 +1,12 @@
+import { useEffect, useRef } from "react";
+import { RedditSearchItemContextMenuEvent } from "../../model/Events/RedditSearchItemContextMenuEvent";
+import { setRedditSearchItemContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
 import {
   clearSearchResults,
   searchReddit,
   subOrUnSubFromSubreddit,
 } from "../../redux/slice/RedditSearchSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
-import { setRedditSearchItemContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
-import { RedditSearchItemContextMenuEvent } from "../../model/Events/RedditSearchItemContextMenuEvent";
 
 const SearchRedditBar: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -13,11 +14,27 @@ const SearchRedditBar: React.FC = () => {
     (state) => state.redditSearch.searchResults
   );
 
+  const searchInput = useRef(null);
+  const searchResultsDiv = useRef(null);
+
+  useEffect(() => {
+    if (searchResults.length > 0) {
+      const input = searchInput.current as unknown as HTMLInputElement;
+      const div = searchResultsDiv.current as unknown as HTMLDivElement;
+      const inputBoundingRec = input.getBoundingClientRect();
+      const divTop = inputBoundingRec.y + inputBoundingRec.height;
+      div.style.top = `${divTop}px`;
+      div.style.width = `${input.offsetWidth}px`;
+    }
+  }, [searchResults, searchResultsDiv, searchInput]);
+
   return (
-    <div className="width">
+    <div className="width reddit-search-bar">
       <input
+        ref={searchInput}
         type="text"
-        className="input text-color background"
+        className="reddit-search-input"
+        placeholder="Search Reddit"
         onKeyUp={(keyboardEvent) => {
           if (keyboardEvent.key == "Enter") {
             const inputText: string = (keyboardEvent.target as HTMLInputElement)
@@ -29,7 +46,7 @@ const SearchRedditBar: React.FC = () => {
         }}
       />
       {searchResults.length > 0 && (
-        <div className="search-results">
+        <div className="search-results" ref={searchResultsDiv}>
           {searchResults.map((searchResult) => (
             <div
               key={searchResult.searchResultUuid}
@@ -47,24 +64,22 @@ const SearchRedditBar: React.FC = () => {
                 );
               }}
             >
-              <div className="search-result-fields-wrapper">
-                <p className="search-result-p">
-                  {(searchResult.isUser ? "(User) " : "") +
-                    searchResult.displayName +
-                    (searchResult.over18 ? " NSFW" : "")}
-                </p>
-                {!searchResult.isUser && (
-                  <p className="search-result-p">{`Subs: ${searchResult.subscribers}`}</p>
-                )}
-                <button
-                  className="search-result-sub-unsub-button"
-                  onClick={() => {
-                    dispatch(subOrUnSubFromSubreddit(searchResult));
-                  }}
-                >
-                  {searchResult.isSubscribed ? "UnSubscribe" : "Subscribe"}
-                </button>
-              </div>
+              <p className="search-result-p">
+                {(searchResult.isUser ? "(User) " : "") +
+                  searchResult.displayName +
+                  (searchResult.over18 ? " NSFW" : "")}
+              </p>
+              {!searchResult.isUser && (
+                <p className="search-result-p">{`Subs: ${searchResult.subscribers}`}</p>
+              )}
+              <button
+                className="search-result-sub-unsub-button"
+                onClick={() => {
+                  dispatch(subOrUnSubFromSubreddit(searchResult));
+                }}
+              >
+                {searchResult.isSubscribed ? "UnSubscribe" : "Subscribe"}
+              </button>
             </div>
           ))}
         </div>
