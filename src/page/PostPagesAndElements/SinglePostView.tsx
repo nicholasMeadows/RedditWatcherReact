@@ -1,12 +1,12 @@
-import { useAppDispatch, useAppSelector } from "../../redux/store";
-import PostElement from "./PostElement";
+import { TouchEvent, useState } from "react";
+import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
+import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
 import {
   goToNextPost,
   goToPreviousPost,
 } from "../../redux/slice/SinglePostPageSlice";
-import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
-import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
-import { TouchEvent, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../redux/store";
+import PostElement from "./PostElement";
 
 const SinglePostView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -45,7 +45,7 @@ const SinglePostView: React.FC = () => {
     <>
       {post != undefined && (
         <div
-          className="flex flex-column max-width-height-percentage background"
+          className="single-post-view flex flex-column max-width-height-percentage background"
           onTouchStart={(event) => onTouchStart(event)}
           onTouchMove={(event) => onTouchMove(event)}
           onTouchEnd={() => onTouchEnd()}
