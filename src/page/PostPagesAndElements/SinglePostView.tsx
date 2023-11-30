@@ -1,19 +1,34 @@
-import { TouchEvent, useState } from "react";
+import { TouchEvent, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
+import { Post } from "../../model/Post/Post";
+import { PostRow } from "../../model/PostRow";
 import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
-import {
-  goToNextPost,
-  goToPreviousPost,
-} from "../../redux/slice/SinglePostPageSlice";
-import { useAppDispatch, useAppSelector } from "../../redux/store";
+import store, { useAppDispatch } from "../../redux/store";
 import PostElement from "./PostElement";
 
 const SinglePostView: React.FC = () => {
   const dispatch = useAppDispatch();
+  const [queryParams] = useSearchParams();
 
-  const postRow = useAppSelector((state) => state.singlePostPage.postRow);
-  const post = useAppSelector((state) => state.singlePostPage.postToShow);
+  const [postRow, setPostRow] = useState<PostRow | undefined>();
+  const [post, setPost] = useState<Post | undefined>();
 
+  useEffect(() => {
+    const postRowUuid = queryParams.get("postRowUuid");
+    const postUuid = queryParams.get("postUuid");
+    const postRows = store.getState().postRows.postRows;
+    const foundPostRow = postRows.find((row) => row.postRowUuid == postRowUuid);
+    if (foundPostRow != undefined) {
+      const foundPost = foundPostRow.posts.find(
+        (post) => post.postUuid == postUuid
+      );
+      if (foundPost != undefined) {
+        setPostRow(foundPostRow);
+        setPost(foundPost);
+      }
+    }
+  }, [queryParams]);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   // the required distance between touchStart and touchEnd to be detected as a swipe
@@ -33,14 +48,46 @@ const SinglePostView: React.FC = () => {
     const isRightSwipe = distance < -minSwipeDistance;
 
     if (isLeftSwipe) {
-      dispatch(goToNextPost());
+      goToNextPost();
     }
 
     if (isRightSwipe) {
-      dispatch(goToPreviousPost());
+      goToPreviousPost();
     }
   };
 
+  const goToNextPost = () => {
+    const currentPostShownIndex = findCurrentPostShownIndex(postRow, post);
+    if (currentPostShownIndex > -1 && postRow != undefined) {
+      if (currentPostShownIndex == postRow.posts.length - 1) {
+        setPost(postRow.posts[0]);
+      } else {
+        setPost(postRow.posts[currentPostShownIndex + 1]);
+      }
+    }
+  };
+  const goToPreviousPost = () => {
+    const currentPostShownIndex = findCurrentPostShownIndex(postRow, post);
+    if (currentPostShownIndex > -1 && postRow != undefined) {
+      if (currentPostShownIndex == 0) {
+        setPost(postRow.posts[postRow.posts.length - 1]);
+      } else {
+        setPost(postRow.posts[currentPostShownIndex - 1]);
+      }
+    }
+  };
+
+  const findCurrentPostShownIndex = (
+    postRow: PostRow | undefined,
+    postToShow: Post | undefined
+  ): number => {
+    if (postRow != undefined && postToShow != undefined) {
+      return postRow.posts.findIndex(
+        (post) => post.postUuid == postToShow.postUuid
+      );
+    }
+    return -1;
+  };
   return (
     <>
       {post != undefined && (
@@ -77,7 +124,7 @@ const SinglePostView: React.FC = () => {
             <div className="post-control-button-wrapper post-control-button-wrapper-padding-right">
               <button
                 className="post-control-button"
-                onClick={() => dispatch(goToPreviousPost())}
+                onClick={() => goToPreviousPost()}
               >
                 Previous Post
               </button>
@@ -85,7 +132,7 @@ const SinglePostView: React.FC = () => {
             <div className="post-control-button-wrapper post-control-button-wrapper-padding-left">
               <button
                 className="post-control-button"
-                onClick={() => dispatch(goToNextPost())}
+                onClick={() => goToNextPost()}
               >
                 Next Post
               </button>

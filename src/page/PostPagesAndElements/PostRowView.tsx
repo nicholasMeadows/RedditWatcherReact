@@ -1,20 +1,22 @@
 import { TouchEvent, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants";
+import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
 import { PostRow } from "../../model/PostRow";
-import store, { useAppDispatch, useAppSelector } from "../../redux/store";
+import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
 import {
   mouseEnterPostRow,
   mouseLeavePostRow,
   postRowLeftButtonClicked,
   postRowRightButtonClicked,
 } from "../../redux/slice/PostRowsSlice";
-import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
-import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
-import { setPostRowAndCurrentPost } from "../../redux/slice/SinglePostPageSlice";
+import store, { useAppDispatch, useAppSelector } from "../../redux/store";
 import PostElement from "./PostElement";
 
 type Props = { postRow: PostRow };
 const PostRowView: React.FC<Props> = ({ postRow }) => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const postRowsToShowInView = useAppSelector(
     (state) => state.appConfig.postRowsToShowInView
   );
@@ -138,11 +140,8 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
                 );
               }}
               onClick={() => {
-                dispatch(
-                  setPostRowAndCurrentPost({
-                    postRow: postRow,
-                    postToShow: post,
-                  })
+                navigate(
+                  `${SINGPLE_POST_ROUTE}?postRowUuid=${postRow.postRowUuid}&postUuid=${post.postUuid}`
                 );
               }}
             >

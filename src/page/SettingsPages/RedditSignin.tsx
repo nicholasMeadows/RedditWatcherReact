@@ -1,12 +1,12 @@
-import { useAppDispatch, useAppSelector } from "../../redux/store";
-import { LOADING_CONTENT_ROUTE } from "../../RedditWatcherConstants";
 import { useNavigate } from "react-router-dom";
+import { APP_INITIALIZATION_ROUTE } from "../../RedditWatcherConstants";
 import {
   setClientId,
   setClientSecret,
   setPassword,
   setUsername,
 } from "../../redux/slice/AppConfigSlice";
+import { useAppDispatch, useAppSelector } from "../../redux/store";
 
 const RedditSignin: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -81,7 +81,7 @@ const RedditSignin: React.FC = () => {
             clientIdValidationError != undefined ||
             clientSecretValidationError != undefined
           }
-          onClick={() => navigate(LOADING_CONTENT_ROUTE)}
+          onClick={() => navigate(APP_INITIALIZATION_ROUTE)}
         >
           Login
         </button>

@@ -1,6 +1,7 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
+  APP_INITIALIZATION_ROUTE,
   MODIFY_SUBREDDIT_LISTS_ROUTE,
   MODIFY_SUBREDDIT_QUEUE_ROUTE,
   NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT,
@@ -16,7 +17,12 @@ import {
   importAppConfig,
   toggleDarkMode,
 } from "../redux/slice/AppConfigSlice";
-import { setPostRowAndCurrentPost } from "../redux/slice/SinglePostPageSlice";
+import { closeContextMenu } from "../redux/slice/ContextMenuSlice";
+import {
+  setPageName,
+  setShowBackButton,
+} from "../redux/slice/NavigationDrawerSlice";
+import { clearSearchResults } from "../redux/slice/RedditSearchSlice";
 import { useAppDispatch, useAppSelector } from "../redux/store";
 const NavigationHambugerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -33,6 +39,49 @@ const NavigationHambugerMenu: React.FC = () => {
 
   const [popoutDrawerOpen, setPopoutDrawerOpen] = useState(false);
   const fileSelectorRef = useRef(null);
+
+  useEffect(() => {
+    console.log(
+      `The current URL is ${location.pathname}${location.search}${location.hash}`
+    );
+    const pathname = location.pathname;
+    let pageName = "";
+    switch (pathname) {
+      case REDDIT_SIGNIN_ROUTE:
+        pageName = "Sign In";
+        break;
+      case APP_INITIALIZATION_ROUTE:
+        pageName = "Loading";
+        break;
+      case POST_ROW_ROUTE:
+        pageName = "Home";
+        break;
+      case REDDIT_POST_SETTINGS_ROUTE:
+        pageName = "Post Settings";
+        break;
+      case REDDIT_WATCHER_SETTINGS_ROUTE:
+        pageName = "App Settings";
+        break;
+      case SINGPLE_POST_ROUTE:
+        pageName = "Single Post";
+        break;
+      case MODIFY_SUBREDDIT_LISTS_ROUTE:
+        pageName = "Modify Subreddit List";
+        break;
+      case MODIFY_SUBREDDIT_QUEUE_ROUTE:
+        pageName = "Modify Subreddit Queue";
+        break;
+    }
+    dispatch(setPageName(pageName));
+    dispatch(
+      setShowBackButton(
+        !pathname.endsWith(POST_ROW_ROUTE) &&
+          !pathname.endsWith(APP_INITIALIZATION_ROUTE)
+      )
+    );
+    dispatch(closeContextMenu());
+    dispatch(clearSearchResults());
+  }, [dispatch, location]);
 
   const navigateTo = (pathName: string) => {
     setPopoutDrawerOpen(false);
@@ -68,14 +117,6 @@ const NavigationHambugerMenu: React.FC = () => {
           hidden={!showBackButton}
           style={{ visibility: `${showBackButton ? "visible" : "hidden"}` }}
           onClick={() => {
-            if (location.pathname == SINGPLE_POST_ROUTE) {
-              dispatch(
-                setPostRowAndCurrentPost({
-                  postRow: undefined,
-                  postToShow: undefined,
-                })
-              );
-            }
             navigate(-1);
           }}
         >
@@ -197,107 +238,6 @@ const NavigationHambugerMenu: React.FC = () => {
           </div>
         </div>
       </div>
-      {/* <IonMenu contentId="main-content" id="ionMenuDrawer">
-        <IonHeader>
-          <IonToolbar>
-            <IonTitle>Reddit Watcher</IonTitle>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent className="side-bar-menu">
-          {redditAuthStatus == RedditAuthenticationStatus.AUTHENTICATED && (
-            <>
-              <IonItem
-                onClick={() => {
-                  navigateTo(POST_ROW_ROUTE);
-                }}
-              >
-                Home
-              </IonItem>
-              <IonItem
-                onClick={() => {
-                  navigateTo(MODIFY_SUBREDDIT_LISTS_ROUTE);
-                }}
-              >
-                Modify Subreddit Lists
-              </IonItem>
-              <IonItem
-                onClick={() => {
-                  navigateTo(MODIFY_SUBREDDIT_QUEUE_ROUTE);
-                }}
-              >
-                Modify Subreddit Queue
-              </IonItem>
-              <IonItem
-                onClick={() => {
-                  navigateTo(REDDIT_WATCHER_SETTINGS_ROUTE);
-                }}
-              >
-                Reddit Watcher Settings
-              </IonItem>
-              <IonItem
-                onClick={() => {
-                  navigateTo(REDDIT_POST_SETTINGS_ROUTE);
-                }}
-              >
-                Reddit Post Settings
-              </IonItem>
-              <IonItem
-                onClick={() => {
-                  navigateTo(REDDIT_SIGNIN_ROUTE);
-                }}
-              >
-                Reddit Auth
-              </IonItem>
-              <IonItem>
-                <IonToggle
-                  onIonChange={() => dispatch(toggleDarkMode())}
-                  checked={store.getState().appConfig.darkMode}
-                >
-                  Dark Mode
-                </IonToggle>
-              </IonItem>
-            </>
-          )}
-          <div className="side-bar-menu side-bar-menu-bottom">
-            <IonItem onClick={() => dispatch(exportAppConfig())}>
-              Export Config
-            </IonItem>
-            <input
-              type="file"
-              style={{ display: "hidden" }}
-              hidden={true}
-              ref={fileSelectorRef}
-              onInput={(event) => {
-                const input = event.target as HTMLInputElement;
-                if (input.files != undefined) {
-                  dispatch(importAppConfig(input.files[0]));
-                }
-              }}
-            />
-            <IonItem
-              onClick={() => {
-                (
-                  fileSelectorRef.current as unknown as HTMLInputElement
-                ).click();
-              }}
-            >
-              Import
-            </IonItem>
-          </div>
-        </IonContent>
-      </IonMenu>
-      <IonHeader id="main-content">
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonMenuButton></IonMenuButton>
-            {showBackButton &&
-              RedditAuthenticationStatus.AUTHENTICATED == redditAuthStatus && (
-                <IonBackButton defaultHref="#"></IonBackButton>
-              )}
-          </IonButtons>
-          <IonTitle>{pageName}</IonTitle>
-        </IonToolbar>
-      </IonHeader> */}
     </>
   );
 };
