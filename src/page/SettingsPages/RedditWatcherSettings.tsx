@@ -1,28 +1,3 @@
-// import { useAppDispatch, useAppSelector } from "../../redux/store";
-// import {
-//   setConcatRedditUrlMaxLength,
-//   setContentFiltering,
-//   setPostRowScrollOption,
-//   setPostRowsToShowInView,
-//   setPostsToShowInRow,
-//   setRandomIterationSelectWeightOption,
-//   setRowIncrementOption,
-//   setSelectSubredditIterationMethodOption,
-//   setSelectSubredditListMenuSortOption,
-//   setSelectedSubredditListSortOption,
-//   setSortOrderDirectionOption,
-//   setSubredditSortOrderOption,
-// } from "../../redux/slice/AppConfigSlice";
-// import SubredditSortOrderOptionsEnum from "../../model/config/enums/SubredditSortOrderOptionsEnum";
-// import RowIncrementOptionsEnum from "../../model/config/enums/RowIncrementOptionsEnum";
-// import PostRowScrollOptionsEnum from "../../model/config/enums/PostRowScrollOptionsEnum";
-// import SelectedSubredditListSortOptionEnum from "../../model/config/enums/SelectedSubredditListSortOptionEnum";
-// import RandomIterationSelectWeightOptionsEnum from "../../model/config/enums/RandomIterationSelectWeightOptionsEnum";
-// import SelectSubredditListMenuSortOptionEnum from "../../model/config/enums/SelectSubredditListMenuSortOptionEnum";
-// import SortOrderDirectionOptionsEnum from "../../model/config/enums/SortOrderDirectionOptionsEnum";
-// import SelectSubredditIterationMethodOptionsEnum from "../../model/config/enums/SelectSubredditIterationMethodOptionsEnum";
-// import ContentFilteringOptionEnum from "../../model/config/enums/ContentFilteringOptionEnum";
-
 import ContentFilteringOptionEnum from "../../model/config/enums/ContentFilteringOptionEnum";
 import PostRowScrollOptionsEnum from "../../model/config/enums/PostRowScrollOptionsEnum";
 import RandomIterationSelectWeightOptionsEnum from "../../model/config/enums/RandomIterationSelectWeightOptionsEnum";
