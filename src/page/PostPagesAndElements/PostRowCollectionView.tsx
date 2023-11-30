@@ -1,9 +1,9 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants";
+import { setScrollY } from "../../redux/slice/PostRowsSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import PostRowView from "./PostRowView";
-import { useEffect } from "react";
-import { setScrollY } from "../../redux/slice/PostRowsSlice";
-import { useNavigate } from "react-router-dom";
 
 const PostRowCollectionView: React.FC = () => {
   const dispatch = useAppDispatch();

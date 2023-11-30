@@ -1,4 +1,9 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { useNavigate } from "react-router-dom";
+import ImportExportConfig from "../../model/ImportExportConfig";
+import { Subreddit } from "../../model/Subreddit/Subreddit";
+import { SubredditLists } from "../../model/SubredditList/SubredditLists";
+import { AppConfig } from "../../model/config/AppConfig";
 import { AppConfigState } from "../../model/config/AppConfigState";
 import ContentFilteringOptionEnum from "../../model/config/enums/ContentFilteringOptionEnum";
 import PostRowScrollOptionsEnum from "../../model/config/enums/PostRowScrollOptionsEnum";
@@ -12,7 +17,6 @@ import SortOrderDirectionOptionsEnum from "../../model/config/enums/SortOrderDir
 import SubredditSortOrderOptionsEnum from "../../model/config/enums/SubredditSortOrderOptionsEnum";
 import TopTimeFrameOptionsEnum from "../../model/config/enums/TopTimeFrameOptionsEnum";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
-import { ValidationUtil } from "../../util/ValidationUtil";
 import {
   exportConfigDownload,
   fillInMissingFieldsInConfigObj,
@@ -20,15 +24,11 @@ import {
   saveConfig,
   saveSubredditLists,
 } from "../../service/ConfigService";
-import { AppConfig } from "../../model/config/AppConfig";
+import { ValidationUtil } from "../../util/ValidationUtil";
 import store from "../store";
-import ImportExportConfig from "../../model/ImportExportConfig";
-import { SubredditLists } from "../../model/SubredditList/SubredditLists";
-import { Subreddit } from "../../model/Subreddit/Subreddit";
-import { resetSubredditListsLoaded } from "./RedditListsSlice";
-import { resetRedditClient } from "./RedditClientSlice";
 import { clearPostRows } from "./PostRowsSlice";
-import { useNavigate } from "react-router-dom";
+import { resetRedditClient } from "./RedditClientSlice";
+import { resetSubredditListsLoaded } from "./RedditListsSlice";
 
 const defaultSubredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
 const defaultRowIncrementOption = RowIncrementOptionsEnum.IncrementBySinglePost;

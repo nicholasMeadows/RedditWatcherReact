@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   MODIFY_SUBREDDIT_LISTS_ROUTE,
@@ -10,14 +11,13 @@ import {
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
-import { useAppDispatch, useAppSelector } from "../redux/store";
-import { useRef, useState } from "react";
 import {
   exportAppConfig,
   importAppConfig,
   toggleDarkMode,
 } from "../redux/slice/AppConfigSlice";
 import { setPostRowAndCurrentPost } from "../redux/slice/SinglePostPageSlice";
+import { useAppDispatch, useAppSelector } from "../redux/store";
 const NavigationHambugerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();

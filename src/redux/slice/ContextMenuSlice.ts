@@ -1,13 +1,13 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
-import SubredditListItemContextMenuEvent from "../../model/Events/SubredditListItemContextMenuEvent";
-import SubredditListContextMenuEvent from "../../model/Events/SubredditListContextMenuEvent";
-import { SubredditLists } from "../../model/SubredditList/SubredditLists";
-import { RedditSearchItemContextMenuEvent } from "../../model/Events/RedditSearchItemContextMenuEvent";
-import { Subreddit } from "../../model/Subreddit/Subreddit";
 import CustomContextMenuEvent from "../../model/Events/CustomContextMenuEvent";
-import { SubredditAccountSearchResult } from "../../model/SubredditAccountSearchResult";
+import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
+import { RedditSearchItemContextMenuEvent } from "../../model/Events/RedditSearchItemContextMenuEvent";
+import SubredditListContextMenuEvent from "../../model/Events/SubredditListContextMenuEvent";
+import SubredditListItemContextMenuEvent from "../../model/Events/SubredditListItemContextMenuEvent";
 import { Post } from "../../model/Post/Post";
+import { Subreddit } from "../../model/Subreddit/Subreddit";
+import { SubredditAccountSearchResult } from "../../model/SubredditAccountSearchResult";
+import { SubredditLists } from "../../model/SubredditList/SubredditLists";
 
 export const onCopyClick = createAsyncThunk(
   "contextMenu/onCopyClick",
@@ -223,6 +223,7 @@ function resetContextMenuFields(state: InitialState) {
   state.updateSubredditListInfo = undefined;
   state.openPostPermaLink = undefined;
   state.openSubredditLink = undefined;
+  state.showButtonControls.showOpenImageInNewTab = false;
   state.showButtonControls.showOpenPost = false;
   state.showButtonControls.showOpenSubreddit = false;
   state.showButtonControls.showCopy = false;

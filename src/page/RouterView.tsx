@@ -58,22 +58,21 @@ const RouterView: React.FC = () => {
   );
   const postRows = useAppSelector((state) => state.postRows.postRows);
 
-  const documentClickedEvent = () => {
-    dispatch(closeContextMenu());
-  };
-
-  const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
-    const key = keyboardEvent.key;
-    if (window.location.href.endsWith(SINGPLE_POST_ROUTE)) {
-      if (key == "ArrowRight") {
-        dispatch(goToNextPost());
-      } else if (key == "ArrowLeft") {
-        dispatch(goToPreviousPost());
-      }
-    }
-  };
-
   useEffect(() => {
+    const documentClickedEvent = () => {
+      dispatch(closeContextMenu());
+    };
+
+    const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
+      const key = keyboardEvent.key;
+      if (window.location.href.endsWith(SINGPLE_POST_ROUTE)) {
+        if (key == "ArrowRight") {
+          dispatch(goToNextPost());
+        } else if (key == "ArrowLeft") {
+          dispatch(goToPreviousPost());
+        }
+      }
+    };
     document.addEventListener("click", documentClickedEvent);
     document.body.addEventListener("keyup", documentKeyUpEvent);
     KeepAwake.keepAwake();
@@ -82,7 +81,7 @@ const RouterView: React.FC = () => {
       document.removeEventListener("click", documentClickedEvent);
       document.body.removeEventListener("keyup", documentKeyUpEvent);
     };
-  });
+  }, [dispatch]);
 
   useEffect(() => {
     console.log(
