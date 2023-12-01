@@ -64,84 +64,94 @@ export const loadAppConfig = createAsyncThunk(
 export const importAppConfig = createAsyncThunk(
   "appConfig/importAppConfig",
   async (file: File) => {
-    const text = await file.text();
-    const parsed = JSON.parse(text);
-    if (parsed["appConfig"] != undefined) {
-      const config = fillInMissingFieldsInConfigObj(parsed["appConfig"]);
-      await saveConfig(config);
-    }
+    try {
+      console.log("importing app config");
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      if (parsed["appConfig"] != undefined) {
+        console.log(
+          "appConfig was not undefined. Setting up app config",
+          parsed["appConfig"]
+        );
+        const config = fillInMissingFieldsInConfigObj(parsed["appConfig"]);
+        await saveConfig(config);
+      }
 
-    if (parsed["subredditLists"] != undefined) {
-      const subredditListsToSave = new Array<SubredditLists>();
-      let failedParsing = false;
-      const subredditLists = parsed["subredditLists"];
-      if (Array.isArray(subredditLists)) {
-        for (const list of subredditLists) {
-          if (
-            Object.hasOwn(list, "subredditListUuid") &&
-            Object.hasOwn(list, "listName") &&
-            Object.hasOwn(list, "subreddits") &&
-            Object.hasOwn(list, "selected")
-          ) {
-            const parsedSubreddits = new Array<Subreddit>();
-            if (Array.isArray(list["subreddits"])) {
-              const subreddits = list["subreddits"];
-              for (const subreddit of subreddits) {
-                if (
-                  Object.hasOwn(subreddit, "displayName") &&
-                  Object.hasOwn(subreddit, "displayNamePrefixed") &&
-                  Object.hasOwn(subreddit, "subscribers") &&
-                  Object.hasOwn(subreddit, "over18") &&
-                  Object.hasOwn(subreddit, "isSubscribed") &&
-                  Object.hasOwn(subreddit, "fromList") &&
-                  Object.hasOwn(subreddit, "subredditUuid")
-                ) {
-                  parsedSubreddits.push({
-                    displayName: subreddit["displayName"],
-                    displayNamePrefixed: subreddit["displayNamePrefixed"],
-                    subscribers: subreddit["subscribers"],
-                    over18: subreddit["over18"],
-                    isSubscribed: subreddit["isSubscribed"],
-                    fromList: subreddit["fromList"],
-                    subredditUuid: subreddit["subredditUuid"],
-                  });
-                } else {
-                  failedParsing = true;
-                  break;
+      if (parsed["subredditLists"] != undefined) {
+        const subredditListsToSave = new Array<SubredditLists>();
+        let failedParsing = false;
+        const subredditLists = parsed["subredditLists"];
+        if (Array.isArray(subredditLists)) {
+          for (const list of subredditLists) {
+            if (
+              Object.hasOwn(list, "subredditListUuid") &&
+              Object.hasOwn(list, "listName") &&
+              Object.hasOwn(list, "subreddits") &&
+              Object.hasOwn(list, "selected")
+            ) {
+              const parsedSubreddits = new Array<Subreddit>();
+              if (Array.isArray(list["subreddits"])) {
+                const subreddits = list["subreddits"];
+                for (const subreddit of subreddits) {
+                  if (
+                    Object.hasOwn(subreddit, "displayName") &&
+                    Object.hasOwn(subreddit, "displayNamePrefixed") &&
+                    Object.hasOwn(subreddit, "subscribers") &&
+                    Object.hasOwn(subreddit, "over18") &&
+                    Object.hasOwn(subreddit, "isSubscribed") &&
+                    Object.hasOwn(subreddit, "fromList") &&
+                    Object.hasOwn(subreddit, "subredditUuid")
+                  ) {
+                    parsedSubreddits.push({
+                      displayName: subreddit["displayName"],
+                      displayNamePrefixed: subreddit["displayNamePrefixed"],
+                      subscribers: subreddit["subscribers"],
+                      over18: subreddit["over18"],
+                      isSubscribed: subreddit["isSubscribed"],
+                      fromList: subreddit["fromList"],
+                      subredditUuid: subreddit["subredditUuid"],
+                    });
+                  } else {
+                    failedParsing = true;
+                    break;
+                  }
                 }
               }
-            }
-            if (failedParsing) {
-              break;
+              if (failedParsing) {
+                break;
+              } else {
+                const subredditList: SubredditLists = {
+                  subredditListUuid: "",
+                  listName: list["listName"],
+                  subreddits: parsedSubreddits,
+                  selected: list["selected"],
+                };
+                subredditListsToSave.push(subredditList);
+              }
             } else {
-              const subredditList: SubredditLists = {
-                subredditListUuid: "",
-                listName: list["listName"],
-                subreddits: parsedSubreddits,
-                selected: list["selected"],
-              };
-              subredditListsToSave.push(subredditList);
+              failedParsing = false;
+              break;
             }
-          } else {
-            failedParsing = false;
-            break;
           }
+        } else {
+          failedParsing = true;
         }
-      } else {
-        failedParsing = true;
+
+        if (!failedParsing) {
+          await saveSubredditLists(subredditListsToSave);
+        }
       }
 
-      if (!failedParsing) {
-        await saveSubredditLists(subredditListsToSave);
-      }
+      console.log("done importing");
+      store.dispatch(clearPostRows());
+      store.dispatch(resetConfigLoaded());
+      store.dispatch(resetSubredditListsLoaded());
+      store.dispatch(resetRedditClient());
+
+      useNavigate()("/");
+    } catch (e) {
+      console.log("exception", e);
     }
-
-    store.dispatch(clearPostRows());
-    store.dispatch(resetConfigLoaded());
-    store.dispatch(resetSubredditListsLoaded());
-    store.dispatch(resetRedditClient());
-
-    useNavigate()("/");
   }
 );
 

@@ -1,5 +1,19 @@
 import { Buffer } from "buffer";
-import store from "../redux/store";
+import { v4 as uuidV4 } from "uuid";
+import { Post } from "../model/Post/Post";
+import ChildDataObj from "../model/RedditApiResponse/ChildDataObj";
+import RedditApiResponse from "../model/RedditApiResponse/RedditApiResponse";
+import { T2 } from "../model/RedditApiResponse/Types/T2/T2";
+import { T3 } from "../model/RedditApiResponse/Types/T3/T3";
+import { T5 } from "../model/RedditApiResponse/Types/T5";
+import { Subreddit } from "../model/Subreddit/Subreddit";
+import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult";
+import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
+import { convertPost } from "../model/converter/PostConverter";
+import {
+  convertAccount,
+  convertSubreddit,
+} from "../model/converter/SubredditAccountSearchResultConverter";
 import {
   setAccessToken,
   setAccessTokenExpiration,
@@ -7,21 +21,7 @@ import {
   setRateLimitResetsAtEpoch,
   setRateLimitUsed,
 } from "../redux/slice/RedditClientSlice";
-import { Subreddit } from "../model/Subreddit/Subreddit";
-import { Post } from "../model/Post/Post";
-import { convertPost } from "../model/converter/PostConverter";
-import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
-import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult";
-import {
-  convertAccount,
-  convertSubreddit,
-} from "../model/converter/SubredditAccountSearchResultConverter";
-import { v4 as uuidV4 } from "uuid";
-import RedditApiResponse from "../model/RedditApiResponse/RedditApiResponse";
-import { T3 } from "../model/RedditApiResponse/Types/T3/T3";
-import ChildDataObj from "../model/RedditApiResponse/ChildDataObj";
-import { T5 } from "../model/RedditApiResponse/Types/T5";
-import { T2 } from "../model/RedditApiResponse/Types/T2/T2";
+import store from "../redux/store";
 
 const REDDIT_BASE_URL = "https://www.reddit.com";
 const REDDIT_OAUTH_BASE_URL = "https://oauth.reddit.com";
@@ -60,7 +60,7 @@ export default function authenticate(
       method: "POST",
       headers: {
         Authorization: `Basic ${encodedAuth}`,
-        "User-Agent": "Redditwatcer App",
+        // "User-Agent": "Redditwatcer App",
       },
     })
       .then((response) => {
@@ -119,7 +119,7 @@ export async function getSubscribedSubReddits(
     method: "GET",
     headers: {
       Authorization: `Bearer ${authInfo?.accessToken}`,
-      "User-Agent": "Redditwatcer App",
+      // "User-Agent": "Redditwatcer App",
     },
   });
 
@@ -182,7 +182,7 @@ export async function getUserFrontPage(): Promise<Array<Post>> {
     method: "GET",
     headers: {
       Authorization: `Bearer ${authInfo?.accessToken}`,
-      "User-Agent": "Redditwatcer App",
+      // "User-Agent": "Redditwatcer App",
     },
   });
 
@@ -223,7 +223,7 @@ export async function getPostsForSubredditUri(
     method: "GET",
     headers: {
       Authorization: `Bearer ${authInfo?.accessToken}`,
-      "User-Agent": "Redditwatcer App",
+      // "User-Agent": "Redditwatcer App",
     },
   });
 
@@ -264,7 +264,7 @@ export async function callSearchRedditForSubRedditAndUser(
     method: "GET",
     headers: {
       Authorization: `Bearer ${authInfo?.accessToken}`,
-      "User-Agent": "Redditwatcer App",
+      // "User-Agent": "Redditwatcer App",
     },
   });
   if (response.status < 200 || response.status > 300) {
@@ -312,7 +312,7 @@ export async function callUnsubscribe(name: string) {
     method: "POST",
     headers: {
       Authorization: `Bearer ${authInfo?.accessToken}`,
-      "User-Agent": "Redditwatcer App",
+      // "User-Agent": "Redditwatcer App",
     },
   });
   if (response.status < 200 || response.status > 300) {
@@ -339,7 +339,7 @@ export async function callSubscribe(name: string) {
     method: "POST",
     headers: {
       Authorization: `Bearer ${authInfo?.accessToken}`,
-      "User-Agent": "Redditwatcer App",
+      // "User-Agent": "Redditwatcer App",
     },
   });
   if (response.status < 200 || response.status > 300) {

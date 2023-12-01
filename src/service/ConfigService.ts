@@ -1,24 +1,24 @@
-import { Buffer } from "buffer";
 import { Directory, Filesystem } from "@capacitor/filesystem";
-import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum";
-import RowIncrementOptionsEnum from "../model/config/enums/RowIncrementOptionsEnum";
-import PostRowScrollOptionsEnum from "../model/config/enums/PostRowScrollOptionsEnum";
-import SelectedSubredditListSortOptionEnum from "../model/config/enums/SelectedSubredditListSortOptionEnum";
-import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum";
-import SelectSubredditListMenuSortOptionEnum from "../model/config/enums/SelectSubredditListMenuSortOptionEnum";
-import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum";
-import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum";
-import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
-import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEnum";
-import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum";
-import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum";
-import { AppConfig } from "../model/config/AppConfig";
+import { Buffer } from "buffer";
 import {
   CONFIG_DIR,
   CONFIG_FILE,
   SUBREDDIT_LISTS_FILE,
 } from "../RedditWatcherConstants";
 import { SubredditLists } from "../model/SubredditList/SubredditLists";
+import { AppConfig } from "../model/config/AppConfig";
+import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum";
+import PostRowScrollOptionsEnum from "../model/config/enums/PostRowScrollOptionsEnum";
+import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum";
+import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum";
+import RowIncrementOptionsEnum from "../model/config/enums/RowIncrementOptionsEnum";
+import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum";
+import SelectSubredditListMenuSortOptionEnum from "../model/config/enums/SelectSubredditListMenuSortOptionEnum";
+import SelectedSubredditListSortOptionEnum from "../model/config/enums/SelectedSubredditListSortOptionEnum";
+import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum";
+import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum";
+import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEnum";
+import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
 
 const REDDIT_CREDENTIALS_KEY = "redditCredentials";
 const REDDIT_USERNAME_KEY = "username";
@@ -77,14 +77,13 @@ export async function loadConfig() {
   });
 
   const loadedConfig = fillInMissingFieldsInConfigObj(
-    decode(fileContent.data as string)
+    JSON.parse(decode(fileContent.data as string))
   );
   await saveConfig(loadedConfig);
   return loadedConfig;
 }
 
-export function fillInMissingFieldsInConfigObj(fileContent: string) {
-  const configJsonObj = JSON.parse(fileContent);
+export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
   let redditUsername = "";
   let redditPassword = "";
   let redditClientId = "";
