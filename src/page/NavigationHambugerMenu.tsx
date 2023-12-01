@@ -115,13 +115,12 @@ const NavigationHambugerMenu: React.FC = () => {
 
         <div
           className="back-arrow"
-          hidden={!showBackButton}
-          style={{ visibility: `${showBackButton ? "visible" : "hidden"}` }}
           onClick={() => {
             navigate(-1);
           }}
+          style={{ display: `${showBackButton ? "" : "none"}` }}
         >
-          &#10132;
+          <img src={`assets/back_arrow_${darkMode ? "white" : "black"}.png`} />
         </div>
         <h1 className="tool-bar-title">{pageName}</h1>
       </div>
@@ -138,13 +137,7 @@ const NavigationHambugerMenu: React.FC = () => {
             popoutDrawerOpen ? "drawer-popout-open" : ""
           }`}
         >
-          <div
-            className="drawer-popout-header"
-            style={{
-              height: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT} - 0.2em)`,
-              maxHeight: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT} - 0.2em)`,
-            }}
-          >
+          <div className="drawer-popout-header">
             <h1>Reddit Watcher</h1>
           </div>
           <hr />

@@ -41,39 +41,33 @@ const RedditSignin: React.FC = () => {
   );
 
   return (
-    <>
+    <div className="signin-page">
       <div className="signin-box background">
-        <div className="signin-input">
-          <input
-            placeholder="Username"
-            value={username}
-            onChange={(event) => dispatch(setUsername(event.target.value))}
-          ></input>
-        </div>
-
-        <div className="signin-input">
-          <input
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={(event) => dispatch(setPassword(event.target.value))}
-          ></input>
-        </div>
-        <div className="signin-input">
-          <input
-            placeholder="Client ID"
-            value={clientId}
-            onChange={(event) => dispatch(setClientId(event.target.value))}
-          ></input>
-        </div>
-        <div className="signin-input">
-          <input
-            placeholder="Client Secret"
-            value={clientSecret}
-            onChange={(event) => dispatch(setClientSecret(event.target.value))}
-          ></input>
-        </div>
-
+        <input
+          className="signin-input"
+          placeholder="Username"
+          value={username}
+          onChange={(event) => dispatch(setUsername(event.target.value))}
+        ></input>
+        <input
+          className="signin-input"
+          placeholder="Password"
+          type="password"
+          value={password}
+          onChange={(event) => dispatch(setPassword(event.target.value))}
+        ></input>
+        <input
+          className="signin-input"
+          placeholder="Client ID"
+          value={clientId}
+          onChange={(event) => dispatch(setClientId(event.target.value))}
+        ></input>
+        <input
+          className="signin-input"
+          placeholder="Client Secret"
+          value={clientSecret}
+          onChange={(event) => dispatch(setClientSecret(event.target.value))}
+        ></input>
         <button
           disabled={
             usernameValidationError != undefined ||
@@ -86,7 +80,7 @@ const RedditSignin: React.FC = () => {
           Login
         </button>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -93,6 +93,7 @@ const RedditWatcherSettings: React.FC = () => {
             })}
           </select>
         </div>
+        <hr />
         <div className="settings-item">
           <label className="select-label">Row Increment</label>
           <select
@@ -111,6 +112,7 @@ const RedditWatcherSettings: React.FC = () => {
             })}
           </select>
         </div>
+        <hr />
         <div className="settings-item">
           <label className="select-label">Post Row Scroll</label>
           <select
@@ -129,6 +131,7 @@ const RedditWatcherSettings: React.FC = () => {
             })}
           </select>
         </div>
+        <hr />
         <div className="settings-item">
           <label className="select-label">Subreddit list Sort</label>
           <select
@@ -147,6 +150,7 @@ const RedditWatcherSettings: React.FC = () => {
             })}
           </select>
         </div>
+        <hr />
         <div className="settings-item">
           <label className="select-label">Random Iteration Weight</label>
           <select
@@ -167,6 +171,7 @@ const RedditWatcherSettings: React.FC = () => {
             )}
           </select>
         </div>
+        <hr />
         <div className="settings-item">
           <label className="select-label">
             Select Subreddit List Menu Sort
@@ -189,6 +194,7 @@ const RedditWatcherSettings: React.FC = () => {
             )}
           </select>
         </div>
+        <hr />
         <div className="settings-item">
           <label className="select-label">Sort order Direction</label>
           <select
@@ -207,6 +213,7 @@ const RedditWatcherSettings: React.FC = () => {
             })}
           </select>
         </div>
+        <hr />
         <div className="settings-item">
           <label className="select-label">
             Select Subreddit Iteration method
@@ -231,6 +238,7 @@ const RedditWatcherSettings: React.FC = () => {
             )}
           </select>
         </div>
+        <hr />
         <div className="settings-item">
           <label className="select-label">Reddit URL Max Length</label>
           <input
@@ -245,7 +253,7 @@ const RedditWatcherSettings: React.FC = () => {
             {concatRedditUrlMaxLengthValidationError}
           </p>
         </div>
-
+        <hr />
         <div className="settings-item">
           <label className="select-label">Content Filtering</label>
           <select
@@ -264,6 +272,7 @@ const RedditWatcherSettings: React.FC = () => {
             })}
           </select>
         </div>
+        <hr />
         <div className="settings-item">
           <label className="select-label">Posts to Show In Row</label>
           <input
@@ -278,6 +287,7 @@ const RedditWatcherSettings: React.FC = () => {
             {postsToShowInRowValidationError}
           </p>
         </div>
+        <hr />
         <div className="settings-item">
           <label className="select-label">Post Rows to Show In View</label>
           <input
