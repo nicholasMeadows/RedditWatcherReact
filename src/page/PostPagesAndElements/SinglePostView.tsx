@@ -126,7 +126,7 @@ const SinglePostView: React.FC = () => {
                 className="post-control-button"
                 onClick={() => goToPreviousPost()}
               >
-                Previous Post
+                Previous
               </button>
             </div>
             <div className="post-control-button-wrapper">
@@ -134,7 +134,7 @@ const SinglePostView: React.FC = () => {
                 className="post-control-button"
                 onClick={() => goToNextPost()}
               >
-                Next Post
+                Next
               </button>
             </div>
           </div>
