@@ -88,6 +88,23 @@ const SinglePostView: React.FC = () => {
     }
     return -1;
   };
+
+  useEffect(() => {
+    const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
+      const key = keyboardEvent.key;
+
+      if (key == "ArrowRight") {
+        goToNextPost();
+      } else if (key == "ArrowLeft") {
+        goToPreviousPost();
+      }
+    };
+
+    document.body.addEventListener("keyup", documentKeyUpEvent);
+    return () => {
+      document.body.removeEventListener("keyup", documentKeyUpEvent);
+    };
+  }, [goToNextPost, goToPreviousPost]);
   return (
     <>
       {post != undefined && (
