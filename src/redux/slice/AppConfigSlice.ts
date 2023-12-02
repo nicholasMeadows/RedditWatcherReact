@@ -1,5 +1,15 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { useNavigate } from "react-router-dom";
+import {
+  MAX_POSTS_TO_SHOW_IN_ROW,
+  MAX_POST_ROWS_TO_SHOW_IN_VIEW,
+  MAX_REDDIT_API_ITEM_LIMIT,
+  MIN_CONCAT_REDDIT_URL_LENGTH,
+  MIN_POSTS_TO_SHOW_IN_ROW,
+  MIN_POST_ROWS_TO_SHOW_IN_VIEW,
+  MIN_REDDIT_API_ITEM_LIMIT,
+  Max_CONCAT_REDDIT_URL_LENGTH,
+} from "../../RedditWatcherConstants";
 import ImportExportConfig from "../../model/ImportExportConfig";
 import { Subreddit } from "../../model/Subreddit/Subreddit";
 import { SubredditLists } from "../../model/SubredditList/SubredditLists";
@@ -202,6 +212,52 @@ function validateCredentialFields(state: AppConfigState) {
     );
 }
 
+function validateConcateRedditUrlLengthField(concateRedditUrlLength: string) {
+  if (concateRedditUrlLength == undefined || concateRedditUrlLength == "") {
+    concateRedditUrlLength = "0";
+  }
+  return ValidationUtil.validateNumberRequire(
+    "Reddit URL Max Length",
+    parseInt(concateRedditUrlLength),
+    MIN_CONCAT_REDDIT_URL_LENGTH,
+    Max_CONCAT_REDDIT_URL_LENGTH
+  );
+}
+function validateRedditApiItemLimitField(redditApiItemLimit: string) {
+  if (redditApiItemLimit == undefined || redditApiItemLimit == "") {
+    redditApiItemLimit = "0";
+  }
+  return ValidationUtil.validateNumberRequire(
+    "Reddit API Limit",
+    parseInt(redditApiItemLimit),
+    MIN_REDDIT_API_ITEM_LIMIT,
+    MAX_REDDIT_API_ITEM_LIMIT
+  );
+}
+function validatePostsToShowInRowField(postsToShowInRow: string) {
+  if (postsToShowInRow == undefined || postsToShowInRow == "") {
+    postsToShowInRow = "0";
+  }
+  return ValidationUtil.validateNumberRequire(
+    "Posts to Show In Row",
+    parseInt(postsToShowInRow),
+    MIN_POSTS_TO_SHOW_IN_ROW,
+    MAX_POSTS_TO_SHOW_IN_ROW
+  );
+}
+
+function validatePostRowsToShowInViewField(postRowsToShowInView: string) {
+  if (postRowsToShowInView == undefined || postRowsToShowInView == "") {
+    postRowsToShowInView = "0";
+  }
+  return ValidationUtil.validateNumberRequire(
+    "Post Rows to Show In View",
+    parseInt(postRowsToShowInView),
+    MIN_POST_ROWS_TO_SHOW_IN_VIEW,
+    MAX_POST_ROWS_TO_SHOW_IN_VIEW
+  );
+}
+
 const initialState: AppConfigState = {
   redditCredentials: {
     username: "",
@@ -306,15 +362,29 @@ export const appConfigSlice = createSlice({
       state.selectSubredditIterationMethodOption = action.payload;
       saveConfig(state);
     },
-    setConcatRedditUrlMaxLength: (state, action) => {
-      const validationError = ValidationUtil.validateNumberRequire(
-        "Reddit URL Max Length",
-        action.payload,
-        1,
-        1000
+    validateConcateRedditUrlLength: (
+      state,
+      action: { type: string; payload: string }
+    ) => {
+      state.concatRedditUrlMaxLengthValidationError =
+        validateConcateRedditUrlLengthField(action.payload);
+    },
+    setConcatRedditUrlMaxLength: (
+      state,
+      action: { type: string; payload: string }
+    ) => {
+      const parsedPayload = parseInt(action.payload);
+      const validationError = validateConcateRedditUrlLengthField(
+        action.payload
       );
       if (validationError == undefined) {
-        state.concatRedditUrlMaxLength = action.payload;
+        state.concatRedditUrlMaxLength = parsedPayload;
+      } else {
+        if (parsedPayload < MIN_CONCAT_REDDIT_URL_LENGTH) {
+          state.concatRedditUrlMaxLength = MIN_CONCAT_REDDIT_URL_LENGTH;
+        } else if (parsedPayload > Max_CONCAT_REDDIT_URL_LENGTH) {
+          state.concatRedditUrlMaxLength = Max_CONCAT_REDDIT_URL_LENGTH;
+        }
       }
       state.concatRedditUrlMaxLengthValidationError = validationError;
       saveConfig(state);
@@ -323,41 +393,70 @@ export const appConfigSlice = createSlice({
       state.contentFiltering = action.payload;
       saveConfig(state);
     },
-    setRedditApiItemLimit: (state, action) => {
-      const validationError = ValidationUtil.validateNumberRequire(
-        "Reddit API Limit",
-        action.payload,
-        1,
-        25
+    validateRedditApiItemLimit: (
+      state,
+      action: { type: string; payload: string }
+    ) => {
+      state.redditApiItemLimitValidationError = validateRedditApiItemLimitField(
+        action.payload
       );
+    },
+    setRedditApiItemLimit: (state, action) => {
+      const parsedPayload = parseInt(action.payload);
+      const validationError = validateRedditApiItemLimitField(action.payload);
       if (validationError == undefined) {
-        state.redditApiItemLimit = action.payload;
+        state.redditApiItemLimit = parsedPayload;
+      } else {
+        if (parsedPayload < MIN_REDDIT_API_ITEM_LIMIT) {
+          state.redditApiItemLimit = MIN_REDDIT_API_ITEM_LIMIT;
+        } else if (parsedPayload > MAX_REDDIT_API_ITEM_LIMIT) {
+          state.redditApiItemLimit = MAX_POSTS_TO_SHOW_IN_ROW;
+        }
       }
       state.redditApiItemLimitValidationError = validationError;
       saveConfig(state);
     },
-    setPostsToShowInRow: (state, action) => {
-      const validationError = ValidationUtil.validateNumberRequire(
-        "Posts to Show In Row",
-        action.payload,
-        1,
-        6
+    validatePostsToShowInRow: (
+      state,
+      action: { type: string; payload: string }
+    ) => {
+      state.postsToShowInRowValidationError = validatePostsToShowInRowField(
+        action.payload
       );
+    },
+    setPostsToShowInRow: (state, action: { type: string; payload: string }) => {
+      const parsedPayload = parseInt(action.payload);
+      const validationError = validatePostsToShowInRowField(action.payload);
       if (validationError == undefined) {
-        state.postsToShowInRow = action.payload;
+        state.postsToShowInRow = parsedPayload;
+      } else {
+        if (parsedPayload < MIN_POSTS_TO_SHOW_IN_ROW) {
+          state.postsToShowInRow = MIN_POSTS_TO_SHOW_IN_ROW;
+        } else if (parsedPayload > MAX_POSTS_TO_SHOW_IN_ROW) {
+          state.postsToShowInRow = MAX_POSTS_TO_SHOW_IN_ROW;
+        }
       }
       state.postsToShowInRowValidationError = validationError;
       saveConfig(state);
     },
+    validatePostRowsToShowInView: (
+      state,
+      action: { type: string; payload: string }
+    ) => {
+      state.postRowsToShowInViewValidationError =
+        validatePostRowsToShowInViewField(action.payload);
+    },
     setPostRowsToShowInView: (state, action) => {
-      const validationError = ValidationUtil.validateNumberRequire(
-        "Post Rows to Show In View",
-        action.payload,
-        1,
-        6
-      );
+      const parsedPayload = parseInt(action.payload);
+      const validationError = validatePostRowsToShowInViewField(action.payload);
       if (validationError == undefined) {
-        state.postRowsToShowInView = action.payload;
+        state.postRowsToShowInView = parsedPayload;
+      } else {
+        if (parsedPayload < MIN_POST_ROWS_TO_SHOW_IN_VIEW) {
+          state.postRowsToShowInView = MIN_POST_ROWS_TO_SHOW_IN_VIEW;
+        } else if (parsedPayload > MAX_POST_ROWS_TO_SHOW_IN_VIEW) {
+          state.postRowsToShowInView = MAX_POST_ROWS_TO_SHOW_IN_VIEW;
+        }
       }
       state.postRowsToShowInViewValidationError = validationError;
       saveConfig(state);
@@ -453,10 +552,14 @@ export const {
   setUserFrontPagePostSortOrderOption,
   setTopTimeFrameOption,
   setSelectSubredditIterationMethodOption,
+  validateConcateRedditUrlLength,
   setConcatRedditUrlMaxLength,
   setContentFiltering,
+  validateRedditApiItemLimit,
   setRedditApiItemLimit,
+  validatePostsToShowInRow,
   setPostsToShowInRow,
+  validatePostRowsToShowInView,
   setPostRowsToShowInView,
   toggleDarkMode,
   resetConfigLoaded,

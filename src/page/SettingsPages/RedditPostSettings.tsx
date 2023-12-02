@@ -1,14 +1,4 @@
-// import { useAppDispatch, useAppSelector } from "../../redux/store";
-// import PostSortOrderOptionsEnum from "../../model/config/enums/PostSortOrderOptionsEnum";
-// import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
-// import TopTimeFrameOptionsEnum from "../../model/config/enums/TopTimeFrameOptionsEnum";
-// import {
-//   setPostSortOrderOption,
-//   setRedditApiItemLimit,
-//   setTopTimeFrameOption,
-//   setUserFrontPagePostSortOrderOption,
-// } from "../../redux/slice/AppConfigSlice";
-
+import { useState } from "react";
 import PostSortOrderOptionsEnum from "../../model/config/enums/PostSortOrderOptionsEnum";
 import TopTimeFrameOptionsEnum from "../../model/config/enums/TopTimeFrameOptionsEnum";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
@@ -17,6 +7,7 @@ import {
   setRedditApiItemLimit,
   setTopTimeFrameOption,
   setUserFrontPagePostSortOrderOption,
+  validateRedditApiItemLimit,
 } from "../../redux/slice/AppConfigSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 
@@ -32,8 +23,11 @@ const RedditPostSettings: React.FC = () => {
   const userFrontPagePostSortOrderOption = useAppSelector(
     (state) => state.appConfig.userFrontPagePostSortOrderOption
   );
-  const redditApiItemLimit = useAppSelector(
+  const stateRedditApiItemLimit = useAppSelector(
     (state) => state.appConfig.redditApiItemLimit
+  );
+  const [localRedditApiItemLimit, setLocalRedditApiItemLimit] = useState(
+    stateRedditApiItemLimit
   );
   const redditApiLimitValidationError = useAppSelector(
     (state) => state.appConfig.redditApiItemLimitValidationError
@@ -104,12 +98,16 @@ const RedditPostSettings: React.FC = () => {
         <div className="settings-item">
           <label className="select-label">Reddit API Limit</label>
           <input
-            value={redditApiItemLimit}
+            value={localRedditApiItemLimit}
             className="input"
             type="number"
-            onChange={(event) =>
-              dispatch(setRedditApiItemLimit(event.target.value))
-            }
+            onChange={(event) => {
+              setLocalRedditApiItemLimit(parseInt(event.target.value));
+              dispatch(validateRedditApiItemLimit(event.target.value));
+            }}
+            onBlur={(event) => {
+              dispatch(setRedditApiItemLimit(event.target.value));
+            }}
           />
           <p className="settings-item-error">{redditApiLimitValidationError}</p>
         </div>

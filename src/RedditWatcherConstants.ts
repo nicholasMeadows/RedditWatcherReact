@@ -14,3 +14,15 @@ export const SINGPLE_POST_ROUTE = "/singlepost";
 export const MODIFY_SUBREDDIT_LISTS_ROUTE = "/modifysubredditlists";
 export const MODIFY_SUBREDDIT_QUEUE_ROUTE = "/modifysubredditqueue";
 export const NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT = "56px";
+
+export const MIN_CONCAT_REDDIT_URL_LENGTH = 1;
+export const Max_CONCAT_REDDIT_URL_LENGTH = 1000;
+
+export const MIN_REDDIT_API_ITEM_LIMIT = 1;
+export const MAX_REDDIT_API_ITEM_LIMIT = 25;
+
+export const MIN_POSTS_TO_SHOW_IN_ROW = 1;
+export const MAX_POSTS_TO_SHOW_IN_ROW = 6;
+
+export const MIN_POST_ROWS_TO_SHOW_IN_VIEW = 1;
+export const MAX_POST_ROWS_TO_SHOW_IN_VIEW = 6;

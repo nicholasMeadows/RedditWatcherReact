@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import ContentFilteringOptionEnum from "../../model/config/enums/ContentFilteringOptionEnum";
 import PostRowScrollOptionsEnum from "../../model/config/enums/PostRowScrollOptionsEnum";
 import RandomIterationSelectWeightOptionsEnum from "../../model/config/enums/RandomIterationSelectWeightOptionsEnum";
@@ -20,6 +21,9 @@ import {
   setSelectedSubredditListSortOption,
   setSortOrderDirectionOption,
   setSubredditSortOrderOption,
+  validateConcateRedditUrlLength,
+  validatePostRowsToShowInView,
+  validatePostsToShowInRow,
 } from "../../redux/slice/AppConfigSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 
@@ -50,28 +54,43 @@ const RedditWatcherSettings: React.FC = () => {
   const selectSubredditIterationMethodOption = useAppSelector(
     (state) => state.appConfig.selectSubredditIterationMethodOption
   );
-  const concatRedditUrlMaxLength = useAppSelector(
+  const stateConcatRedditUrlMaxLength = useAppSelector(
     (state) => state.appConfig.concatRedditUrlMaxLength
   );
+  const [localConcatRedditUrlMaxLength, setLocalConcatRedditUrlMaxLength] =
+    useState(stateConcatRedditUrlMaxLength);
+
   const concatRedditUrlMaxLengthValidationError = useAppSelector(
     (state) => state.appConfig.concatRedditUrlMaxLengthValidationError
   );
   const contentFiltering = useAppSelector(
     (state) => state.appConfig.contentFiltering
   );
-  const postsToShowInRow = useAppSelector(
+  const statePostsToShowInRow = useAppSelector(
     (state) => state.appConfig.postsToShowInRow
+  );
+  const [localPostsToShowInRow, setLocalPostsToShowInRow] = useState(
+    statePostsToShowInRow
   );
   const postsToShowInRowValidationError = useAppSelector(
     (state) => state.appConfig.postsToShowInRowValidationError
   );
-  const postRowsToShowInView = useAppSelector(
+  const statePostRowsToShowInView = useAppSelector(
     (state) => state.appConfig.postRowsToShowInView
+  );
+  const [localPostRowsToShowInView, setLocalPostRowsToShowInView] = useState(
+    statePostRowsToShowInView
   );
   const postRowsToShowInViewValidationError = useAppSelector(
     (state) => state.appConfig.postRowsToShowInViewValidationError
   );
 
+  useEffect(() => {
+    setLocalPostsToShowInRow(statePostsToShowInRow);
+  }, [statePostsToShowInRow]);
+  useEffect(() => {
+    setLocalPostRowsToShowInView(statePostRowsToShowInView);
+  }, [statePostRowsToShowInView]);
   return (
     <>
       <div className="reddit-watcher-settings-ion-content">
@@ -242,12 +261,16 @@ const RedditWatcherSettings: React.FC = () => {
         <div className="settings-item">
           <label className="select-label">Reddit URL Max Length</label>
           <input
-            value={concatRedditUrlMaxLength}
+            value={localConcatRedditUrlMaxLength}
             className="input"
             type="number"
-            onChange={(event) =>
-              dispatch(setConcatRedditUrlMaxLength(event.target.value))
-            }
+            onChange={(event) => {
+              dispatch(validateConcateRedditUrlLength(event.target.value));
+              setLocalConcatRedditUrlMaxLength(parseInt(event.target.value));
+            }}
+            onBlur={(event) => {
+              dispatch(setConcatRedditUrlMaxLength(event.target.value));
+            }}
           />
           <p className="settings-item-error">
             {concatRedditUrlMaxLengthValidationError}
@@ -276,12 +299,16 @@ const RedditWatcherSettings: React.FC = () => {
         <div className="settings-item">
           <label className="select-label">Posts to Show In Row</label>
           <input
-            value={postsToShowInRow}
+            value={localPostsToShowInRow}
             className="input"
             type="number"
-            onChange={(event) =>
-              dispatch(setPostsToShowInRow(event.target.value))
-            }
+            onChange={(event) => {
+              dispatch(validatePostsToShowInRow(event.target.value));
+              setLocalPostsToShowInRow(parseInt(event.target.value));
+            }}
+            onBlur={(event) => {
+              dispatch(setPostsToShowInRow(event.target.value));
+            }}
           />
           <p className="settings-item-error">
             {postsToShowInRowValidationError}
@@ -291,12 +318,16 @@ const RedditWatcherSettings: React.FC = () => {
         <div className="settings-item">
           <label className="select-label">Post Rows to Show In View</label>
           <input
-            value={postRowsToShowInView}
+            value={localPostRowsToShowInView}
             className="input"
             type="number"
-            onChange={(event) =>
-              dispatch(setPostRowsToShowInView(event.target.value))
-            }
+            onChange={(event) => {
+              dispatch(validatePostRowsToShowInView(event.target.value));
+              setLocalPostRowsToShowInView(parseInt(event.target.value));
+            }}
+            onBlur={(event) => {
+              dispatch(setPostRowsToShowInView(event.target.value));
+            }}
           />
           <p className="settings-item-error">
             {postRowsToShowInViewValidationError}
