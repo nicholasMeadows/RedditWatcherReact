@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PostSortOrderOptionsEnum from "../../model/config/enums/PostSortOrderOptionsEnum";
 import TopTimeFrameOptionsEnum from "../../model/config/enums/TopTimeFrameOptionsEnum";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
@@ -32,6 +32,11 @@ const RedditPostSettings: React.FC = () => {
   const redditApiLimitValidationError = useAppSelector(
     (state) => state.appConfig.redditApiItemLimitValidationError
   );
+
+  useEffect(() => {
+    console.log("inside use effect");
+    setLocalRedditApiItemLimit(stateRedditApiItemLimit);
+  }, [stateRedditApiItemLimit]);
 
   return (
     <>
@@ -102,11 +107,13 @@ const RedditPostSettings: React.FC = () => {
             className="input"
             type="number"
             onChange={(event) => {
-              setLocalRedditApiItemLimit(parseInt(event.target.value));
-              dispatch(validateRedditApiItemLimit(event.target.value));
+              const inputValue = parseInt(event.target.value);
+              dispatch(validateRedditApiItemLimit(inputValue));
+              setLocalRedditApiItemLimit(inputValue);
             }}
             onBlur={(event) => {
-              dispatch(setRedditApiItemLimit(event.target.value));
+              const inputValue = parseInt(event.target.value);
+              dispatch(setRedditApiItemLimit(inputValue));
             }}
           />
           <p className="settings-item-error">{redditApiLimitValidationError}</p>

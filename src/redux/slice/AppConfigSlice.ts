@@ -212,47 +212,35 @@ function validateCredentialFields(state: AppConfigState) {
     );
 }
 
-function validateConcateRedditUrlLengthField(concateRedditUrlLength: string) {
-  if (concateRedditUrlLength == undefined || concateRedditUrlLength == "") {
-    concateRedditUrlLength = "0";
-  }
+function validateConcateRedditUrlLengthField(concateRedditUrlLength: number) {
   return ValidationUtil.validateNumberRequire(
     "Reddit URL Max Length",
-    parseInt(concateRedditUrlLength),
+    concateRedditUrlLength,
     MIN_CONCAT_REDDIT_URL_LENGTH,
     Max_CONCAT_REDDIT_URL_LENGTH
   );
 }
-function validateRedditApiItemLimitField(redditApiItemLimit: string) {
-  if (redditApiItemLimit == undefined || redditApiItemLimit == "") {
-    redditApiItemLimit = "0";
-  }
+function validateRedditApiItemLimitField(redditApiItemLimit: number) {
   return ValidationUtil.validateNumberRequire(
     "Reddit API Limit",
-    parseInt(redditApiItemLimit),
+    redditApiItemLimit,
     MIN_REDDIT_API_ITEM_LIMIT,
     MAX_REDDIT_API_ITEM_LIMIT
   );
 }
-function validatePostsToShowInRowField(postsToShowInRow: string) {
-  if (postsToShowInRow == undefined || postsToShowInRow == "") {
-    postsToShowInRow = "0";
-  }
+function validatePostsToShowInRowField(postsToShowInRow: number) {
   return ValidationUtil.validateNumberRequire(
     "Posts to Show In Row",
-    parseInt(postsToShowInRow),
+    postsToShowInRow,
     MIN_POSTS_TO_SHOW_IN_ROW,
     MAX_POSTS_TO_SHOW_IN_ROW
   );
 }
 
-function validatePostRowsToShowInViewField(postRowsToShowInView: string) {
-  if (postRowsToShowInView == undefined || postRowsToShowInView == "") {
-    postRowsToShowInView = "0";
-  }
+function validatePostRowsToShowInViewField(postRowsToShowInView: number) {
   return ValidationUtil.validateNumberRequire(
     "Post Rows to Show In View",
-    parseInt(postRowsToShowInView),
+    postRowsToShowInView,
     MIN_POST_ROWS_TO_SHOW_IN_VIEW,
     MAX_POST_ROWS_TO_SHOW_IN_VIEW
   );
@@ -364,25 +352,25 @@ export const appConfigSlice = createSlice({
     },
     validateConcateRedditUrlLength: (
       state,
-      action: { type: string; payload: string }
+      action: { type: string; payload: number }
     ) => {
       state.concatRedditUrlMaxLengthValidationError =
         validateConcateRedditUrlLengthField(action.payload);
     },
     setConcatRedditUrlMaxLength: (
       state,
-      action: { type: string; payload: string }
+      action: { type: string; payload: number }
     ) => {
-      const parsedPayload = parseInt(action.payload);
+      const concatRedditUrlMaxLength = action.payload;
       const validationError = validateConcateRedditUrlLengthField(
-        action.payload
+        concatRedditUrlMaxLength
       );
       if (validationError == undefined) {
-        state.concatRedditUrlMaxLength = parsedPayload;
+        state.concatRedditUrlMaxLength = concatRedditUrlMaxLength;
       } else {
-        if (parsedPayload < MIN_CONCAT_REDDIT_URL_LENGTH) {
+        if (concatRedditUrlMaxLength < MIN_CONCAT_REDDIT_URL_LENGTH) {
           state.concatRedditUrlMaxLength = MIN_CONCAT_REDDIT_URL_LENGTH;
-        } else if (parsedPayload > Max_CONCAT_REDDIT_URL_LENGTH) {
+        } else if (concatRedditUrlMaxLength > Max_CONCAT_REDDIT_URL_LENGTH) {
           state.concatRedditUrlMaxLength = Max_CONCAT_REDDIT_URL_LENGTH;
         }
       }
@@ -395,22 +383,26 @@ export const appConfigSlice = createSlice({
     },
     validateRedditApiItemLimit: (
       state,
-      action: { type: string; payload: string }
+      action: { type: string; payload: number }
     ) => {
       state.redditApiItemLimitValidationError = validateRedditApiItemLimitField(
         action.payload
       );
     },
-    setRedditApiItemLimit: (state, action) => {
-      const parsedPayload = parseInt(action.payload);
-      const validationError = validateRedditApiItemLimitField(action.payload);
+    setRedditApiItemLimit: (
+      state,
+      action: { type: string; payload: number }
+    ) => {
+      const redditApiItemLimit = action.payload;
+      const validationError =
+        validateRedditApiItemLimitField(redditApiItemLimit);
       if (validationError == undefined) {
-        state.redditApiItemLimit = parsedPayload;
+        state.redditApiItemLimit = redditApiItemLimit;
       } else {
-        if (parsedPayload < MIN_REDDIT_API_ITEM_LIMIT) {
+        if (redditApiItemLimit < MIN_REDDIT_API_ITEM_LIMIT) {
           state.redditApiItemLimit = MIN_REDDIT_API_ITEM_LIMIT;
-        } else if (parsedPayload > MAX_REDDIT_API_ITEM_LIMIT) {
-          state.redditApiItemLimit = MAX_POSTS_TO_SHOW_IN_ROW;
+        } else if (redditApiItemLimit > MAX_REDDIT_API_ITEM_LIMIT) {
+          state.redditApiItemLimit = MAX_REDDIT_API_ITEM_LIMIT;
         }
       }
       state.redditApiItemLimitValidationError = validationError;
@@ -418,21 +410,21 @@ export const appConfigSlice = createSlice({
     },
     validatePostsToShowInRow: (
       state,
-      action: { type: string; payload: string }
+      action: { type: string; payload: number }
     ) => {
       state.postsToShowInRowValidationError = validatePostsToShowInRowField(
         action.payload
       );
     },
-    setPostsToShowInRow: (state, action: { type: string; payload: string }) => {
-      const parsedPayload = parseInt(action.payload);
-      const validationError = validatePostsToShowInRowField(action.payload);
+    setPostsToShowInRow: (state, action: { type: string; payload: number }) => {
+      const postsToShowInRow = action.payload;
+      const validationError = validatePostsToShowInRowField(postsToShowInRow);
       if (validationError == undefined) {
-        state.postsToShowInRow = parsedPayload;
+        state.postsToShowInRow = postsToShowInRow;
       } else {
-        if (parsedPayload < MIN_POSTS_TO_SHOW_IN_ROW) {
+        if (postsToShowInRow < MIN_POSTS_TO_SHOW_IN_ROW) {
           state.postsToShowInRow = MIN_POSTS_TO_SHOW_IN_ROW;
-        } else if (parsedPayload > MAX_POSTS_TO_SHOW_IN_ROW) {
+        } else if (postsToShowInRow > MAX_POSTS_TO_SHOW_IN_ROW) {
           state.postsToShowInRow = MAX_POSTS_TO_SHOW_IN_ROW;
         }
       }
@@ -441,20 +433,24 @@ export const appConfigSlice = createSlice({
     },
     validatePostRowsToShowInView: (
       state,
-      action: { type: string; payload: string }
+      action: { type: string; payload: number }
     ) => {
       state.postRowsToShowInViewValidationError =
         validatePostRowsToShowInViewField(action.payload);
     },
-    setPostRowsToShowInView: (state, action) => {
-      const parsedPayload = parseInt(action.payload);
-      const validationError = validatePostRowsToShowInViewField(action.payload);
+    setPostRowsToShowInView: (
+      state,
+      action: { type: string; payload: number }
+    ) => {
+      const postRowsToShowInView = action.payload;
+      const validationError =
+        validatePostRowsToShowInViewField(postRowsToShowInView);
       if (validationError == undefined) {
-        state.postRowsToShowInView = parsedPayload;
+        state.postRowsToShowInView = postRowsToShowInView;
       } else {
-        if (parsedPayload < MIN_POST_ROWS_TO_SHOW_IN_VIEW) {
+        if (postRowsToShowInView < MIN_POST_ROWS_TO_SHOW_IN_VIEW) {
           state.postRowsToShowInView = MIN_POST_ROWS_TO_SHOW_IN_VIEW;
-        } else if (parsedPayload > MAX_POST_ROWS_TO_SHOW_IN_VIEW) {
+        } else if (postRowsToShowInView > MAX_POST_ROWS_TO_SHOW_IN_VIEW) {
           state.postRowsToShowInView = MAX_POST_ROWS_TO_SHOW_IN_VIEW;
         }
       }

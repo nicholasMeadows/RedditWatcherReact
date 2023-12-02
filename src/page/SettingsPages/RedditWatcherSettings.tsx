@@ -84,6 +84,9 @@ const RedditWatcherSettings: React.FC = () => {
   const postRowsToShowInViewValidationError = useAppSelector(
     (state) => state.appConfig.postRowsToShowInViewValidationError
   );
+  useEffect(() => {
+    setLocalConcatRedditUrlMaxLength(stateConcatRedditUrlMaxLength);
+  }, [stateConcatRedditUrlMaxLength]);
 
   useEffect(() => {
     setLocalPostsToShowInRow(statePostsToShowInRow);
@@ -265,11 +268,13 @@ const RedditWatcherSettings: React.FC = () => {
             className="input"
             type="number"
             onChange={(event) => {
-              dispatch(validateConcateRedditUrlLength(event.target.value));
-              setLocalConcatRedditUrlMaxLength(parseInt(event.target.value));
+              const inputValue = parseInt(event.target.value);
+              dispatch(validateConcateRedditUrlLength(inputValue));
+              setLocalConcatRedditUrlMaxLength(inputValue);
             }}
             onBlur={(event) => {
-              dispatch(setConcatRedditUrlMaxLength(event.target.value));
+              const inputValue = parseInt(event.target.value);
+              dispatch(setConcatRedditUrlMaxLength(inputValue));
             }}
           />
           <p className="settings-item-error">
@@ -303,11 +308,13 @@ const RedditWatcherSettings: React.FC = () => {
             className="input"
             type="number"
             onChange={(event) => {
-              dispatch(validatePostsToShowInRow(event.target.value));
-              setLocalPostsToShowInRow(parseInt(event.target.value));
+              const inputValue = parseInt(event.target.value);
+              dispatch(validatePostsToShowInRow(inputValue));
+              setLocalPostsToShowInRow(inputValue);
             }}
             onBlur={(event) => {
-              dispatch(setPostsToShowInRow(event.target.value));
+              const inputValue = parseInt(event.target.value);
+              dispatch(setPostsToShowInRow(inputValue));
             }}
           />
           <p className="settings-item-error">
@@ -322,11 +329,13 @@ const RedditWatcherSettings: React.FC = () => {
             className="input"
             type="number"
             onChange={(event) => {
-              dispatch(validatePostRowsToShowInView(event.target.value));
-              setLocalPostRowsToShowInView(parseInt(event.target.value));
+              const inputValue = parseInt(event.target.value);
+              dispatch(validatePostRowsToShowInView(inputValue));
+              setLocalPostRowsToShowInView(inputValue);
             }}
             onBlur={(event) => {
-              dispatch(setPostRowsToShowInView(event.target.value));
+              const inputValue = parseInt(event.target.value);
+              dispatch(setPostRowsToShowInView(inputValue));
             }}
           />
           <p className="settings-item-error">
