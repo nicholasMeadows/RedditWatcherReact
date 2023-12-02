@@ -1,12 +1,12 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import store from "../store";
+import { v4 as uuidV4 } from "uuid";
 import authenticate from "../../client/RedditClient";
-import { Subreddit } from "../../model/Subreddit/Subreddit";
 import { RedditAuthenticationStatus } from "../../model/RedditAuthenticationState";
 import { RedditClientState } from "../../model/RedditClientState";
-import { saveConfig } from "../../service/ConfigService";
-import { v4 as uuidV4 } from "uuid";
+import { Subreddit } from "../../model/Subreddit/Subreddit";
 import { SubredditQueueItem } from "../../model/Subreddit/SubredditQueueItem";
+import { saveConfig } from "../../service/ConfigService";
+import store from "../store";
 
 export const authenticateReddit = createAsyncThunk(
   "redditClient/authenticateReddit",
@@ -55,6 +55,7 @@ const initialState: RedditClientState = {
   subredditsToShowInSideBar: [],
   mostRecentSubredditGotten: undefined,
   subredditIndex: 0,
+  nsfwRedditListIndex: 0,
   lastPostRowWasSortOrderNew: false,
   loopingForPosts: false,
   loopingForPostsTimeout: undefined,
@@ -165,6 +166,15 @@ export const redditClientSlice = createSlice({
     resetSubredditIndex: (state) => {
       state.subredditIndex = 0;
     },
+    setNsfwRedditListIndex: (
+      state,
+      action: { type: string; payload: number }
+    ) => {
+      state.nsfwRedditListIndex = action.payload;
+    },
+    resetNsfwRedditListIndex: (state) => {
+      state.nsfwRedditListIndex = 0;
+    },
 
     setLastPostRowWasSortOrderNew: (state, action) => {
       state.lastPostRowWasSortOrderNew = action.payload;
@@ -217,6 +227,8 @@ export const {
   subredditQueueRemoveAt,
   setSubredditsToShowInSideBar,
   setSubredditIndex,
+  setNsfwRedditListIndex,
+  resetNsfwRedditListIndex,
   setMostRecentSubredditGotten,
   addSubredditToQueue,
   moveSubredditQueueItemForward,

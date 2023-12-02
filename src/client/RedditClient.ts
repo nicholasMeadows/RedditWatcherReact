@@ -1,3 +1,4 @@
+import { CapacitorHttp, HttpResponse } from "@capacitor/core";
 import { Buffer } from "buffer";
 import { v4 as uuidV4 } from "uuid";
 import { Post } from "../model/Post/Post";
@@ -56,8 +57,8 @@ export default function authenticate(
       "base64"
     );
 
-    fetch(url, {
-      method: "POST",
+    CapacitorHttp.post({
+      url: url,
       headers: {
         Authorization: `Basic ${encodedAuth}`,
         // "User-Agent": "Redditwatcer App",
@@ -65,28 +66,25 @@ export default function authenticate(
     })
       .then((response) => {
         if (response.status >= 200 && response.status < 300) {
-          response.text().then((responseBody) => {
-            const authResponse = JSON.parse(responseBody);
-
-            if (authResponse == null || authResponse["access_token"] == null) {
-              reject(
-                "Reddit returned ok response but did not contain a access token."
-              );
-              return;
-            }
-
-            const accessToken = authResponse["access_token"];
-            const tokenClaim = accessToken?.split(".")[1];
-            const decodedClaim = Buffer.from(tokenClaim, "base64").toString(
-              "ascii"
+          const authResponse = response.data;
+          if (authResponse == null || authResponse["access_token"] == null) {
+            reject(
+              "Reddit returned ok response but did not contain a access token."
             );
-            const jwtClaim = JSON.parse(decodedClaim);
-            const expiration = jwtClaim["exp"];
-            resolve({ accessToken: accessToken, expiration: expiration });
-          });
+            return;
+          }
+
+          const accessToken = authResponse["access_token"];
+          const tokenClaim = accessToken?.split(".")[1];
+          const decodedClaim = Buffer.from(tokenClaim, "base64").toString(
+            "ascii"
+          );
+          const jwtClaim = JSON.parse(decodedClaim);
+          const expiration = jwtClaim["exp"];
+          resolve({ accessToken: accessToken, expiration: expiration });
         } else {
           reject(
-            `Reddit client responded with bad status code: ${response.status}, with status reason: ${response.statusText}`
+            `Reddit client responded with bad status code: ${response.status}, with status reason: ${response.data}`
           );
         }
       })
@@ -115,8 +113,8 @@ export async function getSubscribedSubReddits(
     url += "&after=" + after;
   }
 
-  const response = await fetch(url, {
-    method: "GET",
+  const response = await CapacitorHttp.get({
+    url: url,
     headers: {
       Authorization: `Bearer ${authInfo?.accessToken}`,
       // "User-Agent": "Redditwatcer App",
@@ -125,10 +123,10 @@ export async function getSubscribedSubReddits(
 
   if (response.status < 200 || response.status > 300) {
     throw new RangeError(
-      `Get subreddits request failed with status code ${response.status} with status message ${response.statusText}`
+      `Get subreddits request failed with status code ${response.status} with status message ${response.data}`
     );
   }
-  const responseObj: RedditApiResponse<T5> = await response.json();
+  const responseObj: RedditApiResponse<T5> = response.data;
 
   updateRateLimitVariables(response);
   after = responseObj.data.after;
@@ -219,22 +217,20 @@ export async function getPostsForSubredditUri(
   checkRateLimits();
 
   const url = REDDIT_OAUTH_BASE_URL + uri;
-  const response = await fetch(url, {
-    method: "GET",
+  const response = await CapacitorHttp.get({
+    url: url,
     headers: {
       Authorization: `Bearer ${authInfo?.accessToken}`,
-      // "User-Agent": "Redditwatcer App",
     },
   });
 
   if (response.status < 200 || response.status > 300) {
     throw new RangeError(
-      "Get posts for subreddit did not return OK response: " +
-        response.statusText
+      "Get posts for subreddit did not return OK response: " + response.data
     );
   }
   updateRateLimitVariables(response);
-  const responseObj: RedditApiResponse<T3> = await response.json();
+  const responseObj: RedditApiResponse<T3> = response.data;
   const children: Array<ChildDataObj<T3>> = responseObj.data.children;
   const posts = new Array<Post>();
   children.forEach((child) => {
@@ -260,8 +256,8 @@ export async function callSearchRedditForSubRedditAndUser(
   const url =
     REDDIT_OAUTH_BASE_URL +
     SEARCH_REDDIT_ENDPOINT.replace("{search}", searchTerm);
-  const response = await fetch(url, {
-    method: "GET",
+  const response = await CapacitorHttp.get({
+    url: url,
     headers: {
       Authorization: `Bearer ${authInfo?.accessToken}`,
       // "User-Agent": "Redditwatcer App",
@@ -269,12 +265,12 @@ export async function callSearchRedditForSubRedditAndUser(
   });
   if (response.status < 200 || response.status > 300) {
     throw new RangeError(
-      "Search subreddit returned not ok response: " + response.statusText
+      "Search subreddit returned not ok response: " + response.data
     );
   }
   updateRateLimitVariables(response);
 
-  const redditResponse: RedditApiResponse<T2 | T5> = await response.json();
+  const redditResponse: RedditApiResponse<T2 | T5> = response.data;
   const results = new Array<SubredditAccountSearchResult>();
   const children: Array<ChildDataObj<T2 | T5>> = redditResponse.data.children;
   children.forEach((child) => {
@@ -398,15 +394,15 @@ function checkRateLimits() {
   }
 }
 
-function updateRateLimitVariables(response: Response) {
+function updateRateLimitVariables(response: HttpResponse) {
   const rateLimitRemainingHeader = "x-ratelimit-remaining";
   const rateLimitUsedHeader = "x-ratelimit-used";
   const rateLimitResetHeader = "x-ratelimit-reset";
 
   const headers = response.headers;
-  const rateLimitRemaining = headers.get(rateLimitRemainingHeader);
-  const rateLimitUsed = headers.get(rateLimitUsedHeader);
-  const rateLimitReset = headers.get(rateLimitResetHeader);
+  const rateLimitRemaining = headers[rateLimitRemainingHeader];
+  const rateLimitUsed = headers[rateLimitUsedHeader];
+  const rateLimitReset = headers[rateLimitResetHeader];
 
   if (rateLimitRemaining != undefined) {
     store.dispatch(setRateLimitRemaining(rateLimitRemaining));

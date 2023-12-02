@@ -14,6 +14,7 @@ export type RedditClientState = {
   subredditsToShowInSideBar: Array<Subreddit>;
   mostRecentSubredditGotten: Subreddit | undefined;
   subredditIndex: number;
+  nsfwRedditListIndex: number;
   lastPostRowWasSortOrderNew: boolean;
   loopingForPosts: boolean;
   loopingForPostsTimeout: NodeJS.Timeout | undefined;
