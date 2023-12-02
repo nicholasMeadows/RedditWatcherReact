@@ -6,7 +6,7 @@ const path = require("path");
 const express = require("express");
 
 const expressApp = express();
-expressApp.use(express.static("www"));
+expressApp.use(express.static(path.resolve(__dirname, "www")));
 expressApp.get("*", (req, res) => {
   console.log("returning path", path.resolve(__dirname, "www", "index.html"));
   res.sendFile(path.resolve(__dirname, "www", "index.html"));

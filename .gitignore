@@ -130,3 +130,4 @@ dist
 .pnp.*
 
 electron/www
+electron/Reddit Watcher-win32-x64
