@@ -96,7 +96,7 @@ const RedditWatcherSettings: React.FC = () => {
   }, [statePostRowsToShowInView]);
   return (
     <>
-      <div className="reddit-watcher-settings-ion-content">
+      <div className="reddit-watcher-settings">
         <div className="settings-item">
           <label className="select-label">Subreddit Sort</label>
           <select
