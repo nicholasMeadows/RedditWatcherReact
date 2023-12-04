@@ -26,6 +26,7 @@ import {
   validatePostsToShowInRow,
 } from "../../redux/slice/AppConfigSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
+import { checkPlatformForSubredditSortOrderOption } from "../../util/PlatformUtil";
 
 const RedditWatcherSettings: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -108,7 +109,11 @@ const RedditWatcherSettings: React.FC = () => {
           >
             {Object.entries(SubredditSortOrderOptionsEnum).map((key) => {
               return (
-                <option key={key[0]} value={key[1]}>
+                <option
+                  hidden={!checkPlatformForSubredditSortOrderOption(key[1])}
+                  key={key[0]}
+                  value={key[1]}
+                >
                   {key[1]}
                 </option>
               );

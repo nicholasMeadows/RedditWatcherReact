@@ -5,6 +5,7 @@ import {
   CONFIG_FILE,
   SUBREDDIT_LISTS_FILE,
 } from "../RedditWatcherConstants";
+import { Platform } from "../model/Platform";
 import { SubredditLists } from "../model/SubredditList/SubredditLists";
 import { AppConfig } from "../model/config/AppConfig";
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum";
@@ -19,6 +20,7 @@ import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirect
 import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum";
 import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEnum";
 import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
+import getPlatform from "../util/PlatformUtil";
 
 const REDDIT_CREDENTIALS_KEY = "redditCredentials";
 const REDDIT_USERNAME_KEY = "username";
@@ -97,9 +99,21 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
     redditClientSecret = redditCredentialsObj[REDDIT_CLIENT_SECRET_KEY] || "";
   }
 
-  const subredditSortOrderOption =
+  let subredditSortOrderOption =
     configJsonObj[SUBREDDIT_SORT_ORDER_OPTION_KEY] ||
     SubredditSortOrderOptionsEnum.Random;
+
+  if (
+    (subredditSortOrderOption ==
+      SubredditSortOrderOptionsEnum.RedditListDotCom24HourGrowth ||
+      subredditSortOrderOption ==
+        SubredditSortOrderOptionsEnum.RedditListDotComRecentActivity ||
+      subredditSortOrderOption ==
+        SubredditSortOrderOptionsEnum.RedditListDotComSubscribers) &&
+    getPlatform() == Platform.Web
+  ) {
+    subredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
+  }
   const rowIncrementOption =
     configJsonObj[ROW_INCREMENT_OPTION] ||
     RowIncrementOptionsEnum.IncrementBySinglePost;

@@ -3,18 +3,6 @@
 
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
-const express = require("express");
-
-const expressApp = express();
-expressApp.use(express.static(path.resolve(__dirname, "www")));
-expressApp.get("*", (req, res) => {
-  console.log("returning path", path.resolve(__dirname, "www", "index.html"));
-  res.sendFile(path.resolve(__dirname, "www", "index.html"));
-});
-// if not in production use the port 5000
-const PORT = 5000;
-console.log("server started on port:", PORT);
-expressApp.listen(PORT);
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -22,7 +10,7 @@ const createWindow = () => {
     height: 600,
   });
   win.removeMenu();
-  win.loadURL("http://localhost:5000");
+  win.loadFile(path.resolve(__dirname, "www", "index.html"));
   win.webContents.session.webRequest.onBeforeSendHeaders(
     (details, callback) => {
       let requestHeadersToReturn;

@@ -1,4 +1,4 @@
-import { BrowserRouter } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 
 /* Theme variables */
 import "./theme/app-initialization.scss";
@@ -23,9 +23,9 @@ import store from "./redux/store";
 const App: React.FC = () => {
   return (
     <Provider store={store}>
-      <BrowserRouter>
+      <HashRouter>
         <RouterView />
-      </BrowserRouter>
+      </HashRouter>
     </Provider>
   );
 };
