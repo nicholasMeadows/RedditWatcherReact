@@ -40,6 +40,15 @@ const NavigationHambugerMenu: React.FC = () => {
   const [popoutDrawerOpen, setPopoutDrawerOpen] = useState(false);
   const fileSelectorRef = useRef(null);
 
+  const [importClicked, setImportClicked] = useState(false);
+  const configLoaded = useAppSelector((state) => state.appConfig.configLoaded);
+  useEffect(() => {
+    if (!configLoaded && importClicked) {
+      setImportClicked(false);
+      setPopoutDrawerOpen(false);
+      navigate(APP_INITIALIZATION_ROUTE);
+    }
+  }, [navigate, configLoaded, importClicked]);
   useEffect(() => {
     console.log(
       `The current URL is ${location.pathname}${location.search}${location.hash}`
@@ -225,6 +234,7 @@ const NavigationHambugerMenu: React.FC = () => {
                 onInput={(event) => {
                   const input = event.target as HTMLInputElement;
                   if (input.files != undefined) {
+                    setImportClicked(true);
                     dispatch(importAppConfig(input.files[0]));
                   }
                 }}

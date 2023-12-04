@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { useNavigate } from "react-router-dom";
 import {
   MAX_POSTS_TO_SHOW_IN_ROW,
   MAX_POST_ROWS_TO_SHOW_IN_VIEW,
@@ -157,8 +156,6 @@ export const importAppConfig = createAsyncThunk(
       store.dispatch(resetConfigLoaded());
       store.dispatch(resetSubredditListsLoaded());
       store.dispatch(resetRedditClient());
-
-      useNavigate()("/");
     } catch (e) {
       console.log("exception", e);
     }
