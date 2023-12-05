@@ -10,7 +10,7 @@
     "build": "tsc && vite build --base ./",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "build-android":"npm run build && npx cap sync android && npx cap open android"
+    "build-android": "npm run build && npx cap sync android && npx cap open android"
   },
   "dependencies": {
     "@capacitor-community/keep-awake": "^4.0.0",
@@ -28,6 +28,7 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.1",
     "@capacitor/cli": "^5.5.1",
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.37",
