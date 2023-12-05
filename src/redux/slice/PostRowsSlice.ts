@@ -1,10 +1,10 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { Post } from "../../model/Post/Post";
-import { PostRowsState } from "../../model/PostRowsState";
-import { PostRow } from "../../model/PostRow";
 import { v4 as uuidV4 } from "uuid";
-import store from "../store";
+import { Post } from "../../model/Post/Post";
+import { PostRow } from "../../model/PostRow";
+import { PostRowsState } from "../../model/PostRowsState";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
+import store from "../store";
 
 export const createPostRowAndPushToRows = createAsyncThunk(
   "postRows/createPostRowAndPushToRows",
@@ -107,6 +107,7 @@ export const postRowsSlice = createSlice({
         payload: { postRowUuid: string; postUuid: string };
       }
     ) => {
+      console.log("inside incrementPostAttachment");
       const postRowUuid = action.payload.postRowUuid;
       const postUuid = action.payload.postUuid;
       const postRow = state.postRows.find(
@@ -135,6 +136,7 @@ export const postRowsSlice = createSlice({
         payload: { postRowUuid: string; postUuid: string };
       }
     ) => {
+      console.log("inside decrementPostAttachment");
       const postRowUuid = action.payload.postRowUuid;
       const postUuid = action.payload.postUuid;
       const postRow = state.postRows.find(

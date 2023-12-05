@@ -1,23 +1,22 @@
-import { TouchEvent, useEffect, useState } from "react";
+import { TouchEvent, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
 import { Post } from "../../model/Post/Post";
 import { PostRow } from "../../model/PostRow";
 import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
-import store, { useAppDispatch } from "../../redux/store";
+import { useAppDispatch, useAppSelector } from "../../redux/store";
 import PostElement from "./PostElement";
 
 const SinglePostView: React.FC = () => {
   const dispatch = useAppDispatch();
   const [queryParams] = useSearchParams();
-
+  const postRows = useAppSelector((state) => state.postRows.postRows);
   const [postRow, setPostRow] = useState<PostRow | undefined>();
   const [post, setPost] = useState<Post | undefined>();
 
   useEffect(() => {
     const postRowUuid = queryParams.get("postRowUuid");
     const postUuid = queryParams.get("postUuid");
-    const postRows = store.getState().postRows.postRows;
     const foundPostRow = postRows.find((row) => row.postRowUuid == postRowUuid);
     if (foundPostRow != undefined) {
       const foundPost = foundPostRow.posts.find(
@@ -28,7 +27,7 @@ const SinglePostView: React.FC = () => {
         setPost(foundPost);
       }
     }
-  }, [queryParams]);
+  }, [queryParams, postRows]);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   // the required distance between touchStart and touchEnd to be detected as a swipe
@@ -56,7 +55,7 @@ const SinglePostView: React.FC = () => {
     }
   };
 
-  const goToNextPost = () => {
+  const goToNextPost = useCallback(() => {
     const currentPostShownIndex = findCurrentPostShownIndex(postRow, post);
     if (currentPostShownIndex > -1 && postRow != undefined) {
       if (currentPostShownIndex == postRow.posts.length - 1) {
@@ -65,8 +64,9 @@ const SinglePostView: React.FC = () => {
         setPost(postRow.posts[currentPostShownIndex + 1]);
       }
     }
-  };
-  const goToPreviousPost = () => {
+  }, [post, postRow]);
+
+  const goToPreviousPost = useCallback(() => {
     const currentPostShownIndex = findCurrentPostShownIndex(postRow, post);
     if (currentPostShownIndex > -1 && postRow != undefined) {
       if (currentPostShownIndex == 0) {
@@ -75,7 +75,7 @@ const SinglePostView: React.FC = () => {
         setPost(postRow.posts[currentPostShownIndex - 1]);
       }
     }
-  };
+  }, [post, postRow]);
 
   const findCurrentPostShownIndex = (
     postRow: PostRow | undefined,

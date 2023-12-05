@@ -1,13 +1,34 @@
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { POST_ROW_ROUTE } from "../../RedditWatcherConstants";
 import { Post } from "../../model/Post/Post";
 import {
   decrementPostAttachment,
   incrementPostAttachment,
 } from "../../redux/slice/PostRowsSlice";
-import { useAppDispatch } from "../../redux/store";
+import { useAppDispatch, useAppSelector } from "../../redux/store";
 
 type Props = { postRowUuid: string; post: Post };
 const PostElement: React.FC<Props> = ({ postRowUuid, post }) => {
   const dispatch = useAppDispatch();
+  const location = useLocation();
+  const darkMode = useAppSelector((state) => state.appConfig.darkMode);
+
+  const [carouselArrowLightDarkPart, setCarouselArrowLightDarkPart] =
+    useState("light");
+
+  useEffect(() => {
+    if (location.pathname == POST_ROW_ROUTE) {
+      setCarouselArrowLightDarkPart("light");
+    } else {
+      if (darkMode) {
+        setCarouselArrowLightDarkPart("dark");
+      } else {
+        setCarouselArrowLightDarkPart("light");
+      }
+    }
+  }, [location, darkMode]);
+
   return (
     <div className="postCardMediaContentWrapper">
       <div
@@ -25,7 +46,7 @@ const PostElement: React.FC<Props> = ({ postRowUuid, post }) => {
         }}
       >
         <img
-          src="assets/left_chevron_light_mode.png"
+          src={`assets/left_chevron_${carouselArrowLightDarkPart}_mode.png`}
           className="post-attachment-image"
         />
       </div>
@@ -45,7 +66,7 @@ const PostElement: React.FC<Props> = ({ postRowUuid, post }) => {
         }}
       >
         <img
-          src="assets/right_chevron_light_mode.png"
+          src={`assets/right_chevron_${carouselArrowLightDarkPart}_mode.png`}
           className="post-attachment-image"
         />
       </div>
