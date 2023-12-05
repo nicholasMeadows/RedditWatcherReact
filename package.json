@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "electron-run": "node clean-electron.js && npm run build && node copy-dist-electron.js && cd ./electron && npm run start",
-    "build-electron": "node clean-electron.js && npm run build && node copy-dist-electron.js && cd ./electron && npm run package",
+    "package-electron": "node clean-electron.js && npm run build && node copy-dist-electron.js && cd ./electron && npm run package",
     "build": "tsc && vite build --base ./",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
