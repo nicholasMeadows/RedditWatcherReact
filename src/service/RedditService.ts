@@ -778,7 +778,17 @@ function createUrlSuffix(isUser: boolean): {
 }
 
 async function WaitUntilPostRowScrollY0() {
-  while (store.getState().postRows.scrollY != 0) {
+  const isScrollY0 = () => {
+    return store.getState().postRows.scrollY == 0;
+  };
+
+  if (!isScrollY0()) {
+    store.dispatch(
+      submitAppNotification({ message: "Waiting to scroll to top." })
+    );
+  }
+
+  while (!isScrollY0()) {
     await new Promise<void>((res) => setTimeout(() => res(), 100));
   }
   return;
@@ -789,14 +799,32 @@ async function WaitUntilPostRowComponentIsVisible() {
     return;
   }
 
-  while (!window.location.href.endsWith(POST_ROW_ROUTE)) {
+  const isOnPostRowRoute = () => {
+    return window.location.href.endsWith(POST_ROW_ROUTE);
+  };
+
+  if (!isOnPostRowRoute()) {
+    store.dispatch(
+      submitAppNotification({ message: "Waiting until back on Main Page" })
+    );
+  }
+
+  while (!isOnPostRowRoute()) {
     await new Promise<void>((res) => setTimeout(() => res(), 100));
   }
   return;
 }
 
 async function WaitUntilPointerNotOverPostRow() {
-  while (store.getState().postRows.mouseOverPostRowUuid != undefined) {
+  const isMouseOverPostRow = () => {
+    return store.getState().postRows.mouseOverPostRowUuid != undefined;
+  };
+  if (isMouseOverPostRow()) {
+    store.dispatch(
+      submitAppNotification({ message: "Waiting until mouse is not over row" })
+    );
+  }
+  while (isMouseOverPostRow()) {
     await new Promise<void>((res) => setTimeout(() => res(), 100));
   }
   return;

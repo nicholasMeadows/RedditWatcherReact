@@ -2,6 +2,7 @@ import { TouchEvent, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
+import { Platform } from "../../model/Platform";
 import { PostRow } from "../../model/PostRow";
 import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
 import {
@@ -11,6 +12,7 @@ import {
   postRowRightButtonClicked,
 } from "../../redux/slice/PostRowsSlice";
 import store, { useAppDispatch, useAppSelector } from "../../redux/store";
+import getPlatform from "../../util/PlatformUtil";
 import PostElement from "./PostElement";
 
 type Props = { postRow: PostRow };
@@ -88,10 +90,38 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
         onTouchMove={(event) => onTouchMove(event)}
         onTouchEnd={() => onTouchEnd(postRow)}
         onMouseEnter={() => {
-          dispatch(mouseEnterPostRow(postRow.postRowUuid));
+          if (
+            getPlatform() == Platform.Electron ||
+            getPlatform() == Platform.Web ||
+            getPlatform() == Platform.Unknown
+          ) {
+            dispatch(mouseEnterPostRow(postRow.postRowUuid));
+          }
         }}
         onMouseLeave={() => {
-          dispatch(mouseLeavePostRow());
+          if (
+            getPlatform() == Platform.Electron ||
+            getPlatform() == Platform.Web ||
+            getPlatform() == Platform.Unknown
+          ) {
+            dispatch(mouseLeavePostRow());
+          }
+        }}
+        onTouchStartCapture={() => {
+          if (
+            getPlatform() == Platform.Android ||
+            getPlatform() == Platform.Ios
+          ) {
+            dispatch(mouseEnterPostRow(postRow.postRowUuid));
+          }
+        }}
+        onTouchEndCapture={() => {
+          if (
+            getPlatform() == Platform.Android ||
+            getPlatform() == Platform.Ios
+          ) {
+            dispatch(mouseLeavePostRow());
+          }
         }}
       >
         <div className="postRowScrollButton leftPostRowScrollButton">
