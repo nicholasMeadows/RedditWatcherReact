@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT } from "../../RedditWatcherConstants";
 import { ModifySubredditListMode } from "../../model/ModifySubredditListMode";
 import {
   createOrModifyList,
@@ -102,7 +103,12 @@ const ModifySubredditLists: React.FC = () => {
         </>
       )}
 
-      <div className="max-width-height-percentage flex flex-column">
+      <div
+        className="max-width-height-percentage flex flex-column"
+        style={{
+          maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+        }}
+      >
         <SearchRedditBar />
         <div className="subredditListsExpander">
           {subredditLists.map((subredditList) => (
