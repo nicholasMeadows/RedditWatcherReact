@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { RedditSearchItemContextMenuEvent } from "../../model/Events/RedditSearchItemContextMenuEvent";
 import { setRedditSearchItemContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
 import {
@@ -15,21 +15,9 @@ const SearchRedditBar: React.FC = () => {
   );
 
   const searchInput = useRef(null);
-  const searchResultsDiv = useRef(null);
-
-  useEffect(() => {
-    if (searchResults.length > 0) {
-      const input = searchInput.current as unknown as HTMLInputElement;
-      const div = searchResultsDiv.current as unknown as HTMLDivElement;
-      const inputBoundingRec = input.getBoundingClientRect();
-      const divTop = inputBoundingRec.y + inputBoundingRec.height;
-      div.style.top = `${divTop}px`;
-      div.style.width = `${input.offsetWidth}px`;
-    }
-  }, [searchResults, searchResultsDiv, searchInput]);
 
   return (
-    <div className="width reddit-search-bar">
+    <div className="reddit-search-bar">
       <input
         ref={searchInput}
         type="text"
@@ -46,7 +34,18 @@ const SearchRedditBar: React.FC = () => {
         }}
       />
       {searchResults.length > 0 && (
-        <div className="search-results" ref={searchResultsDiv}>
+        <div
+          className="search-results"
+          style={{
+            top: `calc(0px + ${
+              searchInput.current == undefined
+                ? 0
+                : (
+                    searchInput.current as unknown as HTMLDivElement
+                  ).getBoundingClientRect().height
+            }px)`,
+          }}
+        >
           {searchResults.map((searchResult) => (
             <div
               key={searchResult.searchResultUuid}

@@ -107,6 +107,7 @@ const ModifySubredditLists: React.FC = () => {
         className="max-width-height-percentage flex flex-column"
         style={{
           maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+          position: "relative",
         }}
       >
         <SearchRedditBar />

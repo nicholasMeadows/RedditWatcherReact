@@ -52,7 +52,7 @@ const initialState: RedditClientState = {
   rateLimitRemaining: undefined,
   rateLimitUsed: undefined,
   subredditQueue: new Array<SubredditQueueItem>(),
-  subredditsToShowInSideBar: [],
+  subredditsToShowInSideBar: new Array<Subreddit>(),
   mostRecentSubredditGotten: undefined,
   subredditIndex: 0,
   nsfwRedditListIndex: 0,
@@ -95,7 +95,10 @@ export const redditClientSlice = createSlice({
     ) => {
       state.subredditQueue.splice(action.payload, 1);
     },
-    setSubredditsToShowInSideBar: (state, action) => {
+    setSubredditsToShowInSideBar: (
+      state,
+      action: { type: string; payload: Array<Subreddit> }
+    ) => {
       state.subredditsToShowInSideBar = action.payload;
     },
     setMostRecentSubredditGotten: (state, action) => {

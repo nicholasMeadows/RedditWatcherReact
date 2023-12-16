@@ -13,6 +13,7 @@ import "./theme/reddit-post-settings.scss";
 import "./theme/reddit-signin.scss";
 import "./theme/reddit-watcher-settings.scss";
 import "./theme/search-reddit-bar.scss";
+import "./theme/side-bar.scss";
 import "./theme/single-post-page.scss";
 import "./theme/variables.css";
 
