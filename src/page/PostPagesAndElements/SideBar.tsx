@@ -1,8 +1,11 @@
 import React, { MouseEvent, useEffect, useRef, useState } from "react";
 import { NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT } from "../../RedditWatcherConstants";
-import { useAppSelector } from "../../redux/store";
+import SideBarSubredditMenuEvent from "../../model/Events/SideBarSubredditMenuEvent";
+import { setSideBarSubredditMenuEvent } from "../../redux/slice/ContextMenuSlice";
+import { useAppDispatch, useAppSelector } from "../../redux/store";
 import SearchRedditBar from "../ModifySubredditListsPagesAndElements/SearchRedditBar";
 const SideBar: React.FC = () => {
+  const dispatch = useAppDispatch();
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
   const subredditsToShowInSideBar = useAppSelector(
     (state) => state.redditClient.subredditsToShowInSideBar
@@ -136,6 +139,21 @@ const SideBar: React.FC = () => {
             <div className="subreddit-list" ref={subredditListDivRef}>
               {subredditsToShowInSideBar.map((subreddit) => (
                 <p
+                  onContextMenu={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const subredditContextMenuEvent: SideBarSubredditMenuEvent =
+                      {
+                        subreddit: subreddit,
+                        x: event.clientX,
+                        y: event.clientY,
+                      };
+                    dispatch(
+                      setSideBarSubredditMenuEvent({
+                        event: subredditContextMenuEvent,
+                      })
+                    );
+                  }}
                   key={subreddit.subredditUuid}
                   className={`subreddit-list-item ${
                     subreddit.subredditUuid ==

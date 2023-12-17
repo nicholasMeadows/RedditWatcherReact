@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import CustomContextMenuEvent from "../../model/Events/CustomContextMenuEvent";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
 import { RedditSearchItemContextMenuEvent } from "../../model/Events/RedditSearchItemContextMenuEvent";
+import SideBarSubredditMenuEvent from "../../model/Events/SideBarSubredditMenuEvent";
 import SubredditListContextMenuEvent from "../../model/Events/SubredditListContextMenuEvent";
 import SubredditListItemContextMenuEvent from "../../model/Events/SubredditListItemContextMenuEvent";
 import { Post } from "../../model/Post/Post";
@@ -194,6 +195,24 @@ export const contextMenuSlice = createSlice({
         state,
         action.payload.event,
         { subredditAccountSearchResult: searchResultItem },
+        action.payload.showButtonOverride
+      );
+    },
+    setSideBarSubredditMenuEvent: (
+      state,
+      action: {
+        type: string;
+        payload: {
+          event: SideBarSubredditMenuEvent;
+          showButtonOverride?: ShowButtonControlsOptional | undefined;
+        };
+      }
+    ) => {
+      const subreddit = action.payload.event.subreddit;
+      setContextStateFields(
+        state,
+        action.payload.event,
+        { subreddit: subreddit },
         action.payload.showButtonOverride
       );
     },
@@ -407,6 +426,7 @@ export const {
   setPostContextMenuEvent,
   setSubredditListItemContextMenuEvent,
   setSubredditListContextMenuEvent,
+  setSideBarSubredditMenuEvent,
   closeContextMenu,
   setRedditSearchItemContextMenuEvent,
   setExpandAddToList,
