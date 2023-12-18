@@ -32,12 +32,14 @@ import {
   setLoopingForPosts,
   setLoopingForPostsTimeout,
   setMasterSubscribedSubredditList,
-  setMostRecentSubredditGotten,
   setNsfwRedditListIndex,
   setSubredditIndex,
-  setSubredditsToShowInSideBar,
   subredditQueueRemoveAt,
 } from "../redux/slice/RedditClientSlice";
+import {
+  setMostRecentSubredditGotten,
+  setSubredditsToShowInSideBar,
+} from "../redux/slice/SideBarSlice";
 import store from "../redux/store";
 import {
   concatSelectedSubredditLists,
@@ -249,9 +251,10 @@ export async function getPostRow(): Promise<{
 
   if (state.redditClient.subredditQueue.length != 0) {
     const subreddit = state.redditClient.subredditQueue[0];
+    store.dispatch(subredditQueueRemoveAt(0));
     fromSubreddits.push(subreddit);
     posts = await getPostsForSubreddit([subreddit]);
-    store.dispatch(subredditQueueRemoveAt(0));
+    store.dispatch(setMostRecentSubredditGotten(subreddit));
   } else if (
     !(UserFrontPagePostSortOrderOptionsEnum.NotSelected === userFrontPageOption)
   ) {
@@ -283,7 +286,12 @@ export async function getPostRow(): Promise<{
     }
     fromSubreddits.push(...subredditsToGetPostsFor);
     posts = await getPostsForSubreddit(subredditsToGetPostsFor);
-    store.dispatch(setSubredditsToShowInSideBar(sourceSubreddits));
+    store.dispatch(
+      setSubredditsToShowInSideBar({
+        subreddits: sourceSubreddits,
+        subredditLists: store.getState().subredditLists.subredditLists,
+      })
+    );
     store.dispatch(
       setMostRecentSubredditGotten(
         fromSubreddits.length == 1 ? fromSubreddits[0] : undefined

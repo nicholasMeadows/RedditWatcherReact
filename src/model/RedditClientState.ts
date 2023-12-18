@@ -11,8 +11,6 @@ export type RedditClientState = {
   rateLimitRemaining: number | undefined;
   rateLimitUsed: number | undefined;
   subredditQueue: Array<SubredditQueueItem>;
-  subredditsToShowInSideBar: Array<Subreddit>;
-  mostRecentSubredditGotten: Subreddit | undefined;
   subredditIndex: number;
   nsfwRedditListIndex: number;
   lastPostRowWasSortOrderNew: boolean;

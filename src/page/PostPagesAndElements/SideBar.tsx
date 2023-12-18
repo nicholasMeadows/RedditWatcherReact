@@ -1,27 +1,51 @@
-import React, { MouseEvent, useEffect, useRef, useState } from "react";
-import { NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT } from "../../RedditWatcherConstants";
+import React, { MouseEvent, useEffect, useRef } from "react";
+import {
+  NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT,
+  SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED,
+} from "../../RedditWatcherConstants";
 import SideBarSubredditMenuEvent from "../../model/Events/SideBarSubredditMenuEvent";
 import { setSideBarSubredditMenuEvent } from "../../redux/slice/ContextMenuSlice";
+import {
+  setListToFilterByUuid,
+  setMouseDownOnOpenSidebarButton,
+  setOpenSidebarButtonTopPercent,
+  setSideBarButtonMoved,
+  setSideBarOpen,
+  subredditListsUpdated,
+} from "../../redux/slice/SideBarSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import SearchRedditBar from "../ModifySubredditListsPagesAndElements/SearchRedditBar";
 const SideBar: React.FC = () => {
   const dispatch = useAppDispatch();
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
-  const subredditsToShowInSideBar = useAppSelector(
-    (state) => state.redditClient.subredditsToShowInSideBar
+  const subredditLists = useAppSelector(
+    (state) => state.subredditLists.subredditLists
   );
-
+  const subredditsToShow = useAppSelector(
+    (state) => state.sideBar.subredditsToShow
+  );
   const mostRecentSubredditGotten = useAppSelector(
-    (state) => state.redditClient.mostRecentSubredditGotten
+    (state) => state.sideBar.mostRecentSubredditGotten
   );
 
-  const [mouseDownOnOpenSidebarButton, setMouseDownOnOpenSidebarButton] =
-    useState(false);
-  const [openSidebarButtonTopPercent, setOpenSidebarButtonTopPercent] =
-    useState(50);
+  const availableSubredditListsForFilter = useAppSelector(
+    (state) => state.sideBar.availableSubredditListsForFilter
+  );
+  const listToFilterByUuid = useAppSelector(
+    (state) => state.sideBar.listToFilterByUuid
+  );
 
-  const [sideBarOpen, setSideBarOpen] = useState(false);
-  const [sideBarButtonMoved, setSideBarButtonMoved] = useState(false);
+  const sideBarOpen = useAppSelector((state) => state.sideBar.sideBarOpen);
+
+  const sideBarButtonMoved = useAppSelector(
+    (state) => state.sideBar.sideBarButtonMoved
+  );
+  const mouseDownOnOpenSidebarButton = useAppSelector(
+    (state) => state.sideBar.mouseDownOnOpenSidebarButton
+  );
+  const openSidebarButtonTopPercent = useAppSelector(
+    (state) => state.sideBar.openSidebarButtonTopPercent
+  );
 
   const sideBarButtonAndContentContainerRef = useRef(null);
   const openSideBarButtonColumnDivRef = useRef(null);
@@ -29,11 +53,14 @@ const SideBar: React.FC = () => {
   const subredditListDivRef = useRef(null);
 
   useEffect(() => {
-    const foundSubredditIndex = subredditsToShowInSideBar.findIndex(
+    dispatch(subredditListsUpdated(subredditLists));
+  }, [dispatch, subredditLists]);
+
+  useEffect(() => {
+    const foundSubredditIndex = subredditsToShow.findIndex(
       (subreddit) =>
         subreddit.subredditUuid == mostRecentSubredditGotten?.subredditUuid
     );
-
     if (foundSubredditIndex >= 0) {
       const subredditListDiv =
         subredditListDivRef.current as unknown as HTMLDivElement;
@@ -43,10 +70,11 @@ const SideBar: React.FC = () => {
       const offsetTop = subredditNameElement.offsetTop;
       subredditListDiv.scrollTo({ top: offsetTop, behavior: "smooth" });
     }
-  }, [mostRecentSubredditGotten, subredditsToShowInSideBar]);
+  }, [mostRecentSubredditGotten, subredditsToShow]);
+
   const handleOpenCloseButtonMouseMove = (event: MouseEvent) => {
     if (mouseDownOnOpenSidebarButton) {
-      setSideBarButtonMoved(true);
+      dispatch(setSideBarButtonMoved(true));
       const openSideBarButtonColumnDiv =
         openSideBarButtonColumnDivRef.current as unknown as HTMLDivElement;
       const openSideBarButtonDiv =
@@ -72,20 +100,21 @@ const SideBar: React.FC = () => {
       } else if (updatedPercentage > maxPercentage) {
         updatedPercentage = maxPercentage;
       }
-      setOpenSidebarButtonTopPercent(updatedPercentage);
+      dispatch(setOpenSidebarButtonTopPercent(updatedPercentage));
     }
   };
 
   const handleOpenCloseBtnMouseDown = () => {
-    setMouseDownOnOpenSidebarButton(true);
+    dispatch(setMouseDownOnOpenSidebarButton(true));
   };
   const handleOpenCloseBtnMouseUp = () => {
-    setMouseDownOnOpenSidebarButton(false);
+    dispatch(setMouseDownOnOpenSidebarButton(false));
     if (!sideBarButtonMoved) {
-      setSideBarOpen(!sideBarOpen);
+      dispatch(setSideBarOpen(!sideBarOpen));
     }
-    setSideBarButtonMoved(false);
+    dispatch(setSideBarButtonMoved(false));
   };
+
   return (
     <div className="side-bar-relative-root">
       <div
@@ -93,7 +122,6 @@ const SideBar: React.FC = () => {
         className="side-bar-fixed-div"
         style={{
           top: `calc( -0.2em + ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
-          // left: `calc( 100% - ${containerLeftOffset}px )`,
         }}
       >
         <div className="side-bar-button-and-context-flex">
@@ -135,9 +163,49 @@ const SideBar: React.FC = () => {
               <SearchRedditBar />
               <hr className="hr" />
             </div>
+            <div className="subreddit-list-select-div">
+              <label className="subreddit-list-select-label">
+                Subreddit List
+              </label>
+              <select
+                className="subreddit-list-select"
+                onChange={(event) => {
+                  console.log(event.target.value);
+                  dispatch(
+                    setListToFilterByUuid({
+                      listUuid: event.target.value,
+                      subredditLists: subredditLists,
+                    })
+                  );
+                }}
+              >
+                <option
+                  selected={
+                    listToFilterByUuid ==
+                    SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED
+                  }
+                  value={SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED}
+                >
+                  {SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED}
+                </option>
+                {availableSubredditListsForFilter.map((subredditList) => {
+                  return (
+                    <option
+                      selected={
+                        listToFilterByUuid == subredditList.subredditListUuid
+                      }
+                      key={subredditList.subredditListUuid}
+                      value={subredditList.subredditListUuid}
+                    >
+                      {subredditList.listName}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
 
             <div className="subreddit-list" ref={subredditListDivRef}>
-              {subredditsToShowInSideBar.map((subreddit) => (
+              {subredditsToShow.map((subreddit) => (
                 <p
                   onContextMenu={(event) => {
                     event.preventDefault();

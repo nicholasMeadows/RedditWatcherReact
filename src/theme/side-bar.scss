@@ -85,3 +85,18 @@
   background-color: white;
   color: black;
 }
+
+.subreddit-list-select-div {
+  display: flex;
+  flex-direction: column;
+  margin: 0.2em 0.3em;
+}
+.subreddit-list-select-label {
+  margin-bottom: 0.3em;
+  font-size: 1.3em;
+  margin-left: auto;
+  margin-right: auto;
+}
+.subreddit-list-select {
+  font-size: 1.2em;
+}

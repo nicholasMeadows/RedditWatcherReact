@@ -10,6 +10,7 @@ import postRowsReducer from "./slice/PostRowsSlice";
 import redditClientReducer from "./slice/RedditClientSlice";
 import subredditListsReducer from "./slice/RedditListsSlice";
 import redditSearchReducer from "./slice/RedditSearchSlice";
+import sideBarReducer from "./slice/SideBarSlice";
 
 const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ const store = configureStore({
     redditSearch: redditSearchReducer,
     contextMenu: contextMenuReducer,
     appNotification: appNotificationReducer,
+    sideBar: sideBarReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk),
 });

@@ -52,8 +52,6 @@ const initialState: RedditClientState = {
   rateLimitRemaining: undefined,
   rateLimitUsed: undefined,
   subredditQueue: new Array<SubredditQueueItem>(),
-  subredditsToShowInSideBar: new Array<Subreddit>(),
-  mostRecentSubredditGotten: undefined,
   subredditIndex: 0,
   nsfwRedditListIndex: 0,
   lastPostRowWasSortOrderNew: false,
@@ -94,15 +92,6 @@ export const redditClientSlice = createSlice({
       action: { type: string; payload: number }
     ) => {
       state.subredditQueue.splice(action.payload, 1);
-    },
-    setSubredditsToShowInSideBar: (
-      state,
-      action: { type: string; payload: Array<Subreddit> }
-    ) => {
-      state.subredditsToShowInSideBar = action.payload;
-    },
-    setMostRecentSubredditGotten: (state, action) => {
-      state.mostRecentSubredditGotten = action.payload;
     },
     addSubredditToQueue: (
       state,
@@ -228,11 +217,9 @@ export const {
   setRateLimitRemaining,
   setRateLimitUsed,
   subredditQueueRemoveAt,
-  setSubredditsToShowInSideBar,
   setSubredditIndex,
   setNsfwRedditListIndex,
   resetNsfwRedditListIndex,
-  setMostRecentSubredditGotten,
   addSubredditToQueue,
   moveSubredditQueueItemForward,
   moveSubredditQueueItemBack,

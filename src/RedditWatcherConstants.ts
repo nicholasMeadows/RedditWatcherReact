@@ -26,3 +26,4 @@ export const MAX_POSTS_TO_SHOW_IN_ROW = 6;
 
 export const MIN_POST_ROWS_TO_SHOW_IN_VIEW = 1;
 export const MAX_POST_ROWS_TO_SHOW_IN_VIEW = 6;
+export const SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED = "Not Selected";
