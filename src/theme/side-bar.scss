@@ -1,24 +1,15 @@
-.side-bar-relative-root {
-  position: relative;
+.side-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0px;
+  display: flex;
+  overflow-x: hidden;
   z-index: 100;
 }
 
-.side-bar-fixed-div {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-}
-
-.side-bar-button-and-context-flex {
-  display: flex;
-  height: 100%;
-  width: 100%;
-}
-
-.side-bar-button-and-context-flex > .button-column {
-  height: 100%;
+.open-close-column {
   position: relative;
-  background-color: red;
 }
 
 .open-close-btn-div {
@@ -26,56 +17,49 @@
   border-radius: 1em 0em 0em 1em;
   width: 2.5em;
   height: 4em;
-  position: absolute;
-
-  transform: translate(-100%, -50%);
-  border-width: 0.2em 0em 0.2em 0.2em;
-  border-style: solid;
-  border-color: black;
+  position: relative;
+  transform: translate(0%, -50%);
 }
-
 .open-close-btn-img {
   object-fit: contain;
-  width: auto;
+  width: 100%;
   height: 100%;
-  margin-left: -0.5em;
-  margin-top: auto;
-  margin-bottom: auto;
 }
-
 .side-bar-content-div {
-  position: relative;
   background-color: gray;
-  height: 100%;
-  width: 0;
-  transition: width 500ms ease-out;
+  position: relative;
   display: flex;
   flex-direction: column;
-  border: 0.2em solid black;
+  width: 0px;
+  transition: width 200ms ease-out;
 }
 
-.searchbar {
-  display: flex;
-  flex-direction: column;
-}
 .side-bar-content-div-open {
   width: 18em;
   max-width: 500px;
+}
+.search-bar {
+  display: flex;
+  flex-direction: column;
+}
+.subreddit-list-select-div {
+  display: flex;
+  flex-direction: column;
+  margin: 0.2em 0.3em;
+}
+.subreddit-list {
+  display: flex;
+  flex-direction: column;
+  margin-left: 1em;
+  margin-top: 0.2em;
+  position: relative;
+  overflow-y: auto;
 }
 
 .hr {
   height: 0.2em;
   background-color: black;
   margin: 0;
-}
-
-.subreddit-list {
-  display: flex;
-  flex-direction: column;
-  margin-left: 1em;
-  overflow-y: auto;
-  margin-top: 0.2em;
-  position: relative;
 }
 
 .subreddit-list-item {
@@ -87,11 +71,6 @@
   color: black;
 }
 
-.subreddit-list-select-div {
-  display: flex;
-  flex-direction: column;
-  margin: 0.2em 0.3em;
-}
 .subreddit-list-select-label {
   margin-bottom: 0.3em;
   font-size: 1.3em;

@@ -1,8 +1,5 @@
 import React, { MouseEvent, useEffect, useRef } from "react";
-import {
-  NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT,
-  SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED,
-} from "../../RedditWatcherConstants";
+import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../../RedditWatcherConstants";
 import SideBarSubredditMenuEvent from "../../model/Events/SideBarSubredditMenuEvent";
 import { setSideBarSubredditMenuEvent } from "../../redux/slice/ContextMenuSlice";
 import {
@@ -47,11 +44,9 @@ const SideBar: React.FC = () => {
     (state) => state.sideBar.openSidebarButtonTopPercent
   );
 
-  const sideBarButtonAndContentContainerRef = useRef(null);
   const openSideBarButtonColumnDivRef = useRef(null);
   const openSideBarButtonDivRef = useRef(null);
   const subredditListDivRef = useRef(null);
-
   useEffect(() => {
     dispatch(subredditListsUpdated(subredditLists));
   }, [dispatch, subredditLists]);
@@ -116,125 +111,112 @@ const SideBar: React.FC = () => {
   };
 
   return (
-    <div className="side-bar-relative-root">
+    <div className="side-bar">
       <div
-        ref={sideBarButtonAndContentContainerRef}
-        className="side-bar-fixed-div"
-        style={{
-          top: `calc( -0.2em + ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+        ref={openSideBarButtonColumnDivRef}
+        className="open-close-column"
+        onMouseMove={(event) => {
+          handleOpenCloseButtonMouseMove(event);
         }}
       >
-        <div className="side-bar-button-and-context-flex">
-          <div
-            ref={openSideBarButtonColumnDivRef}
-            className="button-column"
-            onMouseMove={(event) => {
-              handleOpenCloseButtonMouseMove(event);
+        <div
+          ref={openSideBarButtonDivRef}
+          className="open-close-btn-div"
+          style={{
+            top: `${openSidebarButtonTopPercent}%`,
+          }}
+          onMouseDown={() => {
+            handleOpenCloseBtnMouseDown();
+          }}
+          onMouseUp={() => {
+            handleOpenCloseBtnMouseUp();
+          }}
+        >
+          <img
+            src={`assets/${sideBarOpen ? "right" : "left"}_chevron_${
+              darkMode ? "dark" : "light"
+            }_mode.png`}
+            draggable={false}
+            className="open-close-btn-img"
+          />
+        </div>
+      </div>
+      <div
+        className={`side-bar-content-div ${
+          sideBarOpen ? "side-bar-content-div-open" : ""
+        } `}
+      >
+        <div className="search-bar">
+          <SearchRedditBar />
+          <hr className="hr" />
+        </div>
+        <div className="subreddit-list-select-div">
+          <label className="subreddit-list-select-label">Subreddit List</label>
+          <select
+            className="subreddit-list-select"
+            onChange={(event) => {
+              console.log(event.target.value);
+              dispatch(
+                setListToFilterByUuid({
+                  listUuid: event.target.value,
+                  subredditLists: subredditLists,
+                })
+              );
             }}
           >
-            <div
-              ref={openSideBarButtonDivRef}
-              className="open-close-btn-div"
-              style={{
-                top: `${openSidebarButtonTopPercent}%`,
-              }}
-              onMouseDown={() => {
-                handleOpenCloseBtnMouseDown();
-              }}
-              onMouseUp={() => {
-                handleOpenCloseBtnMouseUp();
-              }}
+            <option
+              selected={
+                listToFilterByUuid ==
+                SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED
+              }
+              value={SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED}
             >
-              <img
-                src={`assets/${sideBarOpen ? "right" : "left"}_chevron_${
-                  darkMode ? "dark" : "light"
-                }_mode.png`}
-                draggable={false}
-                className="open-close-btn-img"
-              />
-            </div>
-          </div>
-          <div
-            className={`side-bar-content-div ${
-              sideBarOpen ? "side-bar-content-div-open" : ""
-            }`}
-          >
-            <div className="searchbar">
-              <SearchRedditBar />
-              <hr className="hr" />
-            </div>
-            <div className="subreddit-list-select-div">
-              <label className="subreddit-list-select-label">
-                Subreddit List
-              </label>
-              <select
-                className="subreddit-list-select"
-                onChange={(event) => {
-                  console.log(event.target.value);
-                  dispatch(
-                    setListToFilterByUuid({
-                      listUuid: event.target.value,
-                      subredditLists: subredditLists,
-                    })
-                  );
-                }}
-              >
+              {SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED}
+            </option>
+            {availableSubredditListsForFilter.map((subredditList) => {
+              return (
                 <option
                   selected={
-                    listToFilterByUuid ==
-                    SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED
+                    listToFilterByUuid == subredditList.subredditListUuid
                   }
-                  value={SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED}
+                  key={subredditList.subredditListUuid}
+                  value={subredditList.subredditListUuid}
                 >
-                  {SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED}
+                  {subredditList.listName}
                 </option>
-                {availableSubredditListsForFilter.map((subredditList) => {
-                  return (
-                    <option
-                      selected={
-                        listToFilterByUuid == subredditList.subredditListUuid
-                      }
-                      key={subredditList.subredditListUuid}
-                      value={subredditList.subredditListUuid}
-                    >
-                      {subredditList.listName}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
+              );
+            })}
+          </select>
+        </div>
 
-            <div className="subreddit-list" ref={subredditListDivRef}>
-              {subredditsToShow.map((subreddit) => (
-                <p
-                  onContextMenu={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    const subredditContextMenuEvent: SideBarSubredditMenuEvent =
-                      {
-                        subreddit: subreddit,
-                        x: event.clientX,
-                        y: event.clientY,
-                      };
-                    dispatch(
-                      setSideBarSubredditMenuEvent({
-                        event: subredditContextMenuEvent,
-                      })
-                    );
-                  }}
-                  key={subreddit.subredditUuid}
-                  className={`subreddit-list-item ${
-                    subreddit.subredditUuid ==
-                    mostRecentSubredditGotten?.subredditUuid
-                      ? "subreddit-list-item-highlight"
-                      : ""
-                  }`}
-                >
-                  {subreddit.displayName}
-                </p>
-              ))}
-            </div>
-          </div>
+        <div className="subreddit-list" ref={subredditListDivRef}>
+          {subredditsToShow.map((subreddit) => (
+            <p
+              onContextMenu={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const subredditContextMenuEvent: SideBarSubredditMenuEvent = {
+                  subreddit: subreddit,
+                  x: event.clientX,
+                  y: event.clientY,
+                };
+                dispatch(
+                  setSideBarSubredditMenuEvent({
+                    event: subredditContextMenuEvent,
+                  })
+                );
+              }}
+              key={subreddit.subredditUuid}
+              className={`subreddit-list-item ${
+                subreddit.subredditUuid ==
+                mostRecentSubredditGotten?.subredditUuid
+                  ? "subreddit-list-item-highlight"
+                  : ""
+              }`}
+            >
+              {subreddit.displayName}
+            </p>
+          ))}
         </div>
       </div>
     </div>

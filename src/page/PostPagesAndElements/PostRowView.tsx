@@ -82,10 +82,6 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
       <div
         key={"post-row-" + postRow.postRowUuid}
         className="postRow"
-        style={{
-          height: `calc(100%/${postRowsToShowInView})`,
-          maxHeight: `calc(100%/${postRowsToShowInView})`,
-        }}
         onTouchStart={(event) => onTouchStart(event)}
         onTouchMove={(event) => onTouchMove(event)}
         onTouchEnd={() => onTouchEnd(postRow)}
