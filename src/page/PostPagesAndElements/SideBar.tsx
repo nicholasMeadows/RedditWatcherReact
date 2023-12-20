@@ -112,18 +112,15 @@ const SideBar: React.FC = () => {
 
   return (
     <div className="side-bar">
-      <div
-        ref={openSideBarButtonColumnDivRef}
-        className="open-close-column"
-        onMouseMove={(event) => {
-          handleOpenCloseButtonMouseMove(event);
-        }}
-      >
+      <div ref={openSideBarButtonColumnDivRef} className="open-close-column">
         <div
           ref={openSideBarButtonDivRef}
           className="open-close-btn-div"
           style={{
             top: `${openSidebarButtonTopPercent}%`,
+          }}
+          onMouseMove={(event) => {
+            handleOpenCloseButtonMouseMove(event);
           }}
           onMouseDown={() => {
             handleOpenCloseBtnMouseDown();
