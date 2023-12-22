@@ -9,7 +9,7 @@ const createWindow = () => {
     width: 800,
     height: 600,
   });
-  // win.removeMenu();
+  win.removeMenu();
   win.loadFile(path.resolve(__dirname, "www", "index.html"));
   win.webContents.session.webRequest.onBeforeSendHeaders(
     (details, callback) => {
