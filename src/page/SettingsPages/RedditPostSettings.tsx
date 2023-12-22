@@ -40,6 +40,7 @@ const RedditPostSettings: React.FC = () => {
 
   return (
     <>
+      <hr />
       <div className="reddit-post-settings">
         <div className="settings-item">
           <label className="select-label">Post Sort Order</label>
@@ -59,7 +60,7 @@ const RedditPostSettings: React.FC = () => {
             })}
           </select>
         </div>
-
+        <hr />
         <div className="settings-item">
           <label className="select-label">Top Time Frame</label>
           <select
@@ -78,7 +79,7 @@ const RedditPostSettings: React.FC = () => {
             })}
           </select>
         </div>
-
+        <hr />
         <div className="settings-item">
           <label className="select-label">User Front Page Sort Option</label>
           <select
@@ -99,7 +100,7 @@ const RedditPostSettings: React.FC = () => {
             )}
           </select>
         </div>
-
+        <hr />
         <div className="settings-item">
           <label className="select-label">Reddit API Limit</label>
           <input
@@ -118,6 +119,7 @@ const RedditPostSettings: React.FC = () => {
           />
           <p className="settings-item-error">{redditApiLimitValidationError}</p>
         </div>
+        <hr />
       </div>
     </>
   );

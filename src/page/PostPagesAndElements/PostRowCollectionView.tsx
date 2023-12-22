@@ -1,4 +1,3 @@
-import { NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT } from "../../RedditWatcherConstants";
 import { setScrollY } from "../../redux/slice/PostRowsSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import PostRowView from "./PostRowView";
@@ -14,10 +13,7 @@ const PostRowCollectionView: React.FC = () => {
 
   return (
     <div
-      className="post-row-page background"
-      style={{
-        maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
-      }}
+      className="post-row-page"
       onScroll={(event) => {
         const target = event.target as HTMLElement;
         const scrollTop = target.scrollTop;

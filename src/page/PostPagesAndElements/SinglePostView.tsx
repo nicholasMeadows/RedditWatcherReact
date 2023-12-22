@@ -109,7 +109,7 @@ const SinglePostView: React.FC = () => {
     <>
       {post != undefined && (
         <div
-          className="single-post-view flex flex-column max-width-height-percentage background"
+          className="single-post-view flex flex-column max-width-height-percentage"
           onTouchStart={(event) => onTouchStart(event)}
           onTouchMove={(event) => onTouchMove(event)}
           onTouchEnd={() => onTouchEnd()}

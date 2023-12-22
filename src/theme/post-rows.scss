@@ -1,9 +1,7 @@
 $postRowScrollButtonWidth: 5vw;
 .post-row-page {
+  height: 100%;
   width: 100vw;
-  max-width: 100%;
-  height: 100vh;
-  max-height: 100%;
   position: relative;
   overflow-x: hidden;
 }
@@ -16,8 +14,6 @@ $postRowScrollButtonWidth: 5vw;
 .postRow {
   display: flex;
   flex-direction: row;
-  margin-top: 5px;
-  margin-bottom: 5px;
   width: 100%;
   height: 100%;
 }
@@ -49,6 +45,8 @@ $postRowScrollButtonWidth: 5vw;
   flex-grow: 1;
   overflow: hidden;
   position: relative;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 
 .postRowScrollImg {

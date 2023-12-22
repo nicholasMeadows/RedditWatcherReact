@@ -35,10 +35,6 @@ a {
   text-align: center;
 }
 
-.background {
-  background: var(--background-color);
-}
-
 .text-color {
   color: var(--text-color);
 }
@@ -76,11 +72,14 @@ button[disabled] {
 .root-app {
   width: 100%;
   height: 100%;
-  background-color: var(--background-color);
   color: var(--text-color);
   display: flex;
   flex-direction: column;
   font-family: "Times New Roman";
+}
+
+.app-body {
+  background: var(--background);
 }
 
 .settings-item {

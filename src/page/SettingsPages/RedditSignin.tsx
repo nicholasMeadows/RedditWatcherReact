@@ -42,7 +42,7 @@ const RedditSignin: React.FC = () => {
 
   return (
     <div className="signin-page">
-      <div className="signin-box background">
+      <div className="signin-box">
         <input
           className="signin-input"
           placeholder="Username"

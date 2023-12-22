@@ -106,32 +106,42 @@ const NavigationHambugerMenu: React.FC = () => {
     <>
       <div
         style={{
-          height: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT} - 0.2em)`,
-          maxHeight: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT} - 0.2em)`,
+          height: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+          maxHeight: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
         }}
         className="top-bar"
       >
         <div
-          className="hamburger-icon"
-          onClick={() => {
-            setPopoutDrawerOpen(!popoutDrawerOpen);
+          className="top-bar-inner"
+          style={{
+            height: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT} - 0.2em )`,
+            maxHeight: `calc(${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT} - 0.2em)`,
           }}
         >
-          <div></div>
-          <div></div>
-          <div></div>
-        </div>
+          <div
+            className="hamburger-icon"
+            onClick={() => {
+              setPopoutDrawerOpen(!popoutDrawerOpen);
+            }}
+          >
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
 
-        <div
-          className="back-arrow"
-          onClick={() => {
-            navigate(-1);
-          }}
-          style={{ display: `${showBackButton ? "" : "none"}` }}
-        >
-          <img src={`assets/back_arrow_${darkMode ? "white" : "black"}.png`} />
+          <div
+            className="back-arrow"
+            onClick={() => {
+              navigate(-1);
+            }}
+            style={{ display: `${showBackButton ? "" : "none"}` }}
+          >
+            <img
+              src={`assets/back_arrow_${darkMode ? "white" : "black"}.png`}
+            />
+          </div>
+          <h1 className="tool-bar-title">{pageName}</h1>
         </div>
-        <h1 className="tool-bar-title">{pageName}</h1>
       </div>
 
       <div style={{ visibility: `${popoutDrawerOpen ? "visible" : "hidden"}` }}>

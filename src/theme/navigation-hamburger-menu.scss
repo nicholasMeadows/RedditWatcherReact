@@ -1,13 +1,23 @@
 .top-bar {
-  width: 100vw;
-  border-bottom: 0.1em solid var(--app-border-color);
-  background: var(--toolbar-background);
-  color: var(--toolbar-color);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+  background: #202124;
+  color: white;
   cursor: default;
   white-space: nowrap;
+  position: absolute;
+  width: 100vw;
+  top: 0;
+  left: 0;
+  height: 10px;
+  z-index: 10000;
+}
+
+.top-bar-inner {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  width: 100%;
+  align-items: center;
+  box-shadow: 0 1em 0.8em 0 rgba(0, 0, 0, 0.2);
 }
 
 .hamburger-icon {
@@ -18,7 +28,7 @@
 .hamburger-icon > div {
   width: 2em;
   height: 0.3em;
-  background-color: var(--toolbar-color);
+  background-color: white;
   margin: 0.4em 0;
 }
 
@@ -60,14 +70,14 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(211, 211, 211, 0.5);
+  background: rgb(119, 119, 119, 0.5);
   z-index: 100000000000;
 }
 .drawer-popout {
   white-space: nowrap;
   position: absolute;
-  background: var(--toolbar-background);
-  color: var(--toolbar-color);
+  background: #202124;
+  color: white;
   max-width: 75%;
   top: 0px;
   bottom: 0px;
