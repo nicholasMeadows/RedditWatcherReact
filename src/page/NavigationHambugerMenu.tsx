@@ -136,9 +136,7 @@ const NavigationHambugerMenu: React.FC = () => {
             }}
             style={{ display: `${showBackButton ? "" : "none"}` }}
           >
-            <img
-              src={`assets/back_arrow_${darkMode ? "white" : "black"}.png`}
-            />
+            <img src={`assets/back_arrow_white.png`} />
           </div>
           <h1 className="tool-bar-title">{pageName}</h1>
         </div>

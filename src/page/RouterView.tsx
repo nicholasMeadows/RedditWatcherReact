@@ -46,10 +46,29 @@ const RouterView: React.FC = () => {
 
   useEffect(() => {
     let background = "white";
+    let textColor = "black";
+    let accordionHoverColor = "#ccc";
+    let accordionBackground = "#dadada";
+    let borderColor = "#c9c9c9";
+
     if (darkmode) {
       background = "#292a2e";
+      textColor = "white";
+      accordionHoverColor = "#494949";
+      accordionBackground = "#464646";
+      borderColor = "white";
     }
     document.body.style.setProperty("--background", background);
+    document.body.style.setProperty("--text-color", textColor);
+    document.body.style.setProperty(
+      "--accordion-hover-color",
+      accordionHoverColor
+    );
+    document.body.style.setProperty(
+      "--accordion-background",
+      accordionBackground
+    );
+    document.body.style.setProperty("--app-border-color", borderColor);
   }, [darkmode]);
 
   return (

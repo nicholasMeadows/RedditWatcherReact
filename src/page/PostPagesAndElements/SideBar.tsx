@@ -151,6 +151,7 @@ const SideBar: React.FC = () => {
           <label className="subreddit-list-select-label">Subreddit List</label>
           <select
             className="subreddit-list-select"
+            value={listToFilterByUuid}
             onChange={(event) => {
               console.log(event.target.value);
               dispatch(
@@ -161,13 +162,7 @@ const SideBar: React.FC = () => {
               );
             }}
           >
-            <option
-              selected={
-                listToFilterByUuid ==
-                SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED
-              }
-              value={SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED}
-            >
+            <option value={SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED}>
               {SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED}
             </option>
             {availableSubredditListsForFilter.map((subredditList) => {

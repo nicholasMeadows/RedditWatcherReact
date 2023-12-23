@@ -456,7 +456,6 @@ export const appConfigSlice = createSlice({
     },
     toggleDarkMode: (state) => {
       state.darkMode = !state.darkMode;
-      setCssVariables(state.darkMode);
       saveConfig(state);
     },
     resetConfigLoaded: (state) => {
@@ -489,45 +488,10 @@ export const appConfigSlice = createSlice({
       state.postsToShowInRow = incoming.postsToShowInRow;
       state.postRowsToShowInView = incoming.postRowsToShowInView;
       state.darkMode = incoming.darkMode;
-      setCssVariables(state.darkMode);
       state.configLoaded = true;
     });
   },
 });
-
-const setCssVariables = (darkMode: boolean) => {
-  let backgroundColor = "white";
-  let textColor = "black";
-  let accordionHoverColor = "#ccc";
-  let accordionBackground = "#dadada";
-  let toolbarBackground = "#ffffff";
-  let toolbarColor = "#000000";
-  let borderColor = "#c9c9c9";
-
-  if (darkMode) {
-    backgroundColor = "black";
-    textColor = "white";
-    accordionHoverColor = "#494949";
-    accordionBackground = "#464646";
-
-    toolbarBackground = "#000000";
-    toolbarColor = "white";
-    borderColor = "white";
-  }
-  document.body.style.setProperty("--background-color", backgroundColor);
-  document.body.style.setProperty("--text-color", textColor);
-  document.body.style.setProperty(
-    "--accordion-hover-color",
-    accordionHoverColor
-  );
-  document.body.style.setProperty(
-    "--accordion-background",
-    accordionBackground
-  );
-  document.body.style.setProperty("--toolbar-background", toolbarBackground);
-  document.body.style.setProperty("--toolbar-color", toolbarColor);
-  document.body.style.setProperty("--app-border-color", borderColor);
-};
 
 export const {
   setClientId,
