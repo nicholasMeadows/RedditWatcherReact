@@ -5,12 +5,10 @@
   right: 0px;
   display: flex;
   z-index: 100;
-  background-color: red;
 }
 
 .open-close-column {
   position: relative;
-  background-color: blue;
 }
 
 .open-close-btn-div {
@@ -33,6 +31,7 @@
   flex-direction: column;
   width: 0px;
   transition: width 200ms ease-out;
+  overflow-x: hidden;
 }
 
 .side-bar-content-div-open {

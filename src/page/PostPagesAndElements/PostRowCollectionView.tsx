@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { setScrollY } from "../../redux/slice/PostRowsSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import PostRowView from "./PostRowView";
@@ -11,6 +12,14 @@ const PostRowCollectionView: React.FC = () => {
     (state) => state.appConfig.postRowsToShowInView
   );
 
+  const postRowsDivRef = useRef(null);
+  const [scrollBarWidth, setScrollBarWidth] = useState(0);
+
+  useEffect(() => {
+    const scrollDiv = postRowsDivRef.current as unknown as HTMLDivElement;
+    setScrollBarWidth(scrollDiv.offsetWidth - scrollDiv.clientWidth);
+  }, [postRowsDivRef, postRows]);
+
   return (
     <div
       className="post-row-page"
@@ -20,8 +29,15 @@ const PostRowCollectionView: React.FC = () => {
         dispatch(setScrollY(scrollTop));
       }}
     >
-      <SideBar />
-      <div className="post-rows-div">
+      <div
+        className="post-rows-side-bar-div"
+        style={{
+          right: `${scrollBarWidth}px`,
+        }}
+      >
+        <SideBar />
+      </div>
+      <div className="post-rows-div" ref={postRowsDivRef}>
         {postRows.map((postRow) => (
           <div
             key={"post-row-" + postRow.postRowUuid}
