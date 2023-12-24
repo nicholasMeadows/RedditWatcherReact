@@ -13,10 +13,10 @@
     "preview": "vite preview",
     "build-android": "npm run build && npx cap sync android && npx cap open android",
     "generate-icons": "npx @capacitor/assets generate --iconBackgroundColor '#FF5700' --iconBackgroundColorDark '#FF5700' --splashBackgroundColor '#FF5700' --splashBackgroundColorDark '#FF5700' --assetPath 'public'",
-    "electron": "electron-forge start -p electron-entry.js",
-    "electron-package": "electron-forge package ",
-    "electron-make": "electron-forge make",
-    "electron-publish": "electron-forge publish"
+    "electron": "npm run build && electron-forge start",
+    "electron-package": "npm run build && electron-forge package ",
+    "electron-make": "npm run build && electron-forge make",
+    "electron-publish": "npm run build && electron-forge publish"
   },
   "dependencies": {
     "@capacitor-community/keep-awake": "^4.0.0",
@@ -59,33 +59,5 @@
     "sass": "^1.69.5",
     "typescript": "^5.2.2",
     "vite": "^5.0.0"
-  },
-  "config": {
-    "forge": {
-      "packagerConfig": {
-        "asar": true,
-        "icon": "/dist/icon.png"
-      },
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "electron_quick_start",
-            "loadingGif": "public/icon.gif"
-          }
-        },
-        {
-          "name": "@electron-forge/maker-zip"
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
-        }
-      ]
-    }
   }
 }
