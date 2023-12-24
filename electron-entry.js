@@ -8,12 +8,19 @@ const __dirname = dirname(__filename);
 
 if (electronSquirrelStartup) app.quit();
 
+const isDev = () => {
+  return process.env.APP_DEV != undefined;
+};
 const createWindow = () => {
+  isDev();
   const win = new BrowserWindow({
     width: 800,
     height: 600,
   });
-  // win.removeMenu();
+  if (!isDev()) {
+    win.removeMenu();
+  }
+
   win.loadFile(path.resolve(__dirname, "dist", "index.html"));
   win.webContents.session.webRequest.onBeforeSendHeaders(
     (details, callback) => {

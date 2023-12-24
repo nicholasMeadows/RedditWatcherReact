@@ -1,7 +1,7 @@
 {
   "name": "reddit-watcher",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "main": "electron-entry.js",
   "author": "Nicholas",
@@ -13,7 +13,7 @@
     "preview": "vite preview",
     "build-android": "npm run build && npx cap sync android && npx cap open android",
     "generate-icons": "npx @capacitor/assets generate --iconBackgroundColor '#FF5700' --iconBackgroundColorDark '#FF5700' --splashBackgroundColor '#FF5700' --splashBackgroundColorDark '#FF5700' --assetPath 'public'",
-    "electron": "npm run build && electron-forge start",
+    "electron": "npm run build && set APP_DEV=true && electron-forge start",
     "electron-package": "npm run build && electron-forge package ",
     "electron-make": "npm run build && electron-forge make",
     "electron-publish": "npm run build && electron-forge publish"
