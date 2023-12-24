@@ -6,6 +6,7 @@
   "main": "electron-entry.js",
   "author": "Nicholas",
   "description": "Reddit Watcher App",
+  "productName": "Reddit Watcher",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build --base ./",
