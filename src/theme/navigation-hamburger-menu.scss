@@ -55,15 +55,6 @@
   margin-left: 0.4em;
 }
 
-@media screen and (max-width: 801px) {
-  .tool-bar-title {
-    font-size: 1.2em; /* or 1em */
-  }
-  .drawer-popout-header > h1 {
-    font-size: 1.75em; /* or 1em */
-  }
-}
-
 .drawer-background {
   position: absolute;
   top: 0;
@@ -76,8 +67,9 @@
 .drawer-popout {
   white-space: nowrap;
   position: absolute;
-  background: #202124;
+  background: #292a2e;
   color: white;
+  min-width: 240px;
   max-width: 75%;
   top: 0px;
   bottom: 0px;
@@ -92,19 +84,6 @@
   transform: translate(0%, 0%);
 }
 
-.drawer-popout-header {
-  display: flex;
-  height: 2.8em;
-  max-height: 2.8em;
-}
-
-.drawer-popout-header > h1 {
-  align-self: center;
-  margin: 0;
-  margin-left: 0.5em;
-  margin-right: 0.5em;
-}
-
 .drawer-popout-main {
   flex-grow: 1;
 }
@@ -113,10 +92,24 @@
 }
 .drawer-popout-item {
   cursor: pointer;
+  height: 3em;
+  display: flex;
+  align-items: center;
+  justify-content: left;
 }
 
-.drawer-popout-item > p {
-  margin: 0.5em 0.5em 0.5em 0.8em;
+.drawer-popout-item-text {
+  margin-left: 0.5em;
+  font-size: 1.3em;
+}
+
+@media screen and (max-width: 801px) {
+  .tool-bar-title {
+    font-size: 1.2em; /* or 1em */
+  }
+  .drawer-popout-item-text {
+    font-size: 1em;
+  }
 }
 
 /* The switch - the box around the slider */

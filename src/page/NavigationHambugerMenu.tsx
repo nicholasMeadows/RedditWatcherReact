@@ -145,6 +145,9 @@ const NavigationHambugerMenu: React.FC = () => {
       <div style={{ visibility: `${popoutDrawerOpen ? "visible" : "hidden"}` }}>
         <div
           className="drawer-background"
+          style={{
+            top: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
+          }}
           onClick={() => {
             setPopoutDrawerOpen(false);
           }}
@@ -153,11 +156,10 @@ const NavigationHambugerMenu: React.FC = () => {
           className={`drawer-popout ${
             popoutDrawerOpen ? "drawer-popout-open" : ""
           }`}
+          style={{
+            top: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
+          }}
         >
-          <div className="drawer-popout-header">
-            <h1>Reddit Watcher</h1>
-          </div>
-          <hr />
           {redditAuthStatus == RedditAuthenticationStatus.AUTHENTICATED && (
             <div className="drawer-popout-main">
               <div
@@ -166,7 +168,7 @@ const NavigationHambugerMenu: React.FC = () => {
                   navigateTo(POST_ROW_ROUTE);
                 }}
               >
-                <p>Home</p>
+                <p className="drawer-popout-item-text">Home</p>
               </div>
               <hr />
               <div
@@ -175,7 +177,9 @@ const NavigationHambugerMenu: React.FC = () => {
                   navigateTo(MODIFY_SUBREDDIT_LISTS_ROUTE);
                 }}
               >
-                <p>Modify Subreddit Lists</p>
+                <p className="drawer-popout-item-text">
+                  Modify Subreddit Lists
+                </p>
               </div>
               <hr />
               <div
@@ -184,32 +188,37 @@ const NavigationHambugerMenu: React.FC = () => {
                   navigateTo(MODIFY_SUBREDDIT_QUEUE_ROUTE);
                 }}
               >
-                <p>Modify Subreddit Queue</p>
+                <p className="drawer-popout-item-text">
+                  Modify Subreddit Queue
+                </p>
               </div>
               <hr />
               <div
                 className="drawer-popout-item"
                 onClick={() => navigateTo(REDDIT_WATCHER_SETTINGS_ROUTE)}
               >
-                <p> Reddit Watcher Settings</p>
+                <p className="drawer-popout-item-text">
+                  {" "}
+                  Reddit Watcher Settings
+                </p>
               </div>
               <hr />
               <div
                 className="drawer-popout-item"
                 onClick={() => navigateTo(REDDIT_POST_SETTINGS_ROUTE)}
               >
-                <p>Reddit Post Settings</p>
+                <p className="drawer-popout-item-text">Reddit Post Settings</p>
               </div>
               <hr />
               <div
                 className="drawer-popout-item"
                 onClick={() => navigateTo(REDDIT_SIGNIN_ROUTE)}
               >
-                <p>Reddit Auth</p>
+                <p className="drawer-popout-item-text">Reddit Auth</p>
               </div>
               <hr />
-              <div className="drawer-popout-item flex cursor-default">
-                <p>Dark Mode</p>
+              <div className="drawer-popout-item cursor-default">
+                <p className="drawer-popout-item-text">Dark Mode</p>
 
                 <label className="switch">
                   <input
@@ -247,14 +256,14 @@ const NavigationHambugerMenu: React.FC = () => {
                   }
                 }}
               />
-              <p>Import Config</p>
+              <p className="drawer-popout-item-text">Import Config</p>
             </div>
             <hr />
             <div
               className="drawer-popout-item"
               onClick={() => dispatch(exportAppConfig())}
             >
-              <p>Export Config</p>
+              <p className="drawer-popout-item-text">Export Config</p>
             </div>
           </div>
         </div>
