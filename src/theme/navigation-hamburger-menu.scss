@@ -78,6 +78,7 @@
   flex-direction: column;
   transform: translate(-100%, 0);
   transition: transform 250ms;
+  overflow-y: auto;
 }
 
 .drawer-popout-open {
