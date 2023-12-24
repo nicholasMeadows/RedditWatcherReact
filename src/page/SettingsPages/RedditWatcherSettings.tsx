@@ -96,259 +96,251 @@ const RedditWatcherSettings: React.FC = () => {
     setLocalPostRowsToShowInView(statePostRowsToShowInView);
   }, [statePostRowsToShowInView]);
   return (
-    <>
-      <div className="reddit-watcher-settings">
-        <div className="settings-item">
-          <label className="select-label">Subreddit Sort</label>
-          <select
-            value={subredditSortOrderOption}
-            onChange={(event) =>
-              dispatch(setSubredditSortOrderOption(event.target.value))
-            }
-            className="select"
-          >
-            {Object.entries(SubredditSortOrderOptionsEnum).map((key) => {
-              return (
-                <option
-                  hidden={!checkPlatformForSubredditSortOrderOption(key[1])}
-                  key={key[0]}
-                  value={key[1]}
-                >
-                  {key[1]}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-        <hr />
-        <div className="settings-item">
-          <label className="select-label">Row Increment</label>
-          <select
-            value={rowIncrementOption}
-            onChange={(event) =>
-              dispatch(setRowIncrementOption(event.target.value))
-            }
-            className="select"
-          >
-            {Object.entries(RowIncrementOptionsEnum).map((key) => {
-              return (
-                <option key={key[0]} value={key[1]}>
-                  {key[1]}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-        <hr />
-        <div className="settings-item">
-          <label className="select-label">Post Row Scroll</label>
-          <select
-            value={postRowScrollOption}
-            onChange={(event) =>
-              dispatch(setPostRowScrollOption(event.target.value))
-            }
-            className="select"
-          >
-            {Object.entries(PostRowScrollOptionsEnum).map((key) => {
-              return (
-                <option key={key[0]} value={key[1]}>
-                  {key[1]}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-        <hr />
-        <div className="settings-item">
-          <label className="select-label">Subreddit list Sort</label>
-          <select
-            value={selectedSubredditListSortOption}
-            onChange={(event) =>
-              dispatch(setSelectedSubredditListSortOption(event.target.value))
-            }
-            className="select"
-          >
-            {Object.entries(SelectedSubredditListSortOptionEnum).map((key) => {
-              return (
-                <option key={key[0]} value={key[1]}>
-                  {key[1]}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-        <hr />
-        <div className="settings-item">
-          <label className="select-label">Random Iteration Weight</label>
-          <select
-            value={randomIterationSelectWeightOption}
-            onChange={(event) =>
-              dispatch(setRandomIterationSelectWeightOption(event.target.value))
-            }
-            className="select"
-          >
-            {Object.entries(RandomIterationSelectWeightOptionsEnum).map(
-              (key) => {
-                return (
-                  <option key={key[0]} value={key[1]}>
-                    {key[1]}
-                  </option>
-                );
-              }
-            )}
-          </select>
-        </div>
-        <hr />
-        <div className="settings-item">
-          <label className="select-label">
-            Select Subreddit List Menu Sort
-          </label>
-          <select
-            value={selectSubredditListMenuSortOption}
-            onChange={(event) =>
-              dispatch(setSelectSubredditListMenuSortOption(event.target.value))
-            }
-            className="select"
-          >
-            {Object.entries(SelectSubredditListMenuSortOptionEnum).map(
-              (key) => {
-                return (
-                  <option key={key[0]} value={key[1]}>
-                    {key[1]}
-                  </option>
-                );
-              }
-            )}
-          </select>
-        </div>
-        <hr />
-        <div className="settings-item">
-          <label className="select-label">Sort order Direction</label>
-          <select
-            value={sortOrderDirectionOption}
-            onChange={(event) =>
-              dispatch(setSortOrderDirectionOption(event.target.value))
-            }
-            className="select"
-          >
-            {Object.entries(SortOrderDirectionOptionsEnum).map((key) => {
-              return (
-                <option key={key[0]} value={key[1]}>
-                  {key[1]}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-        <hr />
-        <div className="settings-item">
-          <label className="select-label">
-            Select Subreddit Iteration method
-          </label>
-          <select
-            value={selectSubredditIterationMethodOption}
-            onChange={(event) =>
-              dispatch(
-                setSelectSubredditIterationMethodOption(event.target.value)
-              )
-            }
-            className="select"
-          >
-            {Object.entries(SelectSubredditIterationMethodOptionsEnum).map(
-              (key) => {
-                return (
-                  <option key={key[0]} value={key[1]}>
-                    {key[1]}
-                  </option>
-                );
-              }
-            )}
-          </select>
-        </div>
-        <hr />
-        <div className="settings-item">
-          <label className="select-label">Reddit URL Max Length</label>
-          <input
-            value={localConcatRedditUrlMaxLength}
-            className="input"
-            type="number"
-            onChange={(event) => {
-              const inputValue = parseInt(event.target.value);
-              dispatch(validateConcateRedditUrlLength(inputValue));
-              setLocalConcatRedditUrlMaxLength(inputValue);
-            }}
-            onBlur={(event) => {
-              const inputValue = parseInt(event.target.value);
-              dispatch(setConcatRedditUrlMaxLength(inputValue));
-            }}
-          />
-          <p className="settings-item-error">
-            {concatRedditUrlMaxLengthValidationError}
-          </p>
-        </div>
-        <hr />
-        <div className="settings-item">
-          <label className="select-label">Content Filtering</label>
-          <select
-            value={contentFiltering}
-            onChange={(event) =>
-              dispatch(setContentFiltering(event.target.value))
-            }
-            className="select"
-          >
-            {Object.entries(ContentFilteringOptionEnum).map((key) => {
-              return (
-                <option key={key[0]} value={key[1]}>
-                  {key[1]}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-        <hr />
-        <div className="settings-item">
-          <label className="select-label">Posts to Show In Row</label>
-          <input
-            value={localPostsToShowInRow}
-            className="input"
-            type="number"
-            onChange={(event) => {
-              const inputValue = parseInt(event.target.value);
-              dispatch(validatePostsToShowInRow(inputValue));
-              setLocalPostsToShowInRow(inputValue);
-            }}
-            onBlur={(event) => {
-              const inputValue = parseInt(event.target.value);
-              dispatch(setPostsToShowInRow(inputValue));
-            }}
-          />
-          <p className="settings-item-error">
-            {postsToShowInRowValidationError}
-          </p>
-        </div>
-        <hr />
-        <div className="settings-item">
-          <label className="select-label">Post Rows to Show In View</label>
-          <input
-            value={localPostRowsToShowInView}
-            className="input"
-            type="number"
-            onChange={(event) => {
-              const inputValue = parseInt(event.target.value);
-              dispatch(validatePostRowsToShowInView(inputValue));
-              setLocalPostRowsToShowInView(inputValue);
-            }}
-            onBlur={(event) => {
-              const inputValue = parseInt(event.target.value);
-              dispatch(setPostRowsToShowInView(inputValue));
-            }}
-          />
-          <p className="settings-item-error">
-            {postRowsToShowInViewValidationError}
-          </p>
-        </div>
+    <div className="reddit-watcher-settings">
+      <hr />
+      <div className="settings-item">
+        <label className="select-label">Subreddit Sort</label>
+        <select
+          value={subredditSortOrderOption}
+          onChange={(event) =>
+            dispatch(setSubredditSortOrderOption(event.target.value))
+          }
+          className="select"
+        >
+          {Object.entries(SubredditSortOrderOptionsEnum).map((key) => {
+            return (
+              <option
+                hidden={!checkPlatformForSubredditSortOrderOption(key[1])}
+                key={key[0]}
+                value={key[1]}
+              >
+                {key[1]}
+              </option>
+            );
+          })}
+        </select>
       </div>
-    </>
+      <hr />
+      <div className="settings-item">
+        <label className="select-label">Row Increment</label>
+        <select
+          value={rowIncrementOption}
+          onChange={(event) =>
+            dispatch(setRowIncrementOption(event.target.value))
+          }
+          className="select"
+        >
+          {Object.entries(RowIncrementOptionsEnum).map((key) => {
+            return (
+              <option key={key[0]} value={key[1]}>
+                {key[1]}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+      <hr />
+      <div className="settings-item">
+        <label className="select-label">Post Row Scroll</label>
+        <select
+          value={postRowScrollOption}
+          onChange={(event) =>
+            dispatch(setPostRowScrollOption(event.target.value))
+          }
+          className="select"
+        >
+          {Object.entries(PostRowScrollOptionsEnum).map((key) => {
+            return (
+              <option key={key[0]} value={key[1]}>
+                {key[1]}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+      <hr />
+      <div className="settings-item">
+        <label className="select-label">Subreddit list Sort</label>
+        <select
+          value={selectedSubredditListSortOption}
+          onChange={(event) =>
+            dispatch(setSelectedSubredditListSortOption(event.target.value))
+          }
+          className="select"
+        >
+          {Object.entries(SelectedSubredditListSortOptionEnum).map((key) => {
+            return (
+              <option key={key[0]} value={key[1]}>
+                {key[1]}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+      <hr />
+      <div className="settings-item">
+        <label className="select-label">Random Iteration Weight</label>
+        <select
+          value={randomIterationSelectWeightOption}
+          onChange={(event) =>
+            dispatch(setRandomIterationSelectWeightOption(event.target.value))
+          }
+          className="select"
+        >
+          {Object.entries(RandomIterationSelectWeightOptionsEnum).map((key) => {
+            return (
+              <option key={key[0]} value={key[1]}>
+                {key[1]}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+      <hr />
+      <div className="settings-item">
+        <label className="select-label">Select Subreddit List Menu Sort</label>
+        <select
+          value={selectSubredditListMenuSortOption}
+          onChange={(event) =>
+            dispatch(setSelectSubredditListMenuSortOption(event.target.value))
+          }
+          className="select"
+        >
+          {Object.entries(SelectSubredditListMenuSortOptionEnum).map((key) => {
+            return (
+              <option key={key[0]} value={key[1]}>
+                {key[1]}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+      <hr />
+      <div className="settings-item">
+        <label className="select-label">Sort order Direction</label>
+        <select
+          value={sortOrderDirectionOption}
+          onChange={(event) =>
+            dispatch(setSortOrderDirectionOption(event.target.value))
+          }
+          className="select"
+        >
+          {Object.entries(SortOrderDirectionOptionsEnum).map((key) => {
+            return (
+              <option key={key[0]} value={key[1]}>
+                {key[1]}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+      <hr />
+      <div className="settings-item">
+        <label className="select-label">
+          Select Subreddit Iteration method
+        </label>
+        <select
+          value={selectSubredditIterationMethodOption}
+          onChange={(event) =>
+            dispatch(
+              setSelectSubredditIterationMethodOption(event.target.value)
+            )
+          }
+          className="select"
+        >
+          {Object.entries(SelectSubredditIterationMethodOptionsEnum).map(
+            (key) => {
+              return (
+                <option key={key[0]} value={key[1]}>
+                  {key[1]}
+                </option>
+              );
+            }
+          )}
+        </select>
+      </div>
+      <hr />
+      <div className="settings-item">
+        <label className="select-label">Reddit URL Max Length</label>
+        <input
+          value={localConcatRedditUrlMaxLength}
+          className="input"
+          type="number"
+          onChange={(event) => {
+            const inputValue = parseInt(event.target.value);
+            dispatch(validateConcateRedditUrlLength(inputValue));
+            setLocalConcatRedditUrlMaxLength(inputValue);
+          }}
+          onBlur={(event) => {
+            const inputValue = parseInt(event.target.value);
+            dispatch(setConcatRedditUrlMaxLength(inputValue));
+          }}
+        />
+        <p className="settings-item-error">
+          {concatRedditUrlMaxLengthValidationError}
+        </p>
+      </div>
+      <hr />
+      <div className="settings-item">
+        <label className="select-label">Content Filtering</label>
+        <select
+          value={contentFiltering}
+          onChange={(event) =>
+            dispatch(setContentFiltering(event.target.value))
+          }
+          className="select"
+        >
+          {Object.entries(ContentFilteringOptionEnum).map((key) => {
+            return (
+              <option key={key[0]} value={key[1]}>
+                {key[1]}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+      <hr />
+      <div className="settings-item">
+        <label className="select-label">Posts to Show In Row</label>
+        <input
+          value={localPostsToShowInRow}
+          className="input"
+          type="number"
+          onChange={(event) => {
+            const inputValue = parseInt(event.target.value);
+            dispatch(validatePostsToShowInRow(inputValue));
+            setLocalPostsToShowInRow(inputValue);
+          }}
+          onBlur={(event) => {
+            const inputValue = parseInt(event.target.value);
+            dispatch(setPostsToShowInRow(inputValue));
+          }}
+        />
+        <p className="settings-item-error">{postsToShowInRowValidationError}</p>
+      </div>
+      <hr />
+      <div className="settings-item">
+        <label className="select-label">Post Rows to Show In View</label>
+        <input
+          value={localPostRowsToShowInView}
+          className="input"
+          type="number"
+          onChange={(event) => {
+            const inputValue = parseInt(event.target.value);
+            dispatch(validatePostRowsToShowInView(inputValue));
+            setLocalPostRowsToShowInView(inputValue);
+          }}
+          onBlur={(event) => {
+            const inputValue = parseInt(event.target.value);
+            dispatch(setPostRowsToShowInView(inputValue));
+          }}
+        />
+        <p className="settings-item-error">
+          {postRowsToShowInViewValidationError}
+        </p>
+      </div>
+      <hr />
+    </div>
   );
 };
 
