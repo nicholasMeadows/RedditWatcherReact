@@ -81,6 +81,7 @@ button[disabled] {
 .app-body {
   background: var(--background);
   overflow-y: auto;
+  z-index: 1;
 }
 
 .settings-item {

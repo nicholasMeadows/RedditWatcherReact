@@ -8,7 +8,7 @@
   top: 0;
   left: 0;
   height: 10px;
-  z-index: 10000;
+  z-index: 20;
 }
 
 .top-bar-inner {
@@ -62,7 +62,7 @@
   left: 0;
   right: 0;
   background: rgb(119, 119, 119, 0.5);
-  z-index: 100000000000;
+  z-index: 20;
 }
 .drawer-popout {
   white-space: nowrap;
@@ -73,7 +73,7 @@
   max-width: 75%;
   top: 0px;
   bottom: 0px;
-  z-index: 1000000000000;
+  z-index: 20;
   display: flex;
   flex-direction: column;
   transform: translate(-100%, 0);
