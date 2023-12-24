@@ -1,8 +1,12 @@
-/* eslint-disable no-undef */
-/* eslint-disable @typescript-eslint/no-var-requires */
+import { app, BrowserWindow } from "electron";
+import electronSquirrelStartup from "electron-squirrel-startup";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
 
-const { app, BrowserWindow } = require("electron");
-const path = require("path");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+if (electronSquirrelStartup) app.quit();
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -10,7 +14,7 @@ const createWindow = () => {
     height: 600,
   });
   // win.removeMenu();
-  win.loadFile(path.resolve(__dirname, "www", "index.html"));
+  win.loadFile(path.resolve(__dirname, "dist", "index.html"));
   win.webContents.session.webRequest.onBeforeSendHeaders(
     (details, callback) => {
       let requestHeadersToReturn;
