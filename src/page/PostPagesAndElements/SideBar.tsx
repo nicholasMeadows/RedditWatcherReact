@@ -145,8 +145,8 @@ const SideBar: React.FC = () => {
       >
         <div className="search-bar">
           <SearchRedditBar darkmodeOverride={false} />
-          <hr className="hr" />
         </div>
+        <hr className="hr" />
         <div className="subreddit-list-select-div">
           <label className="subreddit-list-select-label">Subreddit List</label>
           <select
@@ -180,7 +180,7 @@ const SideBar: React.FC = () => {
             })}
           </select>
         </div>
-
+        <hr className="hr" />
         <div className="subreddit-list" ref={subredditListDivRef}>
           {subredditsToShow.map((subreddit) => (
             <p
