@@ -62,6 +62,7 @@ $content-margin: 0em 1em 0em 1em;
   position: relative;
   overflow-y: auto;
   margin: $content-margin;
+  margin-right: 0;
   margin-top: 0.5em;
 }
 
@@ -74,6 +75,7 @@ $content-margin: 0em 1em 0em 1em;
 .subreddit-list-item {
   font-size: 1.3em;
   margin: 0;
+  margin-right: 1em;
 }
 .subreddit-list-item-highlight {
   background-color: white;
