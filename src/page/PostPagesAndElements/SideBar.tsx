@@ -143,9 +143,7 @@ const SideBar: React.FC = () => {
           sideBarOpen ? "side-bar-content-div-open" : ""
         } `}
       >
-        <div className="search-bar">
-          <SearchRedditBar darkmodeOverride={false} />
-        </div>
+        <SearchRedditBar darkmodeOverride={false} />
         <hr className="hr" />
         <div className="subreddit-list-select-div">
           <label className="subreddit-list-select-label">Subreddit List</label>
