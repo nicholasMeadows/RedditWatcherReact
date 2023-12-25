@@ -1,16 +1,19 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { SubredditAccountSearchResult } from "../../model/SubredditAccountSearchResult";
 import {
   searchRedditForSubRedditAndUser,
   subscribe,
   unsubscribe,
 } from "../../service/RedditService";
-import { SubredditAccountSearchResult } from "../../model/SubredditAccountSearchResult";
+import store from "../store";
 
 export const searchReddit = createAsyncThunk(
   "redditSearch/searchReddit",
-  async (searchTerm: string) => {
+  async () => {
     try {
-      const results = await searchRedditForSubRedditAndUser(searchTerm);
+      const results = await searchRedditForSubRedditAndUser(
+        store.getState().redditSearch.searcbBarInput
+      );
       return results;
     } catch (e) {
       console.log("exception", e);
@@ -33,25 +36,39 @@ export const subOrUnSubFromSubreddit = createAsyncThunk(
 );
 
 type InitialState = {
+  searcbBarInput: string;
   searchResults: Array<SubredditAccountSearchResult>;
+  searchResultsOpen: boolean;
 };
 
 const initialState: InitialState = {
+  searcbBarInput: "",
   searchResults: [],
+  searchResultsOpen: false,
 };
 
 export const redditSearchSlice = createSlice({
   name: "redditSearch",
   initialState: initialState,
   reducers: {
+    setSearchBarInput: (state, action: { type: string; payload: string }) => {
+      state.searcbBarInput = action.payload;
+    },
     clearSearchResults: (state) => {
       state.searchResults = [];
+    },
+    setSearchResultsOpen: (
+      state,
+      action: { type: string; payload: boolean }
+    ) => {
+      state.searchResultsOpen = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(searchReddit.fulfilled, (state, action) => {
         state.searchResults = action.payload;
+        state.searchResultsOpen = true;
       })
       .addCase(subOrUnSubFromSubreddit.fulfilled, (state, action) => {
         const oldSearchResult = action.payload as SubredditAccountSearchResult;
@@ -67,5 +84,6 @@ export const redditSearchSlice = createSlice({
   },
 });
 
-export const { clearSearchResults } = redditSearchSlice.actions;
+export const { setSearchBarInput, clearSearchResults, setSearchResultsOpen } =
+  redditSearchSlice.actions;
 export default redditSearchSlice.reducer;

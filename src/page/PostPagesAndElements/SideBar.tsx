@@ -144,7 +144,7 @@ const SideBar: React.FC = () => {
         } `}
       >
         <div className="search-bar">
-          <SearchRedditBar />
+          <SearchRedditBar darkmodeOverride={false} />
           <hr className="hr" />
         </div>
         <div className="subreddit-list-select-div">

@@ -3,6 +3,11 @@
   display: flex;
   flex-direction: column;
 }
+
+.reddit-search-input-wrapper {
+  position: relative;
+}
+
 .reddit-search-input {
   background-color: var(--app-background-color);
   color: var(--text-color);
@@ -17,6 +22,27 @@
   color: rgb(206, 206, 206);
 }
 
+.reddit-search-bar-control-img {
+  object-fit: contain;
+  height: 100%;
+  width: 2em;
+}
+
+.reddit-search-bar-control-imgs-div {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.expand-search-results-img {
+  transform: rotate(-90deg);
+}
+
+.collapse-search-results-img {
+  transform: rotate(90deg);
+}
+
 .search-results {
   background: white;
   position: absolute;
@@ -24,6 +50,11 @@
   bottom: 0;
   overflow-y: auto;
   width: 100%;
+  z-index: 50;
+  height: 0px;
+}
+.search-results-open {
+  height: unset;
 }
 
 .search-result-item {
