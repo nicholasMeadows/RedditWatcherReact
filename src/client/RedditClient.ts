@@ -144,6 +144,7 @@ export async function getSubscribedSubReddits(
       isSubscribed: subredditData.user_is_subscriber,
       fromList: "",
       subredditUuid: uuidV4(),
+      isUser: subredditData.display_name_prefixed.startsWith("u_"),
     });
   });
   return { after: after, subreddits: subreddits };

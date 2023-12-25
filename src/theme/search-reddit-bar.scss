@@ -44,10 +44,10 @@
 }
 
 .search-results {
+  cursor: default;
   background: white;
   position: absolute;
   color: black;
-  bottom: 0;
   overflow-y: auto;
   width: 100%;
   z-index: 50;

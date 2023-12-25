@@ -56,6 +56,7 @@ export function convertPost(post: T3): Post {
         ) != undefined,
     fromList: fromList,
     subredditUuid: uuidV4(),
+    isUser: post.subreddit_name_prefixed.startsWith("u_"),
   };
   return {
     subreddit: subreddit,

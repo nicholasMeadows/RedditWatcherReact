@@ -512,6 +512,7 @@ function getSubredditsFromRedditListDotCom(): Promise<{
                       isSubscribed: false,
                       fromList: "",
                       subredditUuid: uuidV4(),
+                      isUser: false,
                     });
                   }
                 }

@@ -119,6 +119,7 @@ export const importAppConfig = createAsyncThunk(
                       isSubscribed: subreddit["isSubscribed"],
                       fromList: subreddit["fromList"],
                       subredditUuid: subreddit["subredditUuid"],
+                      isUser: subreddit["isUser"],
                     });
                   } else {
                     failedParsing = true;

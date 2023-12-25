@@ -257,8 +257,8 @@ function resetContextMenuFields(state: InitialState) {
 function buildOpenPostPermaLink(permaLink: string) {
   return `https://www.reddit.com${permaLink}`;
 }
-function buildOpenSubredditLink(displayName: string) {
-  return `https://www.reddit.com/r/${displayName}`;
+function buildOpenSubredditLink(isUser: boolean, displayName: string) {
+  return `https://www.reddit.com/${isUser ? "u" : "r"}/${displayName}`;
 }
 
 const setContextStateFields = (
@@ -280,6 +280,7 @@ const setContextStateFields = (
     };
     state.openPostPermaLink = buildOpenPostPermaLink(post.permaLink);
     state.openSubredditLink = buildOpenSubredditLink(
+      post.subreddit.isUser,
       post.subreddit.displayName
     );
     state.subreddit = post.subreddit;
@@ -334,7 +335,10 @@ const setContextStateFields = (
   if (contextDataObjects.subreddit != undefined) {
     const subreddit = contextDataObjects.subreddit;
     state.subreddit = subreddit;
-    state.openSubredditLink = buildOpenSubredditLink(subreddit.displayName);
+    state.openSubredditLink = buildOpenSubredditLink(
+      subreddit.isUser,
+      subreddit.displayName
+    );
 
     let showOpenSubreddit = true;
     let showSkipToSubreddit = true;
@@ -388,7 +392,9 @@ const setContextStateFields = (
 
   if (contextDataObjects.subredditAccountSearchResult) {
     const searchResultItem = contextDataObjects.subredditAccountSearchResult;
+    console.log(searchResultItem);
     state.openSubredditLink = buildOpenSubredditLink(
+      searchResultItem.isUser,
       searchResultItem.displayName
     );
     state.subreddit = searchResultItem;
