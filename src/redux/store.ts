@@ -11,6 +11,7 @@ import redditClientReducer from "./slice/RedditClientSlice";
 import subredditListsReducer from "./slice/RedditListsSlice";
 import redditSearchReducer from "./slice/RedditSearchSlice";
 import sideBarReducer from "./slice/SideBarSlice";
+import singlePostPageSliceReducer from "./slice/SinglePostPageSlice";
 
 const store = configureStore({
   reducer: {
@@ -24,6 +25,7 @@ const store = configureStore({
     contextMenu: contextMenuReducer,
     appNotification: appNotificationReducer,
     sideBar: sideBarReducer,
+    singlePostPage: singlePostPageSliceReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk),
 });

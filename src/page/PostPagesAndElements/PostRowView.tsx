@@ -11,6 +11,7 @@ import {
   postRowLeftButtonClicked,
   postRowRightButtonClicked,
 } from "../../redux/slice/PostRowsSlice";
+import { setPostAndRowUuid } from "../../redux/slice/SinglePostPageSlice";
 import store, { useAppDispatch, useAppSelector } from "../../redux/store";
 import getPlatform from "../../util/PlatformUtil";
 import PostElement from "./PostElement";
@@ -166,9 +167,13 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
                 );
               }}
               onClick={() => {
-                navigate(
-                  `${SINGPLE_POST_ROUTE}?postRowUuid=${postRow.postRowUuid}&postUuid=${post.postUuid}`
+                dispatch(
+                  setPostAndRowUuid({
+                    postRowUuid: postRow.postRowUuid,
+                    postUuid: post.postUuid,
+                  })
                 );
+                navigate(`${SINGPLE_POST_ROUTE}`);
               }}
             >
               <div className="postCardHeader">
