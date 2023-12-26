@@ -9,6 +9,7 @@ import { T3 } from "../model/RedditApiResponse/Types/T3/T3";
 import { T5 } from "../model/RedditApiResponse/Types/T5";
 import { Subreddit } from "../model/Subreddit/Subreddit";
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult";
+import { SubredditAccountSearchSeperateArrs } from "../model/SubredditAccountSearchSeperateArrs";
 import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
 import { convertPost } from "../model/converter/PostConverter";
 import {
@@ -249,7 +250,7 @@ export async function getPostsForSubredditUri(
 
 export async function callSearchRedditForSubRedditAndUser(
   searchTerm: string
-): Promise<Array<SubredditAccountSearchResult>> {
+): Promise<SubredditAccountSearchSeperateArrs> {
   // CheckIsUserLoggedIn();
   const authInfo = await getAuthInfo();
   checkRateLimits();
@@ -272,7 +273,8 @@ export async function callSearchRedditForSubRedditAndUser(
   updateRateLimitVariables(response);
 
   const redditResponse: RedditApiResponse<T2 | T5> = response.data;
-  const results = new Array<SubredditAccountSearchResult>();
+  const users = new Array<SubredditAccountSearchResult>();
+  const subreddits = new Array<SubredditAccountSearchResult>();
   const children: Array<ChildDataObj<T2 | T5>> = redditResponse.data.children;
   children.forEach((child) => {
     const serializedObj = child.data;
@@ -282,17 +284,17 @@ export async function callSearchRedditForSubRedditAndUser(
       if ("t2" == kind) {
         const t2 = serializedObj as T2;
         if (t2["is_suspended"] == undefined && t2["subreddit"] != undefined) {
-          results.push(convertAccount(t2));
+          users.push(convertAccount(t2));
         }
       }
       if ("t5" == kind) {
         const t5 = serializedObj as T5;
-        results.push(convertSubreddit(t5));
+        subreddits.push(convertSubreddit(t5));
       }
     }
   });
 
-  return results;
+  return { users: users, subreddits: subreddits };
 }
 
 export async function callUnsubscribe(name: string) {

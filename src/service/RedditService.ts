@@ -11,6 +11,7 @@ import {
 } from "../client/RedditClient";
 import { Post } from "../model/Post/Post";
 import { Subreddit } from "../model/Subreddit/Subreddit";
+import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult";
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum";
 import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum";
 import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum";
@@ -606,19 +607,41 @@ async function getPostsForSubreddit(
   return posts;
 }
 
-export async function searchRedditForSubRedditAndUser(searchTerm: string) {
+export async function searchRedditForSubRedditAndUser(
+  searchTerm: string
+): Promise<Array<SubredditAccountSearchResult>> {
   const state = store.getState();
-  let results = await callSearchRedditForSubRedditAndUser(searchTerm);
+  let { users, subreddits } = await callSearchRedditForSubRedditAndUser(
+    searchTerm
+  );
 
   if (state.appConfig.contentFiltering == ContentFilteringOptionEnum.SFW) {
-    results = results.filter((result) => !result.over18);
+    users = users.filter((result) => !result.over18);
+    subreddits = subreddits.filter((result) => !result.over18);
   } else if (
     state.appConfig.contentFiltering == ContentFilteringOptionEnum.NSFW
   ) {
-    results = results.filter((result) => result.over18);
+    users = users.filter((result) => result.over18);
+    subreddits = subreddits.filter((result) => result.over18);
   }
-  results.map((result) => (result.searchResultUuid = uuidV4()));
-  return results;
+
+  const sortByDisplayName = (aDisplayName: string, bDisplayName: string) => {
+    const aLowerCase = aDisplayName.toLowerCase();
+    const bLowerCase = bDisplayName.toLowerCase();
+    if (aLowerCase > bLowerCase) {
+      return 1;
+    } else if (aLowerCase < bLowerCase) {
+      return -1;
+    }
+    return 0;
+  };
+
+  users.sort((a, b) => sortByDisplayName(a.displayName, b.displayName));
+  subreddits.sort((a, b) => sortByDisplayName(a.displayName, b.displayName));
+
+  users.map((result) => (result.searchResultUuid = uuidV4()));
+  subreddits.map((result) => (result.searchResultUuid = uuidV4()));
+  return [...users, ...subreddits];
 }
 
 export async function unsubscribe(name: string) {
