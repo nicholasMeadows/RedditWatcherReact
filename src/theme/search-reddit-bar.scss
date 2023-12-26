@@ -32,7 +32,9 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  right: 0;
+  right: 0.2em;
+  display: flex;
+  gap: 0.3em;
 }
 
 .expand-search-results-img {
@@ -52,9 +54,7 @@
   width: 100%;
   z-index: 50;
   height: 0px;
-}
-.search-results-open {
-  height: unset;
+  transition: height 200ms ease-out;
 }
 
 .search-result-item {
