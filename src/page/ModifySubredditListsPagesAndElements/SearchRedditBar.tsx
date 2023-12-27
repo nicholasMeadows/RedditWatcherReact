@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { RedditSearchItemContextMenuEvent } from "../../model/Events/RedditSearchItemContextMenuEvent";
+import { Platform } from "../../model/Platform";
 import { setRedditSearchItemContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
 import {
   clearSearchResults,
@@ -9,6 +10,7 @@ import {
   subOrUnSubFromSubreddit,
 } from "../../redux/slice/RedditSearchSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
+import getPlatform from "../../util/PlatformUtil";
 
 type Props = {
   darkmodeOverride?: boolean;
@@ -79,6 +81,12 @@ const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
           }}
           onKeyUp={(keyboardEvent) => {
             if (keyboardEvent.key == "Enter") {
+              dispatch(searchReddit());
+            }
+          }}
+          onBlur={() => {
+            const platform = getPlatform();
+            if (platform == Platform.Android || platform == Platform.Ios) {
               dispatch(searchReddit());
             }
           }}
