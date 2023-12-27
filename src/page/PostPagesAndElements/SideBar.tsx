@@ -6,6 +6,7 @@ import {
   setListToFilterByUuid,
   setMouseDownOnOpenSidebarButton,
   setOpenSidebarButtonTopPercent,
+  setSearchInput,
   setSideBarButtonMoved,
   setSideBarOpen,
   subredditListsUpdated,
@@ -48,7 +49,7 @@ const SideBar: React.FC = () => {
   const openSideBarButtonDivRef = useRef(null);
   const subredditListDivRef = useRef(null);
   useEffect(() => {
-    dispatch(subredditListsUpdated(subredditLists));
+    dispatch(subredditListsUpdated());
   }, [dispatch, subredditLists]);
 
   useEffect(() => {
@@ -155,12 +156,7 @@ const SideBar: React.FC = () => {
             value={listToFilterByUuid}
             onChange={(event) => {
               console.log(event.target.value);
-              dispatch(
-                setListToFilterByUuid({
-                  listUuid: event.target.value,
-                  subredditLists: subredditLists,
-                })
-              );
+              dispatch(setListToFilterByUuid(event.target.value));
             }}
           >
             <option value={SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED}>
@@ -180,6 +176,20 @@ const SideBar: React.FC = () => {
               );
             })}
           </select>
+        </div>
+        <hr className="hr" />
+
+        <div className="search-in-list-div">
+          <label className="search-in-list-label">
+            Search in available subreddits
+          </label>
+          <input
+            type="text"
+            className="search-in-list-input"
+            onChange={(event) => {
+              dispatch(setSearchInput(event.target.value));
+            }}
+          />
         </div>
         <hr className="hr" />
         <div className="subreddit-list" ref={subredditListDivRef}>

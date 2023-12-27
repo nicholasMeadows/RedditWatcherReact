@@ -287,12 +287,7 @@ export async function getPostRow(): Promise<{
     }
     fromSubreddits.push(...subredditsToGetPostsFor);
     posts = await getPostsForSubreddit(subredditsToGetPostsFor);
-    store.dispatch(
-      setSubredditsToShowInSideBar({
-        subreddits: sourceSubreddits,
-        subredditLists: store.getState().subredditLists.subredditLists,
-      })
-    );
+    store.dispatch(setSubredditsToShowInSideBar(sourceSubreddits));
     store.dispatch(
       setMostRecentSubredditGotten(
         fromSubreddits.length == 1 ? fromSubreddits[0] : undefined

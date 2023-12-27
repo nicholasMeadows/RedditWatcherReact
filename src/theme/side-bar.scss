@@ -54,6 +54,20 @@ $content-div-padding: 0.4em 0.8em;
   flex-direction: column;
   padding: $content-div-padding;
 }
+
+.search-in-list-div {
+  display: flex;
+  flex-direction: column;
+  padding: $content-div-padding;
+}
+.search-in-list-label {
+  align-self: center;
+  font-size: 1.3em;
+  margin-bottom: 0.3em;
+}
+.search-in-list-input {
+  font-size: 1.2em;
+}
 .subreddit-list {
   display: flex;
   flex-direction: column;
