@@ -8,6 +8,7 @@ import "./theme/global.scss";
 import "./theme/modify-subreddit-lists.scss";
 import "./theme/modify-subreddit-queue.scss";
 import "./theme/navigation-hamburger-menu.scss";
+import "./theme/post-element.scss";
 import "./theme/post-rows.scss";
 import "./theme/reddit-post-settings.scss";
 import "./theme/reddit-signin.scss";

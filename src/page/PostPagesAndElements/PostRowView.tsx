@@ -193,7 +193,9 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
                 <p className="postCardHeaderText">{post.randomSourceString}</p>
               </div>
 
-              <PostElement postRowUuid={postRow.postRowUuid} post={post} />
+              <div className="post-card-content">
+                <PostElement postRowUuid={postRow.postRowUuid} post={post} />
+              </div>
             </div>
           ))}
         </div>

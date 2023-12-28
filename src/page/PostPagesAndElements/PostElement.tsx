@@ -30,10 +30,11 @@ const PostElement: React.FC<Props> = ({ postRowUuid, post }) => {
   }, [location, darkMode]);
 
   return (
-    <div className="postCardMediaContentWrapper">
-      <div
+    <div className="post-element">
+      <img
         hidden={post.attachments.length == 1}
-        className="post-attachment-image-box post-attachment-image-box-left"
+        src={`assets/left_chevron_${carouselArrowLightDarkPart}_mode.png`}
+        className="post-element-scroll-img-button left"
         onClick={(event) => {
           event.stopPropagation();
           event.preventDefault();
@@ -44,16 +45,11 @@ const PostElement: React.FC<Props> = ({ postRowUuid, post }) => {
             })
           );
         }}
-      >
-        <img
-          src={`assets/left_chevron_${carouselArrowLightDarkPart}_mode.png`}
-          className="post-attachment-image"
-        />
-      </div>
-
-      <div
+      />
+      <img
         hidden={post.attachments.length == 1}
-        className="post-attachment-image-box post-attachment-image-box-right"
+        src={`assets/right_chevron_${carouselArrowLightDarkPart}_mode.png`}
+        className="post-element-scroll-img-button right"
         onClick={(event) => {
           event.stopPropagation();
           event.preventDefault();
@@ -64,24 +60,19 @@ const PostElement: React.FC<Props> = ({ postRowUuid, post }) => {
             })
           );
         }}
-      >
-        <img
-          src={`assets/right_chevron_${carouselArrowLightDarkPart}_mode.png`}
-          className="post-attachment-image"
-        />
-      </div>
+      />
 
       {(post.attachments[post.currentAttatchmentIndex].mediaType == "IMAGE" ||
         post.attachments[post.currentAttatchmentIndex].mediaType == "GIF") && (
         <img
           src={post.attachments[post.currentAttatchmentIndex].url}
-          className="postCardMediaElement"
+          className="post-element-media-element"
         ></img>
       )}
 
       {post.attachments[post.currentAttatchmentIndex].mediaType ==
         "VIDEO-MP4" && (
-        <video className="postCardMediaElement">
+        <video className="post-element-media-element">
           {" "}
           <source
             src={post.attachments[post.currentAttatchmentIndex].url}
@@ -92,7 +83,7 @@ const PostElement: React.FC<Props> = ({ postRowUuid, post }) => {
       {post.attachments[post.currentAttatchmentIndex].mediaType == "IFRAME" && (
         <iframe
           src={post.attachments[post.currentAttatchmentIndex].url}
-          className="postCardMediaElement"
+          className="post-element-media-element"
         />
       )}
     </div>
