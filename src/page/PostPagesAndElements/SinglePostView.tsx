@@ -93,7 +93,7 @@ const SinglePostView: React.FC = () => {
                   setPostContextMenuEvent({ event: postContextMenuEvent })
                 );
               }}
-              className="flex flex-column max-width-height-percentage"
+              className="flex flex-column max-width-height-percentage single-post-view-post-element"
             >
               <PostElement postRowUuid={postRowUuid} post={post} />
             </div>
