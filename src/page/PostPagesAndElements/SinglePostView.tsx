@@ -146,10 +146,14 @@ const SinglePostView: React.FC = () => {
         if (movementX < 0) {
           if (rect.right > divWrapperRect.right) {
             setTranslateX(updatedTranslateX);
+          } else {
+            setTranslateX(divWrapperRect.width / 2 - rect.width / 2);
           }
         } else if (movementX > 0) {
           if (rect.left < divWrapperRect.left) {
             setTranslateX(updatedTranslateX);
+          } else {
+            setTranslateX(rect.width / 2 - divWrapperRect.width / 2);
           }
         }
       }
@@ -168,10 +172,14 @@ const SinglePostView: React.FC = () => {
         if (movementY < 0) {
           if (rect.bottom > divWrapperRect.bottom) {
             setTranslateY(updatedTranslateY);
+          } else {
+            setTranslateY(divWrapperRect.height / 2 - rect.height / 2);
           }
         } else if (movementY > 0) {
           if (rect.top < divWrapperRect.top) {
             setTranslateY(updatedTranslateY);
+          } else {
+            setTranslateY(rect.height / 2 - divWrapperRect.height / 2);
           }
         }
       }
@@ -267,6 +275,9 @@ const SinglePostView: React.FC = () => {
                 scale={imgScale}
                 translateX={translateX}
                 translateY={translateY}
+                onMouseOut={() => {
+                  setMouseDownOnImg(false);
+                }}
                 onMouseDown={() => {
                   setMouseDownOnImg(true);
                 }}
@@ -276,9 +287,11 @@ const SinglePostView: React.FC = () => {
                 onMouseMove={(event) => {
                   handleDragImage(
                     event.target as HTMLImageElement,
-                    event.movementX,
-                    event.movementY
+                    event.clientX - lastImgTouchX,
+                    event.clientY - lastImgTouchY
                   );
+                  setLastImgTouchX(event.clientX);
+                  setLastImgTouchY(event.clientY);
                 }}
                 onWheel={(event) => {
                   handlePostElementImageScale(

@@ -20,6 +20,7 @@ type Props = {
   scale?: number;
   translateX?: number;
   translateY?: number;
+  onMouseOut?: MouseEventHandler;
   onMouseDown?: MouseEventHandler;
   onMouseUp?: MouseEventHandler;
   onMouseMove?: MouseEventHandler;
@@ -34,6 +35,7 @@ const PostElement: React.FC<Props> = ({
   scale = 1,
   translateX = 0,
   translateY = 0,
+  onMouseOut,
   onMouseDown,
   onMouseUp,
   onMouseMove,
@@ -101,6 +103,7 @@ const PostElement: React.FC<Props> = ({
             draggable={false}
             src={post.attachments[post.currentAttatchmentIndex].url}
             className="post-element-img-element"
+            onMouseOut={onMouseOut}
             onMouseDown={onMouseDown}
             onMouseUp={onMouseUp}
             onMouseMove={onMouseMove}
