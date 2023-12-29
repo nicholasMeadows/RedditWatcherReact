@@ -1,4 +1,10 @@
-import { useEffect, useState } from "react";
+import {
+  MouseEventHandler,
+  TouchEventHandler,
+  WheelEventHandler,
+  useEffect,
+  useState,
+} from "react";
 import { useLocation } from "react-router-dom";
 import { POST_ROW_ROUTE } from "../../RedditWatcherConstants";
 import { Post } from "../../model/Post/Post";
@@ -8,8 +14,34 @@ import {
 } from "../../redux/slice/PostRowsSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 
-type Props = { postRowUuid: string; post: Post };
-const PostElement: React.FC<Props> = ({ postRowUuid, post }) => {
+type Props = {
+  postRowUuid: string;
+  post: Post;
+  scale?: number;
+  translateX?: number;
+  translateY?: number;
+  onMouseDown?: MouseEventHandler;
+  onMouseUp?: MouseEventHandler;
+  onMouseMove?: MouseEventHandler;
+  onWheel?: WheelEventHandler;
+  onTouchStart?: TouchEventHandler;
+  onTouchEnd?: TouchEventHandler;
+  onTouchMove?: TouchEventHandler;
+};
+const PostElement: React.FC<Props> = ({
+  postRowUuid,
+  post,
+  scale = 1,
+  translateX = 0,
+  translateY = 0,
+  onMouseDown,
+  onMouseUp,
+  onMouseMove,
+  onWheel,
+  onTouchStart,
+  onTouchEnd,
+  onTouchMove,
+}) => {
   const dispatch = useAppDispatch();
   const location = useLocation();
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
@@ -64,10 +96,25 @@ const PostElement: React.FC<Props> = ({ postRowUuid, post }) => {
 
       {(post.attachments[post.currentAttatchmentIndex].mediaType == "IMAGE" ||
         post.attachments[post.currentAttatchmentIndex].mediaType == "GIF") && (
-        <img
-          src={post.attachments[post.currentAttatchmentIndex].url}
-          className="post-element-media-element"
-        ></img>
+        <div className="post-element-media-element">
+          <img
+            draggable={false}
+            src={post.attachments[post.currentAttatchmentIndex].url}
+            className="post-element-img-element"
+            onMouseDown={onMouseDown}
+            onMouseUp={onMouseUp}
+            onMouseMove={onMouseMove}
+            onWheel={onWheel}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+            onTouchMove={onTouchMove}
+            style={{
+              left: "50%",
+              top: "50%",
+              transform: `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${scale})`,
+            }}
+          ></img>
+        </div>
       )}
 
       {post.attachments[post.currentAttatchmentIndex].mediaType ==
