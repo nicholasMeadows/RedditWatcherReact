@@ -13,6 +13,7 @@
   height: 100%;
   max-width: 3em;
   object-fit: contain;
+  z-index: 2;
 }
 
 .post-element-scroll-img-button + .left {
@@ -32,6 +33,7 @@
 }
 
 .post-element-img-element {
+  z-index: 1;
   position: relative;
   max-height: 100%;
   max-width: 100%;
@@ -42,5 +44,5 @@
   -webkit-user-drag: none;
   -webkit-user-select: none;
   -ms-user-select: none;
-  transition: left 200ms ease-out, top 200ms ease-out, transform 200ms ease-out;
+  // transition: left 200ms ease-out, top 200ms ease-out, transform 200ms ease-out;
 }
