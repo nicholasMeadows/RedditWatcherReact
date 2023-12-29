@@ -125,43 +125,59 @@ const SinglePostView: React.FC = () => {
       const divWrapperRect = divWrapper.getBoundingClientRect();
       const divWrapperHeight = divWrapperRect.height;
       const divWrapperWidth = divWrapperRect.width;
-
       const rect = img.getBoundingClientRect();
       const imgHeight = rect.height;
       const imgWidth = rect.width;
 
-      console.log(imgHeight, divWrapperHeight);
-      if (imgHeight <= divWrapperHeight) {
-        setTranslateY(0);
-      } else {
-        const maxTranslateY = (imgHeight - divWrapperHeight) / 2;
-        const minTranslateY = maxTranslateY * -1;
+      const updatedTranslateX = translateX + movementX;
+      const updatedTranslateY = translateY + movementY;
 
-        const updatedTranslateY = translateY + movementY;
-        if (
-          updatedTranslateY > minTranslateY &&
-          updatedTranslateY < maxTranslateY
-        ) {
-          setTranslateY(updatedTranslateY);
+      if (imgWidth <= divWrapperWidth) {
+        if (movementX < 0) {
+          if (rect.left - divWrapperRect.left > 0) {
+            setTranslateX(updatedTranslateX);
+          }
+        } else if (movementX > 0) {
+          if (rect.right < divWrapperRect.right) {
+            setTranslateX(updatedTranslateX);
+          }
+        }
+      } else {
+        if (movementX < 0) {
+          if (rect.right > divWrapperRect.right) {
+            setTranslateX(updatedTranslateX);
+          }
+        } else if (movementX > 0) {
+          if (rect.left < divWrapperRect.left) {
+            setTranslateX(updatedTranslateX);
+          }
         }
       }
 
-      if (imgWidth <= divWrapperWidth) {
-        setTranslateX(0);
+      if (imgHeight <= divWrapperHeight) {
+        if (movementY < 0) {
+          if (rect.top > divWrapperRect.top) {
+            setTranslateY(updatedTranslateY);
+          }
+        } else if (movementY > 0) {
+          if (rect.bottom < divWrapperRect.bottom) {
+            setTranslateY(updatedTranslateY);
+          }
+        }
       } else {
-        const maxTranslateX = (imgWidth - divWrapperWidth) / 2;
-        const minTranslateX = maxTranslateX * -1;
-
-        const updatedTranslateX = translateX + movementX;
-        if (
-          updatedTranslateX > minTranslateX &&
-          updatedTranslateX < maxTranslateX
-        ) {
-          setTranslateX(updatedTranslateX);
+        if (movementY < 0) {
+          if (rect.bottom > divWrapperRect.bottom) {
+            setTranslateY(updatedTranslateY);
+          }
+        } else if (movementY > 0) {
+          if (rect.top < divWrapperRect.top) {
+            setTranslateY(updatedTranslateY);
+          }
         }
       }
     }
   };
+
   const handlePostElementImageScale = (
     inputDelta: number,
     postElementImageElement: HTMLImageElement,
