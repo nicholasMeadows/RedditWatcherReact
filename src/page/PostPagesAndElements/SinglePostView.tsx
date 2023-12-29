@@ -22,10 +22,23 @@ import PostElement from "./PostElement";
 
 const SinglePostView: React.FC = () => {
   const dispatch = useAppDispatch();
-  const post = useAppSelector((state) => state.singlePostPage.post);
   const postRowUuid = useAppSelector(
     (state) => state.singlePostPage.postRowUuid
   );
+  const post = useAppSelector((state) => {
+    const postRowUuid = state.singlePostPage.postRowUuid;
+    const postUuid = state.singlePostPage.postUuid;
+    if (postRowUuid == undefined || postUuid == undefined) {
+      return;
+    }
+
+    const postRow = state.postRows.postRows.find(
+      (pr) => pr.postRowUuid == postRowUuid
+    );
+    if (postRow != undefined) {
+      return postRow.posts.find((p) => p.postUuid == postUuid);
+    }
+  });
 
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);

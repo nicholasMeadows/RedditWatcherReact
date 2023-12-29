@@ -1,28 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { Post } from "../../model/Post/Post";
 import { SinglePostPageInfo } from "../../model/SinglePostPageInfo";
 import store from "../store";
-
-export const setPostAndRowUuid = createAsyncThunk(
-  "singlePostPage/setPostAndRowUuid",
-  async (singlePostPageInfo: SinglePostPageInfo) => {
-    const { postUuid, postRowUuid } = singlePostPageInfo;
-    const postRows = store.getState().postRows.postRows;
-
-    const postRow = postRows.find(
-      (postRow) => postRow.postRowUuid == postRowUuid
-    );
-    if (postRow != undefined) {
-      const post = postRow.posts.find((post) => post.postUuid == postUuid);
-      if (post != undefined) {
-        return {
-          ...singlePostPageInfo,
-          post: post,
-        };
-      }
-    }
-  }
-);
 
 export const goToNexPostInRow = createAsyncThunk(
   "singlePostPage/goToNexPostInRow",
@@ -30,13 +8,13 @@ export const goToNexPostInRow = createAsyncThunk(
     const currentPostRowAndPostIndex = findCurrentPostRowAndPostIndex();
     if (currentPostRowAndPostIndex != undefined) {
       const { postRow, postIndex } = currentPostRowAndPostIndex;
-      let postToReturn: Post;
+      let nextPostUuid: string;
       if (postRow.posts.length - 1 == postIndex) {
-        postToReturn = postRow.posts[0];
+        nextPostUuid = postRow.posts[0].postUuid;
       } else {
-        postToReturn = postRow.posts[postIndex + 1];
+        nextPostUuid = postRow.posts[postIndex + 1].postUuid;
       }
-      return postToReturn;
+      return nextPostUuid;
     }
   }
 );
@@ -47,13 +25,13 @@ export const goToPreviousPostInRow = createAsyncThunk(
     const currentPostRowAndPostIndex = findCurrentPostRowAndPostIndex();
     if (currentPostRowAndPostIndex != undefined) {
       const { postRow, postIndex } = currentPostRowAndPostIndex;
-      let postToReturn: Post;
+      let previousPostUuid: string;
       if (postIndex == 0) {
-        postToReturn = postRow.posts[postRow.posts.length - 1];
+        previousPostUuid = postRow.posts[postRow.posts.length - 1].postUuid;
       } else {
-        postToReturn = postRow.posts[postIndex - 1];
+        previousPostUuid = postRow.posts[postIndex - 1].postUuid;
       }
-      return postToReturn;
+      return previousPostUuid;
     }
   }
 );
@@ -78,38 +56,37 @@ const findCurrentPostRowAndPostIndex = () => {
 type InitialState = {
   postRowUuid: string | undefined;
   postUuid: string | undefined;
-  post: Post | undefined;
 };
 
 const initialState: InitialState = {
   postRowUuid: undefined,
   postUuid: undefined,
-  post: undefined,
 };
 
 export const singlePostPageSlice = createSlice({
   name: "singlePostPage",
   initialState: initialState,
-  reducers: {},
+  reducers: {
+    setPostAndRowUuid: (
+      state,
+      action: { type: string; payload: SinglePostPageInfo }
+    ) => {
+      state.postRowUuid = action.payload.postRowUuid;
+      state.postUuid = action.payload.postUuid;
+    },
+  },
   extraReducers: (builder) => {
     builder
-      .addCase(setPostAndRowUuid.fulfilled, (state, action) => {
-        state.postRowUuid = action.payload?.postRowUuid;
-        state.postUuid = action.payload?.postUuid;
-        state.post = action.payload?.post;
-      })
       .addCase(goToNexPostInRow.fulfilled, (state, action) => {
-        const post = action.payload;
-        state.postUuid = post?.postUuid;
-        state.post = post;
+        const postUuid = action.payload;
+        state.postUuid = postUuid;
       })
       .addCase(goToPreviousPostInRow.fulfilled, (state, action) => {
-        const post = action.payload;
-        state.postUuid = post?.postUuid;
-        state.post = post;
+        const postUuid = action.payload;
+        state.postUuid = postUuid;
       });
   },
 });
 
-// export const {} = singlePostPageSlice.actions;
+export const { setPostAndRowUuid } = singlePostPageSlice.actions;
 export default singlePostPageSlice.reducer;
