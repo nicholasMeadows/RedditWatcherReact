@@ -104,35 +104,71 @@ const SinglePostView: React.FC = () => {
       img: HTMLImageElement,
       movementX: number,
       movementY: number,
-      mouseDownOnImg: boolean
+      mouseDownOnImg: boolean,
+      imgWidthOverride?: number,
+      imgHeightOverride?: number,
+      imgLeftOverride?: number,
+      imgRightOverride?: number,
+      imgTopOverride?: number,
+      imgBottomOverride?: number
     ) => {
       if (mouseDownOnImg) {
         const parent =
           postElementDivWrapperRef.current as unknown as HTMLDivElement;
         const parentRect = parent.getBoundingClientRect();
+        const parentWidth = parentRect.width;
+        const parentHeight = parentRect.height;
+        const parentLeft = parentRect.left;
+        const parentRight = parentRect.right;
+        const parentTop = parentRect.top;
+        const parentBottom = parentRect.bottom;
+
         const imgRect = img.getBoundingClientRect();
+        const imgWidth = imgWidthOverride || imgRect.width;
+        const imgHeight = imgHeightOverride || imgRect.height;
+        const imgLeft = imgLeftOverride || imgRect.left;
+        const imgRight = imgRightOverride || imgRect.right;
+        const imgTop = imgTopOverride || imgRect.top;
+        const imgBottom = imgBottomOverride || imgRect.bottom;
 
-        const percentageMovementX = (movementX / parentRect.width) * 100;
-        const percentageMovementY = (movementY / parentRect.height) * 100;
-
-        const updatedImgXPercent = imgXPercent + percentageMovementX;
-        const updatedImgYPercent = imgYPercent + percentageMovementY;
-
-        const maxXDelta = Math.max(
-          0,
-          ((imgRect.width - parentRect.width) / 2 / parentRect.width) * 100
-        );
-        const maxYDelta = Math.max(
-          0,
-          ((imgRect.height - parentRect.height) / 2 / parentRect.height) * 100
-        );
-
-        if (Math.abs(updatedImgXPercent - 50) < maxXDelta) {
-          setImgXPercent(updatedImgXPercent);
+        if (parentLeft < imgLeft && imgRight < parentRight) {
+          setImgXPercent(50);
+        } else if (parentLeft < imgLeft) {
+          const diff = imgLeft - parentLeft;
+          setImgXPercent(imgXPercent - (diff / parentWidth) * 100);
+        } else if (parentRight > imgRight) {
+          const diff = parentRight - imgRight;
+          setImgXPercent(imgXPercent + (diff / parentWidth) * 100);
+        } else {
+          const percentageMovementX = (movementX / parentWidth) * 100;
+          const updatedImgXPercent = imgXPercent + percentageMovementX;
+          const maxXDelta = Math.max(
+            0,
+            ((imgWidth - parentWidth) / 2 / parentWidth) * 100
+          );
+          if (Math.abs(updatedImgXPercent - 50) < maxXDelta) {
+            setImgXPercent(updatedImgXPercent);
+          }
         }
 
-        if (Math.abs(updatedImgYPercent - 50) < maxYDelta) {
-          setImgYPercent(updatedImgYPercent);
+        if (parentTop < imgTop && imgBottom < parentBottom) {
+          setImgYPercent(50);
+        } else if (parentTop < imgTop) {
+          const diff = imgTop - parentTop;
+          setImgYPercent(imgYPercent - (diff / parentHeight) * 100);
+        } else if (imgBottom < parentBottom) {
+          const diff = parentBottom - imgBottom;
+          setImgYPercent(imgYPercent + (diff / parentHeight) * 100);
+        } else {
+          const percentageMovementY = (movementY / parentHeight) * 100;
+          const updatedImgYPercent = imgYPercent + percentageMovementY;
+          const maxYDelta = Math.max(
+            0,
+            ((imgHeight - parentHeight) / 2 / parentHeight) * 100
+          );
+          if (Math.abs(updatedImgYPercent - 50) < maxYDelta) {
+            setImgYPercent(updatedImgYPercent);
+          }
         }
       }
     },
@@ -169,12 +205,14 @@ const SinglePostView: React.FC = () => {
       const width = rect.width;
       const scaledWidth = (width / imgScale) * updatedScale;
       const scaledLeft = rect.left + (width - scaledWidth) / 2;
+      const scaledRight = rect.right - (width - scaledWidth) / 2;
       const currentRelativeX = eventClientX - rect.left;
       const scaledRelativeX = (currentRelativeX / imgScale) * updatedScale;
 
       const height = rect.height;
       const scaledHeight = (height / imgScale) * updatedScale;
       const scaledTop = rect.top + (height - scaledHeight) / 2;
+      const scaledBottom = rect.bottom - (height - scaledHeight) / 2;
       const currentRelativeY = eventClientY - rect.top;
       const scaledRelativeY = (currentRelativeY / imgScale) * updatedScale;
 
@@ -182,7 +220,13 @@ const SinglePostView: React.FC = () => {
         postElementImageElement,
         eventClientX - (scaledLeft + scaledRelativeX),
         eventClientY - (scaledTop + scaledRelativeY),
-        true
+        true,
+        scaledWidth,
+        scaledHeight,
+        scaledLeft,
+        scaledRight,
+        scaledTop,
+        scaledBottom
       );
     },
     [handleDragImage, imgScale]
