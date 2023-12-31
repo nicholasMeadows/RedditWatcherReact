@@ -18,30 +18,28 @@ type Props = {
   postRowUuid: string;
   post: Post;
   scale?: number;
-  translateX?: number;
-  translateY?: number;
+  imgXPercent?: number;
+  imgYPercent?: number;
   onMouseOut?: MouseEventHandler;
   onMouseDown?: MouseEventHandler;
   onMouseUp?: MouseEventHandler;
   onMouseMove?: MouseEventHandler;
   onWheel?: WheelEventHandler;
   onTouchStart?: TouchEventHandler;
-  onTouchEnd?: TouchEventHandler;
   onTouchMove?: TouchEventHandler;
 };
 const PostElement: React.FC<Props> = ({
   postRowUuid,
   post,
   scale = 1,
-  translateX = 0,
-  translateY = 0,
+  imgXPercent = 50,
+  imgYPercent = 50,
   onMouseOut,
   onMouseDown,
   onMouseUp,
   onMouseMove,
   onWheel,
   onTouchStart,
-  onTouchEnd,
   onTouchMove,
 }) => {
   const dispatch = useAppDispatch();
@@ -109,12 +107,11 @@ const PostElement: React.FC<Props> = ({
             onMouseMove={onMouseMove}
             onWheel={onWheel}
             onTouchStart={onTouchStart}
-            onTouchEnd={onTouchEnd}
             onTouchMove={onTouchMove}
             style={{
-              left: "50%",
-              top: "50%",
-              transform: `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${scale})`,
+              left: `${imgXPercent}%`,
+              top: `${imgYPercent}%`,
+              transform: `translate(-50%, -50%) scale(${scale})`,
             }}
           ></img>
         </div>
