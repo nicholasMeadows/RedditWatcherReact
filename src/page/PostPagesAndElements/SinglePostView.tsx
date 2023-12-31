@@ -303,6 +303,12 @@ const SinglePostView: React.FC = () => {
                   );
                 }}
                 onTouchStart={(event) => {
+                  if (imgScale != 1) {
+                    setTouchStart(null);
+                    setTouchEnd(null);
+                    event.stopPropagation();
+                    event.preventDefault();
+                  }
                   const touches = event.touches;
                   if (touches.length == 1) {
                     setTouch1X(touches[0].clientX);
@@ -315,6 +321,13 @@ const SinglePostView: React.FC = () => {
                   }
                 }}
                 onTouchMove={(event) => {
+                  if (imgScale != 1) {
+                    setTouchStart(null);
+                    setTouchEnd(null);
+                    event.stopPropagation();
+                    event.preventDefault();
+                  }
+
                   const image = event.target as HTMLImageElement;
                   const touches = event.touches;
                   const currentTouch1X = touches[0].clientX;
