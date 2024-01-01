@@ -138,7 +138,10 @@ const NavigationHambugerMenu: React.FC = () => {
           >
             <img src={`assets/back_arrow_white.png`} />
           </div>
-          <h1 className="tool-bar-title">{pageName}</h1>
+
+          <div className="top-bar-title-box">
+            <p className="tool-bar-title">{pageName}</p>
+          </div>
         </div>
       </div>
 

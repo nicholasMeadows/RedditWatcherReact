@@ -21,38 +21,55 @@
 }
 
 .hamburger-icon {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   margin-left: 0.5em;
   cursor: pointer;
+  gap: 0.3em;
 }
 
 .hamburger-icon > div {
-  width: 2em;
+  width: 1.8em;
   height: 0.3em;
   background-color: white;
-  margin: 0.4em 0;
+}
+
+.hamburger-icon :nth-child(1) {
+  margin-top: auto;
+}
+
+.hamburger-icon :nth-child(3) {
+  margin-bottom: auto;
 }
 
 .back-arrow {
   display: flex;
-  flex-direction: column;
-  height: 100%;
-  max-height: 100%;
-  min-width: 3em;
-  max-width: 3em;
+  height: calc(100% - 0.5em);
+  width: 3em;
   cursor: pointer;
   margin-left: 0.4em;
   margin-right: -0.7em;
+  align-self: center;
 }
 
 .back-arrow > img {
-  margin-top: auto;
-  margin-bottom: auto;
   height: auto;
   width: 100%;
+  object-fit: contain;
+}
+
+.top-bar-title-box {
+  display: flex;
+  overflow-x: hidden;
 }
 
 .tool-bar-title {
-  margin-left: 0.4em;
+  margin: 0;
+  margin-left: 0.5em;
+  font-size: 2em;
+  align-self: center;
+  white-space: normal;
 }
 
 .drawer-background {
@@ -64,6 +81,7 @@
   background: rgb(119, 119, 119, 0.5);
   z-index: 20;
 }
+
 .drawer-popout {
   white-space: nowrap;
   position: absolute;
@@ -88,9 +106,7 @@
 .drawer-popout-main {
   flex-grow: 1;
 }
-.drawer-popout-footer {
-  margin-top: auto;
-}
+
 .drawer-popout-item {
   cursor: pointer;
   height: 3em;
@@ -102,15 +118,6 @@
 .drawer-popout-item-text {
   margin-left: 0.5em;
   font-size: 1.3em;
-}
-
-@media screen and (max-width: 801px) {
-  .tool-bar-title {
-    font-size: 1.2em; /* or 1em */
-  }
-  .drawer-popout-item-text {
-    font-size: 1em;
-  }
 }
 
 /* The switch - the box around the slider */
@@ -177,4 +184,27 @@ input:checked + .slider:before {
 
 .slider.round:before {
   border-radius: 50%;
+}
+
+.drawer-popout-footer {
+  margin-top: auto;
+}
+
+@media screen and (max-width: 801px) {
+  .tool-bar-title {
+    // font-size: 1.5em;
+    font-size: 1.3em;
+  }
+  .back-arrow {
+    height: calc(100% - 1em);
+  }
+
+  .hamburger-icon {
+    gap: 0.3em;
+  }
+
+  .hamburger-icon > div {
+    width: 1.4em;
+    height: 0.2em;
+  }
 }
