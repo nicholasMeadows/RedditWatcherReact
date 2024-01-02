@@ -137,6 +137,7 @@ export function concatSelectedSubredditLists(
   }
   return selectedSubReddits;
 }
+
 export function sortSelectedSubreddits(): Array<Subreddit> {
   const state = store.getState();
   const selectedSubredditListSortOption =
@@ -148,6 +149,11 @@ export function sortSelectedSubreddits(): Array<Subreddit> {
     concatSelectedSubredditLists(subredditLists);
 
   if (
+    SelectedSubredditListSortOptionEnum.Random ==
+    selectedSubredditListSortOption
+  ) {
+    selectedSubReddits = sortSubredditsRandomly(selectedSubReddits);
+  } else if (
     SelectedSubredditListSortOptionEnum.Alphabetically ==
     selectedSubredditListSortOption
   ) {
@@ -280,4 +286,16 @@ export function sortPostsByCreate(posts: Array<Post>) {
     }
     return 0;
   });
+}
+
+export function sortSubredditsRandomly(
+  subreddits: Array<Subreddit>
+): Array<Subreddit> {
+  // declare the function
+
+  for (let i = subreddits.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [subreddits[i], subreddits[j]] = [subreddits[j], subreddits[i]];
+  }
+  return subreddits;
 }
