@@ -14,9 +14,18 @@ import {
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import ModifySubredditListAccordion from "./ModifySubredditListAccordion";
 import SearchRedditBar from "./SearchRedditBar";
+import SelectSubredditListMenuSortOptionEnum from "../../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
+import { SubredditLists } from "../../model/SubredditList/SubredditLists.ts";
+import SortOrderDirectionOptionsEnum from "../../model/config/enums/SortOrderDirectionOptionsEnum.ts";
 
 const ModifySubredditLists: React.FC = () => {
   const dispatch = useAppDispatch();
+  const selectSubredditListMenuSortOption = useAppSelector(
+    (state) => state.appConfig.selectSubredditListMenuSortOption
+  );
+  const sortOrderDirection = useAppSelector(
+    (state) => state.appConfig.sortOrderDirectionOption
+  );
   const subredditLists = useAppSelector(
     (state) => state.subredditLists.subredditLists
   );
@@ -40,9 +49,62 @@ const ModifySubredditLists: React.FC = () => {
     (state) => state.subredditLists.createUpdateButtonText
   );
 
+  const [sortedSubredditLists, setSortedSubredditLists] = useState<
+    Array<SubredditLists>
+  >([]);
   useEffect(() => {
     dispatch(resetModifyListBox());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (
+      selectSubredditListMenuSortOption ===
+      SelectSubredditListMenuSortOptionEnum.Alphabetically
+    ) {
+      const sorted = [...subredditLists].sort((list1, list2) => {
+        const name1 = list1.listName;
+        const name2 = list2.listName;
+        let normalSortValue = 0;
+        if (name1.toLowerCase() > name2.toLowerCase()) {
+          normalSortValue = 1;
+        } else if (name1.toLowerCase() < name2.toLowerCase()) {
+          normalSortValue = -1;
+        }
+        if (sortOrderDirection == SortOrderDirectionOptionsEnum.Normal) {
+          return normalSortValue;
+        } else if (
+          sortOrderDirection == SortOrderDirectionOptionsEnum.Reversed
+        ) {
+          return normalSortValue * -1;
+        }
+        return 0;
+      });
+      setSortedSubredditLists(sorted);
+    } else if (
+      selectSubredditListMenuSortOption ==
+      SelectSubredditListMenuSortOptionEnum.ListSize
+    ) {
+      const sorted = [...subredditLists].sort((list1, list2) => {
+        const size1 = list1.subreddits.length;
+        const size2 = list2.subreddits.length;
+        let normalSortValue = 0;
+        if (size1 < size2) {
+          normalSortValue = 1;
+        } else if (size1 > size2) {
+          normalSortValue = -1;
+        }
+        if (sortOrderDirection == SortOrderDirectionOptionsEnum.Normal) {
+          return normalSortValue;
+        } else if (
+          sortOrderDirection == SortOrderDirectionOptionsEnum.Reversed
+        ) {
+          return normalSortValue * -1;
+        }
+        return 0;
+      });
+      setSortedSubredditLists(sorted);
+    }
+  }, [subredditLists, selectSubredditListMenuSortOption, sortOrderDirection]);
 
   const [subredditListUuidClicked, setSubredditListUuidClicked] = useState<
     string | undefined
@@ -112,7 +174,7 @@ const ModifySubredditLists: React.FC = () => {
       >
         <SearchRedditBar />
         <div className="subredditListsExpander">
-          {subredditLists.map((subredditList) => (
+          {sortedSubredditLists.map((subredditList) => (
             <ModifySubredditListAccordion
               key={subredditList.subredditListUuid}
               subredditList={subredditList}
