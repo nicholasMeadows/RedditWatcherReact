@@ -185,7 +185,13 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
                 )}
 
                 <p className="postCardHeaderText">
-                  {new Date(post.created * 1000).toLocaleString()}
+                  {new Date(post.created * 1000).toLocaleDateString("en-us", {
+                    month: "long",
+                    day: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </p>
                 {!post.subreddit.displayName.startsWith("u_") && (
                   <p className="postCardHeaderText">{`Subscribers: ${post.subreddit.subscribers.toLocaleString()}`}</p>
