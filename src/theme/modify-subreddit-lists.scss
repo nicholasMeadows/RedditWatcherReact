@@ -85,6 +85,12 @@
   cursor: pointer;
 }
 
+@media (max-width: 801px) {
+  .subredditListLabel {
+    font-size: 1em;
+  }
+}
+
 .subreddit-name-text {
   cursor: default;
 }
