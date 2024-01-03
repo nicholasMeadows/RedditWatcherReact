@@ -56,11 +56,17 @@ const findCurrentPostRowAndPostIndex = () => {
 type InitialState = {
   postRowUuid: string | undefined;
   postUuid: string | undefined;
+  imgScale: number;
+  imgXPercent: number;
+  imgYPercent: number;
 };
 
 const initialState: InitialState = {
   postRowUuid: undefined,
   postUuid: undefined,
+  imgScale: 1,
+  imgXPercent: 50,
+  imgYPercent: 50,
 };
 
 export const singlePostPageSlice = createSlice({
@@ -74,19 +80,39 @@ export const singlePostPageSlice = createSlice({
       state.postRowUuid = action.payload.postRowUuid;
       state.postUuid = action.payload.postUuid;
     },
+    setImgScale: (state, action: { type: string; payload: number }) => {
+      state.imgScale = action.payload;
+    },
+    setImgXPercentage: (state, action: { type: string; payload: number }) => {
+      state.imgXPercent = action.payload;
+    },
+    setImgYPercentage: (state, action: { type: string; payload: number }) => {
+      state.imgYPercent = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(goToNexPostInRow.fulfilled, (state, action) => {
         const postUuid = action.payload;
         state.postUuid = postUuid;
+        state.imgYPercent = 50;
+        state.imgXPercent = 50;
+        state.imgScale = 1;
       })
       .addCase(goToPreviousPostInRow.fulfilled, (state, action) => {
         const postUuid = action.payload;
         state.postUuid = postUuid;
+        state.imgYPercent = 50;
+        state.imgXPercent = 50;
+        state.imgScale = 1;
       });
   },
 });
 
-export const { setPostAndRowUuid } = singlePostPageSlice.actions;
+export const {
+  setPostAndRowUuid,
+  setImgScale,
+  setImgXPercentage,
+  setImgYPercentage,
+} = singlePostPageSlice.actions;
 export default singlePostPageSlice.reducer;

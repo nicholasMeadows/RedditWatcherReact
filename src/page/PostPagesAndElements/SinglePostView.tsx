@@ -9,6 +9,9 @@ import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
 import {
   goToNexPostInRow,
   goToPreviousPostInRow,
+  setImgScale,
+  setImgXPercentage,
+  setImgYPercentage,
 } from "../../redux/slice/SinglePostPageSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import PostElement from "./PostElement";
@@ -32,6 +35,14 @@ const SinglePostView: React.FC = () => {
       return postRow.posts.find((p) => p.postUuid == postUuid);
     }
   });
+
+  const imgScale = useAppSelector((state) => state.singlePostPage.imgScale);
+  const imgXPercent = useAppSelector(
+    (state) => state.singlePostPage.imgXPercent
+  );
+  const imgYPercent = useAppSelector(
+    (state) => state.singlePostPage.imgYPercent
+  );
 
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -95,10 +106,6 @@ const SinglePostView: React.FC = () => {
   const [touch2X, setTouch2X] = useState(0);
   const [touch2Y, setTouch2Y] = useState(0);
 
-  const [imgScale, setImgScale] = useState(1);
-  const [imgXPercent, setImgXPercent] = useState(50);
-  const [imgYPercent, setImgYPercent] = useState(50);
-
   const handleDragImage = useCallback(
     (
       img: HTMLImageElement,
@@ -132,13 +139,13 @@ const SinglePostView: React.FC = () => {
         const imgBottom = imgBottomOverride || imgRect.bottom;
 
         if (parentLeft < imgLeft && imgRight < parentRight) {
-          setImgXPercent(50);
+          dispatch(setImgXPercentage(50));
         } else if (parentLeft < imgLeft) {
           const diff = imgLeft - parentLeft;
-          setImgXPercent(imgXPercent - (diff / parentWidth) * 100);
+          dispatch(setImgXPercentage(imgXPercent - (diff / parentWidth) * 100));
         } else if (parentRight > imgRight) {
           const diff = parentRight - imgRight;
-          setImgXPercent(imgXPercent + (diff / parentWidth) * 100);
+          dispatch(setImgXPercentage(imgXPercent + (diff / parentWidth) * 100));
         } else {
           const percentageMovementX = (movementX / parentWidth) * 100;
           const updatedImgXPercent = imgXPercent + percentageMovementX;
@@ -147,18 +154,22 @@ const SinglePostView: React.FC = () => {
             ((imgWidth - parentWidth) / 2 / parentWidth) * 100
           );
           if (Math.abs(updatedImgXPercent - 50) < maxXDelta) {
-            setImgXPercent(updatedImgXPercent);
+            dispatch(setImgXPercentage(updatedImgXPercent));
           }
         }
 
         if (parentTop < imgTop && imgBottom < parentBottom) {
-          setImgYPercent(50);
+          dispatch(setImgYPercentage(50));
         } else if (parentTop < imgTop) {
           const diff = imgTop - parentTop;
-          setImgYPercent(imgYPercent - (diff / parentHeight) * 100);
+          dispatch(
+            setImgYPercentage(imgYPercent - (diff / parentHeight) * 100)
+          );
         } else if (imgBottom < parentBottom) {
           const diff = parentBottom - imgBottom;
-          setImgYPercent(imgYPercent + (diff / parentHeight) * 100);
+          dispatch(
+            setImgYPercentage(imgYPercent + (diff / parentHeight) * 100)
+          );
         } else {
           const percentageMovementY = (movementY / parentHeight) * 100;
           const updatedImgYPercent = imgYPercent + percentageMovementY;
@@ -167,7 +178,7 @@ const SinglePostView: React.FC = () => {
             ((imgHeight - parentHeight) / 2 / parentHeight) * 100
           );
           if (Math.abs(updatedImgYPercent - 50) < maxYDelta) {
-            setImgYPercent(updatedImgYPercent);
+            dispatch(setImgYPercentage(updatedImgYPercent));
           }
         }
       }
@@ -193,12 +204,12 @@ const SinglePostView: React.FC = () => {
         updatedScale > SINGLE_POST_PAGE_MAX_SCALE
       ) {
         if (updatedScale < SINGLE_POST_PAGE_MIN_SCALE) {
-          setImgXPercent(50);
-          setImgYPercent(50);
+          dispatch(setImgXPercentage(50));
+          dispatch(setImgYPercentage(50));
         }
         return;
       }
-      setImgScale(updatedScale);
+      dispatch(setImgScale(updatedScale));
 
       const rect = postElementImageElement.getBoundingClientRect();
 
