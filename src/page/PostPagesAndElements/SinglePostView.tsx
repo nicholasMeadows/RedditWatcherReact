@@ -97,6 +97,12 @@ const SinglePostView: React.FC = () => {
     };
   }, [goToNextPost, goToPreviousPost]);
 
+  useEffect(() => {
+    dispatch(setImgXPercentage(50));
+    dispatch(setImgYPercentage(50));
+    dispatch(setImgScale(1));
+  }, [dispatch]);
+
   const postElementDivWrapperRef = useRef(null);
 
   const [mouseDownOnImg, setMouseDownOnImg] = useState(false);

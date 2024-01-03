@@ -24,10 +24,7 @@ const createPostRow = (posts: Array<Post>): PostRow => {
   const postRowUuid = uuidV4();
   const postRow: PostRow = {
     postRowUuid: postRowUuid,
-    runningPostsForPostRow: [...posts].map((post) => {
-      post.postUuid = `${post.postUuid}-${uuidV4()}`;
-      return post;
-    }),
+    runningPostsForPostRow: posts,
     posts: posts,
     scrollToIndex: 0,
     incrementPostInterval: createIncrementPostInterval(postRowUuid),
@@ -96,6 +93,9 @@ export const postRowsSlice = createSlice({
         (postRow) => postRow.postRowUuid == shiftPostRowPostsPayload.postRowUuid
       );
       if (postRow != undefined) {
+        postRow.runningPostsForPostRow.unshift(
+          shiftPostRowPostsPayload.postToInsert
+        );
         postRow.posts.unshift(shiftPostRowPostsPayload.postToInsert);
         postRow.posts.splice(shiftPostRowPostsPayload.postToRemoveAt, 1);
       }
@@ -196,13 +196,9 @@ export const postRowsSlice = createSlice({
       if (postRow != undefined) {
         const scrollToIndex = postRow.scrollToIndex;
         if (scrollToIndex == 0) {
-          const postsToInsert = [...postRow.posts].map((post) => {
-            post.postUuid = `${post.postUuid}-${uuidV4()}`;
-            return post;
-          });
-          const scrollToIndexToSet = postsToInsert.length - 1;
+          const scrollToIndexToSet = postRow.posts.length - 1;
           postRow.runningPostsForPostRow = [
-            ...postsToInsert,
+            ...postRow.posts,
             ...postRow.runningPostsForPostRow,
           ];
           postRow.scrollToIndex = scrollToIndexToSet;
@@ -242,13 +238,9 @@ export const postRowsSlice = createSlice({
           scrollToIndex ==
           postRow.runningPostsForPostRow.length - 1 - postsToShowInRow
         ) {
-          const postsToAdd = [...postRow.posts].map((post) => {
-            post.postUuid = `${post.postUuid}-${uuidV4()}`;
-            return post;
-          });
           postRow.runningPostsForPostRow = [
             ...postRow.runningPostsForPostRow,
-            ...postsToAdd,
+            ...postRow.posts,
           ];
         }
         postRow.scrollToIndex++;

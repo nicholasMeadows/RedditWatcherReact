@@ -15,6 +15,7 @@ import { setPostAndRowUuid } from "../../redux/slice/SinglePostPageSlice";
 import store, { useAppDispatch, useAppSelector } from "../../redux/store";
 import getPlatform from "../../util/PlatformUtil";
 import PostElement from "./PostElement";
+import { v4 as uuidV4 } from "uuid";
 
 type Props = { postRow: PostRow };
 const PostRowView: React.FC<Props> = ({ postRow }) => {
@@ -148,7 +149,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
         <div className="postRowContent" ref={postRowContentDiv}>
           {postRow.runningPostsForPostRow.map((post) => (
             <div
-              key={"post-row-post-" + post.postUuid}
+              key={`post-row-post-${post.postUuid}-${uuidV4()}`}
               className="postCard"
               style={{
                 minWidth: `calc((100% - (10px * ${postsToShowInRow} ) )/${postsToShowInRow})`,
