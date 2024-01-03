@@ -40,9 +40,11 @@
 .search-input {
   font-size: 1.2em;
 }
+
 .create-update-list-input-error {
   margin: 0;
 }
+
 .create-update-button-box {
   margin-top: 1em;
   gap: 0.5em;
@@ -70,21 +72,23 @@
   border-top: 0.01em solid var(--app-border-color);
   border-bottom: 0.01em solid var(--app-border-color);
 }
+
 .subredditListCheckbox {
-  margin-right: 5px;
-  width: 1.2em;
-  height: 1.2em;
-  margin-left: 1.5em;
+  margin-right: 1em;
+  width: 2em;
+  height: 2em;
+  margin-left: 0.7em;
 }
 
 .subredditListLabel {
-  font-size: 1.4rem;
+  font-size: 2rem;
   cursor: pointer;
 }
 
 .subreddit-name-text {
   cursor: default;
 }
+
 /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
 .active,
 .accordion:hover {
@@ -94,7 +98,7 @@
 .accordion:after {
   content: "\02795\fe0e";
   /* Unicode character for "plus" sign (+) */
-  font-size: 1.5em;
+  font-size: 1.8em;
   color: var(--text-color);
   margin-left: auto;
   margin-right: 0.5em;
