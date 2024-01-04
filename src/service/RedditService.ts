@@ -84,7 +84,6 @@ export async function startLoopingForPosts() {
 async function getPosts() {
   const state = store.getState();
 
-  // try {
   let postsAndFromSubreddits: {
     posts: Array<Post>;
     fromSubreddits: Array<Subreddit>;
@@ -106,41 +105,11 @@ async function getPosts() {
 
   await WaitUntilPostRowScrollY0();
   await WaitUntilPostRowComponentIsVisible();
-
-  // if (_pointerOverPostRow) {
   await WaitUntilPointerNotOverPostRow();
-  // }
-
-  // if (_startStopButtonPressed) {
-  //     await WaitUntilStartStopButtonIsNotPressed();
-  // }
-
   if (state.postRows.postRows.length == 10) {
     store.dispatch(postRowRemoveAt(state.postRows.postRows.length - 1));
   }
-
   addPostRow(postsAndFromSubreddits);
-
-  // View.ScrollToTopPostRow();
-  // }
-  // catch (RedditUserNotLoggedInException ex)
-  // {
-  //     _appNotificationService.SubmitAppNotification(new ()
-  //     {
-  //             Message = "Failed to get posts. Waiting a few seconds before trying again. Error message " + ex.Message,
-  //             TimeToDisplayInMilliSeconds = 10000
-  //         });
-  // }
-  // catch (System.Exception ex)
-  // {
-  //     _appNotificationService.SubmitAppNotification(new ()
-  //     {
-  //             Message = "Got exception while trying to get posts. " + ex.Message,
-  //             TimeToDisplayInMilliSeconds = 10000
-  //         });
-  // }
-  // PostRowRefreshCounter.CurrentSeconds = 10;
-  // _getPostsTimer.Start();
 }
 
 function addPostRow(postRowFromSubreddit: {
