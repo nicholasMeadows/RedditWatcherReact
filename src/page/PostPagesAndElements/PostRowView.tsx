@@ -1,8 +1,7 @@
-import { TouchEvent, useEffect, useRef, useState } from "react";
+import { TouchEvent, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
-import { Platform } from "../../model/Platform";
 import { PostRow } from "../../model/PostRow";
 import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
 import {
@@ -13,9 +12,10 @@ import {
 } from "../../redux/slice/PostRowsSlice";
 import { setPostAndRowUuid } from "../../redux/slice/SinglePostPageSlice";
 import store, { useAppDispatch, useAppSelector } from "../../redux/store";
-import getPlatform from "../../util/PlatformUtil";
 import PostElement from "./PostElement";
 import { v4 as uuidV4 } from "uuid";
+import getPlatform from "../../util/PlatformUtil.ts";
+import { Platform } from "../../model/Platform.ts";
 
 type Props = { postRow: PostRow };
 const PostRowView: React.FC<Props> = ({ postRow }) => {
@@ -28,8 +28,6 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     (state) => state.appConfig.postsToShowInRow
   );
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const postRowContentDiv = useRef(null);
 
   useEffect(() => {
@@ -43,20 +41,27 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     }
   }, [postRow.scrollToIndex]);
 
-  // the required distance between touchStart and touchEnd to be detected as a swipe
+  const touchStartX = useRef<number | undefined>(undefined);
+  const touchEndX = useRef<number | undefined>(undefined);
   const minSwipeDistance = 50;
 
-  const onTouchStart = (e: TouchEvent<HTMLDivElement>) => {
-    setTouchEnd(null); // otherwise the swipe is fired even with usual touch events
-    setTouchStart(e.targetTouches[0].clientX);
-  };
+  function onTouchStart(event: TouchEvent<HTMLDivElement>) {
+    dispatch(mouseEnterPostRow(postRow.postRowUuid));
+    touchEndX.current = undefined;
+    touchStartX.current = event.touches[0].clientX;
+  }
 
-  const onTouchMove = (e: TouchEvent<HTMLDivElement>) =>
-    setTouchEnd(e.targetTouches[0].clientX);
+  function onTouchMove(event: TouchEvent<HTMLDivElement>) {
+    touchEndX.current = event.touches[0].clientX;
+  }
 
-  const onTouchEnd = (postRow: PostRow) => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
+  function onTouchEnd() {
+    if (getPlatform() == Platform.Android || getPlatform() == Platform.Ios) {
+      dispatch(mouseLeavePostRow());
+    }
+
+    if (!touchStartX.current || !touchEndX.current) return;
+    const distance = touchStartX.current - touchEndX.current;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
     if (postRow.posts.length > store.getState().appConfig.postsToShowInRow) {
@@ -78,160 +83,142 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
         );
       }
     }
-  };
+  }
+
   return (
-    <>
-      <div
-        key={"post-row-" + postRow.postRowUuid}
-        className="postRow"
-        onTouchStart={(event) => onTouchStart(event)}
-        onTouchMove={(event) => onTouchMove(event)}
-        onTouchEnd={() => onTouchEnd(postRow)}
-        onMouseEnter={() => {
-          if (
-            getPlatform() == Platform.Electron ||
-            getPlatform() == Platform.Web ||
-            getPlatform() == Platform.Unknown
-          ) {
-            dispatch(mouseEnterPostRow(postRow.postRowUuid));
+    <div
+      className="postRow"
+      onTouchStart={(event) => onTouchStart(event)}
+      onTouchMove={(event) => onTouchMove(event)}
+      onTouchEnd={() => onTouchEnd()}
+      onMouseEnter={() => {
+        if (
+          getPlatform() == Platform.Electron ||
+          getPlatform() == Platform.Web ||
+          getPlatform() == Platform.Unknown
+        ) {
+          dispatch(mouseEnterPostRow(postRow.postRowUuid));
+        }
+      }}
+      onMouseLeave={() => {
+        if (
+          getPlatform() == Platform.Electron ||
+          getPlatform() == Platform.Web ||
+          getPlatform() == Platform.Unknown
+        ) {
+          dispatch(mouseLeavePostRow());
+        }
+      }}
+    >
+      <div className="postRowScrollButton leftPostRowScrollButton">
+        <img
+          src={
+            darkMode
+              ? "assets/left_chevron_dark_mode.png"
+              : "assets/left_chevron_light_mode.png"
           }
-        }}
-        onMouseLeave={() => {
-          if (
-            getPlatform() == Platform.Electron ||
-            getPlatform() == Platform.Web ||
-            getPlatform() == Platform.Unknown
-          ) {
-            dispatch(mouseLeavePostRow());
+          className="postRowScrollImg"
+          style={{
+            visibility:
+              postRow.posts.length > postRowsToShowInView
+                ? "visible"
+                : "hidden",
+          }}
+          onClick={() =>
+            dispatch(
+              postRowLeftButtonClicked({
+                postRowUuid: postRow.postRowUuid,
+                postsToShowInRow: store.getState().appConfig.postsToShowInRow,
+              })
+            )
           }
-        }}
-        onTouchStartCapture={() => {
-          if (
-            getPlatform() == Platform.Android ||
-            getPlatform() == Platform.Ios
-          ) {
-            dispatch(mouseEnterPostRow(postRow.postRowUuid));
-          }
-        }}
-        onTouchEndCapture={() => {
-          if (
-            getPlatform() == Platform.Android ||
-            getPlatform() == Platform.Ios
-          ) {
-            dispatch(mouseLeavePostRow());
-          }
-        }}
-      >
-        <div className="postRowScrollButton leftPostRowScrollButton">
-          <img
-            src={
-              darkMode
-                ? "assets/left_chevron_dark_mode.png"
-                : "assets/left_chevron_light_mode.png"
-            }
-            className="postRowScrollImg"
-            style={{
-              visibility:
-                postRow.posts.length > postRowsToShowInView
-                  ? "visible"
-                  : "hidden",
-            }}
-            onClick={() =>
-              dispatch(
-                postRowLeftButtonClicked({
-                  postRowUuid: postRow.postRowUuid,
-                  postsToShowInRow: store.getState().appConfig.postsToShowInRow,
-                })
-              )
-            }
-          />
-        </div>
-        <div className="postRowContent" ref={postRowContentDiv}>
-          {postRow.runningPostsForPostRow.map((post) => (
-            <div
-              key={`post-row-post-${post.postUuid}-${uuidV4()}`}
-              className="postCard"
-              style={{
-                minWidth: `calc((100% - (10px * ${postsToShowInRow} ) )/${postsToShowInRow})`,
-                maxWidth: `calc((100% - (10px * ${postsToShowInRow} ) )/${postsToShowInRow})`,
-              }}
-              onContextMenu={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                const postContextMenuEvent: PostContextMenuEvent = {
-                  post: post,
-                  x: event.clientX,
-                  y: event.clientY,
-                };
-                dispatch(
-                  setPostContextMenuEvent({ event: postContextMenuEvent })
-                );
-              }}
-              onClick={() => {
-                dispatch(
-                  setPostAndRowUuid({
-                    postRowUuid: postRow.postRowUuid,
-                    postUuid: post.postUuid,
-                  })
-                );
-                navigate(`${SINGPLE_POST_ROUTE}`);
-              }}
-            >
-              <div className="postCardHeader">
-                <p className="postCardHeaderText">{`${
-                  post.subreddit.displayName
-                }${post.attachments.length > 1 ? " (Gallery)" : ""}`}</p>
-                {post.subreddit.fromList.length > 0 && (
-                  <p className="postCardHeaderText">{`From List: ${post.subreddit.fromList}`}</p>
-                )}
-
-                <p className="postCardHeaderText">
-                  {new Date(post.created * 1000).toLocaleDateString("en-us", {
-                    month: "long",
-                    day: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-                {!post.subreddit.displayName.startsWith("u_") && (
-                  <p className="postCardHeaderText">{`Subscribers: ${post.subreddit.subscribers.toLocaleString()}`}</p>
-                )}
-                <p className="postCardHeaderText">{post.randomSourceString}</p>
-              </div>
-
-              <div className="post-card-content">
-                <PostElement postRowUuid={postRow.postRowUuid} post={post} />
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="postRowScrollButton rightPostRowScrollButton">
-          <img
-            src={
-              darkMode
-                ? "assets/right_chevron_dark_mode.png"
-                : "assets/right_chevron_light_mode.png"
-            }
-            className="postRowScrollImg"
-            onClick={() =>
-              dispatch(
-                postRowRightButtonClicked({
-                  postRowUuid: postRow.postRowUuid,
-                  postsToShowInRow: store.getState().appConfig.postsToShowInRow,
-                })
-              )
-            }
-            style={{
-              visibility:
-                postRow.posts.length > postRowsToShowInView
-                  ? "visible"
-                  : "hidden",
-            }}
-          />
-        </div>
+        />
       </div>
-    </>
+      <div className="postRowContent" ref={postRowContentDiv}>
+        {postRow.runningPostsForPostRow.map((post) => (
+          <div
+            key={`post-row-post-${post.postUuid}-${uuidV4()}`}
+            className="postCard"
+            style={{
+              minWidth: `calc((100% - (10px * ${postsToShowInRow} ) )/${postsToShowInRow})`,
+              maxWidth: `calc((100% - (10px * ${postsToShowInRow} ) )/${postsToShowInRow})`,
+            }}
+            onContextMenu={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              const postContextMenuEvent: PostContextMenuEvent = {
+                post: post,
+                x: event.clientX,
+                y: event.clientY,
+              };
+              dispatch(
+                setPostContextMenuEvent({ event: postContextMenuEvent })
+              );
+            }}
+            onClick={() => {
+              dispatch(
+                setPostAndRowUuid({
+                  postRowUuid: postRow.postRowUuid,
+                  postUuid: post.postUuid,
+                })
+              );
+              navigate(`${SINGPLE_POST_ROUTE}`);
+            }}
+          >
+            <div className="postCardHeader">
+              <p className="postCardHeaderText">{`${
+                post.subreddit.displayName
+              }${post.attachments.length > 1 ? " (Gallery)" : ""}`}</p>
+              {post.subreddit.fromList.length > 0 && (
+                <p className="postCardHeaderText">{`From List: ${post.subreddit.fromList}`}</p>
+              )}
+
+              <p className="postCardHeaderText">
+                {new Date(post.created * 1000).toLocaleDateString("en-us", {
+                  month: "long",
+                  day: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+              {!post.subreddit.displayName.startsWith("u_") && (
+                <p className="postCardHeaderText">{`Subscribers: ${post.subreddit.subscribers.toLocaleString()}`}</p>
+              )}
+              <p className="postCardHeaderText">{post.randomSourceString}</p>
+            </div>
+
+            <div className="post-card-content">
+              <PostElement postRowUuid={postRow.postRowUuid} post={post} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="postRowScrollButton rightPostRowScrollButton">
+        <img
+          src={
+            darkMode
+              ? "assets/right_chevron_dark_mode.png"
+              : "assets/right_chevron_light_mode.png"
+          }
+          className="postRowScrollImg"
+          onClick={() =>
+            dispatch(
+              postRowRightButtonClicked({
+                postRowUuid: postRow.postRowUuid,
+                postsToShowInRow: store.getState().appConfig.postsToShowInRow,
+              })
+            )
+          }
+          style={{
+            visibility:
+              postRow.posts.length > postRowsToShowInView
+                ? "visible"
+                : "hidden",
+          }}
+        />
+      </div>
+    </div>
   );
 };
 
