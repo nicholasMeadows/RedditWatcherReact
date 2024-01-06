@@ -5,13 +5,13 @@ import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/Random
 import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum";
 import SelectedSubredditListSortOptionEnum from "../model/config/enums/SelectedSubredditListSortOptionEnum";
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum";
-import store from "../redux/store";
+import { GetPostsFromSubredditState } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
 
 export function sortSubredditsBySubscribers(
-  subreddits: Array<Subreddit>
+  subreddits: Array<Subreddit>,
+  getPostsFromSubredditStateState: GetPostsFromSubredditState
 ): Array<Subreddit> {
-  const state = store.getState();
-  const sortDirection = state.appConfig.sortOrderDirectionOption;
+  const sortDirection = getPostsFromSubredditStateState.sortOrderDirection;
   const sortedSubreddits = [...subreddits];
   if (SortOrderDirectionOptionsEnum.Normal == sortDirection) {
     sortedSubreddits.sort((sub1, sub2) => {
@@ -40,19 +40,23 @@ export function sortSubredditsBySubscribers(
 }
 
 export function filterSubredditsListByUsersOnly(
-  subreddits: Array<Subreddit>
+  subreddits: Array<Subreddit>,
+  getPostsFromSubredditState: GetPostsFromSubredditState
 ): Array<Subreddit> {
   const userOnlyList = subreddits.filter((sub) =>
     sub.displayName.startsWith("u_")
   );
-  return sortSubredditListAlphabetically(userOnlyList);
+  return sortSubredditListAlphabetically(
+    userOnlyList,
+    getPostsFromSubredditState
+  );
 }
 
 export function sortSubredditListAlphabetically(
-  subreddits: Array<Subreddit>
+  subreddits: Array<Subreddit>,
+  getPostsFromSubredditState: GetPostsFromSubredditState
 ): Array<Subreddit> {
-  const state = store.getState();
-  const sortOrderDirection = state.appConfig.sortOrderDirectionOption;
+  const sortOrderDirection = getPostsFromSubredditState.sortOrderDirection;
   if (SortOrderDirectionOptionsEnum.Normal == sortOrderDirection) {
     subreddits = subreddits.sort((sub1, sub2) => {
       if (sub1.displayName.toLowerCase() < sub2.displayName.toLowerCase()) {
@@ -81,13 +85,14 @@ export function sortSubredditListAlphabetically(
 
 export function getSubredditFromList(
   currentSubRedditIndex: number,
-  subreddits: Array<Subreddit>
+  subreddits: Array<Subreddit>,
+  getPostsFromSubredditState: GetPostsFromSubredditState
 ): { subreddit: Subreddit | undefined; updatedIndex: number } {
-  const state = store.getState();
   let subreddit: Subreddit | undefined = undefined;
   let updatedSubredditIndex = currentSubRedditIndex;
 
-  const iterationMethod = state.appConfig.selectSubredditIterationMethodOption;
+  const iterationMethod =
+    getPostsFromSubredditState.selectSubredditIterationMethodOption;
   if (SelectSubredditIterationMethodOptionsEnum.Sequential == iterationMethod) {
     if (currentSubRedditIndex >= subreddits.length) {
       currentSubRedditIndex = 0;
@@ -98,7 +103,7 @@ export function getSubredditFromList(
     SelectSubredditIterationMethodOptionsEnum.Random == iterationMethod
   ) {
     const randomWeightOption =
-      state.appConfig.randomIterationSelectWeightOption;
+      getPostsFromSubredditState.randomIterationSelectWeightOption;
     if (
       RandomIterationSelectWeightOptionsEnum.PureRandom == randomWeightOption
     ) {
@@ -138,12 +143,13 @@ export function concatSelectedSubredditLists(
   return selectedSubReddits;
 }
 
-export function sortSelectedSubreddits(): Array<Subreddit> {
-  const state = store.getState();
+export function sortSelectedSubreddits(
+  getPostsFromSubredditState: GetPostsFromSubredditState
+): Array<Subreddit> {
   const selectedSubredditListSortOption =
-    state.appConfig.selectedSubredditListSortOption;
-  const sortOrderDirection = state.appConfig.sortOrderDirectionOption;
-  const subredditLists = state.subredditLists.subredditLists;
+    getPostsFromSubredditState.selectedSubredditListSortOption;
+  const sortOrderDirection = getPostsFromSubredditState.sortOrderDirection;
+  const subredditLists = getPostsFromSubredditState.subredditLists;
 
   let selectedSubReddits: Array<Subreddit> =
     concatSelectedSubredditLists(subredditLists);

@@ -63,16 +63,7 @@ export async function startLoopingForPosts() {
   await loadSubscribedSubreddits();
 
   const getPostsFunction = async () => {
-    try {
-      return await getPostsOrchestrationStart();
-    } catch (e) {
-      store.dispatch(
-        submitAppNotification({
-          message: `Got exception while trying to get post. ${e}`,
-        })
-      );
-      console.log("Caught exception while getPosts ", e);
-    }
+    return await getPostsOrchestrationStart();
   };
   getPostsFunction();
 
@@ -87,52 +78,71 @@ export async function startLoopingForPosts() {
 }
 
 async function getPostsOrchestrationStart() {
-  const state = store.getState();
-  const stateConverter = new GetPostsFromSubredditStateConverter();
+  let getPostsFromSubredditsState: GetPostsFromSubredditState;
 
-  const getPostsFromSubredditsState = stateConverter.convert(
-    state.postRows,
-    state.appConfig,
-    state.redditClient,
-    state.subredditLists
-  );
-
-  let postsGotten: Array<Post> = [];
-  let postsFromSubreddits: Array<Subreddit> = [];
-
-  if (getPostsFromSubredditsState.postRows.length == 0) {
-    while (postsGotten.length == 0) {
-      const [posts, fromSubreddits] = await getPostsFromSubreddit(
-        getPostsFromSubredditsState
-      );
-      if (postsGotten.length == 0) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-      postsGotten = posts;
-      postsFromSubreddits = fromSubreddits;
-    }
-  } else {
-    const [posts, fromSubreddits] = await getPostsFromSubreddit(
-      getPostsFromSubredditsState
+  do {
+    const state = store.getState();
+    const stateConverter = new GetPostsFromSubredditStateConverter();
+    getPostsFromSubredditsState = JSON.parse(
+      JSON.stringify(
+        stateConverter.convert(
+          state.postRows,
+          state.appConfig,
+          state.redditClient,
+          state.subredditLists
+        )
+      )
     );
-    postsGotten = posts;
-    postsFromSubreddits = fromSubreddits;
-  }
 
-  await WaitUtil.WaitUntilPostRowScrollY0(
-    () => store.getState().postRows.scrollY
-  );
-  await WaitUtil.WaitUntilPostRowComponentIsVisible(
-    () => store.getState().postRows.postRows.length
-  );
-  await WaitUtil.WaitUntilPointerNotOverPostRow(
-    () => store.getState().postRows.mouseOverPostRowUuid
-  );
+    try {
+      let postsGotten: Array<Post> = [];
+      let postsFromSubreddits: Array<Subreddit> = [];
 
-  if (state.postRows.postRows.length == 10) {
-    store.dispatch(postRowRemoveAt(state.postRows.postRows.length - 1));
-  }
-  addPostRow(postsGotten, postsFromSubreddits, getPostsFromSubredditsState);
+      if (getPostsFromSubredditsState.postRows.length == 0) {
+        while (postsGotten.length == 0) {
+          const [posts, fromSubreddits] = await getPostsFromSubreddit(
+            getPostsFromSubredditsState
+          );
+          if (postsGotten.length == 0) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+          postsGotten = posts;
+          postsFromSubreddits = fromSubreddits;
+        }
+      } else {
+        const [posts, fromSubreddits] = await getPostsFromSubreddit(
+          getPostsFromSubredditsState
+        );
+        postsGotten = posts;
+        postsFromSubreddits = fromSubreddits;
+      }
+
+      await WaitUtil.WaitUntilPostRowScrollY0(
+        () => store.getState().postRows.scrollY
+      );
+      await WaitUtil.WaitUntilPostRowComponentIsVisible(
+        () => store.getState().postRows.postRows.length
+      );
+      await WaitUtil.WaitUntilPointerNotOverPostRow(
+        () => store.getState().postRows.mouseOverPostRowUuid
+      );
+
+      if (state.postRows.postRows.length == 10) {
+        getPostsFromSubredditsState.getPostsUpdatedValues.postRowRemoveAt =
+          state.postRows.postRows.length - 1;
+      }
+
+      addPostRow(postsGotten, postsFromSubreddits, getPostsFromSubredditsState);
+    } catch (e) {
+      store.dispatch(
+        submitAppNotification({
+          message: `Got exception while trying to get post. ${e}`,
+        })
+      );
+      console.log("Caught exception while getPosts ", e);
+    }
+  } while (settingsChanged(getPostsFromSubredditsState));
+  applyUpdatedStateValues(getPostsFromSubredditsState);
 }
 
 export async function getPostsFromSubreddit(
@@ -144,13 +154,14 @@ export async function getPostsFromSubreddit(
 
   if (getPostsFromSubredditsState.subredditQueue.length != 0) {
     const subreddit = getPostsFromSubredditsState.subredditQueue[0];
-    store.dispatch(subredditQueueRemoveAt(0));
+    getPostsFromSubredditsState.getPostsUpdatedValues.subredditQueueRemoveAt = 0;
     fromSubreddits.push(subreddit);
     posts = await getPostsForSubreddit(
       [subreddit],
       getPostsFromSubredditsState
     );
-    store.dispatch(setMostRecentSubredditGotten(subreddit));
+    getPostsFromSubredditsState.getPostsUpdatedValues.mostRecentSubredditGotten =
+      subreddit;
   } else if (
     !(
       UserFrontPagePostSortOrderOptionsEnum.NotSelected ===
@@ -229,12 +240,10 @@ async function getPostsBasedOnSettings(
     getPostsFromSubredditsState
   );
 
-  store.dispatch(setSubredditsToShowInSideBar(sourceSubreddits));
-  store.dispatch(
-    setMostRecentSubredditGotten(
-      fromSubreddits.length == 1 ? fromSubreddits[0] : undefined
-    )
-  );
+  getPostsFromSubredditsState.getPostsUpdatedValues.subredditsToShowInSideBar =
+    sourceSubreddits;
+  getPostsFromSubredditsState.getPostsUpdatedValues.mostRecentSubredditGotten =
+    fromSubreddits.length == 1 ? fromSubreddits[0] : undefined;
 
   return [posts, fromSubreddits];
 }
@@ -261,22 +270,24 @@ function getSubredditsToGetPostsFor(
     const subreddit = masterSubscribedSubredditList[randomIndex];
     subredditsToGetPostsFor.push(subreddit);
 
-    store.dispatch(
-      setMasterSubscribedSubredditList(masterSubscribedSubredditList)
-    );
+    getPostsFromSubredditsState.getPostsUpdatedValues.masterSubscribedSubredditList =
+      masterSubscribedSubredditList;
   } else if (
     SubredditSortOrderOptionsEnum.SubCount === subredditSortOrderOption
   ) {
     //Sort subscribed reddits by subscribers. Get random or next in iteration based on iteration method
     const sortedSubreddits = sortSubredditsBySubscribers(
-      masterSubscribedSubredditList
+      masterSubscribedSubredditList,
+      getPostsFromSubredditsState
     );
     sourceSubredditArray.push(...sortedSubreddits);
     const { subreddit, updatedIndex } = getSubredditFromList(
       subredditIndex,
-      sortedSubreddits
+      sortedSubreddits,
+      getPostsFromSubredditsState
     );
-    store.dispatch(setSubredditIndex(updatedIndex));
+    getPostsFromSubredditsState.getPostsUpdatedValues.subredditIndex =
+      updatedIndex;
     if (subreddit != undefined) {
       subredditsToGetPostsFor.push(subreddit);
     }
@@ -285,10 +296,15 @@ function getSubredditsToGetPostsFor(
   ) {
     //Sort subscribed reddits by users only. Get random or next in iteration based on iteration method
     const userSubreddits = filterSubredditsListByUsersOnly(
-      masterSubscribedSubredditList
+      masterSubscribedSubredditList,
+      getPostsFromSubredditsState
     );
     sourceSubredditArray.push(...userSubreddits);
-    const { subreddit } = getSubredditFromList(subredditIndex, userSubreddits);
+    const { subreddit } = getSubredditFromList(
+      subredditIndex,
+      userSubreddits,
+      getPostsFromSubredditsState
+    );
     if (subreddit != undefined) {
       subredditsToGetPostsFor.push(subreddit);
     }
@@ -297,12 +313,14 @@ function getSubredditsToGetPostsFor(
   ) {
     //Sort subscribed reddits alphabetically. User sort direction. Get random or next in iteration based on iteration method
     const sortedSubreddits = sortSubredditListAlphabetically(
-      masterSubscribedSubredditList
+      masterSubscribedSubredditList,
+      getPostsFromSubredditsState
     );
     sourceSubredditArray.push(...sortedSubreddits);
     const { subreddit } = getSubredditFromList(
       subredditIndex,
-      sortedSubreddits
+      sortedSubreddits,
+      getPostsFromSubredditsState
     );
     if (subreddit != undefined) {
       subredditsToGetPostsFor.push(subreddit);
@@ -313,13 +331,15 @@ function getSubredditsToGetPostsFor(
   ) {
     //Concat all selected subreddit lists. Get single subreddit based off iteration method. Sort based of SelectedSubredditListSortOptionEnum
 
-    const subreddits = sortSelectedSubreddits();
+    const subreddits = sortSelectedSubreddits(getPostsFromSubredditsState);
     sourceSubredditArray.push(...subreddits);
     const subredditFromListObj = getSubredditFromList(
       subredditIndex,
-      subreddits
+      subreddits,
+      getPostsFromSubredditsState
     );
-    store.dispatch(setSubredditIndex(subredditFromListObj.updatedIndex));
+    getPostsFromSubredditsState.getPostsUpdatedValues.subredditIndex =
+      subredditFromListObj.updatedIndex;
     if (subredditFromListObj.subreddit != undefined) {
       subredditsToGetPostsFor.push(subredditFromListObj.subreddit);
     }
@@ -328,7 +348,7 @@ function getSubredditsToGetPostsFor(
     subredditSortOrderOption
   ) {
     //Concat selected subreddit lists. Get multiple reddits. Sort based of SelectedSubredditListSortOptionEnum
-    const subreddits = sortSelectedSubreddits();
+    const subreddits = sortSelectedSubreddits(getPostsFromSubredditsState);
     sourceSubredditArray.push(...subreddits);
     subredditsToGetPostsFor.push(...subreddits);
   } else if (
@@ -340,9 +360,11 @@ function getSubredditsToGetPostsFor(
 
     const { subreddit, updatedIndex } = getSubredditFromList(
       subredditIndex,
-      subreddits
+      subreddits,
+      getPostsFromSubredditsState
     );
-    store.dispatch(setSubredditIndex(updatedIndex));
+    getPostsFromSubredditsState.getPostsUpdatedValues.subredditIndex =
+      updatedIndex;
 
     if (subreddit != undefined) {
       subredditsToGetPostsFor.push(subreddit);
@@ -381,9 +403,11 @@ function getRedditListDotComSubredditBasedOnSettings(
 
     if (indexToSelect != undefined) {
       if (sortOrderDirection == SortOrderDirectionOptionsEnum.Normal) {
-        store.dispatch(setNsfwRedditListIndex(indexToSelect + 1));
+        getPostsFromSubredditsState.getPostsUpdatedValues.nsfwRedditListIndex =
+          indexToSelect + 1;
       } else if (sortOrderDirection == SortOrderDirectionOptionsEnum.Reversed) {
-        store.dispatch(setNsfwRedditListIndex(indexToSelect - 1));
+        getPostsFromSubredditsState.getPostsUpdatedValues.nsfwRedditListIndex =
+          indexToSelect - 1;
       }
     }
   }
@@ -452,14 +476,18 @@ function addPostRow(
   }
 
   if (UserFrontPagePostSortOrderOptionsEnum.New != userFrontPageOption) {
-    store.dispatch(setLastPostRowWasSortOrderNew(false));
-    store.dispatch(createPostRowAndInsertAtBegining(posts));
+    getPostsFromSubredditsState.getPostsUpdatedValues.lastPostRowWasSortOrderNew =
+      false;
+    getPostsFromSubredditsState.getPostsUpdatedValues.createPostRowAndInsertAtBegining =
+      posts;
     return;
   }
 
   posts = sortPostsByCreate(posts);
   if (postRows.length == 0) {
-    store.dispatch(createPostRowAndPushToRows(posts));
+    getPostsFromSubredditsState.getPostsUpdatedValues.createPostRowAndPushToRows =
+      posts;
+    // store.dispatch(createPostRowAndPushToRows(posts));
   } else {
     if (lastPostRowWasSortOrderNew) {
       const postsAlreadyInViewModel = postRows[0].posts;
@@ -487,20 +515,138 @@ function addPostRow(
             postToInsert: post,
             postToRemoveAt: postsAlreadyInViewModel.length - 1,
           };
-          store.dispatch(shiftPostRowPosts(shiftPostRowPayload));
-          store.dispatch(
-            setPostRowScrollToIndex({
+          getPostsFromSubredditsState.getPostsUpdatedValues.shiftPostRowPosts =
+            shiftPostRowPayload;
+          getPostsFromSubredditsState.getPostsUpdatedValues.postRowScrollToIndex =
+            {
               postRowUuid: postRowUuid,
               scrollToIndex: 0,
-            })
-          );
+            };
         }
       }
     } else {
-      store.dispatch(createPostRowAndPushToRows(posts));
+      getPostsFromSubredditsState.getPostsUpdatedValues.createPostRowAndPushToRows =
+        posts;
     }
   }
-  store.dispatch(setLastPostRowWasSortOrderNew(true));
+  getPostsFromSubredditsState.getPostsUpdatedValues.lastPostRowWasSortOrderNew =
+    true;
+}
+
+function settingsChanged(originalState: GetPostsFromSubredditState) {
+  const state = store.getState();
+  const appConfigState = state.appConfig;
+  const redditClientState = state.redditClient;
+
+  const subredditQueuesEqual = (
+    queue1: Array<Subreddit>,
+    queue2: Array<Subreddit>
+  ) => {
+    if (queue1.length != queue2.length) {
+      return false;
+    }
+
+    queue1.forEach((subreddit, index) => {
+      if (subreddit.subredditUuid != queue2[index].subredditUuid) {
+        return false;
+      }
+    });
+    return true;
+  };
+  const settingsMatch =
+    originalState.subredditSortOrderOption ==
+      appConfigState.subredditSortOrderOption &&
+    originalState.userFrontPagePostSortOrderOption ==
+      appConfigState.userFrontPagePostSortOrderOption &&
+    originalState.contentFiltering == appConfigState.contentFiltering &&
+    subredditQueuesEqual(
+      originalState.subredditQueue,
+      redditClientState.subredditQueue
+    ) &&
+    originalState.concatRedditUrlMaxLength ==
+      appConfigState.concatRedditUrlMaxLength &&
+    originalState.postSortOrder == appConfigState.postSortOrderOption &&
+    originalState.topTimeFrame == appConfigState.topTimeFrameOption &&
+    originalState.redditApiItemLimit == appConfigState.redditApiItemLimit &&
+    originalState.selectSubredditIterationMethodOption ==
+      appConfigState.selectSubredditIterationMethodOption &&
+    originalState.sortOrderDirection ==
+      appConfigState.sortOrderDirectionOption &&
+    originalState.randomIterationSelectWeightOption ==
+      appConfigState.randomIterationSelectWeightOption &&
+    originalState.selectedSubredditListSortOption ==
+      appConfigState.selectedSubredditListSortOption;
+
+  //NOT USED
+  // originalState.nsfwSubredditIndex;
+  // originalState.masterSubredditList;
+  // originalState.subredditIndex;
+  // originalState.subredditLists;
+  // originalState.lastPostRowWasSortOrderNew;
+
+  if (!settingsMatch) {
+    console.log(
+      "current state settings changed. Looping to get another set of posts with updated settings"
+    );
+  }
+  return !settingsMatch;
+}
+
+function applyUpdatedStateValues(
+  getPostsFromSubredditState: GetPostsFromSubredditState
+) {
+  const updatedValues = getPostsFromSubredditState.getPostsUpdatedValues;
+
+  if (updatedValues.subredditQueueRemoveAt != undefined) {
+    store.dispatch(
+      subredditQueueRemoveAt(updatedValues.subredditQueueRemoveAt)
+    );
+  }
+  if (updatedValues.mostRecentSubredditGotten != undefined) {
+    store.dispatch(
+      setMostRecentSubredditGotten(updatedValues.mostRecentSubredditGotten)
+    );
+  }
+  if (updatedValues.postRowRemoveAt != undefined) {
+    store.dispatch(postRowRemoveAt(updatedValues.postRowRemoveAt));
+  }
+  if (updatedValues.subredditsToShowInSideBar != undefined) {
+    store.dispatch(
+      setSubredditsToShowInSideBar(updatedValues.subredditsToShowInSideBar)
+    );
+  }
+  if (updatedValues.masterSubscribedSubredditList != undefined) {
+    store.dispatch(setMasterSubscribedSubredditList(updatedValues));
+  }
+  if (updatedValues.subredditIndex != undefined) {
+    store.dispatch(setSubredditIndex(updatedValues.subredditIndex));
+  }
+  if (updatedValues.nsfwRedditListIndex != undefined) {
+    store.dispatch(setNsfwRedditListIndex(updatedValues.nsfwRedditListIndex));
+  }
+  if (updatedValues.lastPostRowWasSortOrderNew != undefined) {
+    store.dispatch(
+      setLastPostRowWasSortOrderNew(updatedValues.lastPostRowWasSortOrderNew)
+    );
+  }
+  if (updatedValues.createPostRowAndInsertAtBegining != undefined) {
+    store.dispatch(
+      createPostRowAndInsertAtBegining(
+        updatedValues.createPostRowAndInsertAtBegining
+      )
+    );
+  }
+  if (updatedValues.createPostRowAndPushToRows != undefined) {
+    store.dispatch(
+      createPostRowAndPushToRows(updatedValues.createPostRowAndPushToRows)
+    );
+  }
+  if (updatedValues.shiftPostRowPosts != undefined) {
+    store.dispatch(shiftPostRowPosts(updatedValues.shiftPostRowPosts));
+  }
+  if (updatedValues.postRowScrollToIndex != undefined) {
+    store.dispatch(setPostRowScrollToIndex(updatedValues.postRowScrollToIndex));
+  }
 }
 
 async function loadSubscribedSubreddits(async: boolean = true) {

@@ -12,6 +12,9 @@ import { AppConfigState } from "../config/AppConfigState.ts";
 import { RedditClientState } from "../RedditClientState.ts";
 import RedditListsState from "../RedditListsState.ts";
 import { PostRow } from "../PostRow.ts";
+import { Post } from "../Post/Post.ts";
+import RandomIterationSelectWeightOptionsEnum from "../config/enums/RandomIterationSelectWeightOptionsEnum.ts";
+import SelectedSubredditListSortOptionEnum from "../config/enums/SelectedSubredditListSortOptionEnum.ts";
 
 export type GetPostsFromSubredditState = {
   postRows: Array<PostRow>;
@@ -30,6 +33,28 @@ export type GetPostsFromSubredditState = {
   subredditIndex: number;
   subredditLists: Array<SubredditLists>;
   lastPostRowWasSortOrderNew: boolean;
+  randomIterationSelectWeightOption: RandomIterationSelectWeightOptionsEnum;
+  selectedSubredditListSortOption: SelectedSubredditListSortOptionEnum;
+  getPostsUpdatedValues: GetPostsUpdatedValues;
+};
+
+export type GetPostsUpdatedValues = {
+  subredditQueueRemoveAt: number | undefined;
+  mostRecentSubredditGotten: Subreddit | undefined;
+  postRowRemoveAt: number | undefined;
+  subredditsToShowInSideBar: Array<Subreddit> | undefined;
+  masterSubscribedSubredditList: Array<Subreddit> | undefined;
+  subredditIndex: number | undefined;
+  nsfwRedditListIndex: number | undefined;
+  lastPostRowWasSortOrderNew: boolean | undefined;
+  createPostRowAndInsertAtBegining: Array<Post> | undefined;
+  createPostRowAndPushToRows: Array<Post> | undefined;
+  shiftPostRowPosts:
+    | { postRowUuid: string; postToInsert: Post; postToRemoveAt: number }
+    | undefined;
+  postRowScrollToIndex:
+    | { postRowUuid: string; scrollToIndex: number }
+    | undefined;
 };
 
 export class GetPostsFromSubredditStateConverter {
@@ -58,6 +83,24 @@ export class GetPostsFromSubredditStateConverter {
       subredditIndex: redditClientState.subredditIndex,
       subredditLists: redditListsState.subredditLists,
       lastPostRowWasSortOrderNew: redditClientState.lastPostRowWasSortOrderNew,
+      randomIterationSelectWeightOption:
+        appConfigState.randomIterationSelectWeightOption,
+      selectedSubredditListSortOption:
+        appConfigState.selectedSubredditListSortOption,
+      getPostsUpdatedValues: {
+        subredditQueueRemoveAt: undefined,
+        mostRecentSubredditGotten: undefined,
+        postRowRemoveAt: undefined,
+        subredditsToShowInSideBar: undefined,
+        masterSubscribedSubredditList: undefined,
+        subredditIndex: undefined,
+        nsfwRedditListIndex: undefined,
+        lastPostRowWasSortOrderNew: undefined,
+        createPostRowAndInsertAtBegining: undefined,
+        createPostRowAndPushToRows: undefined,
+        shiftPostRowPosts: undefined,
+        postRowScrollToIndex: undefined,
+      },
     };
   }
 }
