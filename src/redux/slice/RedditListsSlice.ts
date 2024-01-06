@@ -8,6 +8,7 @@ import { v4 as uuidV4 } from "uuid";
 import store from "../store";
 import { ModifySubredditListMode } from "../../model/ModifySubredditListMode";
 import { Subreddit } from "../../model/Subreddit/Subreddit";
+import RedditListsState from "../../model/RedditListsState.ts";
 
 export const loadSubredditLists = createAsyncThunk(
   "redditLists/loadSubredditLists",
@@ -41,7 +42,7 @@ export const selectRandomLists = createAsyncThunk(
   }
 );
 
-const resetModifyListBoxFields = (state: InitialState) => {
+const resetModifyListBoxFields = (state: RedditListsState) => {
   state.modifyListMode = undefined;
   state.showModifyListBox = false;
   state.modifyListBoxTitle = "";
@@ -51,25 +52,13 @@ const resetModifyListBoxFields = (state: InitialState) => {
   state.updatingListUuid = undefined;
 };
 
-const findListWithSameName = (state: InitialState, name: string) => {
+const findListWithSameName = (state: RedditListsState, name: string) => {
   return state.subredditLists.find((subredditList) => {
     return subredditList.listName.toLowerCase() == name.toLowerCase();
   });
 };
 
-type InitialState = {
-  subredditLists: Array<SubredditLists>;
-  subredditListsLoaded: boolean;
-  modifyListMode: ModifySubredditListMode | undefined;
-  showModifyListBox: boolean;
-  modifyListBoxTitle: string;
-  createUpdateInputValue: string;
-  createUpdateInputValidationError: string;
-  createUpdateButtonText: string;
-  updatingListUuid: string | undefined;
-};
-
-const initialState: InitialState = {
+const initialState: RedditListsState = {
   subredditLists: [],
   subredditListsLoaded: false,
   modifyListMode: undefined,

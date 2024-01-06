@@ -1,6 +1,5 @@
-import { CapacitorHttp } from "@capacitor/core";
 import { v4 as uuidV4 } from "uuid";
-import { MAX_POSTS_PER_ROW, POST_ROW_ROUTE } from "../RedditWatcherConstants";
+import { MAX_POSTS_PER_ROW } from "../RedditWatcherConstants";
 import {
   callSearchRedditForSubRedditAndUser,
   callSubscribe,
@@ -13,11 +12,9 @@ import { Post } from "../model/Post/Post";
 import { Subreddit } from "../model/Subreddit/Subreddit";
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult";
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum";
-import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum";
 import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum";
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum";
 import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum";
-import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEnum";
 import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
 import { submitAppNotification } from "../redux/slice/AppNotificationSlice";
 import {
@@ -51,9 +48,14 @@ import {
   sortSubredditListAlphabetically,
   sortSubredditsBySubscribers,
 } from "../util/RedditServiceUtil";
-import { SubredditQueueItem } from "../model/Subreddit/SubredditQueueItem.ts";
-import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
-import { PostRow } from "../model/PostRow.ts";
+import { getSubredditsFromRedditListDotCom } from "./RedditListDotComClient.ts";
+import { RedditListDotComConverter } from "../model/converter/RedditListDotComConverter.ts";
+import { WaitUtil } from "../util/WaitUtil.ts";
+import { GetPostsForSubredditUrlConverter } from "../model/converter/GetPostsForSubredditUrlConverter.ts";
+import {
+  GetPostsFromSubredditState,
+  GetPostsFromSubredditStateConverter,
+} from "../model/converter/GetPostsFromSubredditStateConverter.ts";
 
 export async function startLoopingForPosts() {
   console.log("starting to loop for posts");
@@ -62,7 +64,7 @@ export async function startLoopingForPosts() {
 
   const getPostsFunction = async () => {
     try {
-      return await getPosts();
+      return await getPostsOrchestrationStart();
     } catch (e) {
       store.dispatch(
         submitAppNotification({
@@ -84,49 +86,24 @@ export async function startLoopingForPosts() {
   startWaitingToGetPosts();
 }
 
-async function getPosts() {
+async function getPostsOrchestrationStart() {
   const state = store.getState();
-  const postRows = state.postRows.postRows;
+  const stateConverter = new GetPostsFromSubredditStateConverter();
 
-  const subredditSortOrderOption = state.appConfig.subredditSortOrderOption;
-  const userFrontPagePostSortOrderOption =
-    state.appConfig.userFrontPagePostSortOrderOption;
-  const contentFiltering = state.appConfig.contentFiltering;
-  const subredditQueue = state.redditClient.subredditQueue;
-  const concatRedditUrlMaxLength = state.appConfig.concatRedditUrlMaxLength;
-  const postSortOrder = state.appConfig.postSortOrderOption;
-  const topTimeFrame = state.appConfig.topTimeFrameOption;
-  const redditApiItemLimit = state.appConfig.redditApiItemLimit;
-  const selectSubredditIterationMethodOption =
-    state.appConfig.selectSubredditIterationMethodOption;
-  const sortOrderDirection = state.appConfig.sortOrderDirectionOption;
-  const nsfwSubredditIndex = state.redditClient.nsfwRedditListIndex;
-  const masterSubredditList = state.redditClient.masterSubscribedSubredditList;
-  const subredditIndex = state.redditClient.subredditIndex;
-  const subredditLists = state.subredditLists.subredditLists;
-  const lastPostRowWasSortOrderNew =
-    state.redditClient.lastPostRowWasSortOrderNew;
+  const getPostsFromSubredditsState = stateConverter.convert(
+    state.postRows,
+    state.appConfig,
+    state.redditClient,
+    state.subredditLists
+  );
 
   let postsGotten: Array<Post> = [];
   let postsFromSubreddits: Array<Subreddit> = [];
 
-  if (postRows.length == 0) {
+  if (getPostsFromSubredditsState.postRows.length == 0) {
     while (postsGotten.length == 0) {
-      const [posts, fromSubreddits] = await getPostRow(
-        subredditSortOrderOption,
-        userFrontPagePostSortOrderOption,
-        contentFiltering,
-        subredditQueue,
-        concatRedditUrlMaxLength,
-        postSortOrder,
-        topTimeFrame,
-        redditApiItemLimit,
-        selectSubredditIterationMethodOption,
-        sortOrderDirection,
-        nsfwSubredditIndex,
-        masterSubredditList,
-        subredditIndex,
-        subredditLists
+      const [posts, fromSubreddits] = await getPostsFromSubreddit(
+        getPostsFromSubredditsState
       );
       if (postsGotten.length == 0) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -135,171 +112,148 @@ async function getPosts() {
       postsFromSubreddits = fromSubreddits;
     }
   } else {
-    const [posts, fromSubreddits] = await getPostRow(
-      subredditSortOrderOption,
-      userFrontPagePostSortOrderOption,
-      contentFiltering,
-      subredditQueue,
-      concatRedditUrlMaxLength,
-      postSortOrder,
-      topTimeFrame,
-      redditApiItemLimit,
-      selectSubredditIterationMethodOption,
-      sortOrderDirection,
-      nsfwSubredditIndex,
-      masterSubredditList,
-      subredditIndex,
-      subredditLists
+    const [posts, fromSubreddits] = await getPostsFromSubreddit(
+      getPostsFromSubredditsState
     );
     postsGotten = posts;
     postsFromSubreddits = fromSubreddits;
   }
 
-  await WaitUntilPostRowScrollY0();
-  await WaitUntilPostRowComponentIsVisible();
-  await WaitUntilPointerNotOverPostRow();
+  await WaitUtil.WaitUntilPostRowScrollY0(
+    () => store.getState().postRows.scrollY
+  );
+  await WaitUtil.WaitUntilPostRowComponentIsVisible(
+    () => store.getState().postRows.postRows.length
+  );
+  await WaitUtil.WaitUntilPointerNotOverPostRow(
+    () => store.getState().postRows.mouseOverPostRowUuid
+  );
+
   if (state.postRows.postRows.length == 10) {
     store.dispatch(postRowRemoveAt(state.postRows.postRows.length - 1));
   }
-  addPostRow(
-    postsGotten,
-    postsFromSubreddits,
-    userFrontPagePostSortOrderOption,
-    postRows,
-    lastPostRowWasSortOrderNew
-  );
+  addPostRow(postsGotten, postsFromSubreddits, getPostsFromSubredditsState);
 }
 
-export async function getPostRow(
-  subredditSortOrderOption: SubredditSortOrderOptionsEnum,
-  userFrontPagePostSortOrderOption: UserFrontPagePostSortOrderOptionsEnum,
-  contentFiltering: ContentFilteringOptionEnum,
-  subredditQueue: Array<SubredditQueueItem>,
-  concatRedditUrlMaxLength: number,
-  postSortOrder: PostSortOrderOptionsEnum,
-  topTimeFrame: TopTimeFrameOptionsEnum,
-  redditApiItemLimit: number,
-  selectSubredditIterationMethodOption: SelectSubredditIterationMethodOptionsEnum,
-  sortOrderDirection: SortOrderDirectionOptionsEnum,
-  nsfwSubredditIndex: number,
-  masterSubredditList: Array<Subreddit>,
-  subredditIndex: number,
-  subredditLists: Array<SubredditLists>
+export async function getPostsFromSubreddit(
+  getPostsFromSubredditsState: GetPostsFromSubredditState
 ): Promise<[Array<Post>, Array<Subreddit>]> {
   console.log("about to get post row");
   let posts: Post[];
   const fromSubreddits = new Array<Subreddit>();
 
-  if (subredditQueue.length != 0) {
-    const subreddit = subredditQueue[0];
+  if (getPostsFromSubredditsState.subredditQueue.length != 0) {
+    const subreddit = getPostsFromSubredditsState.subredditQueue[0];
     store.dispatch(subredditQueueRemoveAt(0));
     fromSubreddits.push(subreddit);
     posts = await getPostsForSubreddit(
       [subreddit],
-      concatRedditUrlMaxLength,
-      postSortOrder,
-      topTimeFrame,
-      redditApiItemLimit
+      getPostsFromSubredditsState
     );
     store.dispatch(setMostRecentSubredditGotten(subreddit));
   } else if (
     !(
       UserFrontPagePostSortOrderOptionsEnum.NotSelected ===
-      userFrontPagePostSortOrderOption
+      getPostsFromSubredditsState.userFrontPagePostSortOrderOption
     )
   ) {
-    posts = await getUserFrontPage(
-      userFrontPagePostSortOrderOption,
-      topTimeFrame,
-      redditApiItemLimit
-    );
+    posts = await getUserFrontPage(getPostsFromSubredditsState);
   } else {
-    let subredditsToGetPostsFor: Array<Subreddit>;
-    let sourceSubreddits: Array<Subreddit>;
-    if (
-      subredditSortOrderOption ==
-        SubredditSortOrderOptionsEnum.RedditListDotComRecentActivity ||
-      subredditSortOrderOption ==
-        SubredditSortOrderOptionsEnum.RedditListDotComSubscribers ||
-      subredditSortOrderOption ==
-        SubredditSortOrderOptionsEnum.RedditListDotCom24HourGrowth
-    ) {
-      console.log("getting from redditlist.com");
-      const redditListDotComObj = await getSubredditsFromRedditListDotCom(
-        subredditSortOrderOption,
-        selectSubredditIterationMethodOption,
-        sortOrderDirection,
-        nsfwSubredditIndex
-      );
-      subredditsToGetPostsFor = [redditListDotComObj.subredditToGetPostsFrom];
-      sourceSubreddits = redditListDotComObj.allSubreddits;
-      console.log(
-        "subreddits to get posts from redditlist.com ",
-        subredditsToGetPostsFor
-      );
-    } else {
-      const subredditsToGetPostsForObj = getSubredditsToGetPostsFor(
-        subredditSortOrderOption,
-        masterSubredditList,
-        subredditIndex,
-        subredditLists
-      );
-      subredditsToGetPostsFor =
-        subredditsToGetPostsForObj.subredditsToGetPostsFor;
-      sourceSubreddits = subredditsToGetPostsForObj.sourceSubredditArray;
-    }
-    fromSubreddits.push(...subredditsToGetPostsFor);
-    posts = await getPostsForSubreddit(
-      subredditsToGetPostsFor,
-      concatRedditUrlMaxLength,
-      postSortOrder,
-      topTimeFrame,
-      redditApiItemLimit
+    const [postsArr, fromSubredditsArr] = await getPostsBasedOnSettings(
+      getPostsFromSubredditsState
     );
-
-    store.dispatch(setSubredditsToShowInSideBar(sourceSubreddits));
-    store.dispatch(
-      setMostRecentSubredditGotten(
-        fromSubreddits.length == 1 ? fromSubreddits[0] : undefined
-      )
-    );
+    posts = postsArr;
+    fromSubreddits.push(...fromSubredditsArr);
   }
-
-  if (ContentFilteringOptionEnum.SFW === contentFiltering) {
-    posts = posts.filter((post) => !post.over18);
-  }
-
-  if (ContentFilteringOptionEnum.NSFW === contentFiltering) {
-    posts = posts.filter((post) => post.over18);
-  }
-
+  posts = filterPostContent(
+    getPostsFromSubredditsState.contentFiltering,
+    posts
+  );
   if (posts.length > 0) {
     if (posts.length > MAX_POSTS_PER_ROW) {
       posts = posts.slice(0, MAX_POSTS_PER_ROW + 1);
     }
   }
 
-  // return { posts: posts, fromSubreddits: fromSubreddits };
+  return [posts, fromSubreddits];
+}
+
+async function getPostsBasedOnSettings(
+  getPostsFromSubredditsState: GetPostsFromSubredditState
+): Promise<[Array<Post>, Array<Subreddit>]> {
+  const subredditSortOrderOption =
+    getPostsFromSubredditsState.subredditSortOrderOption;
+  let fromSubreddits: Array<Subreddit> = new Array<Subreddit>();
+  let sourceSubreddits: Array<Subreddit> = new Array<Subreddit>();
+  if (
+    subredditSortOrderOption ==
+      SubredditSortOrderOptionsEnum.RedditListDotComRecentActivity ||
+    subredditSortOrderOption ==
+      SubredditSortOrderOptionsEnum.RedditListDotComSubscribers ||
+    subredditSortOrderOption ==
+      SubredditSortOrderOptionsEnum.RedditListDotCom24HourGrowth
+  ) {
+    console.log("getting from redditlist.com");
+    const converter = new RedditListDotComConverter();
+    const htmlArray = await getSubredditsFromRedditListDotCom();
+    let subreddits = new Array<Subreddit>();
+    switch (subredditSortOrderOption) {
+      case SubredditSortOrderOptionsEnum.RedditListDotComRecentActivity:
+        subreddits = converter.convertToReddListDotComRecentActivity(htmlArray);
+        break;
+      case SubredditSortOrderOptionsEnum.RedditListDotComSubscribers:
+        subreddits = converter.convertToReddListDotComSubscribers(htmlArray);
+        break;
+      case SubredditSortOrderOptionsEnum.RedditListDotCom24HourGrowth:
+        subreddits = converter.convertToReddListDotCom24HourGrowth(htmlArray);
+        break;
+    }
+
+    const subredditFromRedditListDotCom =
+      getRedditListDotComSubredditBasedOnSettings(
+        subreddits,
+        getPostsFromSubredditsState
+      );
+    if (subredditFromRedditListDotCom != undefined) {
+      fromSubreddits = [subredditFromRedditListDotCom];
+      sourceSubreddits = subreddits;
+    }
+  } else {
+    const [subredditsToGetPostsFor, sourceSubredditArray] =
+      getSubredditsToGetPostsFor(getPostsFromSubredditsState);
+    fromSubreddits = subredditsToGetPostsFor;
+    sourceSubreddits = sourceSubredditArray;
+  }
+  const posts = await getPostsForSubreddit(
+    fromSubreddits,
+    getPostsFromSubredditsState
+  );
+
+  store.dispatch(setSubredditsToShowInSideBar(sourceSubreddits));
+  store.dispatch(
+    setMostRecentSubredditGotten(
+      fromSubreddits.length == 1 ? fromSubreddits[0] : undefined
+    )
+  );
+
   return [posts, fromSubreddits];
 }
 
 function getSubredditsToGetPostsFor(
-  subredditSortOrderOption: SubredditSortOrderOptionsEnum,
-  masterSubscribedSubredditList: Array<Subreddit>,
-  subredditIndex: number,
-  subredditLists: Array<SubredditLists>
-): {
-  subredditsToGetPostsFor: Array<Subreddit>;
-  sourceSubredditArray: Array<Subreddit>;
-} {
-  // const state = store.getState();
+  getPostsFromSubredditsState: GetPostsFromSubredditState
+): [Array<Subreddit>, Array<Subreddit>] {
+  const subredditSortOrderOption =
+    getPostsFromSubredditsState.subredditSortOrderOption;
+  const masterSubscribedSubredditList =
+    getPostsFromSubredditsState.masterSubredditList;
+  const subredditIndex = getPostsFromSubredditsState.subredditIndex;
+  const subredditLists = getPostsFromSubredditsState.subredditLists;
 
   const subredditsToGetPostsFor = new Array<Subreddit>();
   const sourceSubredditArray = new Array<Subreddit>();
 
   if (SubredditSortOrderOptionsEnum.Random === subredditSortOrderOption) {
     //Get a random subreddit from subscribed reddits. Ignore iteration method
-
     sourceSubredditArray.push(...masterSubscribedSubredditList);
     const randomIndex = Math.floor(
       Math.random() * masterSubscribedSubredditList.length
@@ -395,173 +349,64 @@ function getSubredditsToGetPostsFor(
     }
   }
 
-  return {
-    subredditsToGetPostsFor: subredditsToGetPostsFor,
-    sourceSubredditArray: sourceSubredditArray,
-  };
+  return [subredditsToGetPostsFor, sourceSubredditArray];
 }
 
-function getSubredditsFromRedditListDotCom(
-  subredditSortOrderOption: SubredditSortOrderOptionsEnum,
-  selectSubredditIterationMethodOption: SelectSubredditIterationMethodOptionsEnum,
-  sortOrderDirectionOption: SortOrderDirectionOptionsEnum,
-  nsfwSubredditIndex: number
-): Promise<{
-  subredditToGetPostsFrom: Subreddit;
-  allSubreddits: Array<Subreddit>;
-}> {
-  return new Promise((resolve) => {
-    try {
-      const promiseArr: Array<Promise<string>> = [];
-      for (let i = 0; i < 5; ++i) {
-        promiseArr.push(
-          new Promise((httpResolve) => {
-            const url = `https://redditlist.com/nsfw${
-              i == 0 ? "" : (i + 1).toString()
-            }.html`;
-            CapacitorHttp.get({
-              url: url,
-            }).then((response) => {
-              response.data;
-              const html = response.data.replace(/[\r\n\t]/gm, "");
-              httpResolve(html);
-            });
-          })
-        );
+function getRedditListDotComSubredditBasedOnSettings(
+  subreddits: Array<Subreddit>,
+  getPostsFromSubredditsState: GetPostsFromSubredditState
+) {
+  const selectSubredditIterationMethodOption =
+    getPostsFromSubredditsState.selectSubredditIterationMethodOption;
+  const nsfwSubredditIndex = getPostsFromSubredditsState.nsfwSubredditIndex;
+  const sortOrderDirection = getPostsFromSubredditsState.sortOrderDirection;
+  let indexToSelect;
+  if (
+    selectSubredditIterationMethodOption ==
+    SelectSubredditIterationMethodOptionsEnum.Random
+  ) {
+    indexToSelect = Math.round(Math.random() * (subreddits.length - 1));
+  } else if (
+    selectSubredditIterationMethodOption ==
+    SelectSubredditIterationMethodOptionsEnum.Sequential
+  ) {
+    indexToSelect = nsfwSubredditIndex;
+    if (indexToSelect < 0 || indexToSelect >= subreddits.length) {
+      if (sortOrderDirection == SortOrderDirectionOptionsEnum.Normal) {
+        indexToSelect = 0;
+      } else if (sortOrderDirection == SortOrderDirectionOptionsEnum.Reversed) {
+        indexToSelect = subreddits.length - 1;
       }
-
-      Promise.allSettled(promiseArr).then((promiseResultArr) => {
-        const reddits: Array<Subreddit> = [];
-        promiseResultArr.forEach((result: PromiseSettledResult<string>) => {
-          if (result.status == "fulfilled") {
-            const dom = new DOMParser().parseFromString(
-              result.value,
-              "text/html"
-            );
-            let listIndex;
-            switch (subredditSortOrderOption) {
-              case SubredditSortOrderOptionsEnum.RedditListDotComRecentActivity:
-                listIndex = 0;
-                break;
-              case SubredditSortOrderOptionsEnum.RedditListDotComSubscribers:
-                listIndex = 1;
-                break;
-              case SubredditSortOrderOptionsEnum.RedditListDotCom24HourGrowth:
-                listIndex = 2;
-                break;
-            }
-
-            if (listIndex != undefined) {
-              const listItems = dom
-                .getElementById("listing-parent")
-                ?.children[listIndex].getElementsByClassName("listing-item");
-              if (listItems != undefined) {
-                for (let i = 0; i < listItems.length; ++i) {
-                  const listItem = listItems.item(i);
-                  if (listItem != undefined) {
-                    const subRedditName = listItem
-                      .getElementsByClassName("subreddit-url")[0]
-                      .getElementsByTagName("a")[0].innerHTML;
-
-                    reddits.push({
-                      displayName: subRedditName,
-                      displayNamePrefixed: `r/${subRedditName}`,
-                      subscribers: 0,
-                      over18: true,
-                      isSubscribed: false,
-                      fromList: "",
-                      subredditUuid: uuidV4(),
-                      isUser: false,
-                    });
-                  }
-                }
-              }
-            }
-          }
-        });
-
-        let indexToSelect;
-        const listItterationMethod = selectSubredditIterationMethodOption;
-        if (
-          listItterationMethod ==
-          SelectSubredditIterationMethodOptionsEnum.Random
-        ) {
-          indexToSelect = Math.round(Math.random() * (reddits.length - 1));
-        } else if (
-          listItterationMethod ==
-          SelectSubredditIterationMethodOptionsEnum.Sequential
-        ) {
-          const sortOrder = sortOrderDirectionOption;
-          indexToSelect = nsfwSubredditIndex;
-          if (indexToSelect < 0 || indexToSelect >= reddits.length) {
-            if (sortOrder == SortOrderDirectionOptionsEnum.Normal) {
-              indexToSelect = 0;
-            } else if (sortOrder == SortOrderDirectionOptionsEnum.Reversed) {
-              indexToSelect = reddits.length - 1;
-            }
-          }
-
-          if (indexToSelect != undefined) {
-            if (sortOrder == SortOrderDirectionOptionsEnum.Normal) {
-              store.dispatch(setNsfwRedditListIndex(indexToSelect + 1));
-            } else if (sortOrder == SortOrderDirectionOptionsEnum.Reversed) {
-              store.dispatch(setNsfwRedditListIndex(indexToSelect - 1));
-            }
-          }
-        }
-        console.log(1, indexToSelect);
-        if (indexToSelect != undefined) {
-          resolve({
-            subredditToGetPostsFrom: reddits[indexToSelect],
-            allSubreddits: reddits,
-          });
-        }
-      });
-    } catch (e) {
-      console.log("caught e", e);
     }
-  });
+
+    if (indexToSelect != undefined) {
+      if (sortOrderDirection == SortOrderDirectionOptionsEnum.Normal) {
+        store.dispatch(setNsfwRedditListIndex(indexToSelect + 1));
+      } else if (sortOrderDirection == SortOrderDirectionOptionsEnum.Reversed) {
+        store.dispatch(setNsfwRedditListIndex(indexToSelect - 1));
+      }
+    }
+  }
+  console.log(1, indexToSelect);
+
+  if (indexToSelect != undefined) {
+    return subreddits[indexToSelect];
+  }
 }
 
 async function getPostsForSubreddit(
   subreddits: Array<Subreddit>,
-  concatRedditUrlMaxLength: number,
-  postSortOrder: PostSortOrderOptionsEnum,
-  topTimeFrame: TopTimeFrameOptionsEnum,
-  redditApiItemLimit: number
+  getPostsFromSubredditsState: GetPostsFromSubredditState
 ): Promise<Array<Post>> {
-  // const state = store.getState();
-  const urlMaxLength = concatRedditUrlMaxLength;
-
-  let isUser = false;
-  if (subreddits.length == 1) {
-    isUser = subreddits[0].displayName.startsWith("u_");
-  }
-
-  const { urlSuffix, randomSourceString } = createUrlSuffix(
-    isUser,
-    postSortOrder,
-    topTimeFrame,
-    redditApiItemLimit
+  console.log("getPostsForSubreddit", subreddits);
+  const urlConverter = new GetPostsForSubredditUrlConverter();
+  const [url, randomSourceString] = urlConverter.convert(
+    subreddits,
+    getPostsFromSubredditsState.concatRedditUrlMaxLength,
+    getPostsFromSubredditsState.postSortOrder,
+    getPostsFromSubredditsState.topTimeFrame,
+    getPostsFromSubredditsState.redditApiItemLimit
   );
-  let url = "/r/";
-  const subredditNamesAlreadyAdded = new Array<string>();
-
-  for (const subreddit of subreddits) {
-    const displayName = subreddit.displayName;
-    if (!subredditNamesAlreadyAdded.includes(displayName)) {
-      if ((url + displayName + urlSuffix).length >= urlMaxLength) {
-        break;
-      }
-      url += displayName + "+";
-      subredditNamesAlreadyAdded.push(displayName);
-    }
-  }
-
-  if (url.endsWith("+")) {
-    url = url.substring(0, url.length - 1);
-  }
-  url += urlSuffix;
   console.log("about to get posts for subreddit uri ", url);
   let posts = await getPostsForSubredditUri(url);
   posts = posts.map<Post>((value) => {
@@ -571,260 +416,91 @@ async function getPostsForSubreddit(
   return posts;
 }
 
+function filterPostContent(
+  contentFiltering: ContentFilteringOptionEnum,
+  posts: Array<Post>
+) {
+  if (ContentFilteringOptionEnum.SFW === contentFiltering) {
+    return posts.filter((post) => !post.over18);
+  }
+
+  if (ContentFilteringOptionEnum.NSFW === contentFiltering) {
+    return posts.filter((post) => post.over18);
+  }
+  return posts;
+}
+
 function addPostRow(
   posts: Array<Post>,
   fromSubreddits: Array<Subreddit>,
-  userFrontPageOption: UserFrontPagePostSortOrderOptionsEnum,
-  postRows: Array<PostRow>,
-  lastPostRowWasSortOrderNew: boolean
+  getPostsFromSubredditsState: GetPostsFromSubredditState
 ) {
+  const userFrontPageOption =
+    getPostsFromSubredditsState.userFrontPagePostSortOrderOption;
+  const postRows = getPostsFromSubredditsState.postRows;
+  const lastPostRowWasSortOrderNew =
+    getPostsFromSubredditsState.lastPostRowWasSortOrderNew;
   // ShowHidLoadingSpinner(false);
-  if (posts.length > 0) {
-    if (
-      UserFrontPagePostSortOrderOptionsEnum.NotSelected !=
-        userFrontPageOption &&
-      UserFrontPagePostSortOrderOptionsEnum.New == userFrontPageOption
-    ) {
-      posts = sortPostsByCreate(posts);
-      if (postRows.length == 0) {
-        store.dispatch(createPostRowAndPushToRows(posts));
-      } else {
-        if (lastPostRowWasSortOrderNew) {
-          const postsAlreadyInViewModel = postRows[0].posts;
-          const postsToAddToViewModel = new Array<Post>();
 
-          for (const post of posts) {
-            const foundPosts = postsAlreadyInViewModel.filter(
-              (p) => p.postId == post.postId
-            );
-
-            if (foundPosts.length == 0) {
-              postsToAddToViewModel.push(post);
-            } else {
-              break;
-            }
-          }
-
-          if (postsToAddToViewModel.length > 0) {
-            postsToAddToViewModel.reverse();
-
-            for (const post of postsToAddToViewModel) {
-              const postRowUuid = postRows[0].postRowUuid;
-              const shiftPostRowPayload = {
-                postRowUuid: postRowUuid,
-                postToInsert: post,
-                postToRemoveAt: postsAlreadyInViewModel.length - 1,
-              };
-              store.dispatch(shiftPostRowPosts(shiftPostRowPayload));
-              store.dispatch(
-                setPostRowScrollToIndex({
-                  postRowUuid: postRowUuid,
-                  scrollToIndex: 0,
-                })
-              );
-            }
-          }
-        } else {
-          store.dispatch(createPostRowAndPushToRows(posts));
-        }
-      }
-      store.dispatch(setLastPostRowWasSortOrderNew(true));
-    } else {
-      store.dispatch(setLastPostRowWasSortOrderNew(false));
-      store.dispatch(createPostRowAndInsertAtBegining(posts));
-    }
-  } else {
+  if (posts.length == 0) {
     let msg = `Got 0 posts. Trying again in a little bit.`;
     if (fromSubreddits.length == 1) {
       msg = `Got 0 posts from ${fromSubreddits[0].displayNamePrefixed}. Trying again in a little bit.`;
     }
     store.dispatch(submitAppNotification({ message: msg }));
-  }
-}
-
-function createUrlSuffix(
-  isUser: boolean,
-  postSortOrder: PostSortOrderOptionsEnum,
-  topTimeFrame: TopTimeFrameOptionsEnum,
-  redditApiItemLimit: number
-): {
-  urlSuffix: string;
-  randomSourceString: string;
-} {
-  let randomSourceString = "";
-  let url = "";
-
-  const randomUrl = () => {
-    let random = Math.floor(Math.random() * 3);
-    switch (random) {
-      case 0:
-        {
-          randomSourceString = "Top";
-          url = isUser ? "?sort=top&t=" : "/top?t=";
-          random = Math.floor(Math.random() * 7);
-          switch (random) {
-            case 0:
-              {
-                randomSourceString += ", All";
-                url += TopTimeFrameOptionsEnum.All;
-              }
-              break;
-            case 1:
-              {
-                randomSourceString += ", Day";
-                url += TopTimeFrameOptionsEnum.Day;
-              }
-              break;
-            case 2:
-              {
-                randomSourceString += ", Hour";
-                url += TopTimeFrameOptionsEnum.Hour;
-              }
-              break;
-            case 3:
-              {
-                randomSourceString += ", Month";
-                url += TopTimeFrameOptionsEnum.Month;
-              }
-              break;
-            case 4:
-              {
-                randomSourceString += ", Week";
-                url += TopTimeFrameOptionsEnum.Week;
-              }
-              break;
-            case 5:
-              {
-                randomSourceString += ", Year";
-                url += TopTimeFrameOptionsEnum.Year;
-              }
-              break;
-          }
-          url += `&limit=${redditApiItemLimit}`;
-        }
-        break;
-      case 1:
-        {
-          randomSourceString = "New";
-          newUrl();
-        }
-
-        break;
-      case 2:
-        {
-          randomSourceString = "Hot";
-          hotUrl();
-        }
-        break;
-    }
-  };
-
-  const topUrl = () => {
-    url = isUser ? "?sort=top&t=" : "/top?t=";
-    switch (topTimeFrame) {
-      case TopTimeFrameOptionsEnum.All:
-        url += "all";
-        break;
-      case TopTimeFrameOptionsEnum.Day:
-        url += "day";
-        break;
-      case TopTimeFrameOptionsEnum.Hour:
-        url += "hour";
-        break;
-      case TopTimeFrameOptionsEnum.Month:
-        url += "month";
-        break;
-      case TopTimeFrameOptionsEnum.Week:
-        url += "week";
-        break;
-      case TopTimeFrameOptionsEnum.Year:
-        url += "year";
-        break;
-    }
-    url += `&limit=${redditApiItemLimit}`;
-  };
-
-  const newUrl = () => {
-    url = isUser
-      ? `/?sort=new&limit=${redditApiItemLimit}`
-      : `/new?limit=${redditApiItemLimit}`;
-  };
-
-  const hotUrl = () => {
-    url = isUser
-      ? `/?sort=hot&limit=${redditApiItemLimit}`
-      : `/hot?limit=${redditApiItemLimit}`;
-  };
-
-  switch (postSortOrder) {
-    case PostSortOrderOptionsEnum.Random:
-      randomUrl();
-      break;
-    case PostSortOrderOptionsEnum.Top:
-      topUrl();
-      break;
-    case PostSortOrderOptionsEnum.New:
-      newUrl();
-      break;
-    case PostSortOrderOptionsEnum.Hot:
-      hotUrl();
-      break;
-  }
-
-  return { urlSuffix: url, randomSourceString: randomSourceString };
-}
-
-async function WaitUntilPostRowScrollY0() {
-  const isScrollY0 = () => {
-    return store.getState().postRows.scrollY == 0;
-  };
-
-  if (!isScrollY0()) {
-    store.dispatch(
-      submitAppNotification({ message: "Waiting to scroll to top." })
-    );
-  }
-
-  while (!isScrollY0()) {
-    await new Promise<void>((res) => setTimeout(() => res(), 100));
-  }
-  return;
-}
-
-async function WaitUntilPostRowComponentIsVisible() {
-  if (store.getState().postRows.postRows.length == 0) {
     return;
   }
 
-  const isOnPostRowRoute = () => {
-    return window.location.href.endsWith(POST_ROW_ROUTE);
-  };
-
-  if (!isOnPostRowRoute()) {
-    store.dispatch(
-      submitAppNotification({ message: "Waiting until back on Main Page" })
-    );
+  if (UserFrontPagePostSortOrderOptionsEnum.New != userFrontPageOption) {
+    store.dispatch(setLastPostRowWasSortOrderNew(false));
+    store.dispatch(createPostRowAndInsertAtBegining(posts));
+    return;
   }
 
-  while (!isOnPostRowRoute()) {
-    await new Promise<void>((res) => setTimeout(() => res(), 100));
-  }
-  return;
-}
+  posts = sortPostsByCreate(posts);
+  if (postRows.length == 0) {
+    store.dispatch(createPostRowAndPushToRows(posts));
+  } else {
+    if (lastPostRowWasSortOrderNew) {
+      const postsAlreadyInViewModel = postRows[0].posts;
+      const postsToAddToViewModel = new Array<Post>();
 
-async function WaitUntilPointerNotOverPostRow() {
-  const isMouseOverPostRow = () => {
-    return store.getState().postRows.mouseOverPostRowUuid != undefined;
-  };
-  if (isMouseOverPostRow()) {
-    store.dispatch(
-      submitAppNotification({ message: "Waiting until mouse is not over row" })
-    );
+      for (const post of posts) {
+        const foundPosts = postsAlreadyInViewModel.filter(
+          (p) => p.postId == post.postId
+        );
+
+        if (foundPosts.length == 0) {
+          postsToAddToViewModel.push(post);
+        } else {
+          break;
+        }
+      }
+
+      if (postsToAddToViewModel.length > 0) {
+        postsToAddToViewModel.reverse();
+
+        for (const post of postsToAddToViewModel) {
+          const postRowUuid = postRows[0].postRowUuid;
+          const shiftPostRowPayload = {
+            postRowUuid: postRowUuid,
+            postToInsert: post,
+            postToRemoveAt: postsAlreadyInViewModel.length - 1,
+          };
+          store.dispatch(shiftPostRowPosts(shiftPostRowPayload));
+          store.dispatch(
+            setPostRowScrollToIndex({
+              postRowUuid: postRowUuid,
+              scrollToIndex: 0,
+            })
+          );
+        }
+      }
+    } else {
+      store.dispatch(createPostRowAndPushToRows(posts));
+    }
   }
-  while (isMouseOverPostRow()) {
-    await new Promise<void>((res) => setTimeout(() => res(), 100));
-  }
-  return;
+  store.dispatch(setLastPostRowWasSortOrderNew(true));
 }
 
 async function loadSubscribedSubreddits(async: boolean = true) {

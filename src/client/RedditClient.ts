@@ -24,7 +24,7 @@ import {
   setRateLimitUsed,
 } from "../redux/slice/RedditClientSlice";
 import store from "../redux/store";
-import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEnum.ts";
+import { GetPostsFromSubredditState } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
 
 const REDDIT_BASE_URL = "https://www.reddit.com";
 const REDDIT_OAUTH_BASE_URL = "https://oauth.reddit.com";
@@ -153,18 +153,16 @@ export async function getSubscribedSubReddits(
 }
 
 export async function getUserFrontPage(
-  userFrontPageOption: UserFrontPagePostSortOrderOptionsEnum,
-  topTimeFrameOption: TopTimeFrameOptionsEnum,
-  redditApiItemLimit: number
+  getPostsFromSubredditsState: GetPostsFromSubredditState
 ): Promise<Array<Post>> {
   // CheckIsUserLoggedIn();
   const authInfo = await getAuthInfo();
   checkRateLimits();
 
   let uri = REDDIT_OAUTH_BASE_URL + "/";
-  switch (userFrontPageOption) {
+  switch (getPostsFromSubredditsState.userFrontPagePostSortOrderOption) {
     case UserFrontPagePostSortOrderOptionsEnum.Top:
-      uri = "/top?t=" + topTimeFrameOption;
+      uri = "/top?t=" + getPostsFromSubredditsState.topTimeFrame;
       break;
     case UserFrontPagePostSortOrderOptionsEnum.New:
       uri = "/new";
@@ -177,7 +175,7 @@ export async function getUserFrontPage(
       break;
   }
 
-  uri += "?limit=" + redditApiItemLimit;
+  uri += "?limit=" + getPostsFromSubredditsState.redditApiItemLimit;
   const url = REDDIT_OAUTH_BASE_URL + uri;
   console.log("Getting User front page @ URL: ", url);
   const response = await fetch(url, {
