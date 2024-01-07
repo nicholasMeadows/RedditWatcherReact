@@ -137,6 +137,7 @@ type InitialState = {
   sideBarButtonMoved: boolean;
   mouseDownOnOpenSidebarButton: boolean;
   openSidebarButtonTopPercent: number;
+  mouseOverSubredditList: boolean;
 };
 
 const state: InitialState = {
@@ -150,6 +151,7 @@ const state: InitialState = {
   sideBarButtonMoved: false,
   mouseDownOnOpenSidebarButton: false,
   openSidebarButtonTopPercent: 50,
+  mouseOverSubredditList: false,
 };
 
 const applySideBarFieldsToState = (
@@ -194,6 +196,12 @@ export const sideBarSlice = createSlice({
     ) => {
       state.openSidebarButtonTopPercent = action.payload;
     },
+    setMouseOverSubredditList: (
+      state: InitialState,
+      action: { type: string; payload: boolean }
+    ) => {
+      state.mouseOverSubredditList = action.payload;
+    },
   },
   extraReducers(builder) {
     builder
@@ -230,5 +238,6 @@ export const {
   setSideBarButtonMoved,
   setMouseDownOnOpenSidebarButton,
   setOpenSidebarButtonTopPercent,
+  setMouseOverSubredditList,
 } = sideBarSlice.actions;
 export default sideBarSlice.reducer;

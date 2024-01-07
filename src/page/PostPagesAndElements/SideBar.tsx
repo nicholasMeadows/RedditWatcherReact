@@ -1,10 +1,11 @@
-import React, { MouseEvent, useEffect, useRef } from "react";
+import React, { MouseEvent, useCallback, useEffect, useRef } from "react";
 import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../../RedditWatcherConstants";
 import SideBarSubredditMenuEvent from "../../model/Events/SideBarSubredditMenuEvent";
 import { setSideBarSubredditMenuEvent } from "../../redux/slice/ContextMenuSlice";
 import {
   setListToFilterByUuid,
   setMouseDownOnOpenSidebarButton,
+  setMouseOverSubredditList,
   setOpenSidebarButtonTopPercent,
   setSearchInput,
   setSideBarButtonMoved,
@@ -13,6 +14,7 @@ import {
 } from "../../redux/slice/SideBarSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import SearchRedditBar from "../ModifySubredditListsPagesAndElements/SearchRedditBar";
+
 const SideBar: React.FC = () => {
   const dispatch = useAppDispatch();
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
@@ -45,6 +47,10 @@ const SideBar: React.FC = () => {
     (state) => state.sideBar.openSidebarButtonTopPercent
   );
 
+  const mouseOverSubredditList = useAppSelector(
+    (state) => state.sideBar.mouseOverSubredditList
+  );
+
   const openSideBarButtonColumnDivRef = useRef(null);
   const openSideBarButtonDivRef = useRef(null);
   const subredditListDivRef = useRef(null);
@@ -52,7 +58,7 @@ const SideBar: React.FC = () => {
     dispatch(subredditListsUpdated());
   }, [dispatch, subredditLists]);
 
-  useEffect(() => {
+  const scrollToMostRecentSubredditGotten = useCallback(() => {
     const foundSubredditIndex = subredditsToShow.findIndex(
       (subreddit) =>
         subreddit.subredditUuid == mostRecentSubredditGotten?.subredditUuid
@@ -68,6 +74,16 @@ const SideBar: React.FC = () => {
     }
   }, [mostRecentSubredditGotten, subredditsToShow]);
 
+  useEffect(() => {
+    if (!mouseOverSubredditList) {
+      scrollToMostRecentSubredditGotten();
+    }
+  }, [
+    scrollToMostRecentSubredditGotten,
+    mouseOverSubredditList,
+    mostRecentSubredditGotten,
+    subredditsToShow,
+  ]);
   const handleOpenCloseButtonMouseMove = (event: MouseEvent) => {
     if (mouseDownOnOpenSidebarButton) {
       dispatch(setSideBarButtonMoved(true));
@@ -192,7 +208,12 @@ const SideBar: React.FC = () => {
           />
         </div>
         <hr className="hr" />
-        <div className="subreddit-list" ref={subredditListDivRef}>
+        <div
+          className="subreddit-list"
+          ref={subredditListDivRef}
+          onMouseEnter={() => dispatch(setMouseOverSubredditList(true))}
+          onMouseLeave={() => dispatch(setMouseOverSubredditList(false))}
+        >
           {subredditsToShow.map((subreddit) => (
             <p
               onContextMenu={(event) => {
