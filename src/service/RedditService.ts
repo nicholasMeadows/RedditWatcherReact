@@ -265,6 +265,10 @@ function getSubredditsToGetPostsFor(
 
   if (SubredditSortOrderOptionsEnum.Random === subredditSortOrderOption) {
     //Get a random subreddit from subscribed reddits. Ignore iteration method
+    console.log(
+      "getSubredditsToGetPostsFor masterSubscribedSubredditList",
+      masterSubscribedSubredditList
+    );
     sourceSubredditArray.push(...masterSubscribedSubredditList);
     const randomIndex = Math.floor(
       Math.random() * masterSubscribedSubredditList.length
@@ -618,7 +622,11 @@ function applyUpdatedStateValues(
     );
   }
   if (updatedValues.masterSubscribedSubredditList != undefined) {
-    store.dispatch(setMasterSubscribedSubredditList(updatedValues));
+    store.dispatch(
+      setMasterSubscribedSubredditList(
+        updatedValues.masterSubscribedSubredditList
+      )
+    );
   }
   if (updatedValues.subredditIndex != undefined) {
     store.dispatch(setSubredditIndex(updatedValues.subredditIndex));

@@ -69,7 +69,10 @@ export const redditClientSlice = createSlice({
     setAccessTokenExpiration: (state, action) => {
       state.accessTokenExpiration = action.payload;
     },
-    setMasterSubscribedSubredditList: (state, action) => {
+    setMasterSubscribedSubredditList: (
+      state,
+      action: { type: string; payload: Array<Subreddit> }
+    ) => {
       state.masterSubscribedSubredditList = action.payload;
     },
     addSubredditsToSubscribedList: (
