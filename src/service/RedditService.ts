@@ -136,7 +136,9 @@ async function getPostsOrchestrationStart() {
     } catch (e) {
       store.dispatch(
         submitAppNotification({
-          message: `Got exception while trying to get post. ${e}`,
+          message: `Got exception while trying to get post. ${
+            (e as DOMException).message
+          }`,
         })
       );
       console.log("Caught exception while getPosts ", e);

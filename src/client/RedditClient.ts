@@ -228,7 +228,7 @@ export async function getPostsForSubredditUri(
 
   if (response.status < 200 || response.status > 300) {
     throw new RangeError(
-      "Get posts for subreddit did not return OK response: " + response.data
+      `Reddit responded with ${response.status} status code.`
     );
   }
   updateRateLimitVariables(response);
