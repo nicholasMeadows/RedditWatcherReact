@@ -546,11 +546,11 @@ function settingsChanged(originalState: GetPostsFromSubredditState) {
       return false;
     }
 
-    queue1.forEach((subreddit, index) => {
+    for (const [index, subreddit] of queue1.entries()) {
       if (subreddit.subredditUuid != queue2[index].subredditUuid) {
         return false;
       }
-    });
+    }
     return true;
   };
   const settingsMatch =
