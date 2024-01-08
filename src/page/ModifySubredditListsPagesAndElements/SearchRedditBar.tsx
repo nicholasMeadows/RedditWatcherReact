@@ -36,8 +36,6 @@ const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
   ] = useState("");
   const [clearSearchInputImgSrc, setClearSearchInputImgSrc] = useState("");
 
-  const searchResultsDivRef = useRef(null);
-  const [searchResultsDivHeight, setSearchResultsDivHeight] = useState(0);
   useEffect(() => {
     let useDarkVersion = false;
     if (darkmodeOverride == undefined) {
@@ -53,18 +51,6 @@ const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
     setExpandCollapseSearchResultsImgSrc(expandCollapseImgSrc);
     setClearSearchInputImgSrc(clearSearchInputImgSrc);
   }, [darkmode, darkmodeOverride]);
-
-  useEffect(() => {
-    const searchResultsDiv =
-      searchResultsDivRef.current as unknown as HTMLDivElement;
-    let height = 0;
-
-    if (searchResultsOpen) {
-      height = searchResultsDiv.scrollHeight;
-    }
-
-    setSearchResultsDivHeight(height);
-  }, [searchResults, searchResultsOpen]);
 
   return (
     <div className="reddit-search-bar">
@@ -120,7 +106,6 @@ const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
         </div>
       </div>
       <div
-        ref={searchResultsDivRef}
         className={`search-results`}
         style={{
           top: `calc(0px + ${
@@ -130,7 +115,15 @@ const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
                   searchInputRef.current as unknown as HTMLDivElement
                 ).getBoundingClientRect().height
           }px)`,
-          height: `${searchResultsDivHeight}px`,
+          maxHeight: `calc( 100vh - ${
+            searchInputRef.current == undefined
+              ? "100vh"
+              : `${
+                  (
+                    searchInputRef.current as unknown as HTMLDivElement
+                  ).getBoundingClientRect().bottom
+                }px`
+          })`,
         }}
       >
         {searchResults.map((searchResult) => (
