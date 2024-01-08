@@ -28,7 +28,9 @@ const ModifySubredditQueue: React.FC = () => {
                   key={subredditQueueItem.subredditQueueItemUuid}
                   className="subreddit-queue-item"
                 >
-                  <h1>{subredditQueueItem.displayName}</h1>
+                  <h1 className={"subreddit-queue-item-label"}>
+                    {subredditQueueItem.displayName}
+                  </h1>
 
                   <div className="subreddit-queue-item-controls">
                     <span

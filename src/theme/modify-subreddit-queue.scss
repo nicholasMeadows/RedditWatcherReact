@@ -21,17 +21,21 @@
 .subreddit-queue-item {
   border-top: 0.01em solid var(--app-border-color);
   border-bottom: 0.01em solid var(--app-border-color);
-  padding: 0 1em 0 1em;
   display: flex;
   flex-direction: row;
   flex-grow: 1;
   width: 100%;
 }
 
+.subreddit-queue-item-label {
+  margin-left: 1em;
+}
+
 .subreddit-queue-item-controls {
   display: flex;
   flex-direction: row;
   margin-left: auto;
+  margin-right: 2em;
 }
 
 .queue-item-control-delete {
@@ -44,6 +48,7 @@
   font-size: 3em;
   rotate: 90deg;
 }
+
 .queue-item-control-move-down-margin-left {
   margin-left: 0.5em;
 }
