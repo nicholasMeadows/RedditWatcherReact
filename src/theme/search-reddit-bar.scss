@@ -12,9 +12,9 @@
 .reddit-search-input {
   background-color: var(--app-background-color);
   color: var(--text-color);
-  border-width: 0px;
+  border-width: 0;
   font-size: 1.5em;
-  padding: 0.2em 0em 0.2em 0.4em;
+  padding: 0.2em 0 0.2em 0.4em;
   width: 100%;
   box-sizing: border-box;
 }
@@ -66,8 +66,8 @@
 }
 
 .search-result-p {
-  margin-top: 0px;
-  margin-bottom: 0px;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .search-result-sub-unsub-button {

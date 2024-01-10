@@ -5,7 +5,7 @@ export const SUBREDDIT_LISTS_FILE = "subredditLists.json";
 export const MAX_POSTS_PER_ROW = 25;
 export const POST_ROW_LEFT_RIGHT_INCREMENT_BUTTON_WIDTH = 5;
 
-export const REDDIT_SIGNIN_ROUTE = "/redditsignin";
+export const REDDIT_SIGN_IN_ROUTE = "/redditsignin";
 export const APP_INITIALIZATION_ROUTE = "/appinitialization";
 export const POST_ROW_ROUTE = "/postrows";
 export const REDDIT_POST_SETTINGS_ROUTE = "/redditpostsettings";

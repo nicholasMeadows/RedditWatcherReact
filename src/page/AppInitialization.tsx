@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { POST_ROW_ROUTE, REDDIT_SIGNIN_ROUTE } from "../RedditWatcherConstants";
+import {
+  POST_ROW_ROUTE,
+  REDDIT_SIGN_IN_ROUTE,
+} from "../RedditWatcherConstants";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
 import { loadAppConfig } from "../redux/slice/AppConfigSlice";
 import { setText } from "../redux/slice/AppInitializationSlice";
@@ -30,7 +33,7 @@ const AppInitialization: React.FC = () => {
     } else if (configLoaded && subredditListsLoaded) {
       const redditCredentials = store.getState().appConfig.redditCredentials;
       if (redditCredentials == undefined) {
-        navigate(REDDIT_SIGNIN_ROUTE);
+        navigate(REDDIT_SIGN_IN_ROUTE);
       } else if (
         redditAuthenticationStatus == RedditAuthenticationStatus.NOT_YET_AUTHED
       ) {
@@ -45,9 +48,9 @@ const AppInitialization: React.FC = () => {
           clientId == "" ||
           clientSecret == ""
         ) {
-          navigate(REDDIT_SIGNIN_ROUTE);
+          navigate(REDDIT_SIGN_IN_ROUTE);
         } else {
-          console.log("Authetnicationg Reddit");
+          console.log("Authenticating Reddit");
           dispatch(setText("Logging In..."));
           dispatch(authenticateReddit());
         }
@@ -55,7 +58,7 @@ const AppInitialization: React.FC = () => {
         redditAuthenticationStatus ==
         RedditAuthenticationStatus.AUTHENTICATION_DENIED
       ) {
-        navigate(REDDIT_SIGNIN_ROUTE);
+        navigate(REDDIT_SIGN_IN_ROUTE);
       } else if (postRows.length == 0) {
         dispatch(setText("Getting Posts..."));
 

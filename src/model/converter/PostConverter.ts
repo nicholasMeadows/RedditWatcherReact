@@ -69,7 +69,7 @@ export function convertPost(post: T3): Post {
     attachments: createAttachments(post),
     permaLink: post.permalink,
     randomSourceString: "",
-    currentAttatchmentIndex: 0,
+    currentAttachmentIndex: 0,
   };
 }
 

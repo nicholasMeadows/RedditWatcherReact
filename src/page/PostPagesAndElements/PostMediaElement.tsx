@@ -1,6 +1,7 @@
-import {
+import React, {
   MouseEventHandler,
   TouchEventHandler,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -67,16 +68,8 @@ const PostMediaElement: React.FC<Props> = ({
   const autoIncrementPostAttachmentInterval = useRef<
     NodeJS.Timeout | undefined
   >();
-  useEffect(() => {
-    setupAutoIncrementPostAttachmentInterval();
-    return () => {
-      if (autoIncrementPostAttachmentInterval.current != undefined) {
-        clearInterval(autoIncrementPostAttachmentInterval.current);
-      }
-    };
-  }, []);
 
-  const setupAutoIncrementPostAttachmentInterval = () => {
+  const setupAutoIncrementPostAttachmentInterval = useCallback(() => {
     if (post.attachments.length > 1 && autoIncrementAttachments) {
       autoIncrementPostAttachmentInterval.current = setInterval(() => {
         dispatch(
@@ -87,7 +80,16 @@ const PostMediaElement: React.FC<Props> = ({
         );
       }, 5000);
     }
-  };
+  }, [autoIncrementAttachments, dispatch, post, postRowUuid]);
+
+  useEffect(() => {
+    setupAutoIncrementPostAttachmentInterval();
+    return () => {
+      if (autoIncrementPostAttachmentInterval.current != undefined) {
+        clearInterval(autoIncrementPostAttachmentInterval.current);
+      }
+    };
+  }, [setupAutoIncrementPostAttachmentInterval]);
 
   return (
     <div
@@ -102,6 +104,7 @@ const PostMediaElement: React.FC<Props> = ({
       }}
     >
       <img
+        alt={""}
         hidden={post.attachments.length == 1}
         src={`assets/left_chevron_${carouselArrowLightDarkPart}_mode.png`}
         className="post-element-scroll-img-button left"
@@ -117,6 +120,7 @@ const PostMediaElement: React.FC<Props> = ({
         }}
       />
       <img
+        alt={""}
         hidden={post.attachments.length == 1}
         src={`assets/right_chevron_${carouselArrowLightDarkPart}_mode.png`}
         className="post-element-scroll-img-button right"
@@ -132,12 +136,13 @@ const PostMediaElement: React.FC<Props> = ({
         }}
       />
 
-      {(post.attachments[post.currentAttatchmentIndex].mediaType == "IMAGE" ||
-        post.attachments[post.currentAttatchmentIndex].mediaType == "GIF") && (
+      {(post.attachments[post.currentAttachmentIndex].mediaType == "IMAGE" ||
+        post.attachments[post.currentAttachmentIndex].mediaType == "GIF") && (
         <div className="post-element-media-element">
           <img
+            alt={""}
             draggable={false}
-            src={post.attachments[post.currentAttatchmentIndex].url}
+            src={post.attachments[post.currentAttachmentIndex].url}
             className="post-element-img-element"
             onMouseOut={onMouseOut}
             onMouseDown={onMouseDown}
@@ -155,19 +160,19 @@ const PostMediaElement: React.FC<Props> = ({
         </div>
       )}
 
-      {post.attachments[post.currentAttatchmentIndex].mediaType ==
+      {post.attachments[post.currentAttachmentIndex].mediaType ==
         "VIDEO-MP4" && (
         <video className="post-element-media-element">
           {" "}
           <source
-            src={post.attachments[post.currentAttatchmentIndex].url}
+            src={post.attachments[post.currentAttachmentIndex].url}
             type="video/mp4"
           />{" "}
         </video>
       )}
-      {post.attachments[post.currentAttatchmentIndex].mediaType == "IFRAME" && (
+      {post.attachments[post.currentAttachmentIndex].mediaType == "IFRAME" && (
         <iframe
-          src={post.attachments[post.currentAttatchmentIndex].url}
+          src={post.attachments[post.currentAttachmentIndex].url}
           className="post-element-media-element"
         />
       )}

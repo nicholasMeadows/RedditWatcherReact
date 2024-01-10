@@ -196,7 +196,7 @@ export function exportConfigDownload(file: File) {
   link.href = URL.createObjectURL(file);
   link.download = file.name;
 
-  // It needs to be added to the DOM so it can be clicked
+  // It needs to be added to the DOM so, it can be clicked
   document.body.appendChild(link);
   link.click();
 

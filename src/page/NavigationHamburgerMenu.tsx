@@ -7,7 +7,7 @@ import {
   NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT,
   POST_ROW_ROUTE,
   REDDIT_POST_SETTINGS_ROUTE,
-  REDDIT_SIGNIN_ROUTE,
+  REDDIT_SIGN_IN_ROUTE,
   REDDIT_WATCHER_SETTINGS_ROUTE,
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
@@ -24,7 +24,8 @@ import {
 } from "../redux/slice/NavigationDrawerSlice";
 import { clearSearchResults } from "../redux/slice/RedditSearchSlice";
 import { useAppDispatch, useAppSelector } from "../redux/store";
-const NavigationHambugerMenu: React.FC = () => {
+
+const NavigationHamburgerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,7 +57,7 @@ const NavigationHambugerMenu: React.FC = () => {
     const pathname = location.pathname;
     let pageName = "";
     switch (pathname) {
-      case REDDIT_SIGNIN_ROUTE:
+      case REDDIT_SIGN_IN_ROUTE:
         pageName = "Sign In";
         break;
       case APP_INITIALIZATION_ROUTE:
@@ -136,7 +137,7 @@ const NavigationHambugerMenu: React.FC = () => {
             }}
             style={{ display: `${showBackButton ? "" : "none"}` }}
           >
-            <img src={`assets/back_arrow_white.png`} />
+            <img alt={""} src={`assets/back_arrow_white.png`} />
           </div>
 
           <div className="top-bar-title-box">
@@ -215,7 +216,7 @@ const NavigationHambugerMenu: React.FC = () => {
               <hr />
               <div
                 className="drawer-popout-item"
-                onClick={() => navigateTo(REDDIT_SIGNIN_ROUTE)}
+                onClick={() => navigateTo(REDDIT_SIGN_IN_ROUTE)}
               >
                 <p className="drawer-popout-item-text">Reddit Auth</p>
               </div>
@@ -275,4 +276,4 @@ const NavigationHambugerMenu: React.FC = () => {
   );
 };
 
-export default NavigationHambugerMenu;
+export default NavigationHamburgerMenu;

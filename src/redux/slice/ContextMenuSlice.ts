@@ -34,7 +34,7 @@ export const onCopyClick = createAsyncThunk(
       };
       img.onerror = (event) => {
         console.log(
-          `Could not load iamge url ${copyInfo.url} into image tag for copy. ${event}`
+          `Could not load image url ${copyInfo.url} into image tag for copy. ${event}`
         );
         navigator.clipboard.writeText(copyInfo.url);
       };
@@ -52,7 +52,7 @@ interface ShowButtonControlsOptional {
   showCopy?: boolean | undefined;
   showSkipToSubreddit?: boolean | undefined;
   showAddToList?: boolean | undefined;
-  showRemoveFromlist?: boolean | undefined;
+  showRemoveFromList?: boolean | undefined;
   showUpdateListName?: boolean | undefined;
   showDeleteList: boolean | undefined;
 }
@@ -65,8 +65,8 @@ interface ShowButtonControls extends ShowButtonControlsOptional {
   showSkipToSubreddit: boolean;
   showAddToList: boolean;
   expandAddToList: boolean;
-  showRemoveFromlist: boolean;
-  expandRemoveFromtList: boolean;
+  showRemoveFromList: boolean;
+  expandRemoveFromList: boolean;
   showUpdateListName: boolean;
   showDeleteList: boolean;
 }
@@ -77,6 +77,7 @@ interface ContextDataObjects {
   subredditLists?: SubredditLists | undefined;
   subreddit?: Subreddit | undefined;
 }
+
 type InitialState = {
   showContextMenu: boolean;
   x: number;
@@ -115,8 +116,8 @@ const initialState: InitialState = {
     showSkipToSubreddit: false,
     showAddToList: false,
     expandAddToList: false,
-    showRemoveFromlist: false,
-    expandRemoveFromtList: false,
+    showRemoveFromList: false,
+    expandRemoveFromList: false,
     showUpdateListName: false,
     showDeleteList: false,
   },
@@ -221,13 +222,13 @@ export const contextMenuSlice = createSlice({
     },
     setExpandAddToList: (state, action: { type: string; payload: boolean }) => {
       state.showButtonControls.expandAddToList = action.payload;
-      state.showButtonControls.expandRemoveFromtList = false;
+      state.showButtonControls.expandRemoveFromList = false;
     },
     setExpandRemoveToList: (
       state,
       action: { type: string; payload: boolean }
     ) => {
-      state.showButtonControls.expandRemoveFromtList = action.payload;
+      state.showButtonControls.expandRemoveFromList = action.payload;
       state.showButtonControls.expandAddToList = false;
     },
   },
@@ -249,14 +250,15 @@ function resetContextMenuFields(state: InitialState) {
   state.showButtonControls.showSkipToSubreddit = false;
   state.showButtonControls.showAddToList = false;
   state.showButtonControls.expandAddToList = false;
-  state.showButtonControls.showRemoveFromlist = false;
-  state.showButtonControls.expandRemoveFromtList = false;
+  state.showButtonControls.showRemoveFromList = false;
+  state.showButtonControls.expandRemoveFromList = false;
   state.showButtonControls.showUpdateListName = false;
 }
 
 function buildOpenPostPermaLink(permaLink: string) {
   return `https://www.reddit.com${permaLink}`;
 }
+
 function buildOpenSubredditLink(isUser: boolean, displayName: string) {
   return `https://www.reddit.com/${isUser ? "u" : "r"}/${displayName}`;
 }
@@ -275,8 +277,8 @@ const setContextStateFields = (
   if (contextDataObjects.post != undefined) {
     const post = contextDataObjects.post;
     state.copyInfo = {
-      url: post.attachments[post.currentAttatchmentIndex].url,
-      mediaType: post.attachments[post.currentAttatchmentIndex].mediaType,
+      url: post.attachments[post.currentAttachmentIndex].url,
+      mediaType: post.attachments[post.currentAttachmentIndex].mediaType,
     };
     state.openPostPermaLink = buildOpenPostPermaLink(post.permaLink);
     state.openSubredditLink = buildOpenSubredditLink(
@@ -291,7 +293,7 @@ const setContextStateFields = (
     let showCopy = true;
     let showSkipToSubreddit = true;
     let showAddToList = true;
-    let showRemoveFromlist = true;
+    let showRemoveFromList = true;
 
     if (showButtonControls != undefined) {
       showOpenPost =
@@ -318,10 +320,10 @@ const setContextStateFields = (
         showButtonControls.showAddToList == undefined
           ? showAddToList
           : showButtonControls.showAddToList;
-      showRemoveFromlist =
-        showButtonControls.showRemoveFromlist == undefined
-          ? showRemoveFromlist
-          : showButtonControls.showRemoveFromlist;
+      showRemoveFromList =
+        showButtonControls.showRemoveFromList == undefined
+          ? showRemoveFromList
+          : showButtonControls.showRemoveFromList;
     }
     state.showButtonControls.showOpenPost = showOpenPost;
     state.showButtonControls.showOpenImageInNewTab = showOpenImageInNewTab;
@@ -329,7 +331,7 @@ const setContextStateFields = (
     state.showButtonControls.showCopy = showCopy;
     state.showButtonControls.showSkipToSubreddit = showSkipToSubreddit;
     state.showButtonControls.showAddToList = showAddToList;
-    state.showButtonControls.showRemoveFromlist = showRemoveFromlist;
+    state.showButtonControls.showRemoveFromList = showRemoveFromList;
   }
 
   if (contextDataObjects.subreddit != undefined) {
@@ -343,7 +345,7 @@ const setContextStateFields = (
     let showOpenSubreddit = true;
     let showSkipToSubreddit = true;
     let showAddToList = true;
-    let showRemoveFromlist = true;
+    let showRemoveFromList = true;
     if (showButtonControls != undefined) {
       showOpenSubreddit =
         showButtonControls.showOpenSubreddit == undefined
@@ -357,15 +359,15 @@ const setContextStateFields = (
         showButtonControls.showAddToList == undefined
           ? showAddToList
           : showButtonControls.showAddToList;
-      showRemoveFromlist =
-        showButtonControls.showRemoveFromlist == undefined
-          ? showRemoveFromlist
-          : showButtonControls.showRemoveFromlist;
+      showRemoveFromList =
+        showButtonControls.showRemoveFromList == undefined
+          ? showRemoveFromList
+          : showButtonControls.showRemoveFromList;
     }
     state.showButtonControls.showOpenSubreddit = showOpenSubreddit;
     state.showButtonControls.showSkipToSubreddit = showSkipToSubreddit;
     state.showButtonControls.showAddToList = showAddToList;
-    state.showButtonControls.showRemoveFromlist = showRemoveFromlist;
+    state.showButtonControls.showRemoveFromList = showRemoveFromList;
   }
 
   if (contextDataObjects.subredditLists != undefined) {
@@ -417,14 +419,14 @@ const setContextStateFields = (
           ? showAddToList
           : showButtonControls.showAddToList;
       showRemoveFromlist =
-        showButtonControls.showRemoveFromlist == undefined
+        showButtonControls.showRemoveFromList == undefined
           ? showRemoveFromlist
-          : showButtonControls.showRemoveFromlist;
+          : showButtonControls.showRemoveFromList;
     }
     state.showButtonControls.showOpenSubreddit = showOpenSubreddit;
     state.showButtonControls.showSkipToSubreddit = showSkipToSubreddit;
     state.showButtonControls.showAddToList = showAddToList;
-    state.showButtonControls.showRemoveFromlist = showRemoveFromlist;
+    state.showButtonControls.showRemoveFromList = showRemoveFromlist;
   }
 };
 

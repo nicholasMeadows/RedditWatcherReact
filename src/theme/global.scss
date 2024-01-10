@@ -2,6 +2,7 @@ hr {
   width: 99%;
   max-width: 100%;
 }
+
 a {
   text-decoration: none;
   color: black;
@@ -27,6 +28,7 @@ a {
 .flex-wrap {
   flex-wrap: wrap;
 }
+
 .flex-grow {
   flex-grow: 1;
 }
@@ -38,6 +40,7 @@ a {
 .text-color {
   color: var(--text-color);
 }
+
 .cursor-default {
   cursor: default;
 }
@@ -54,13 +57,16 @@ button {
   padding: 16px 31px;
   text-decoration: none;
 }
+
 button:hover {
   background-color: rgb(0, 112, 204);
 }
+
 button:active {
   position: relative;
   top: 1px;
 }
+
 button:disabled,
 button[disabled] {
   border: 1px solid #999999;
@@ -101,17 +107,20 @@ button[disabled] {
   font-size: 1.2em;
   padding-left: 0.8em;
 }
+
 .select > option {
   background-color: var(--background);
   color: var(--text-color);
 }
+
 .select-label {
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   margin-left: 1em;
   font-size: 1em;
 }
+
 .input {
   background-color: transparent;
   border: none;
@@ -123,6 +132,7 @@ button[disabled] {
   height: 100%;
   box-sizing: border-box;
 }
+
 input:focus {
   outline: none;
 }
@@ -137,11 +147,11 @@ input::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
 .settings-item-error {
   color: red;
-  padding: 0px;
-  margin: 0;
-  margin-left: 0.8em;
+  padding: 0;
+  margin: 0 0 0 0.8em;
   font-size: 1.1em;
 }
 

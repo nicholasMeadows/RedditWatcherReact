@@ -18,7 +18,7 @@ import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOr
 import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
 import { submitAppNotification } from "../redux/slice/AppNotificationSlice";
 import {
-  createPostRowAndInsertAtBegining,
+  createPostRowAndInsertAtBeginning,
   createPostRowAndPushToRows,
   postRowRemoveAt,
   setPostRowScrollToIndex,
@@ -484,7 +484,7 @@ function addPostRow(
   if (UserFrontPagePostSortOrderOptionsEnum.New != userFrontPageOption) {
     getPostsFromSubredditsState.getPostsUpdatedValues.lastPostRowWasSortOrderNew =
       false;
-    getPostsFromSubredditsState.getPostsUpdatedValues.createPostRowAndInsertAtBegining =
+    getPostsFromSubredditsState.getPostsUpdatedValues.createPostRowAndInsertAtBeginning =
       posts;
     return;
   }
@@ -513,12 +513,10 @@ function addPostRow(
 
       if (postsToAddToViewModel.length > 0) {
         const postRowUuid = postRows[0].postRowUuid;
-        const shiftPostRowPayload = {
+        getPostsFromSubredditsState.getPostsUpdatedValues.shiftPostRowPosts = {
           postRowUuid: postRowUuid,
           postsToInsert: postsToAddToViewModel,
         };
-        getPostsFromSubredditsState.getPostsUpdatedValues.shiftPostRowPosts =
-          shiftPostRowPayload;
         if (postsToAddToViewModel.length != 0) {
           getPostsFromSubredditsState.getPostsUpdatedValues.postRowScrollToIndex =
             {
@@ -636,10 +634,10 @@ function applyUpdatedStateValues(
       setLastPostRowWasSortOrderNew(updatedValues.lastPostRowWasSortOrderNew)
     );
   }
-  if (updatedValues.createPostRowAndInsertAtBegining != undefined) {
+  if (updatedValues.createPostRowAndInsertAtBeginning != undefined) {
     store.dispatch(
-      createPostRowAndInsertAtBegining(
-        updatedValues.createPostRowAndInsertAtBegining
+      createPostRowAndInsertAtBeginning(
+        updatedValues.createPostRowAndInsertAtBeginning
       )
     );
   }

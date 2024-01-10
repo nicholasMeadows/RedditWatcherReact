@@ -28,7 +28,7 @@ import { GetPostsFromSubredditState } from "../model/converter/GetPostsFromSubre
 
 const REDDIT_BASE_URL = "https://www.reddit.com";
 const REDDIT_OAUTH_BASE_URL = "https://oauth.reddit.com";
-const REDDIT_AUTH_ENDTPOINT =
+const REDDIT_AUTH_ENDPOINT =
   "/api/v1/access_token?grant_type=password&username={username}&password={password}";
 const GET_SUBSCRIBED_SUBREDDITS_ENDPOINT =
   "/subreddits/mine/subscriber?limit={limit}";
@@ -50,7 +50,7 @@ export default function authenticate(
     clientSecret = clientSecret.trim();
     const url =
       REDDIT_BASE_URL +
-      REDDIT_AUTH_ENDTPOINT.replace("{username}", username).replace(
+      REDDIT_AUTH_ENDPOINT.replace("{username}", username).replace(
         "{password}",
         password
       );
@@ -63,7 +63,6 @@ export default function authenticate(
       url: url,
       headers: {
         Authorization: `Basic ${encodedAuth}`,
-        // "User-Agent": "Redditwatcer App",
       },
     })
       .then((response) => {

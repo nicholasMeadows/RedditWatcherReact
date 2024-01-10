@@ -12,7 +12,7 @@ export const searchReddit = createAsyncThunk(
   async () => {
     try {
       const results = await searchRedditForSubRedditAndUser(
-        store.getState().redditSearch.searcbBarInput
+        store.getState().redditSearch.searchBarInput
       );
       return results;
     } catch (e) {
@@ -36,13 +36,13 @@ export const subOrUnSubFromSubreddit = createAsyncThunk(
 );
 
 type InitialState = {
-  searcbBarInput: string;
+  searchBarInput: string;
   searchResults: Array<SubredditAccountSearchResult>;
   searchResultsOpen: boolean;
 };
 
 const initialState: InitialState = {
-  searcbBarInput: "",
+  searchBarInput: "",
   searchResults: [],
   searchResultsOpen: false,
 };
@@ -52,7 +52,7 @@ export const redditSearchSlice = createSlice({
   initialState: initialState,
   reducers: {
     setSearchBarInput: (state, action: { type: string; payload: string }) => {
-      state.searcbBarInput = action.payload;
+      state.searchBarInput = action.payload;
     },
     clearSearchResults: (state) => {
       state.searchResults = [];

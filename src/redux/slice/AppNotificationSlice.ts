@@ -10,18 +10,18 @@ export const submitAppNotification = createAsyncThunk(
       appNotification.displayTimeMS = 10000;
     }
 
-    const notificatoinUuid = uuidV4();
+    const notificationUuuid = uuidV4();
     setTimeout(() => {
-      store.dispatch(hideNotification(notificatoinUuid));
+      store.dispatch(hideNotification(notificationUuuid));
     }, appNotification.displayTimeMS - 600);
 
     setTimeout(() => {
-      store.dispatch(removeNotification(notificatoinUuid));
+      store.dispatch(removeNotification(notificationUuuid));
     }, appNotification.displayTimeMS);
 
     const appNotificationItem: AppNotificationItem = {
       appNotification: appNotification,
-      appNotificationUuid: notificatoinUuid,
+      appNotificationUuid: notificationUuuid,
       showNotification: true,
     };
     return appNotificationItem;

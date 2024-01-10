@@ -42,8 +42,8 @@ const ContextMenu: React.FC = () => {
   const expandAddToList = useAppSelector(
     (state) => state.contextMenu.showButtonControls.expandAddToList
   );
-  const expandRemoveFromtList = useAppSelector(
-    (state) => state.contextMenu.showButtonControls.expandRemoveFromtList
+  const expandRemoveFromList = useAppSelector(
+    (state) => state.contextMenu.showButtonControls.expandRemoveFromList
   );
 
   const [contextMenuX, setContextMenuX] = useState(0);
@@ -274,17 +274,17 @@ const ContextMenu: React.FC = () => {
           className="context-menu-button"
           hidden={
             !(
-              showButtonControls.showRemoveFromlist &&
+              showButtonControls.showRemoveFromList &&
               subredditListsThatSubredditIsIn.length > 0
             )
           }
         >
           <div
             className={`expandable-context-sub-menu ${
-              expandRemoveFromtList ? "expandable-context-sub-menu-active" : ""
+              expandRemoveFromList ? "expandable-context-sub-menu-active" : ""
             }`}
             onClick={() => {
-              dispatch(setExpandRemoveToList(!expandRemoveFromtList));
+              dispatch(setExpandRemoveToList(!expandRemoveFromList));
               const div =
                 removeFromListNamesDivRef.current as unknown as HTMLDivElement;
               div.style.setProperty(
@@ -300,7 +300,7 @@ const ContextMenu: React.FC = () => {
 
           <div
             className={`context-menu-sub-menu ${
-              expandRemoveFromtList ? "context-menu-sub-menu-open" : ""
+              expandRemoveFromList ? "context-menu-sub-menu-open" : ""
             }`}
             ref={removeFromListNamesDivRef}
           >

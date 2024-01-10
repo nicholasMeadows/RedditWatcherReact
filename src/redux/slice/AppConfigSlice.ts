@@ -1,13 +1,13 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
-  MAX_POSTS_TO_SHOW_IN_ROW,
+  Max_CONCAT_REDDIT_URL_LENGTH,
   MAX_POST_ROWS_TO_SHOW_IN_VIEW,
+  MAX_POSTS_TO_SHOW_IN_ROW,
   MAX_REDDIT_API_ITEM_LIMIT,
   MIN_CONCAT_REDDIT_URL_LENGTH,
-  MIN_POSTS_TO_SHOW_IN_ROW,
   MIN_POST_ROWS_TO_SHOW_IN_VIEW,
+  MIN_POSTS_TO_SHOW_IN_ROW,
   MIN_REDDIT_API_ITEM_LIMIT,
-  Max_CONCAT_REDDIT_URL_LENGTH,
 } from "../../RedditWatcherConstants";
 import ImportExportConfig from "../../model/ImportExportConfig";
 import { Subreddit } from "../../model/Subreddit/Subreddit";
@@ -210,7 +210,7 @@ function validateCredentialFields(state: AppConfigState) {
     );
 }
 
-function validateConcateRedditUrlLengthField(concateRedditUrlLength: number) {
+function validateConcatRedditUrlLengthField(concateRedditUrlLength: number) {
   return ValidationUtil.validateNumberRequire(
     "Reddit URL Max Length",
     concateRedditUrlLength,
@@ -218,6 +218,7 @@ function validateConcateRedditUrlLengthField(concateRedditUrlLength: number) {
     Max_CONCAT_REDDIT_URL_LENGTH
   );
 }
+
 function validateRedditApiItemLimitField(redditApiItemLimit: number) {
   return ValidationUtil.validateNumberRequire(
     "Reddit API Limit",
@@ -226,6 +227,7 @@ function validateRedditApiItemLimitField(redditApiItemLimit: number) {
     MAX_REDDIT_API_ITEM_LIMIT
   );
 }
+
 function validatePostsToShowInRowField(postsToShowInRow: number) {
   return ValidationUtil.validateNumberRequire(
     "Posts to Show In Row",
@@ -353,14 +355,14 @@ export const appConfigSlice = createSlice({
       action: { type: string; payload: number }
     ) => {
       state.concatRedditUrlMaxLengthValidationError =
-        validateConcateRedditUrlLengthField(action.payload);
+        validateConcatRedditUrlLengthField(action.payload);
     },
     setConcatRedditUrlMaxLength: (
       state,
       action: { type: string; payload: number }
     ) => {
       const concatRedditUrlMaxLength = action.payload;
-      const validationError = validateConcateRedditUrlLengthField(
+      const validationError = validateConcatRedditUrlLengthField(
         concatRedditUrlMaxLength
       );
       if (validationError == undefined) {

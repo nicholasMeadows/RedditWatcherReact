@@ -11,8 +11,8 @@
 .modify-list-box {
   background: white;
   position: absolute;
-  left: 0%;
-  right: 0%;
+  left: 0;
+  right: 0;
   top: 50%;
   transform: translate(0%, -50%);
   display: flex;
@@ -29,8 +29,7 @@
 
 .modify-list-header {
   color: black;
-  margin: 0;
-  margin-bottom: 0.5em;
+  margin: 0 0 0.5em;
 }
 
 .modify-subreddit-list-button-box {
@@ -117,7 +116,7 @@ div.active:after {
 .panel {
   padding: 0 18px;
   overflow: hidden;
-  max-height: 0px;
+  max-height: 0;
   transition: max-height 500ms ease-out;
 }
 

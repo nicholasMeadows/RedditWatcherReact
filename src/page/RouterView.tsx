@@ -10,7 +10,7 @@ import {
   NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT,
   POST_ROW_ROUTE,
   REDDIT_POST_SETTINGS_ROUTE,
-  REDDIT_SIGNIN_ROUTE,
+  REDDIT_SIGN_IN_ROUTE,
   REDDIT_WATCHER_SETTINGS_ROUTE,
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
@@ -20,11 +20,11 @@ import AppNotification from "./AppNotification";
 import ContextMenu from "./ContextMenu";
 import ModifySubredditLists from "./ModifySubredditListsPagesAndElements/ModifySubredditLists";
 import ModifySubredditQueue from "./ModifySubredditQueue";
-import NavigationHambugerMenu from "./NavigationHambugerMenu";
+import NavigationHamburgerMenu from "./NavigationHamburgerMenu.tsx";
 import PostRowCollectionView from "./PostPagesAndElements/PostRowCollectionView";
 import SinglePostView from "./PostPagesAndElements/SinglePostView";
 import RedditPostSettings from "./SettingsPages/RedditPostSettings";
-import RedditSignin from "./SettingsPages/RedditSignin";
+import RedditSignIn from "./SettingsPages/RedditSignIn.tsx";
 import RedditWatcherSettings from "./SettingsPages/RedditWatcherSettings";
 
 const RouterView: React.FC = () => {
@@ -73,7 +73,7 @@ const RouterView: React.FC = () => {
 
   return (
     <div className="root-app">
-      <NavigationHambugerMenu />
+      <NavigationHamburgerMenu />
       <AppNotification />
       <ContextMenu />
       <div
@@ -94,7 +94,7 @@ const RouterView: React.FC = () => {
             path={APP_INITIALIZATION_ROUTE}
             element={<AppInitialization />}
           />
-          <Route path={REDDIT_SIGNIN_ROUTE} element={<RedditSignin />} />
+          <Route path={REDDIT_SIGN_IN_ROUTE} element={<RedditSignIn />} />
           <Route path={POST_ROW_ROUTE} element={<PostRowCollectionView />} />
           <Route
             path={REDDIT_POST_SETTINGS_ROUTE}

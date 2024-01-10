@@ -8,7 +8,7 @@ import {
 } from "../../redux/slice/AppConfigSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 
-const RedditSignin: React.FC = () => {
+const RedditSignIn: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -41,29 +41,29 @@ const RedditSignin: React.FC = () => {
   );
 
   return (
-    <div className="signin-page">
-      <div className="signin-box">
+    <div className="sign-in-page">
+      <div className="sign-in-box">
         <input
-          className="signin-input"
+          className="sign-in-input"
           placeholder="Username"
           value={username}
           onChange={(event) => dispatch(setUsername(event.target.value))}
         ></input>
         <input
-          className="signin-input"
+          className="sign-in-input"
           placeholder="Password"
           type="password"
           value={password}
           onChange={(event) => dispatch(setPassword(event.target.value))}
         ></input>
         <input
-          className="signin-input"
+          className="sign-in-input"
           placeholder="Client ID"
           value={clientId}
           onChange={(event) => dispatch(setClientId(event.target.value))}
         ></input>
         <input
-          className="signin-input"
+          className="sign-in-input"
           placeholder="Client Secret"
           value={clientSecret}
           onChange={(event) => dispatch(setClientSecret(event.target.value))}
@@ -84,4 +84,4 @@ const RedditSignin: React.FC = () => {
   );
 };
 
-export default RedditSignin;
+export default RedditSignIn;

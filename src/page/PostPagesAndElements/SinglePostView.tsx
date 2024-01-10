@@ -189,7 +189,7 @@ const SinglePostView: React.FC = () => {
         }
       }
     },
-    [imgXPercent, imgYPercent]
+    [dispatch, imgXPercent, imgYPercent]
   );
 
   const handlePostElementImageScale = useCallback(

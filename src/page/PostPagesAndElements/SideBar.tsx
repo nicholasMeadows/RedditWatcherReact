@@ -147,6 +147,7 @@ const SideBar: React.FC = () => {
           }}
         >
           <img
+            alt={""}
             src={`assets/${sideBarOpen ? "right" : "left"}_chevron_${
               darkMode ? "dark" : "light"
             }_mode.png`}

@@ -19,7 +19,7 @@ const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
   const dispatch = useAppDispatch();
   const darkmode = useAppSelector((state) => state.appConfig.darkMode);
   const searchBarInput = useAppSelector(
-    (state) => state.redditSearch.searcbBarInput
+    (state) => state.redditSearch.searchBarInput
   );
   const searchResults = useAppSelector(
     (state) => state.redditSearch.searchResults
@@ -80,6 +80,7 @@ const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
 
         <div className="reddit-search-bar-control-imgs-div">
           <img
+            alt={""}
             hidden={searchResults.length == 0}
             src={expandCollapseSearchResultsImgSrc}
             className={`reddit-search-bar-control-img ${
@@ -92,6 +93,7 @@ const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
             }}
           />
           <img
+            alt={""}
             hidden={searchBarInput.length == 0}
             src={clearSearchInputImgSrc}
             className="reddit-search-bar-control-img"

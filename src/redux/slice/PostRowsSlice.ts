@@ -14,7 +14,7 @@ export const createPostRowAndPushToRows = createAsyncThunk(
   }
 );
 
-export const createPostRowAndInsertAtBegining = createAsyncThunk(
+export const createPostRowAndInsertAtBeginning = createAsyncThunk(
   "postRows/createPostRowAndInsertAtBegining",
   async (data: Array<Post>) => {
     return createPostRow(data);
@@ -119,11 +119,11 @@ export const postRowsSlice = createSlice({
       if (postRow != undefined) {
         const post = postRow.posts.find((post) => post.postUuid == postUuid);
         if (post != undefined) {
-          const currentAttachmentIndex = post.currentAttatchmentIndex;
+          const currentAttachmentIndex = post.currentAttachmentIndex;
           if (currentAttachmentIndex == post.attachments.length - 1) {
-            post.currentAttatchmentIndex = 0;
+            post.currentAttachmentIndex = 0;
           } else {
-            post.currentAttatchmentIndex += 1;
+            post.currentAttachmentIndex += 1;
           }
         }
       }
@@ -143,11 +143,11 @@ export const postRowsSlice = createSlice({
       if (postRow != undefined) {
         const post = postRow.posts.find((post) => post.postUuid == postUuid);
         if (post != undefined) {
-          const currentAttachmentIndex = post.currentAttatchmentIndex;
+          const currentAttachmentIndex = post.currentAttachmentIndex;
           if (currentAttachmentIndex == 0) {
-            post.currentAttatchmentIndex = post.attachments.length - 1;
+            post.currentAttachmentIndex = post.attachments.length - 1;
           } else {
-            post.currentAttatchmentIndex -= 1;
+            post.currentAttachmentIndex -= 1;
           }
         }
       }
@@ -251,7 +251,7 @@ export const postRowsSlice = createSlice({
         }
       )
       .addCase(
-        createPostRowAndInsertAtBegining.fulfilled,
+        createPostRowAndInsertAtBeginning.fulfilled,
         (state, action: { type: string; payload: PostRow }) => {
           setPostRowsHasAtLeast1PostRow(state);
           state.postRows.unshift(action.payload);

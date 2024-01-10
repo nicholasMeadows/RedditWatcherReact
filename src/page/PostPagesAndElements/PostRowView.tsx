@@ -110,6 +110,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     >
       <div className="postRowScrollButton leftPostRowScrollButton">
         <img
+          alt={""}
           src={
             darkMode
               ? "assets/left_chevron_dark_mode.png"
@@ -193,6 +194,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
       </div>
       <div className="postRowScrollButton rightPostRowScrollButton">
         <img
+          alt={""}
           src={
             darkMode
               ? "assets/right_chevron_dark_mode.png"
