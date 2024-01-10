@@ -108,7 +108,12 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
         }
       }}
     >
-      <div className="postRowScrollButton leftPostRowScrollButton">
+      <div
+        hidden={
+          getPlatform() == Platform.Android || getPlatform() == Platform.Ios
+        }
+        className="postRowScrollButton leftPostRowScrollButton"
+      >
         <img
           alt={""}
           src={
@@ -192,7 +197,12 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
           </div>
         ))}
       </div>
-      <div className="postRowScrollButton rightPostRowScrollButton">
+      <div
+        hidden={
+          getPlatform() == Platform.Android || getPlatform() == Platform.Ios
+        }
+        className="postRowScrollButton rightPostRowScrollButton"
+      >
         <img
           alt={""}
           src={
