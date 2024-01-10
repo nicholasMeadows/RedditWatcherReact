@@ -1,6 +1,8 @@
-import { useAppSelector } from "../redux/store";
+import { useAppDispatch, useAppSelector } from "../redux/store";
+import { dismissAppNotification } from "../redux/slice/AppNotificationSlice.ts";
 
 const AppNotification: React.FC = () => {
+  const dispatch = useAppDispatch();
   const appNotifications = useAppSelector(
     (state) => state.appNotification.notifications
   );
@@ -11,10 +13,11 @@ const AppNotification: React.FC = () => {
           <div
             key={appNotificationItem.appNotificationUuid}
             className={`notification-box ${
-              appNotificationItem.showNotification
-                ? "show-notification"
-                : "hide-notification"
+              appNotificationItem.showNotification ? "show-notification" : ""
             }`}
+            onClick={() => {
+              dispatch(dismissAppNotification(appNotificationItem));
+            }}
           >
             <p className="notification-text">
               {appNotificationItem.appNotification.message}

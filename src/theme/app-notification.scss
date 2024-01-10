@@ -4,7 +4,7 @@
   bottom: 0;
   z-index: 50;
   margin-right: 2em;
-  margin-left: 1em;
+  margin-left: 2em;
   margin-bottom: 0.7em;
   max-width: 50%;
 
@@ -22,6 +22,8 @@
   padding-right: 1em;
   margin-bottom: 0.2em;
   margin-top: 0.2em;
+  opacity: 0;
+  transition: opacity 1s ease-out;
 }
 
 .notification-text {
@@ -30,25 +32,5 @@
 }
 
 .show-notification {
-  animation: fadeIn 0.5s;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 0;
-  }
+  opacity: 1;
 }
