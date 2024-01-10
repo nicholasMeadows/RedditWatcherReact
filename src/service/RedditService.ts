@@ -512,17 +512,14 @@ function addPostRow(
       }
 
       if (postsToAddToViewModel.length > 0) {
-        postsToAddToViewModel.reverse();
-
-        for (const post of postsToAddToViewModel) {
-          const postRowUuid = postRows[0].postRowUuid;
-          const shiftPostRowPayload = {
-            postRowUuid: postRowUuid,
-            postToInsert: post,
-            postToRemoveAt: postsAlreadyInViewModel.length - 1,
-          };
-          getPostsFromSubredditsState.getPostsUpdatedValues.shiftPostRowPosts =
-            shiftPostRowPayload;
+        const postRowUuid = postRows[0].postRowUuid;
+        const shiftPostRowPayload = {
+          postRowUuid: postRowUuid,
+          postsToInsert: postsToAddToViewModel,
+        };
+        getPostsFromSubredditsState.getPostsUpdatedValues.shiftPostRowPosts =
+          shiftPostRowPayload;
+        if (postsToAddToViewModel.length != 0) {
           getPostsFromSubredditsState.getPostsUpdatedValues.postRowScrollToIndex =
             {
               postRowUuid: postRowUuid,

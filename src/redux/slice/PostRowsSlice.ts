@@ -5,6 +5,7 @@ import { PostRow } from "../../model/PostRow";
 import { PostRowsState } from "../../model/PostRowsState";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
 import store from "../store";
+import { MAX_POSTS_PER_ROW } from "../../RedditWatcherConstants.ts";
 
 export const createPostRowAndPushToRows = createAsyncThunk(
   "postRows/createPostRowAndPushToRows",
@@ -24,7 +25,6 @@ const createPostRow = (posts: Array<Post>): PostRow => {
   const postRowUuid = uuidV4();
   const postRow: PostRow = {
     postRowUuid: postRowUuid,
-    runningPostsForPostRow: posts,
     posts: posts,
     scrollToIndex: 0,
     incrementPostInterval: createIncrementPostInterval(postRowUuid),
@@ -83,8 +83,7 @@ export const postRowsSlice = createSlice({
         type: string;
         payload: {
           postRowUuid: string;
-          postToInsert: Post;
-          postToRemoveAt: number;
+          postsToInsert: Array<Post>;
         };
       }
     ) => {
@@ -93,11 +92,15 @@ export const postRowsSlice = createSlice({
         (postRow) => postRow.postRowUuid == shiftPostRowPostsPayload.postRowUuid
       );
       if (postRow != undefined) {
-        postRow.runningPostsForPostRow.unshift(
-          shiftPostRowPostsPayload.postToInsert
-        );
-        postRow.posts.unshift(shiftPostRowPostsPayload.postToInsert);
-        postRow.posts.splice(shiftPostRowPostsPayload.postToRemoveAt, 1);
+        const postsToInsert = action.payload.postsToInsert;
+        postsToInsert.reverse();
+        postsToInsert.forEach((post) => {
+          postRow.posts.unshift(post);
+        });
+
+        if (postRow.posts.length > MAX_POSTS_PER_ROW) {
+          postRow.posts.splice(MAX_POSTS_PER_ROW - postRow.posts.length);
+        }
       }
     },
     incrementPostAttachment: (
@@ -115,17 +118,13 @@ export const postRowsSlice = createSlice({
       );
       if (postRow != undefined) {
         const post = postRow.posts.find((post) => post.postUuid == postUuid);
-        const postToShowIndex = postRow.runningPostsForPostRow.findIndex(
-          (post) => post.postUuid == postUuid
-        );
-        if (post != undefined && postToShowIndex != -1) {
+        if (post != undefined) {
           const currentAttachmentIndex = post.currentAttatchmentIndex;
           if (currentAttachmentIndex == post.attachments.length - 1) {
             post.currentAttatchmentIndex = 0;
           } else {
             post.currentAttatchmentIndex += 1;
           }
-          postRow.runningPostsForPostRow[postToShowIndex] = post;
         }
       }
     },
@@ -136,7 +135,6 @@ export const postRowsSlice = createSlice({
         payload: { postRowUuid: string; postUuid: string };
       }
     ) => {
-      console.log("inside decrementPostAttachment");
       const postRowUuid = action.payload.postRowUuid;
       const postUuid = action.payload.postUuid;
       const postRow = state.postRows.find(
@@ -144,17 +142,13 @@ export const postRowsSlice = createSlice({
       );
       if (postRow != undefined) {
         const post = postRow.posts.find((post) => post.postUuid == postUuid);
-        const postToShowIndex = postRow.runningPostsForPostRow.findIndex(
-          (post) => post.postUuid == postUuid
-        );
-        if (post != undefined && postToShowIndex != -1) {
+        if (post != undefined) {
           const currentAttachmentIndex = post.currentAttatchmentIndex;
           if (currentAttachmentIndex == 0) {
             post.currentAttatchmentIndex = post.attachments.length - 1;
           } else {
             post.currentAttatchmentIndex -= 1;
           }
-          postRow.runningPostsForPostRow[postToShowIndex] = post;
         }
       }
     },
@@ -182,37 +176,21 @@ export const postRowsSlice = createSlice({
       state,
       action: {
         type: string;
-        payload: { postRowUuid: string; postsToShowInRow: number };
+        payload: { postRowUuid: string };
       }
     ) => {
       const postRowUuid = action.payload.postRowUuid;
-      const postsToShowInRow = parseInt(
-        action.payload.postsToShowInRow.toString()
-      );
-
       const postRow = state.postRows.find(
         (row) => row.postRowUuid == postRowUuid
       );
       if (postRow != undefined) {
         const scrollToIndex = postRow.scrollToIndex;
-        if (scrollToIndex == 0) {
-          const scrollToIndexToSet = postRow.posts.length - 1;
-          postRow.runningPostsForPostRow = [
-            ...postRow.posts,
-            ...postRow.runningPostsForPostRow,
-          ];
-          postRow.scrollToIndex = scrollToIndexToSet;
+        if (scrollToIndex - 1 >= 0) {
+          postRow.scrollToIndex -= 1;
         } else {
-          postRow.scrollToIndex--;
-        }
-
-        if (postRow.runningPostsForPostRow.length > postRow.posts.length) {
-          if (
-            postRow.scrollToIndex + postsToShowInRow <
-            postRow.posts.length + 1
-          ) {
-            postRow.runningPostsForPostRow =
-              postRow.runningPostsForPostRow.slice(0, postRow.posts.length);
+          const removedPost = postRow.posts.pop();
+          if (removedPost != undefined) {
+            postRow.posts.unshift(removedPost);
           }
         }
       }
@@ -225,28 +203,22 @@ export const postRowsSlice = createSlice({
       }
     ) => {
       const postRowUuid = action.payload.postRowUuid;
-      const postsToShowInRow = parseInt(
-        action.payload.postsToShowInRow.toString()
-      );
-
       const postRow = state.postRows.find(
         (row) => row.postRowUuid == postRowUuid
       );
       if (postRow != undefined) {
+        const postsToShowInRow = parseInt(
+          action.payload.postsToShowInRow.toString()
+        );
+
         const scrollToIndex = postRow.scrollToIndex;
-        if (
-          scrollToIndex ==
-          postRow.runningPostsForPostRow.length - 1 - postsToShowInRow
-        ) {
-          postRow.runningPostsForPostRow = [
-            ...postRow.runningPostsForPostRow,
-            ...postRow.posts,
-          ];
-        }
-        postRow.scrollToIndex++;
-        if (postRow.scrollToIndex == postRow.posts.length) {
-          postRow.runningPostsForPostRow.slice(0, postRow.posts.length);
-          postRow.scrollToIndex = 0;
+        if (scrollToIndex + postsToShowInRow <= postRow.posts.length - 1) {
+          postRow.scrollToIndex += 1;
+        } else {
+          const removedPosts = postRow.posts.shift();
+          if (removedPosts != undefined) {
+            postRow.posts.push(removedPosts);
+          }
         }
       }
     },

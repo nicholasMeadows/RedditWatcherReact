@@ -14,7 +14,7 @@ import {
   setImgYPercentage,
 } from "../../redux/slice/SinglePostPageSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
-import PostElement from "./PostElement";
+import PostMediaElement from "./PostMediaElement.tsx";
 
 const SinglePostView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -288,9 +288,10 @@ const SinglePostView: React.FC = () => {
               }}
               className="flex flex-column max-width-height-percentage single-post-view-post-element"
             >
-              <PostElement
+              <PostMediaElement
                 postRowUuid={postRowUuid}
                 post={post}
+                autoIncrementAttachments={false}
                 scale={imgScale}
                 imgXPercent={imgXPercent}
                 imgYPercent={imgYPercent}

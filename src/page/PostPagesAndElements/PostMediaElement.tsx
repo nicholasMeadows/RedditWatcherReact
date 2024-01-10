@@ -1,9 +1,10 @@
 import {
   MouseEventHandler,
   TouchEventHandler,
-  WheelEventHandler,
   useEffect,
+  useRef,
   useState,
+  WheelEventHandler,
 } from "react";
 import { useLocation } from "react-router-dom";
 import { POST_ROW_ROUTE } from "../../RedditWatcherConstants";
@@ -17,6 +18,7 @@ import { useAppDispatch, useAppSelector } from "../../redux/store";
 type Props = {
   postRowUuid: string;
   post: Post;
+  autoIncrementAttachments?: boolean;
   scale?: number;
   imgXPercent?: number;
   imgYPercent?: number;
@@ -28,9 +30,10 @@ type Props = {
   onTouchStart?: TouchEventHandler;
   onTouchMove?: TouchEventHandler;
 };
-const PostElement: React.FC<Props> = ({
+const PostMediaElement: React.FC<Props> = ({
   postRowUuid,
   post,
+  autoIncrementAttachments = true,
   scale = 1,
   imgXPercent = 50,
   imgYPercent = 50,
@@ -61,8 +64,43 @@ const PostElement: React.FC<Props> = ({
     }
   }, [location, darkMode]);
 
+  const autoIncrementPostAttachmentInterval = useRef<
+    NodeJS.Timeout | undefined
+  >();
+  useEffect(() => {
+    setupAutoIncrementPostAttachmentInterval();
+    return () => {
+      if (autoIncrementPostAttachmentInterval.current != undefined) {
+        clearInterval(autoIncrementPostAttachmentInterval.current);
+      }
+    };
+  }, []);
+
+  const setupAutoIncrementPostAttachmentInterval = () => {
+    if (post.attachments.length > 1 && autoIncrementAttachments) {
+      autoIncrementPostAttachmentInterval.current = setInterval(() => {
+        dispatch(
+          incrementPostAttachment({
+            postRowUuid: postRowUuid,
+            postUuid: post.postUuid,
+          })
+        );
+      }, 5000);
+    }
+  };
+
   return (
-    <div className="post-element">
+    <div
+      className="post-element"
+      onMouseEnter={() => {
+        if (autoIncrementPostAttachmentInterval.current != undefined) {
+          clearInterval(autoIncrementPostAttachmentInterval.current);
+        }
+      }}
+      onMouseLeave={() => {
+        setupAutoIncrementPostAttachmentInterval();
+      }}
+    >
       <img
         hidden={post.attachments.length == 1}
         src={`assets/left_chevron_${carouselArrowLightDarkPart}_mode.png`}
@@ -137,4 +175,4 @@ const PostElement: React.FC<Props> = ({
   );
 };
 
-export default PostElement;
+export default PostMediaElement;

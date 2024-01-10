@@ -50,7 +50,7 @@ export type GetPostsUpdatedValues = {
   createPostRowAndInsertAtBegining: Array<Post> | undefined;
   createPostRowAndPushToRows: Array<Post> | undefined;
   shiftPostRowPosts:
-    | { postRowUuid: string; postToInsert: Post; postToRemoveAt: number }
+    | { postRowUuid: string; postsToInsert: Array<Post> }
     | undefined;
   postRowScrollToIndex:
     | { postRowUuid: string; scrollToIndex: number }

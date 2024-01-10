@@ -12,8 +12,7 @@ import {
 } from "../../redux/slice/PostRowsSlice";
 import { setPostAndRowUuid } from "../../redux/slice/SinglePostPageSlice";
 import store, { useAppDispatch, useAppSelector } from "../../redux/store";
-import PostElement from "./PostElement";
-import { v4 as uuidV4 } from "uuid";
+import PostMediaElement from "./PostMediaElement.tsx";
 import getPlatform from "../../util/PlatformUtil.ts";
 import { Platform } from "../../model/Platform.ts";
 
@@ -78,7 +77,6 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
         dispatch(
           postRowLeftButtonClicked({
             postRowUuid: postRow.postRowUuid,
-            postsToShowInRow: store.getState().appConfig.postsToShowInRow,
           })
         );
       }
@@ -128,16 +126,15 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
             dispatch(
               postRowLeftButtonClicked({
                 postRowUuid: postRow.postRowUuid,
-                postsToShowInRow: store.getState().appConfig.postsToShowInRow,
               })
             )
           }
         />
       </div>
       <div className="postRowContent" ref={postRowContentDiv}>
-        {postRow.runningPostsForPostRow.map((post) => (
+        {postRow.posts.map((post) => (
           <div
-            key={`post-row-post-${post.postUuid}-${uuidV4()}`}
+            key={`${post.postUuid}`}
             className="postCard"
             style={{
               minWidth: `calc((100% - (10px * ${postsToShowInRow} ) )/${postsToShowInRow})`,
@@ -189,7 +186,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
             </div>
 
             <div className="post-card-content">
-              <PostElement postRowUuid={postRow.postRowUuid} post={post} />
+              <PostMediaElement postRowUuid={postRow.postRowUuid} post={post} />
             </div>
           </div>
         ))}
