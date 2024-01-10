@@ -207,10 +207,7 @@ export const postRowsSlice = createSlice({
         (row) => row.postRowUuid == postRowUuid
       );
       if (postRow != undefined) {
-        const postsToShowInRow = parseInt(
-          action.payload.postsToShowInRow.toString()
-        );
-
+        const postsToShowInRow = action.payload.postsToShowInRow;
         const scrollToIndex = postRow.scrollToIndex;
         if (scrollToIndex + postsToShowInRow <= postRow.posts.length - 1) {
           postRow.scrollToIndex += 1;
