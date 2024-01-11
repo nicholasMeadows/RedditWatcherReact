@@ -61,11 +61,25 @@ const setPostRowsHasAtLeast1PostRow = (state: PostRowsState) => {
   }
 };
 
+const setGetPostRowsPaused = (
+  state: PostRowsState,
+  scrollY: number,
+  mouseOverPostRowUuid: string | undefined,
+  clickedOnPlayPauseButton: boolean
+) => {
+  if (clickedOnPlayPauseButton) {
+    state.getPostRowsPaused = true;
+    return;
+  }
+  state.getPostRowsPaused = scrollY != 0 || mouseOverPostRowUuid != undefined;
+};
 const initialState: PostRowsState = {
   scrollY: 0,
   postRowsHasAtLeast1PostRow: false,
   postRows: new Array<PostRow>(),
   mouseOverPostRowUuid: undefined,
+  clickedOnPlayPauseButton: false,
+  getPostRowsPaused: false,
 };
 export const postRowsSlice = createSlice({
   name: "postRows",
@@ -73,6 +87,12 @@ export const postRowsSlice = createSlice({
   reducers: {
     setScrollY: (state, action) => {
       state.scrollY = action.payload;
+      setGetPostRowsPaused(
+        state,
+        action.payload,
+        state.mouseOverPostRowUuid,
+        state.clickedOnPlayPauseButton
+      );
     },
     postRowRemoveAt: (state, action: { type: string; payload: number }) => {
       state.postRows.splice(action.payload, 1);
@@ -160,6 +180,12 @@ export const postRowsSlice = createSlice({
         state.mouseOverPostRowUuid = action.payload;
         clearInterval(foundPostRow.incrementPostInterval);
       }
+      setGetPostRowsPaused(
+        state,
+        state.scrollY,
+        action.payload,
+        state.clickedOnPlayPauseButton
+      );
     },
     mouseLeavePostRow: (state) => {
       const foundPostRow = state.postRows.find(
@@ -171,6 +197,12 @@ export const postRowsSlice = createSlice({
         );
         state.mouseOverPostRowUuid = undefined;
       }
+      setGetPostRowsPaused(
+        state,
+        state.scrollY,
+        undefined,
+        state.clickedOnPlayPauseButton
+      );
     },
     postRowLeftButtonClicked: (
       state,
@@ -237,6 +269,15 @@ export const postRowsSlice = createSlice({
       state.postRows = [];
       state.postRowsHasAtLeast1PostRow = false;
     },
+    toggleClickedOnPlayPauseButton: (state) => {
+      state.clickedOnPlayPauseButton = !state.clickedOnPlayPauseButton;
+      setGetPostRowsPaused(
+        state,
+        state.scrollY,
+        state.mouseOverPostRowUuid,
+        state.clickedOnPlayPauseButton
+      );
+    },
   },
   extraReducers(builder) {
     builder
@@ -269,5 +310,6 @@ export const {
   postRowRightButtonClicked,
   setPostRowScrollToIndex,
   clearPostRows,
+  toggleClickedOnPlayPauseButton,
 } = postRowsSlice.actions;
 export default postRowsSlice.reducer;

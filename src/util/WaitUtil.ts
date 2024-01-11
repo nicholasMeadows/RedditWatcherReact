@@ -3,6 +3,12 @@ import { POST_ROW_ROUTE } from "../RedditWatcherConstants.ts";
 import { submitAppNotification } from "../redux/slice/AppNotificationSlice.ts";
 
 export class WaitUtil {
+  static async WaitUntilGetPostsIsNotPaused(getPostsIsPaused: () => boolean) {
+    while (getPostsIsPaused()) {
+      await new Promise<void>((res) => setTimeout(() => res(), 100));
+    }
+  }
+
   static async WaitUntilPostRowScrollY0(scrollY: () => number) {
     const isScrollY0 = () => {
       return scrollY() == 0;

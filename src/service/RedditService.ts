@@ -118,6 +118,9 @@ async function getPostsOrchestrationStart() {
         postsGotten = posts;
         postsFromSubreddits = fromSubreddits;
       }
+      await WaitUtil.WaitUntilGetPostsIsNotPaused(
+        () => store.getState().postRows.getPostRowsPaused
+      );
 
       await WaitUtil.WaitUntilPostRowScrollY0(
         () => store.getState().postRows.scrollY
