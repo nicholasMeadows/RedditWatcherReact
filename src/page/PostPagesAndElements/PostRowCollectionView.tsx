@@ -3,6 +3,7 @@ import { setScrollY } from "../../redux/slice/PostRowsSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import PostRowView from "./PostRowView";
 import SideBar from "./SideBar";
+import NextPostCountdownTimer from "../NextPostCountdownTimer.tsx";
 
 const PostRowCollectionView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -50,6 +51,7 @@ const PostRowCollectionView: React.FC = () => {
           </div>
         ))}
       </div>
+      <NextPostCountdownTimer />
     </div>
   );
 };

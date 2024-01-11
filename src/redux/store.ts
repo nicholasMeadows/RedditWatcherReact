@@ -12,6 +12,7 @@ import subredditListsReducer from "./slice/RedditListsSlice";
 import redditSearchReducer from "./slice/RedditSearchSlice";
 import sideBarReducer from "./slice/SideBarSlice";
 import singlePostPageSliceReducer from "./slice/SinglePostPageSlice";
+import nextPostCountdownTimerReducer from "./slice/NextPostCountdownTimerSlice.ts";
 
 const store = configureStore({
   reducer: {
@@ -26,6 +27,7 @@ const store = configureStore({
     appNotification: appNotificationReducer,
     sideBar: sideBarReducer,
     singlePostPage: singlePostPageSliceReducer,
+    nextPostCountdownTimer: nextPostCountdownTimerReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk),
 });

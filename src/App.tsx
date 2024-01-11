@@ -17,6 +17,7 @@ import "./theme/search-reddit-bar.scss";
 import "./theme/side-bar.scss";
 import "./theme/single-post-page.scss";
 import "./theme/variables.css";
+import "./theme/nex-post-countdown-timer.scss";
 
 import { Provider } from "react-redux";
 import RouterView from "./page/RouterView";
