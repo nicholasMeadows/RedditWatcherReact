@@ -3,6 +3,7 @@ import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../../RedditWatcher
 import SideBarSubredditMenuEvent from "../../model/Events/SideBarSubredditMenuEvent";
 import { setSideBarSubredditMenuEvent } from "../../redux/slice/ContextMenuSlice";
 import {
+  decreaseTimeTillNextGetPostsSeconds,
   setListToFilterByUuid,
   setMouseDownOnOpenSidebarButton,
   setMouseOverSubredditList,
@@ -127,6 +128,18 @@ const SideBar: React.FC = () => {
     dispatch(setSideBarButtonMoved(false));
   };
 
+  const timeTillNextGetPostsSeconds = useAppSelector(
+    (state) => state.sideBar.timeTillNextGetPostsSeconds
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch(decreaseTimeTillNextGetPostsSeconds());
+    }, 1000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [dispatch]);
   return (
     <div className="side-bar">
       <div ref={openSideBarButtonColumnDivRef} className="open-close-column">
@@ -242,6 +255,14 @@ const SideBar: React.FC = () => {
               {subreddit.displayName}
             </p>
           ))}
+        </div>
+
+        <hr className="hr" />
+
+        <div className={"next-post-countdown-timer-text-box"}>
+          <p className={"next-post-countdown-timer-text"}>
+            {`Getting next posts in ${timeTillNextGetPostsSeconds} seconds`}
+          </p>
         </div>
       </div>
     </div>

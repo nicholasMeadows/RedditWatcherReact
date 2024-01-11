@@ -112,3 +112,24 @@ $content-div-padding: 0.4em 0.8em;
 .subreddit-list-select {
   font-size: 1.2em;
 }
+
+
+.next-post-countdown-timer {
+  background: gray;
+  position: absolute;
+  right: 2em;
+  bottom: 1.5em;
+  border-color: black;
+  border-width: 0.2em;
+  border-style: solid;
+  border-radius: 1em;
+}
+
+.next-post-countdown-timer-text-box {
+  margin: 1em;
+}
+
+.next-post-countdown-timer-text {
+  font-size: 1.2em;
+  margin: 0;
+}

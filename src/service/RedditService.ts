@@ -37,6 +37,7 @@ import {
 import {
   setMostRecentSubredditGotten,
   setSubredditsToShowInSideBar,
+  setTimeTillNextGetPostsSeconds,
 } from "../redux/slice/SideBarSlice";
 import store from "../redux/store";
 import {
@@ -56,7 +57,6 @@ import {
   GetPostsFromSubredditState,
   GetPostsFromSubredditStateConverter,
 } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
-import { setTimerValue } from "../redux/slice/NextPostCountdownTimerSlice.ts";
 
 export async function startLoopingForPosts() {
   console.log("starting to loop for posts");
@@ -69,7 +69,7 @@ export async function startLoopingForPosts() {
   getPostsFunction();
 
   const startWaitingToGetPosts = () => {
-    store.dispatch(setTimerValue(10));
+    store.dispatch(setTimeTillNextGetPostsSeconds(10));
     const timeout = setTimeout(async () => {
       await getPostsFunction();
       startWaitingToGetPosts();

@@ -138,6 +138,7 @@ type InitialState = {
   mouseDownOnOpenSidebarButton: boolean;
   openSidebarButtonTopPercent: number;
   mouseOverSubredditList: boolean;
+  timeTillNextGetPostsSeconds: number;
 };
 
 const state: InitialState = {
@@ -152,6 +153,7 @@ const state: InitialState = {
   mouseDownOnOpenSidebarButton: false,
   openSidebarButtonTopPercent: 50,
   mouseOverSubredditList: false,
+  timeTillNextGetPostsSeconds: 0,
 };
 
 const applySideBarFieldsToState = (
@@ -202,6 +204,19 @@ export const sideBarSlice = createSlice({
     ) => {
       state.mouseOverSubredditList = action.payload;
     },
+    decreaseTimeTillNextGetPostsSeconds: (state) => {
+      if (state.timeTillNextGetPostsSeconds > 0) {
+        state.timeTillNextGetPostsSeconds -= 1;
+      }
+    },
+    setTimeTillNextGetPostsSeconds: (
+      state,
+      action: { type: string; payload: number }
+    ) => {
+      if (action.payload >= 0) {
+        state.timeTillNextGetPostsSeconds = action.payload;
+      }
+    },
   },
   extraReducers(builder) {
     builder
@@ -239,5 +254,7 @@ export const {
   setMouseDownOnOpenSidebarButton,
   setOpenSidebarButtonTopPercent,
   setMouseOverSubredditList,
+  decreaseTimeTillNextGetPostsSeconds,
+  setTimeTillNextGetPostsSeconds,
 } = sideBarSlice.actions;
 export default sideBarSlice.reducer;
