@@ -26,6 +26,19 @@ const PostRowCollectionView: React.FC = () => {
     setScrollBarWidth(scrollDiv.offsetWidth - scrollDiv.clientWidth);
   }, [postRowsDivRef, postRows]);
 
+  useEffect(() => {
+    const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
+      const key = keyboardEvent.key;
+      if (key == " ") {
+        dispatch(toggleClickedOnPlayPauseButton());
+      }
+    };
+
+    document.body.addEventListener("keyup", documentKeyUpEvent);
+    return () => {
+      document.body.removeEventListener("keyup", documentKeyUpEvent);
+    };
+  }, [dispatch]);
   return (
     <div className="post-row-page">
       <div
