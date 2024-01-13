@@ -3,8 +3,6 @@ import { v4 as uuidV4 } from "uuid";
 import { Post } from "../../model/Post/Post";
 import { PostRow } from "../../model/PostRow";
 import { PostRowsState } from "../../model/PostRowsState";
-import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
-import store from "../store";
 import { MAX_POSTS_PER_ROW } from "../../RedditWatcherConstants.ts";
 
 export const createPostRowAndPushToRows = createAsyncThunk(
@@ -23,36 +21,11 @@ export const createPostRowAndInsertAtBeginning = createAsyncThunk(
 
 const createPostRow = (posts: Array<Post>): PostRow => {
   const postRowUuid = uuidV4();
-  const postRow: PostRow = {
+  return {
     postRowUuid: postRowUuid,
     posts: posts,
     scrollToIndex: 0,
-    incrementPostInterval: createIncrementPostInterval(postRowUuid),
   };
-  return postRow;
-};
-
-const createIncrementPostInterval = (postRowUuid: string): NodeJS.Timeout => {
-  return setInterval(() => {
-    const state = store.getState();
-    if (
-      state.appConfig.userFrontPagePostSortOrderOption ==
-      UserFrontPagePostSortOrderOptionsEnum.NotSelected
-    ) {
-      const postsToShowInRow = store.getState().appConfig.postsToShowInRow;
-      const postRow = store
-        .getState()
-        .postRows.postRows.find((row) => row.postRowUuid == postRowUuid);
-      if (postRow != undefined && postRow.posts.length > postsToShowInRow) {
-        store.dispatch(
-          postRowRightButtonClicked({
-            postRowUuid: postRow.postRowUuid,
-            postsToShowInRow: postsToShowInRow,
-          })
-        );
-      }
-    }
-  }, 6000);
 };
 
 const setPostRowsHasAtLeast1PostRow = (state: PostRowsState) => {
@@ -178,7 +151,6 @@ export const postRowsSlice = createSlice({
       );
       if (foundPostRow != undefined) {
         state.mouseOverPostRowUuid = action.payload;
-        clearInterval(foundPostRow.incrementPostInterval);
       }
       setGetPostRowsPaused(
         state,
@@ -192,9 +164,6 @@ export const postRowsSlice = createSlice({
         (postRow) => postRow.postRowUuid == state.mouseOverPostRowUuid
       );
       if (foundPostRow != undefined) {
-        foundPostRow.incrementPostInterval = createIncrementPostInterval(
-          foundPostRow.postRowUuid
-        );
         state.mouseOverPostRowUuid = undefined;
       }
       setGetPostRowsPaused(
@@ -205,29 +174,6 @@ export const postRowsSlice = createSlice({
       );
     },
     postRowLeftButtonClicked: (
-      state,
-      action: {
-        type: string;
-        payload: { postRowUuid: string };
-      }
-    ) => {
-      const postRowUuid = action.payload.postRowUuid;
-      const postRow = state.postRows.find(
-        (row) => row.postRowUuid == postRowUuid
-      );
-      if (postRow != undefined) {
-        const scrollToIndex = postRow.scrollToIndex;
-        if (scrollToIndex - 1 >= 0) {
-          postRow.scrollToIndex -= 1;
-        } else {
-          const removedPost = postRow.posts.pop();
-          if (removedPost != undefined) {
-            postRow.posts.unshift(removedPost);
-          }
-        }
-      }
-    },
-    postRowRightButtonClicked: (
       state,
       action: {
         type: string;
@@ -247,6 +193,29 @@ export const postRowsSlice = createSlice({
           const removedPosts = postRow.posts.shift();
           if (removedPosts != undefined) {
             postRow.posts.push(removedPosts);
+          }
+        }
+      }
+    },
+    postRowRightButtonClicked: (
+      state,
+      action: {
+        type: string;
+        payload: { postRowUuid: string };
+      }
+    ) => {
+      const postRowUuid = action.payload.postRowUuid;
+      const postRow = state.postRows.find(
+        (row) => row.postRowUuid == postRowUuid
+      );
+      if (postRow != undefined) {
+        const scrollToIndex = postRow.scrollToIndex;
+        if (scrollToIndex - 1 >= 0) {
+          postRow.scrollToIndex -= 1;
+        } else {
+          const removedPost = postRow.posts.pop();
+          if (removedPost != undefined) {
+            postRow.posts.unshift(removedPost);
           }
         }
       }

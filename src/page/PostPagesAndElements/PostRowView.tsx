@@ -1,4 +1,4 @@
-import { TouchEvent, useEffect, useRef } from "react";
+import { TouchEvent, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
@@ -15,6 +15,7 @@ import store, { useAppDispatch, useAppSelector } from "../../redux/store";
 import PostMediaElement from "./PostMediaElement.tsx";
 import getPlatform from "../../util/PlatformUtil.ts";
 import { Platform } from "../../model/Platform.ts";
+import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 
 type Props = { postRow: PostRow };
 const PostRowView: React.FC<Props> = ({ postRow }) => {
@@ -28,6 +29,33 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
   );
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
   const postRowContentDiv = useRef(null);
+
+  const autoScrollInterval = useRef<NodeJS.Timeout>();
+  const createAutoScrollInterval = useCallback(() => {
+    if (postRow.posts.length > postsToShowInRow) {
+      autoScrollInterval.current = setInterval(() => {
+        const state = store.getState();
+        const userFrontPageSortOption =
+          state.appConfig.userFrontPagePostSortOrderOption;
+        if (
+          userFrontPageSortOption ==
+          UserFrontPagePostSortOrderOptionsEnum.NotSelected
+        ) {
+          dispatch(
+            postRowLeftButtonClicked({
+              postRowUuid: postRow.postRowUuid,
+              postsToShowInRow: store.getState().appConfig.postsToShowInRow,
+            })
+          );
+        }
+      }, 6000);
+    }
+  }, [dispatch, postRow.posts.length, postRow.postRowUuid, postsToShowInRow]);
+
+  useEffect(() => {
+    createAutoScrollInterval();
+    return () => clearInterval(autoScrollInterval.current);
+  }, [createAutoScrollInterval]);
 
   useEffect(() => {
     const scrollToIndex = postRow.scrollToIndex;
@@ -68,7 +96,6 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
         dispatch(
           postRowRightButtonClicked({
             postRowUuid: postRow.postRowUuid,
-            postsToShowInRow: store.getState().appConfig.postsToShowInRow,
           })
         );
       }
@@ -77,6 +104,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
         dispatch(
           postRowLeftButtonClicked({
             postRowUuid: postRow.postRowUuid,
+            postsToShowInRow: store.getState().appConfig.postsToShowInRow,
           })
         );
       }
@@ -95,6 +123,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
           getPlatform() == Platform.Web ||
           getPlatform() == Platform.Unknown
         ) {
+          clearInterval(autoScrollInterval.current);
           dispatch(mouseEnterPostRow(postRow.postRowUuid));
         }
       }}
@@ -104,6 +133,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
           getPlatform() == Platform.Web ||
           getPlatform() == Platform.Unknown
         ) {
+          createAutoScrollInterval();
           dispatch(mouseLeavePostRow());
         }
       }}
@@ -132,6 +162,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
             dispatch(
               postRowLeftButtonClicked({
                 postRowUuid: postRow.postRowUuid,
+                postsToShowInRow: store.getState().appConfig.postsToShowInRow,
               })
             )
           }
@@ -215,7 +246,6 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
             dispatch(
               postRowRightButtonClicked({
                 postRowUuid: postRow.postRowUuid,
-                postsToShowInRow: store.getState().appConfig.postsToShowInRow,
               })
             )
           }
