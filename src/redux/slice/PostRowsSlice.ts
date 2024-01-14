@@ -4,6 +4,7 @@ import { Post } from "../../model/Post/Post";
 import { PostRow } from "../../model/PostRow";
 import { PostRowsState } from "../../model/PostRowsState";
 import { MAX_POSTS_PER_ROW } from "../../RedditWatcherConstants.ts";
+import store from "../store.ts";
 
 export const createPostRowAndPushToRows = createAsyncThunk(
   "postRows/createPostRowAndPushToRows",
@@ -19,6 +20,42 @@ export const createPostRowAndInsertAtBeginning = createAsyncThunk(
   }
 );
 
+export const incrementPostRowForward = createAsyncThunk(
+  "postRows/incrementPostRowForward",
+  async (postRow: PostRow) => {
+    const state = store.getState();
+    const postsToShowInRow = state.appConfig.postsToShowInRow;
+    const scrollToIndex = postRow.scrollToIndex;
+    const incrementObj = {
+      postRowUuid: postRow.postRowUuid,
+      scrollToIndex: postRow.scrollToIndex,
+      shiftFirstPostToEnd: false,
+    };
+    if (scrollToIndex + postsToShowInRow <= postRow.posts.length - 1) {
+      incrementObj.scrollToIndex += 1;
+    } else {
+      incrementObj.shiftFirstPostToEnd = true;
+    }
+    return incrementObj;
+  }
+);
+export const incrementPostRowBackward = createAsyncThunk(
+  "postRows/incrementPostRowBackward",
+  async (postRow: PostRow) => {
+    const scrollToIndex = postRow.scrollToIndex;
+    const incrementObj = {
+      postRowUuid: postRow.postRowUuid,
+      scrollToIndex: scrollToIndex,
+      shiftLastPostToFront: false,
+    };
+    if (scrollToIndex - 1 >= 0) {
+      incrementObj.scrollToIndex -= 1;
+    } else {
+      incrementObj.shiftLastPostToFront = true;
+    }
+    return incrementObj;
+  }
+);
 const createPostRow = (posts: Array<Post>): PostRow => {
   const postRowUuid = uuidV4();
   return {
@@ -173,53 +210,6 @@ export const postRowsSlice = createSlice({
         state.clickedOnPlayPauseButton
       );
     },
-    postRowLeftButtonClicked: (
-      state,
-      action: {
-        type: string;
-        payload: { postRowUuid: string; postsToShowInRow: number };
-      }
-    ) => {
-      const postRowUuid = action.payload.postRowUuid;
-      const postRow = state.postRows.find(
-        (row) => row.postRowUuid == postRowUuid
-      );
-      if (postRow != undefined) {
-        const postsToShowInRow = action.payload.postsToShowInRow;
-        const scrollToIndex = postRow.scrollToIndex;
-        if (scrollToIndex + postsToShowInRow <= postRow.posts.length - 1) {
-          postRow.scrollToIndex += 1;
-        } else {
-          const removedPosts = postRow.posts.shift();
-          if (removedPosts != undefined) {
-            postRow.posts.push(removedPosts);
-          }
-        }
-      }
-    },
-    postRowRightButtonClicked: (
-      state,
-      action: {
-        type: string;
-        payload: { postRowUuid: string };
-      }
-    ) => {
-      const postRowUuid = action.payload.postRowUuid;
-      const postRow = state.postRows.find(
-        (row) => row.postRowUuid == postRowUuid
-      );
-      if (postRow != undefined) {
-        const scrollToIndex = postRow.scrollToIndex;
-        if (scrollToIndex - 1 >= 0) {
-          postRow.scrollToIndex -= 1;
-        } else {
-          const removedPost = postRow.posts.pop();
-          if (removedPost != undefined) {
-            postRow.posts.unshift(removedPost);
-          }
-        }
-      }
-    },
     setPostRowScrollToIndex: (
       state,
       action: {
@@ -263,7 +253,39 @@ export const postRowsSlice = createSlice({
           setPostRowsHasAtLeast1PostRow(state);
           state.postRows.unshift(action.payload);
         }
-      );
+      )
+      .addCase(incrementPostRowForward.fulfilled, (state, action) => {
+        const postRowUuid = action.payload.postRowUuid;
+        const foundPostRow = state.postRows.find(
+          (row) => row.postRowUuid == postRowUuid
+        );
+        if (foundPostRow != undefined) {
+          foundPostRow.scrollToIndex = action.payload.scrollToIndex;
+
+          if (action.payload.shiftFirstPostToEnd) {
+            const removedPosts = foundPostRow.posts.shift();
+            if (removedPosts != undefined) {
+              foundPostRow.posts.push(removedPosts);
+            }
+          }
+        }
+      })
+      .addCase(incrementPostRowBackward.fulfilled, (state, action) => {
+        const postRowUuid = action.payload.postRowUuid;
+        const foundPostRow = state.postRows.find(
+          (row) => row.postRowUuid == postRowUuid
+        );
+        if (foundPostRow != undefined) {
+          foundPostRow.scrollToIndex = action.payload.scrollToIndex;
+
+          if (action.payload.shiftLastPostToFront) {
+            const removedPost = foundPostRow.posts.pop();
+            if (removedPost != undefined) {
+              foundPostRow.posts.unshift(removedPost);
+            }
+          }
+        }
+      });
   },
 });
 
@@ -275,8 +297,6 @@ export const {
   decrementPostAttachment,
   mouseEnterPostRow,
   mouseLeavePostRow,
-  postRowLeftButtonClicked,
-  postRowRightButtonClicked,
   setPostRowScrollToIndex,
   clearPostRows,
   toggleClickedOnPlayPauseButton,

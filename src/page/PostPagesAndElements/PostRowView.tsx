@@ -5,10 +5,10 @@ import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
 import { PostRow } from "../../model/PostRow";
 import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
 import {
+  incrementPostRowBackward,
+  incrementPostRowForward,
   mouseEnterPostRow,
   mouseLeavePostRow,
-  postRowLeftButtonClicked,
-  postRowRightButtonClicked,
 } from "../../redux/slice/PostRowsSlice";
 import { setPostAndRowUuid } from "../../redux/slice/SinglePostPageSlice";
 import store, { useAppDispatch, useAppSelector } from "../../redux/store";
@@ -41,12 +41,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
           userFrontPageSortOption ==
           UserFrontPagePostSortOrderOptionsEnum.NotSelected
         ) {
-          dispatch(
-            postRowLeftButtonClicked({
-              postRowUuid: postRow.postRowUuid,
-              postsToShowInRow: store.getState().appConfig.postsToShowInRow,
-            })
-          );
+          dispatch(incrementPostRowBackward(postRow));
         }
       }, 6000);
     }
@@ -93,20 +88,11 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     const isRightSwipe = distance < -minSwipeDistance;
     if (postRow.posts.length > store.getState().appConfig.postsToShowInRow) {
       if (isLeftSwipe) {
-        dispatch(
-          postRowRightButtonClicked({
-            postRowUuid: postRow.postRowUuid,
-          })
-        );
+        dispatch(incrementPostRowForward(postRow));
       }
 
       if (isRightSwipe) {
-        dispatch(
-          postRowLeftButtonClicked({
-            postRowUuid: postRow.postRowUuid,
-            postsToShowInRow: store.getState().appConfig.postsToShowInRow,
-          })
-        );
+        dispatch(incrementPostRowBackward(postRow));
       }
     }
   }
@@ -158,14 +144,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
                 ? "visible"
                 : "hidden",
           }}
-          onClick={() =>
-            dispatch(
-              postRowLeftButtonClicked({
-                postRowUuid: postRow.postRowUuid,
-                postsToShowInRow: store.getState().appConfig.postsToShowInRow,
-              })
-            )
-          }
+          onClick={() => dispatch(incrementPostRowForward(postRow))}
         />
       </div>
       <div className="postRowContent" ref={postRowContentDiv}>
@@ -242,13 +221,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
               : "assets/right_chevron_light_mode.png"
           }
           className="postRowScrollImg"
-          onClick={() =>
-            dispatch(
-              postRowRightButtonClicked({
-                postRowUuid: postRow.postRowUuid,
-              })
-            )
-          }
+          onClick={() => dispatch(incrementPostRowBackward(postRow))}
           style={{
             visibility:
               postRow.posts.length > postRowsToShowInView
