@@ -46,7 +46,7 @@ export function convertPost(post: T3): Post {
     displayName: subredditDisplayName,
     displayNamePrefixed: post.subreddit_name_prefixed,
     subscribers: post.subreddit_subscribers,
-    over18: post.over_18 ? true : false,
+    over18: post.over_18,
     isSubscribed:
       store
         .getState()
@@ -174,10 +174,12 @@ function createAttachments(post: T3): Array<Attachment> {
           "https://redgifs.com/ifr/"
         );
 
-        if (attachment != null) {
-          attachment.url = postUrl;
-          attachment.mediaType = "IFRAME";
-        }
+        attachment = {
+          mediaType: "IFRAME",
+          url: postUrl,
+          status: "VALID",
+        };
+        attachments.push(attachment);
       }
       return attachments;
     }
