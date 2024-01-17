@@ -21,8 +21,7 @@ import {
   createPostRowAndInsertAtBeginning,
   createPostRowAndPushToRows,
   postRowRemoveAt,
-  setPostRowScrollToIndex,
-  shiftPostRowPosts,
+  shiftPostsAndUiPosts,
 } from "../redux/slice/PostRowsSlice";
 import {
   addSubredditsToSubscribedList,
@@ -518,17 +517,11 @@ function addPostRow(
 
       if (postsToAddToViewModel.length > 0) {
         const postRowUuid = postRows[0].postRowUuid;
-        getPostsFromSubredditsState.getPostsUpdatedValues.shiftPostRowPosts = {
-          postRowUuid: postRowUuid,
-          postsToInsert: postsToAddToViewModel,
-        };
-        if (postsToAddToViewModel.length != 0) {
-          getPostsFromSubredditsState.getPostsUpdatedValues.postRowScrollToIndex =
-            {
-              postRowUuid: postRowUuid,
-              scrollToIndex: 0,
-            };
-        }
+        getPostsFromSubredditsState.getPostsUpdatedValues.shiftPostsAndUiPosts =
+          {
+            postRowUuid: postRowUuid,
+            posts: postsToAddToViewModel,
+          };
       }
     } else {
       getPostsFromSubredditsState.getPostsUpdatedValues.createPostRowAndPushToRows =
@@ -651,11 +644,13 @@ function applyUpdatedStateValues(
       createPostRowAndPushToRows(updatedValues.createPostRowAndPushToRows)
     );
   }
-  if (updatedValues.shiftPostRowPosts != undefined) {
-    store.dispatch(shiftPostRowPosts(updatedValues.shiftPostRowPosts));
-  }
-  if (updatedValues.postRowScrollToIndex != undefined) {
-    store.dispatch(setPostRowScrollToIndex(updatedValues.postRowScrollToIndex));
+  if (updatedValues.shiftPostsAndUiPosts != undefined) {
+    store.dispatch(
+      shiftPostsAndUiPosts({
+        ...updatedValues.shiftPostsAndUiPosts,
+        postsToShowInRow: store.getState().appConfig.postsToShowInRow,
+      })
+    );
   }
 }
 

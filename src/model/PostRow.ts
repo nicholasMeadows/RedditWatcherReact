@@ -1,7 +1,9 @@
-import { Post } from "./Post/Post";
+import { Post, UiPost } from "./Post/Post";
 
 export interface PostRow {
   postRowUuid: string;
   posts: Array<Post>;
-  scrollToIndex: number;
+  uiPosts: Array<UiPost>;
+  uiPostContentOffset: number;
+  postContentFirstPostIndex: number;
 }

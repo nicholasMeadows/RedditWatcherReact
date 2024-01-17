@@ -49,12 +49,7 @@ export type GetPostsUpdatedValues = {
   lastPostRowWasSortOrderNew: boolean | undefined;
   createPostRowAndInsertAtBeginning: Array<Post> | undefined;
   createPostRowAndPushToRows: Array<Post> | undefined;
-  shiftPostRowPosts:
-    | { postRowUuid: string; postsToInsert: Array<Post> }
-    | undefined;
-  postRowScrollToIndex:
-    | { postRowUuid: string; scrollToIndex: number }
-    | undefined;
+  shiftPostsAndUiPosts: { postRowUuid: string; posts: Array<Post> } | undefined;
 };
 
 export class GetPostsFromSubredditStateConverter {
@@ -98,8 +93,7 @@ export class GetPostsFromSubredditStateConverter {
         lastPostRowWasSortOrderNew: undefined,
         createPostRowAndInsertAtBeginning: undefined,
         createPostRowAndPushToRows: undefined,
-        shiftPostRowPosts: undefined,
-        postRowScrollToIndex: undefined,
+        shiftPostsAndUiPosts: undefined,
       },
     };
   }

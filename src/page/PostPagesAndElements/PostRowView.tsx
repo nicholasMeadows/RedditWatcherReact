@@ -1,51 +1,106 @@
-import { TouchEvent, useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
 import { PostRow } from "../../model/PostRow";
 import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
 import {
-  incrementPostRowBackward,
-  incrementPostRowForward,
   mouseEnterPostRow,
   mouseLeavePostRow,
+  postRowMouseDownMoved,
+  setUiPosts,
 } from "../../redux/slice/PostRowsSlice";
-import { setPostAndRowUuid } from "../../redux/slice/SinglePostPageSlice";
 import store, { useAppDispatch, useAppSelector } from "../../redux/store";
 import PostMediaElement from "./PostMediaElement.tsx";
 import getPlatform from "../../util/PlatformUtil.ts";
 import { Platform } from "../../model/Platform.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
+import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants.ts";
+import { setPostAndRowUuid } from "../../redux/slice/SinglePostPageSlice.ts";
 
 type Props = { postRow: PostRow };
 const PostRowView: React.FC<Props> = ({ postRow }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const postRowsToShowInView = useAppSelector(
-    (state) => state.appConfig.postRowsToShowInView
-  );
   const postsToShowInRow = useAppSelector(
     (state) => state.appConfig.postsToShowInRow
   );
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
   const postRowContentDiv = useRef(null);
 
+  const [postCardWidth, setPostCardWidth] = useState(1);
+  const postContentMouseDownLastX = useRef(0);
+  const postContentMouseDownTotalX = useRef(0);
+  const postContentMouseDown = useRef(false);
   const autoScrollInterval = useRef<NodeJS.Timeout>();
+
+  const handleMouseDownTouchStart = useCallback((clientX: number) => {
+    postContentMouseDown.current = true;
+    postContentMouseDownLastX.current = clientX;
+    postContentMouseDownTotalX.current = 0;
+  }, []);
+
+  const handleMouseUpTouchEnd = useCallback(() => {
+    postContentMouseDown.current = false;
+    postContentMouseDownLastX.current = 0;
+  }, []);
+
+  const handleMouseTouchMove = useCallback(
+    (clientX: number, postContentMouseDown: boolean) => {
+      if (postContentMouseDown) {
+        const diff = clientX - postContentMouseDownLastX.current;
+        postContentMouseDownTotalX.current += Math.abs(diff);
+        if (postRow.posts.length <= postsToShowInRow) {
+          return;
+        }
+        dispatch(
+          postRowMouseDownMoved({
+            postRowUuid: postRow.postRowUuid,
+            movementDiff: diff,
+            postCardWidth: postCardWidth,
+          })
+        );
+        postContentMouseDownLastX.current = clientX;
+      }
+    },
+    [
+      postCardWidth,
+      dispatch,
+      postRow.postRowUuid,
+      postRow.posts.length,
+      postsToShowInRow,
+    ]
+  );
+
   const createAutoScrollInterval = useCallback(() => {
     if (postRow.posts.length > postsToShowInRow) {
       autoScrollInterval.current = setInterval(() => {
-        const state = store.getState();
         const userFrontPageSortOption =
-          state.appConfig.userFrontPagePostSortOrderOption;
+          store.getState().appConfig.userFrontPagePostSortOrderOption;
         if (
           userFrontPageSortOption ==
           UserFrontPagePostSortOrderOptionsEnum.NotSelected
         ) {
-          dispatch(incrementPostRowBackward(postRow));
+          handleMouseTouchMove(postCardWidth, true);
+          postContentMouseDownLastX.current = 0;
         }
       }, 6000);
     }
-  }, [dispatch, postRow.posts.length, postRow.postRowUuid, postsToShowInRow]);
+  }, [
+    postCardWidth,
+    postRow.posts.length,
+    handleMouseTouchMove,
+    postsToShowInRow,
+  ]);
+
+  useEffect(() => {
+    dispatch(
+      setUiPosts({
+        postRowUuid: postRow.postRowUuid,
+        postsToShowInRow: postsToShowInRow,
+        postCardWidth: postCardWidth,
+      })
+    );
+  }, [dispatch, postRow.postRowUuid, postsToShowInRow, postCardWidth]);
 
   useEffect(() => {
     createAutoScrollInterval();
@@ -53,56 +108,19 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
   }, [createAutoScrollInterval]);
 
   useEffect(() => {
-    const scrollToIndex = postRow.scrollToIndex;
-    const div = postRowContentDiv.current as unknown as HTMLDivElement;
-    const postCards = div.children;
-    if (scrollToIndex < postCards.length) {
-      const scrollToLeft =
-        (postCards[scrollToIndex] as HTMLDivElement).offsetLeft - 5;
-      div.scrollTo({ left: scrollToLeft, behavior: "smooth" });
+    const contentResizeObserver = new ResizeObserver(() => {
+      const contentDiv = postRowContentDiv.current as unknown as HTMLDivElement;
+      setPostCardWidth(contentDiv.clientWidth / postsToShowInRow);
+    });
+    const div = postRowContentDiv.current;
+    if (div != undefined) {
+      contentResizeObserver.observe(div);
     }
-  }, [postRow.scrollToIndex]);
-
-  const touchStartX = useRef<number | undefined>(undefined);
-  const touchEndX = useRef<number | undefined>(undefined);
-  const minSwipeDistance = 50;
-
-  function onTouchStart(event: TouchEvent<HTMLDivElement>) {
-    dispatch(mouseEnterPostRow(postRow.postRowUuid));
-    touchEndX.current = undefined;
-    touchStartX.current = event.touches[0].clientX;
-  }
-
-  function onTouchMove(event: TouchEvent<HTMLDivElement>) {
-    touchEndX.current = event.touches[0].clientX;
-  }
-
-  function onTouchEnd() {
-    if (getPlatform() == Platform.Android || getPlatform() == Platform.Ios) {
-      dispatch(mouseLeavePostRow());
-    }
-
-    if (!touchStartX.current || !touchEndX.current) return;
-    const distance = touchStartX.current - touchEndX.current;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-    if (postRow.posts.length > store.getState().appConfig.postsToShowInRow) {
-      if (isLeftSwipe) {
-        dispatch(incrementPostRowForward(postRow));
-      }
-
-      if (isRightSwipe) {
-        dispatch(incrementPostRowBackward(postRow));
-      }
-    }
-  }
+  }, [postsToShowInRow]);
 
   return (
     <div
       className="postRow"
-      onTouchStart={(event) => onTouchStart(event)}
-      onTouchMove={(event) => onTouchMove(event)}
-      onTouchEnd={() => onTouchEnd()}
       onMouseEnter={() => {
         if (
           getPlatform() == Platform.Electron ||
@@ -140,21 +158,45 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
           className="postRowScrollImg"
           style={{
             visibility:
-              postRow.posts.length > postRowsToShowInView
-                ? "visible"
-                : "hidden",
+              postRow.posts.length > postsToShowInRow ? "visible" : "hidden",
           }}
-          onClick={() => dispatch(incrementPostRowForward(postRow))}
+          onClick={() => {
+            let movementDiff = postCardWidth * -1;
+            if (postRow.uiPostContentOffset < 0) {
+              movementDiff = postRow.uiPostContentOffset * -1 - postCardWidth;
+            } else if (postRow.uiPostContentOffset > 0) {
+              movementDiff = postRow.uiPostContentOffset * -1;
+            }
+
+            dispatch(
+              postRowMouseDownMoved({
+                postRowUuid: postRow.postRowUuid,
+                movementDiff: movementDiff,
+                postCardWidth: postCardWidth,
+              })
+            );
+          }}
         />
       </div>
-      <div className="postRowContent" ref={postRowContentDiv}>
-        {postRow.posts.map((post) => (
+      <div
+        className="postRowContent"
+        ref={postRowContentDiv}
+        onMouseLeave={() => {
+          if (postContentMouseDown.current) {
+            handleMouseUpTouchEnd();
+          }
+        }}
+      >
+        {postRow.uiPosts.map((post, index) => (
           <div
-            key={`${post.postUuid}`}
+            key={post.uiUuid}
             className="postCard"
             style={{
               minWidth: `calc((100% - (10px * ${postsToShowInRow} ) )/${postsToShowInRow})`,
               maxWidth: `calc((100% - (10px * ${postsToShowInRow} ) )/${postsToShowInRow})`,
+              left: `${
+                postCardWidth * (index - 1) + postRow.uiPostContentOffset
+              }px`,
             }}
             onContextMenu={(event) => {
               event.preventDefault();
@@ -177,6 +219,34 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
               );
               navigate(`${SINGPLE_POST_ROUTE}`);
             }}
+            onTouchStart={(event) => {
+              handleMouseDownTouchStart(event.touches[0].clientX);
+            }}
+            onTouchEnd={() => {
+              handleMouseUpTouchEnd();
+            }}
+            onTouchMove={(event) => {
+              handleMouseTouchMove(
+                event.touches[0].clientX,
+                postContentMouseDown.current
+              );
+            }}
+            onMouseDown={(event) => {
+              handleMouseDownTouchStart(event.clientX);
+            }}
+            onMouseUp={() => {
+              handleMouseUpTouchEnd();
+            }}
+            onMouseMove={(event) => {
+              handleMouseTouchMove(event.clientX, postContentMouseDown.current);
+            }}
+            onClickCapture={(event) => {
+              if (postContentMouseDownTotalX.current > 50) {
+                console.log("Preventing default");
+                event.preventDefault();
+                event.stopPropagation();
+              }
+            }}
           >
             <div className="postCardHeader">
               <p className="postCardHeaderText">{`${
@@ -185,7 +255,6 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
               {post.subreddit.fromList.length > 0 && (
                 <p className="postCardHeaderText">{`From List: ${post.subreddit.fromList}`}</p>
               )}
-
               <p className="postCardHeaderText">
                 {new Date(post.created * 1000).toLocaleDateString("en-us", {
                   month: "long",
@@ -200,7 +269,6 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
               )}
               <p className="postCardHeaderText">{post.randomSourceString}</p>
             </div>
-
             <div className="post-card-content">
               <PostMediaElement postRowUuid={postRow.postRowUuid} post={post} />
             </div>
@@ -221,12 +289,24 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
               : "assets/right_chevron_light_mode.png"
           }
           className="postRowScrollImg"
-          onClick={() => dispatch(incrementPostRowBackward(postRow))}
+          onClick={() => {
+            let movementDiff = postCardWidth;
+            if (postRow.uiPostContentOffset < 0) {
+              movementDiff = postRow.uiPostContentOffset * -1;
+            } else if (postRow.uiPostContentOffset > 0) {
+              movementDiff = postCardWidth - postRow.uiPostContentOffset;
+            }
+            dispatch(
+              postRowMouseDownMoved({
+                postRowUuid: postRow.postRowUuid,
+                movementDiff: movementDiff,
+                postCardWidth: postCardWidth,
+              })
+            );
+          }}
           style={{
             visibility:
-              postRow.posts.length > postRowsToShowInView
-                ? "visible"
-                : "hidden",
+              postRow.posts.length > postsToShowInRow ? "visible" : "hidden",
           }}
         />
       </div>

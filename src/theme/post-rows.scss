@@ -58,6 +58,8 @@ $postRowScrollButtonWidth: 3em;
   display: flex;
   flex-direction: column;
   border-radius: 1em;
+  position: absolute;
+  height: 100%;
 }
 
 .postCardHeader {

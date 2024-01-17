@@ -108,6 +108,7 @@ const PostMediaElement: React.FC<Props> = ({
         hidden={post.attachments.length == 1}
         src={`assets/left_chevron_${carouselArrowLightDarkPart}_mode.png`}
         className="post-element-scroll-img-button left"
+        draggable={false}
         onClick={(event) => {
           event.stopPropagation();
           event.preventDefault();
@@ -124,6 +125,7 @@ const PostMediaElement: React.FC<Props> = ({
         hidden={post.attachments.length == 1}
         src={`assets/right_chevron_${carouselArrowLightDarkPart}_mode.png`}
         className="post-element-scroll-img-button right"
+        draggable={false}
         onClick={(event) => {
           event.stopPropagation();
           event.preventDefault();

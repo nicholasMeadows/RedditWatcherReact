@@ -14,3 +14,7 @@ export interface Post {
   currentAttachmentIndex: number;
   subreddit: Subreddit;
 }
+
+export interface UiPost extends Post {
+  uiUuid: string;
+}
