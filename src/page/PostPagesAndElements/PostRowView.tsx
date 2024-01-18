@@ -127,7 +127,11 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
           getPlatform() == Platform.Web ||
           getPlatform() == Platform.Unknown
         ) {
-          clearInterval(autoScrollInterval.current);
+          if (autoScrollInterval.current != undefined) {
+            clearInterval(autoScrollInterval.current);
+            autoScrollInterval.current = undefined;
+          }
+
           dispatch(mouseEnterPostRow(postRow.postRowUuid));
         }
       }}
@@ -139,6 +143,12 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
         ) {
           createAutoScrollInterval();
           dispatch(mouseLeavePostRow());
+        }
+      }}
+      onMouseMove={() => {
+        if (autoScrollInterval.current != undefined) {
+          clearInterval(autoScrollInterval.current);
+          autoScrollInterval.current = undefined;
         }
       }}
     >
