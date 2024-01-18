@@ -7,7 +7,6 @@ import {
   mouseEnterPostRow,
   mouseLeavePostRow,
   postRowMouseDownMoved,
-  setUiPosts,
 } from "../../redux/slice/PostRowsSlice";
 import store, { useAppDispatch, useAppSelector } from "../../redux/store";
 import PostMediaElement from "./PostMediaElement.tsx";
@@ -91,16 +90,6 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     handleMouseTouchMove,
     postsToShowInRow,
   ]);
-
-  useEffect(() => {
-    dispatch(
-      setUiPosts({
-        postRowUuid: postRow.postRowUuid,
-        postsToShowInRow: postsToShowInRow,
-        postCardWidth: postCardWidth,
-      })
-    );
-  }, [dispatch, postRow.postRowUuid, postsToShowInRow, postCardWidth]);
 
   useEffect(() => {
     createAutoScrollInterval();
@@ -205,7 +194,11 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
               minWidth: `calc((100% - (10px * ${postsToShowInRow} ) )/${postsToShowInRow})`,
               maxWidth: `calc((100% - (10px * ${postsToShowInRow} ) )/${postsToShowInRow})`,
               left: `${
-                postCardWidth * (index - 1) + postRow.uiPostContentOffset
+                postCardWidth *
+                  (postRow.posts.length > postsToShowInRow
+                    ? index - 1
+                    : index) +
+                postRow.uiPostContentOffset
               }px`,
             }}
             onContextMenu={(event) => {
