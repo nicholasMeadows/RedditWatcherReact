@@ -98,8 +98,11 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
 
   useEffect(() => {
     const contentResizeObserver = new ResizeObserver(() => {
-      const contentDiv = postRowContentDiv.current as unknown as HTMLDivElement;
-      setPostCardWidth(contentDiv.clientWidth / postsToShowInRow);
+      if (postRowContentDiv.current != undefined) {
+        const contentDiv =
+          postRowContentDiv.current as unknown as HTMLDivElement;
+        setPostCardWidth(contentDiv.clientWidth / postsToShowInRow);
+      }
     });
     const div = postRowContentDiv.current;
     if (div != undefined) {
