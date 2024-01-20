@@ -12,7 +12,6 @@ import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOp
 import PostRowScrollOptionsEnum from "../model/config/enums/PostRowScrollOptionsEnum";
 import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum";
 import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum";
-import RowIncrementOptionsEnum from "../model/config/enums/RowIncrementOptionsEnum";
 import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum";
 import SelectSubredditListMenuSortOptionEnum from "../model/config/enums/SelectSubredditListMenuSortOptionEnum";
 import SelectedSubredditListSortOptionEnum from "../model/config/enums/SelectedSubredditListSortOptionEnum";
@@ -28,7 +27,6 @@ const REDDIT_PASSWORD_KEY = "password";
 const REDDIT_CLIENT_ID_KEY = "clientId";
 const REDDIT_CLIENT_SECRET_KEY = "clientSecret";
 const SUBREDDIT_SORT_ORDER_OPTION_KEY = "subredditSortOrderOption";
-const ROW_INCREMENT_OPTION = "rowIncrementOption";
 const POST_ROW_SCROLL_OPTION = "postRowScrollOption";
 const SELECTED_SUBREDDIT_LIST_SORT_OPTION = "selectedSubredditListSortOption";
 const RANDOM_ITERATION_SELECT_WEIGHT_OPTION =
@@ -114,9 +112,6 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
   ) {
     subredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
   }
-  const rowIncrementOption =
-    configJsonObj[ROW_INCREMENT_OPTION] ||
-    RowIncrementOptionsEnum.IncrementBySinglePost;
   const postRowScrollOption =
     configJsonObj[POST_ROW_SCROLL_OPTION] ||
     PostRowScrollOptionsEnum.AutoScroll;
@@ -160,7 +155,6 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
       clientSecret: redditClientSecret,
     },
     subredditSortOrderOption: subredditSortOrderOption,
-    rowIncrementOption: rowIncrementOption,
     postRowScrollOption: postRowScrollOption,
     selectedSubredditListSortOption: selectedSubredditListSortOption,
     randomIterationSelectWeightOption: randomIterationSelectWeightOption,

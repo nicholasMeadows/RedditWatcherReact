@@ -18,7 +18,6 @@ import ContentFilteringOptionEnum from "../../model/config/enums/ContentFilterin
 import PostRowScrollOptionsEnum from "../../model/config/enums/PostRowScrollOptionsEnum";
 import PostSortOrderOptionsEnum from "../../model/config/enums/PostSortOrderOptionsEnum";
 import RandomIterationSelectWeightOptionsEnum from "../../model/config/enums/RandomIterationSelectWeightOptionsEnum";
-import RowIncrementOptionsEnum from "../../model/config/enums/RowIncrementOptionsEnum";
 import SelectSubredditIterationMethodOptionsEnum from "../../model/config/enums/SelectSubredditIterationMethodOptionsEnum";
 import SelectSubredditListMenuSortOptionEnum from "../../model/config/enums/SelectSubredditListMenuSortOptionEnum";
 import SelectedSubredditListSortOptionEnum from "../../model/config/enums/SelectedSubredditListSortOptionEnum";
@@ -40,7 +39,6 @@ import { resetRedditClient } from "./RedditClientSlice";
 import { resetSubredditListsLoaded } from "./RedditListsSlice";
 
 const defaultSubredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
-const defaultRowIncrementOption = RowIncrementOptionsEnum.IncrementBySinglePost;
 const defaultPostRowScrollOption = PostRowScrollOptionsEnum.AutoScroll;
 const defaultSelectedSubredditListSortOption =
   SelectedSubredditListSortOptionEnum.Alphabetically;
@@ -258,7 +256,6 @@ const initialState: AppConfigState = {
     clientSecretValidationError: undefined,
   },
   subredditSortOrderOption: defaultSubredditSortOrderOption,
-  rowIncrementOption: defaultRowIncrementOption,
   postRowScrollOption: defaultPostRowScrollOption,
   selectedSubredditListSortOption: defaultSelectedSubredditListSortOption,
   randomIterationSelectWeightOption: defaultRandomIterationSelectWeightOption,
@@ -308,10 +305,6 @@ export const appConfigSlice = createSlice({
     },
     setSubredditSortOrderOption: (state, action) => {
       state.subredditSortOrderOption = action.payload;
-      saveConfig(state);
-    },
-    setRowIncrementOption: (state, action) => {
-      state.rowIncrementOption = action.payload;
       saveConfig(state);
     },
     setPostRowScrollOption: (state, action) => {
@@ -470,7 +463,6 @@ export const appConfigSlice = createSlice({
       const incoming = action.payload as AppConfigState;
       state.redditCredentials = incoming.redditCredentials;
       state.subredditSortOrderOption = incoming.subredditSortOrderOption;
-      state.rowIncrementOption = incoming.rowIncrementOption;
       state.postRowScrollOption = incoming.postRowScrollOption;
       state.selectedSubredditListSortOption =
         incoming.selectedSubredditListSortOption;
@@ -502,7 +494,6 @@ export const {
   setPassword,
   setUsername,
   setSubredditSortOrderOption,
-  setRowIncrementOption,
   setPostRowScrollOption,
   setSelectedSubredditListSortOption,
   setRandomIterationSelectWeightOption,

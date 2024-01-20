@@ -3,7 +3,6 @@ import ContentFilteringOptionEnum from "./enums/ContentFilteringOptionEnum";
 import PostRowScrollOptionsEnum from "./enums/PostRowScrollOptionsEnum";
 import PostSortOrderOptionsEnum from "./enums/PostSortOrderOptionsEnum";
 import RandomIterationSelectWeightOptionsEnum from "./enums/RandomIterationSelectWeightOptionsEnum";
-import RowIncrementOptionsEnum from "./enums/RowIncrementOptionsEnum";
 import SelectSubredditIterationMethodOptionsEnum from "./enums/SelectSubredditIterationMethodOptionsEnum";
 import SelectSubredditListMenuSortOptionEnum from "./enums/SelectSubredditListMenuSortOptionEnum";
 import SelectedSubredditListSortOptionEnum from "./enums/SelectedSubredditListSortOptionEnum";
@@ -15,7 +14,6 @@ import UserFrontPagePostSortOrderOptionsEnum from "./enums/UserFrontPagePostSort
 export interface AppConfig {
   redditCredentials: RedditCredentials;
   subredditSortOrderOption: SubredditSortOrderOptionsEnum;
-  rowIncrementOption: RowIncrementOptionsEnum;
   postRowScrollOption: PostRowScrollOptionsEnum;
   selectedSubredditListSortOption: SelectedSubredditListSortOptionEnum;
   randomIterationSelectWeightOption: RandomIterationSelectWeightOptionsEnum;
