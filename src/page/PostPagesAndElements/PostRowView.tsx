@@ -20,6 +20,9 @@ type Props = { postRow: PostRow };
 const PostRowView: React.FC<Props> = ({ postRow }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const autoScrollPostRow = useAppSelector(
+    (state) => state.appConfig.autoScrollPostRow
+  );
   const postsToShowInRow = useAppSelector(
     (state) => state.appConfig.postsToShowInRow
   );
@@ -71,6 +74,9 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
   );
 
   const createAutoScrollInterval = useCallback(() => {
+    if (!autoScrollPostRow) {
+      return;
+    }
     if (postRow.posts.length > postsToShowInRow) {
       autoScrollInterval.current = setInterval(() => {
         const userFrontPageSortOption =
@@ -85,6 +91,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
       }, 6000);
     }
   }, [
+    autoScrollPostRow,
     postCardWidth,
     postRow.posts.length,
     handleMouseTouchMove,
@@ -110,6 +117,14 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     }
   }, [postsToShowInRow]);
 
+  useEffect(() => {
+    if (autoScrollInterval.current != undefined) {
+      clearInterval(autoScrollInterval.current);
+    }
+    if (autoScrollPostRow) {
+      createAutoScrollInterval();
+    }
+  }, [createAutoScrollInterval, autoScrollPostRow]);
   return (
     <div
       className="postRow"

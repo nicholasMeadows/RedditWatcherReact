@@ -9,7 +9,6 @@ import { Platform } from "../model/Platform";
 import { SubredditLists } from "../model/SubredditList/SubredditLists";
 import { AppConfig } from "../model/config/AppConfig";
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum";
-import PostRowScrollOptionsEnum from "../model/config/enums/PostRowScrollOptionsEnum";
 import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum";
 import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum";
 import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum";
@@ -27,7 +26,7 @@ const REDDIT_PASSWORD_KEY = "password";
 const REDDIT_CLIENT_ID_KEY = "clientId";
 const REDDIT_CLIENT_SECRET_KEY = "clientSecret";
 const SUBREDDIT_SORT_ORDER_OPTION_KEY = "subredditSortOrderOption";
-const POST_ROW_SCROLL_OPTION = "postRowScrollOption";
+const AUTO_SCROLL_POST_ROW = "autoScrollPostRow";
 const SELECTED_SUBREDDIT_LIST_SORT_OPTION = "selectedSubredditListSortOption";
 const RANDOM_ITERATION_SELECT_WEIGHT_OPTION =
   "randomIterationSelectWeightOption";
@@ -112,9 +111,7 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
   ) {
     subredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
   }
-  const postRowScrollOption =
-    configJsonObj[POST_ROW_SCROLL_OPTION] ||
-    PostRowScrollOptionsEnum.AutoScroll;
+  const autoScrollPostRow = configJsonObj[AUTO_SCROLL_POST_ROW] || true;
   const selectedSubredditListSortOption =
     configJsonObj[SELECTED_SUBREDDIT_LIST_SORT_OPTION] ||
     SelectedSubredditListSortOptionEnum.Alphabetically;
@@ -155,7 +152,7 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
       clientSecret: redditClientSecret,
     },
     subredditSortOrderOption: subredditSortOrderOption,
-    postRowScrollOption: postRowScrollOption,
+    autoScrollPostRow: autoScrollPostRow,
     selectedSubredditListSortOption: selectedSubredditListSortOption,
     randomIterationSelectWeightOption: randomIterationSelectWeightOption,
     selectSubredditListMenuSortOption: selectSubredditListMenuSortOption,
