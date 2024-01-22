@@ -34,6 +34,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
   const postContentMouseDownTotalX = useRef(0);
   const postContentMouseDown = useRef(false);
   const autoScrollInterval = useRef<NodeJS.Timeout>();
+  const mosueWheelPostRowScrollKeyDown = useRef(false);
 
   const handleMouseDownTouchStart = useCallback((clientX: number) => {
     postContentMouseDown.current = true;
@@ -198,9 +199,43 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
       <div
         className="postRowContent"
         ref={postRowContentDiv}
-        onMouseLeave={() => {
+        onMouseLeave={(event) => {
+          const div = event.target as HTMLDivElement;
+          div.tabIndex = -1;
           if (postContentMouseDown.current) {
             handleMouseUpTouchEnd();
+          }
+        }}
+        onMouseEnter={(event) => {
+          const div = event.target as HTMLDivElement;
+          div.tabIndex = 0;
+          div.focus();
+        }}
+        onKeyDown={(event) => {
+          mosueWheelPostRowScrollKeyDown.current = event.shiftKey;
+        }}
+        onKeyUp={() => {
+          mosueWheelPostRowScrollKeyDown.current = false;
+        }}
+        onWheel={(event) => {
+          if (
+            mosueWheelPostRowScrollKeyDown.current &&
+            postRow.posts.length > postsToShowInRow
+          ) {
+            event.stopPropagation();
+            event.preventDefault();
+
+            let movementDiff = 10;
+            if (event.deltaY < 0) {
+              movementDiff = movementDiff * -1;
+            }
+            dispatch(
+              postRowMouseDownMoved({
+                postRowUuid: postRow.postRowUuid,
+                movementDiff: movementDiff,
+                postCardWidth: postCardWidth,
+              })
+            );
           }
         }}
       >

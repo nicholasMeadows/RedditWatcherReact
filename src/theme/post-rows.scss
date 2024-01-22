@@ -60,6 +60,7 @@ $postRowScrollButtonWidth: 3em;
   border-radius: 1em;
   position: absolute;
   height: 100%;
+  transition: left 100ms ease-out;
 }
 
 .postCardHeader {
