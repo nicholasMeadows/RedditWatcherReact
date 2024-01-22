@@ -45,6 +45,11 @@ $postRowScrollButtonWidth: 3em;
   margin-bottom: 5px;
 }
 
+.postRowContent:focus {
+  box-shadow: 0 0 0 0 #f90; /* or whatever colour you'd prefer */
+  outline: none;
+}
+
 .postRowScrollImg {
   width: 100%;
   height: 100%;

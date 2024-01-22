@@ -206,8 +206,8 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
             handleMouseUpTouchEnd();
           }
         }}
-        onMouseEnter={(event) => {
-          const div = event.target as HTMLDivElement;
+        onMouseEnter={() => {
+          const div = postRowContentDiv.current as unknown as HTMLDivElement;
           div.tabIndex = 0;
           div.focus();
         }}
@@ -225,7 +225,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
             event.stopPropagation();
             event.preventDefault();
 
-            let movementDiff = 10;
+            let movementDiff = -10;
             if (event.deltaY < 0) {
               movementDiff = movementDiff * -1;
             }
