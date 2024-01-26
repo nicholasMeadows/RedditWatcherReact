@@ -101,6 +101,7 @@ const initialState: PostRowsState = {
   mouseOverPostRowUuid: undefined,
   clickedOnPlayPauseButton: false,
   getPostRowsPaused: false,
+  postCardWidth: 0,
 };
 export const postRowsSlice = createSlice({
   name: "postRows",
@@ -232,7 +233,6 @@ export const postRowsSlice = createSlice({
         payload: {
           postRowUuid: string;
           movementDiff: number;
-          postCardWidth: number;
         };
       }
     ) => {
@@ -246,8 +246,7 @@ export const postRowsSlice = createSlice({
 
       const movementDiff = action.payload.movementDiff;
       let updatedPostCardOffset = postRow.uiPostContentOffset + movementDiff;
-      const postCardWidth = action.payload.postCardWidth;
-      if (updatedPostCardOffset >= postCardWidth) {
+      if (updatedPostCardOffset >= state.postCardWidth) {
         const updatedFirstPostIndex: number =
           (postRow.postContentFirstPostIndex == 0
             ? postRow.posts.length
@@ -266,8 +265,8 @@ export const postRowsSlice = createSlice({
           uiUuid: postToUnshift.postUuid + " " + uuidV4(),
         });
 
-        updatedPostCardOffset -= postCardWidth;
-      } else if (updatedPostCardOffset <= -postCardWidth) {
+        updatedPostCardOffset -= state.postCardWidth;
+      } else if (updatedPostCardOffset <= -state.postCardWidth) {
         postRow.uiPosts.shift();
         postRow.postContentFirstPostIndex =
           postRow.postContentFirstPostIndex == postRow.posts.length - 1
@@ -286,7 +285,7 @@ export const postRowsSlice = createSlice({
           ...postToPush,
           uiUuid: postToPush.postUuid + " " + uuidV4(),
         });
-        updatedPostCardOffset += postCardWidth;
+        updatedPostCardOffset += state.postCardWidth;
       }
       postRow.uiPostContentOffset = updatedPostCardOffset;
     },
@@ -360,6 +359,9 @@ export const postRowsSlice = createSlice({
       postRow.uiPostContentOffset = 0;
       postRow.postContentFirstPostIndex = 0;
     },
+    setPostCardWidth: (state, action: { type: string; payload: number }) => {
+      state.postCardWidth = action.payload;
+    },
   },
   extraReducers(builder) {
     builder
@@ -391,5 +393,6 @@ export const {
   toggleClickedOnPlayPauseButton,
   postRowMouseDownMoved,
   shiftPostsAndUiPosts,
+  setPostCardWidth,
 } = postRowsSlice.actions;
 export default postRowsSlice.reducer;

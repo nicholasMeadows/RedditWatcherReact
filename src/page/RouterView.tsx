@@ -9,6 +9,7 @@ import {
   MODIFY_SUBREDDIT_QUEUE_ROUTE,
   NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT,
   POST_ROW_ROUTE,
+  POST_ROW_SCROLL_BTN_WIDTH_EM,
   REDDIT_POST_SETTINGS_ROUTE,
   REDDIT_SIGN_IN_ROUTE,
   REDDIT_WATCHER_SETTINGS_ROUTE,
@@ -69,6 +70,10 @@ const RouterView: React.FC = () => {
       accordionBackground
     );
     document.body.style.setProperty("--app-border-color", borderColor);
+    document.body.style.setProperty(
+      "--post-row-scroll-btn-width-em",
+      POST_ROW_SCROLL_BTN_WIDTH_EM.toString()
+    );
   }, [darkmode]);
 
   return (

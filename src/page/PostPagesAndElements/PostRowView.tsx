@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
 import { PostRow } from "../../model/PostRow";
@@ -27,9 +27,10 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     (state) => state.appConfig.postsToShowInRow
   );
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
+  const postCardWidth = useAppSelector((state) => state.postRows.postCardWidth);
+
   const postRowContentDiv = useRef(null);
 
-  const [postCardWidth, setPostCardWidth] = useState(1);
   const postContentMouseDownLastX = useRef(0);
   const postContentMouseDownTotalX = useRef(0);
   const postContentMouseDown = useRef(false);
@@ -59,19 +60,12 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
           postRowMouseDownMoved({
             postRowUuid: postRow.postRowUuid,
             movementDiff: diff,
-            postCardWidth: postCardWidth,
           })
         );
         postContentMouseDownLastX.current = clientX;
       }
     },
-    [
-      postCardWidth,
-      dispatch,
-      postRow.postRowUuid,
-      postRow.posts.length,
-      postsToShowInRow,
-    ]
+    [dispatch, postRow.postRowUuid, postRow.posts.length, postsToShowInRow]
   );
 
   const createAutoScrollInterval = useCallback(() => {
@@ -103,20 +97,6 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     createAutoScrollInterval();
     return () => clearInterval(autoScrollInterval.current);
   }, [createAutoScrollInterval]);
-
-  useEffect(() => {
-    const contentResizeObserver = new ResizeObserver(() => {
-      if (postRowContentDiv.current != undefined) {
-        const contentDiv =
-          postRowContentDiv.current as unknown as HTMLDivElement;
-        setPostCardWidth(contentDiv.clientWidth / postsToShowInRow);
-      }
-    });
-    const div = postRowContentDiv.current;
-    if (div != undefined) {
-      contentResizeObserver.observe(div);
-    }
-  }, [postsToShowInRow]);
 
   useEffect(() => {
     if (autoScrollInterval.current != undefined) {
@@ -190,7 +170,6 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
               postRowMouseDownMoved({
                 postRowUuid: postRow.postRowUuid,
                 movementDiff: movementDiff,
-                postCardWidth: postCardWidth,
               })
             );
           }}
@@ -233,7 +212,6 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
               postRowMouseDownMoved({
                 postRowUuid: postRow.postRowUuid,
                 movementDiff: movementDiff,
-                postCardWidth: postCardWidth,
               })
             );
           }
@@ -356,7 +334,6 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
               postRowMouseDownMoved({
                 postRowUuid: postRow.postRowUuid,
                 movementDiff: movementDiff,
-                postCardWidth: postCardWidth,
               })
             );
           }}

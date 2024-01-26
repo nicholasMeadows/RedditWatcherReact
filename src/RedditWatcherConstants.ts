@@ -31,3 +31,5 @@ export const SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED = "Not Selected";
 export const SINGLE_POST_PAGE_MIN_SCALE = 1;
 export const SINGLE_POST_PAGE_MAX_SCALE = 6;
 export const SINGLE_POST_PAGE_SCALE_STEP = 0.1;
+
+export const POST_ROW_SCROLL_BTN_WIDTH_EM = 3;
