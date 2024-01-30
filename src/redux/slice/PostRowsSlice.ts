@@ -47,6 +47,7 @@ const createPostRow = (
     postRowUuid: postRowUuid,
     posts: posts,
     uiPosts: [],
+    postRowContentWidthAtCreation: postRowContentWidth,
   };
 
   if (
@@ -57,7 +58,7 @@ const createPostRow = (
     postRow.uiPosts.push({
       ...postToUnshift,
       uiUuid: postToUnshift.postUuid + " " + uuidV4(),
-      left: calcUiPostLeft(-1, postCardWidth, postRowContentWidth),
+      left: calcUiPostLeft(-1, postCardWidth),
     });
   }
 
@@ -74,7 +75,7 @@ const createPostRow = (
     postRow.uiPosts.push({
       ...post,
       uiUuid: post.postUuid + "" + uuidV4(),
-      left: calcUiPostLeft(index, postCardWidth, postRowContentWidth),
+      left: calcUiPostLeft(index, postCardWidth),
     });
     postsRunningIndex++;
   }
@@ -90,22 +91,14 @@ const createPostRow = (
     postRow.uiPosts.push({
       ...postToPush,
       uiUuid: postToPush.postUuid + "" + uuidV4(),
-      left: calcUiPostLeft(
-        postRow.uiPosts.length - 1,
-        postCardWidth,
-        postRowContentWidth
-      ),
+      left: calcUiPostLeft(postRow.uiPosts.length - 1, postCardWidth),
     });
   }
   return postRow;
 };
 
-const calcUiPostLeft = (
-  uiPostIndex: number,
-  postCardWidth: number,
-  postRowContentWidth: number
-) => {
-  return ((postCardWidth * uiPostIndex) / postRowContentWidth) * 100;
+const calcUiPostLeft = (uiPostIndex: number, postCardWidth: number) => {
+  return postCardWidth * uiPostIndex;
 };
 
 const setPostRowsHasAtLeast1PostRow = (state: PostRowsState) => {
@@ -286,28 +279,28 @@ export const postRowsSlice = createSlice({
         return;
       }
 
-      const postCardWidthPercentage =
-        (state.postCardWidth / state.postRowContentWidth) * 100;
+      // const postCardWidthPercentage =
+      //   (state.postCardWidth / state.postRowContentWidth) * 100;
 
       postRow.uiPosts = postRow.uiPosts.filter((post) => {
         if (
-          post.left + postCardWidthPercentage > -postCardWidthPercentage &&
-          post.left < 100 + postCardWidthPercentage
+          post.left + state.postCardWidth > -state.postCardWidth &&
+          post.left < state.postRowContentWidth + state.postCardWidth
         ) {
           return post;
         }
       });
 
       const movementDiff = action.payload.movementDiff;
-      const percentDelta = (movementDiff / state.postRowContentWidth) * 100;
+      // const percentDelta = (movementDiff / state.postRowContentWidth) * 100;
       postRow.uiPosts.forEach((post) => {
-        post.left += percentDelta;
+        post.left += movementDiff;
       });
 
       const firstUiPost = postRow.uiPosts[0];
-      if (percentDelta < 0) {
+      if (movementDiff < 0) {
         const lastUiPost = postRow.uiPosts[postRow.uiPosts.length - 1];
-        if (lastUiPost.left < 100) {
+        if (lastUiPost.left < state.postRowContentWidth) {
           const lastUiPostIndex = postRow.posts.findIndex(
             (post) => post.postUuid == lastUiPost.postUuid
           );
@@ -324,11 +317,15 @@ export const postRowsSlice = createSlice({
           postRow.uiPosts.push({
             ...postToPush,
             uiUuid: postToPush.postUuid + " " + uuidV4(),
-            left: lastUiPost.left + postCardWidthPercentage,
+            left:
+              lastUiPost.left +
+              state.postCardWidth *
+                (postRow.postRowContentWidthAtCreation /
+                  state.postRowContentWidth),
           });
         }
-      } else if (percentDelta > 0) {
-        if (firstUiPost.left + postCardWidthPercentage >= 0) {
+      } else if (movementDiff > 0) {
+        if (firstUiPost.left + state.postCardWidth >= 0) {
           const firstUiPostIndex = postRow.posts.findIndex(
             (post) => post.postUuid == firstUiPost.postUuid
           );
@@ -345,7 +342,11 @@ export const postRowsSlice = createSlice({
           postRow.uiPosts.unshift({
             ...postToUnShift,
             uiUuid: postToUnShift.postUuid + " " + uuidV4(),
-            left: firstUiPost.left - postCardWidthPercentage,
+            left:
+              firstUiPost.left -
+              state.postCardWidth *
+                (postRow.postRowContentWidthAtCreation /
+                  state.postRowContentWidth),
           });
         }
       }
@@ -400,11 +401,7 @@ export const postRowsSlice = createSlice({
       }
 
       updatedUiPosts.forEach((uiPost, index) => {
-        uiPost.left = calcUiPostLeft(
-          index - 2,
-          state.postCardWidth,
-          state.postRowContentWidth
-        );
+        uiPost.left = calcUiPostLeft(index - 2, state.postCardWidth);
       });
 
       postRow.uiPosts = updatedUiPosts;
@@ -417,6 +414,35 @@ export const postRowsSlice = createSlice({
       action: { type: string; payload: number }
     ) => {
       state.postRowContentWidth = action.payload;
+    },
+    stopSmoothPostTransition: (
+      state,
+      action: {
+        type: string;
+        payload: {
+          postRowUuid: string;
+          secondPostCardPxLeft: number;
+        };
+      }
+    ) => {
+      const postRowUuid = action.payload.postRowUuid;
+      const postRow = state.postRows.find(
+        (row) => row.postRowUuid == postRowUuid
+      );
+      if (postRow == undefined) {
+        return;
+      }
+      const secondPostCardPxLeft = action.payload.secondPostCardPxLeft;
+      postRow.uiPosts.forEach((uiPost, index) => {
+        const scaleFactor =
+          postRow.postRowContentWidthAtCreation / state.postRowContentWidth;
+        uiPost.left =
+          secondPostCardPxLeft +
+          (index - 1) * state.postCardWidth * scaleFactor;
+        // (state.postCardWidth *
+        //   (postRow.postRowContentWidthAtCreation /
+        //     state.postRowContentWidth));
+      });
     },
   },
   extraReducers(builder) {
@@ -451,5 +477,6 @@ export const {
   setPostCardWidth,
   setPostRowContentWidth,
   addPostsToFrontOfRow,
+  stopSmoothPostTransition,
 } = postRowsSlice.actions;
 export default postRowsSlice.reducer;

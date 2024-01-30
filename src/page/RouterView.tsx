@@ -31,6 +31,8 @@ import {
   setPostCardWidth,
   setPostRowContentWidth,
 } from "../redux/slice/PostRowsSlice.ts";
+import getPlatform from "../util/PlatformUtil.ts";
+import { Platform } from "../model/Platform.ts";
 
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -90,8 +92,12 @@ const RouterView: React.FC = () => {
         const div = rootDivRef.current as unknown as HTMLDivElement;
 
         const baseFontSize = parseFloat(getComputedStyle(div).fontSize);
-        const postRowContentWidth =
-          div.clientWidth - baseFontSize * POST_ROW_SCROLL_BTN_WIDTH_EM * 2;
+
+        const scrollButtonWidths =
+          getPlatform() != Platform.Android && getPlatform() != Platform.Ios
+            ? baseFontSize * POST_ROW_SCROLL_BTN_WIDTH_EM * 2
+            : 0;
+        const postRowContentWidth = div.clientWidth - scrollButtonWidths;
         dispatch(setPostCardWidth(postRowContentWidth / postsToShowInRow));
         dispatch(setPostRowContentWidth(postRowContentWidth));
       }
