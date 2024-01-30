@@ -157,6 +157,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     (initialShiftToClosestPostCard: boolean = true) => {
       if (autoScrollInterval.current != undefined) {
         clearInterval(autoScrollInterval.current);
+        autoScrollInterval.current = undefined;
       }
       if (autoScrollPostRowOption == AutoScrollPostRowOptionEnum.Off) {
         return;
@@ -186,6 +187,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
   useEffect(() => {
     if (createIntervalTimeout.current != undefined) {
       clearTimeout(createIntervalTimeout.current);
+      createIntervalTimeout.current = undefined;
     }
     createIntervalTimeout.current = setTimeout(() => {
       createAutoScrollInterval();
@@ -197,8 +199,15 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     };
   }, []);
 
+  const resumeSmoothPostRowScrollingAfterMouseUpTimeout =
+    useRef<NodeJS.Timeout>();
   const handlePostRowMouseEnter = useCallback(() => {
     setPostCardTransition(false);
+
+    if (resumeSmoothPostRowScrollingAfterMouseUpTimeout.current != undefined) {
+      clearTimeout(resumeSmoothPostRowScrollingAfterMouseUpTimeout.current);
+      resumeSmoothPostRowScrollingAfterMouseUpTimeout.current = undefined;
+    }
 
     if (autoScrollInterval.current != undefined) {
       clearInterval(autoScrollInterval.current);
@@ -224,9 +233,14 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
   const handlePostRowMouseLeave = useCallback(() => {
     setPostCardTransition(true);
 
-    setTimeout(() => {
+    if (resumeSmoothPostRowScrollingAfterMouseUpTimeout.current != undefined) {
+      clearTimeout(resumeSmoothPostRowScrollingAfterMouseUpTimeout.current);
+      resumeSmoothPostRowScrollingAfterMouseUpTimeout.current = undefined;
+    }
+
+    resumeSmoothPostRowScrollingAfterMouseUpTimeout.current = setTimeout(() => {
       createAutoScrollInterval(false);
-    }, 100);
+    }, 1000);
     dispatch(mouseLeavePostRow());
   }, [createAutoScrollInterval, dispatch]);
 
@@ -242,6 +256,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
 
     if (postsToShowInRowHandlePostRowMouseTimeout.current != undefined) {
       clearTimeout(postsToShowInRowHandlePostRowMouseTimeout.current);
+      postsToShowInRowHandlePostRowMouseTimeout.current = undefined;
     }
     postsToShowInRowHandlePostRowMouseTimeout.current = setTimeout(() => {
       handleEffect();
