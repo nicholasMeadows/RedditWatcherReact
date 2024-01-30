@@ -7,7 +7,7 @@ import SelectedSubredditListSortOptionEnum from "../../model/config/enums/Select
 import SortOrderDirectionOptionsEnum from "../../model/config/enums/SortOrderDirectionOptionsEnum";
 import SubredditSortOrderOptionsEnum from "../../model/config/enums/SubredditSortOrderOptionsEnum";
 import {
-  setAutoScrollPostRow,
+  setAutoScrollPostRowOption,
   setConcatRedditUrlMaxLength,
   setContentFiltering,
   setPostRowsToShowInView,
@@ -24,6 +24,7 @@ import {
 } from "../../redux/slice/AppConfigSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import { checkPlatformForSubredditSortOrderOption } from "../../util/PlatformUtil";
+import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 
 const RedditWatcherSettings: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -31,8 +32,8 @@ const RedditWatcherSettings: React.FC = () => {
   const subredditSortOrderOption = useAppSelector(
     (state) => state.appConfig.subredditSortOrderOption
   );
-  const autoScrollPostRow = useAppSelector(
-    (state) => state.appConfig.autoScrollPostRow
+  const autoScrollPostRowOption = useAppSelector(
+    (state) => state.appConfig.autoScrollPostRowOption
   );
   const selectedSubredditListSortOption = useAppSelector(
     (state) => state.appConfig.selectedSubredditListSortOption
@@ -115,16 +116,24 @@ const RedditWatcherSettings: React.FC = () => {
         </select>
       </div>
       <hr />
-      <div className="settings-item flex-row">
-        <label className="checkbox-label">Auto Scroll Post Row</label>
-        <input
-          className={"settings-checkbox-input"}
-          type={"checkbox"}
-          checked={autoScrollPostRow}
-          onChange={(event) => {
-            dispatch(setAutoScrollPostRow(event.target.checked));
-          }}
-        />
+
+      <div className="settings-item flex-column">
+        <label className="select-label">Auto Scroll Post Row</label>
+        <select
+          value={autoScrollPostRowOption}
+          onChange={(event) =>
+            dispatch(setAutoScrollPostRowOption(event.target.value))
+          }
+          className="select"
+        >
+          {Object.entries(AutoScrollPostRowOptionEnum).map((key) => {
+            return (
+              <option key={key[0]} value={key[1]}>
+                {key[1]}
+              </option>
+            );
+          })}
+        </select>
       </div>
       <hr />
       <div className="settings-item flex-column">

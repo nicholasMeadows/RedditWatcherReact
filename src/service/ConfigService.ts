@@ -19,6 +19,7 @@ import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOr
 import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEnum";
 import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
 import getPlatform from "../util/PlatformUtil";
+import { AutoScrollPostRowOptionEnum } from "../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 
 const REDDIT_CREDENTIALS_KEY = "redditCredentials";
 const REDDIT_USERNAME_KEY = "username";
@@ -26,7 +27,7 @@ const REDDIT_PASSWORD_KEY = "password";
 const REDDIT_CLIENT_ID_KEY = "clientId";
 const REDDIT_CLIENT_SECRET_KEY = "clientSecret";
 const SUBREDDIT_SORT_ORDER_OPTION_KEY = "subredditSortOrderOption";
-const AUTO_SCROLL_POST_ROW = "autoScrollPostRow";
+const AUTO_SCROLL_POST_ROW = "autoScrollPostRowOption";
 const SELECTED_SUBREDDIT_LIST_SORT_OPTION = "selectedSubredditListSortOption";
 const RANDOM_ITERATION_SELECT_WEIGHT_OPTION =
   "randomIterationSelectWeightOption";
@@ -111,7 +112,9 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
   ) {
     subredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
   }
-  const autoScrollPostRow = configJsonObj[AUTO_SCROLL_POST_ROW] || true;
+  const autoScrollPostRowOption =
+    configJsonObj[AUTO_SCROLL_POST_ROW] ||
+    AutoScrollPostRowOptionEnum.SmoothContinuousScroll;
   const selectedSubredditListSortOption =
     configJsonObj[SELECTED_SUBREDDIT_LIST_SORT_OPTION] ||
     SelectedSubredditListSortOptionEnum.Alphabetically;
@@ -152,7 +155,7 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
       clientSecret: redditClientSecret,
     },
     subredditSortOrderOption: subredditSortOrderOption,
-    autoScrollPostRow: autoScrollPostRow,
+    autoScrollPostRowOption: autoScrollPostRowOption,
     selectedSubredditListSortOption: selectedSubredditListSortOption,
     randomIterationSelectWeightOption: randomIterationSelectWeightOption,
     selectSubredditListMenuSortOption: selectSubredditListMenuSortOption,

@@ -3,77 +3,109 @@ import { v4 as uuidV4 } from "uuid";
 import { Post, UiPost } from "../../model/Post/Post";
 import { PostRow } from "../../model/PostRow";
 import { PostRowsState } from "../../model/PostRowsState";
-import { MAX_POSTS_PER_ROW } from "../../RedditWatcherConstants.ts";
 import store from "../store.ts";
+import { MAX_POSTS_PER_ROW } from "../../RedditWatcherConstants.ts";
+import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 
 export const createPostRowAndPushToRows = createAsyncThunk(
   "postRows/createPostRowAndPushToRows",
   async (data: Array<Post>) => {
-    return createPostRow(data);
+    const state = store.getState();
+    return createPostRow(
+      data,
+      state.appConfig.postsToShowInRow,
+      state.postRows.postCardWidth,
+      state.postRows.postRowContentWidth,
+      state.appConfig.userFrontPagePostSortOrderOption
+    );
   }
 );
 
 export const createPostRowAndInsertAtBeginning = createAsyncThunk(
   "postRows/createPostRowAndInsertAtBegining",
   async (data: Array<Post>) => {
-    return createPostRow(data);
+    const state = store.getState();
+    return createPostRow(
+      data,
+      state.appConfig.postsToShowInRow,
+      state.postRows.postCardWidth,
+      state.postRows.postRowContentWidth,
+      state.appConfig.userFrontPagePostSortOrderOption
+    );
   }
 );
 
-const createPostRow = (posts: Array<Post>): PostRow => {
+const createPostRow = (
+  posts: Array<Post>,
+  postsToShowInRow: number,
+  postCardWidth: number,
+  postRowContentWidth: number,
+  userFrontPageSortOption: UserFrontPagePostSortOrderOptionsEnum
+): PostRow => {
   const postRowUuid = uuidV4();
   const postRow: PostRow = {
     postRowUuid: postRowUuid,
     posts: posts,
     uiPosts: [],
-    uiPostContentOffset: 0,
-    postContentFirstPostIndex: 0,
   };
 
-  const state = store.getState();
-  const postsToShowInRow = state.appConfig.postsToShowInRow;
-  if (postRow.posts.length < postsToShowInRow) {
-    postRow.uiPosts = postRow.posts.map((post) => {
-      return { ...post, uiUuid: `${post.postUuid}-${uuidV4()}` };
+  if (
+    postRow.posts.length > postsToShowInRow &&
+    userFrontPageSortOption != UserFrontPagePostSortOrderOptionsEnum.New
+  ) {
+    const postToUnshift = posts[posts.length - 1];
+    postRow.uiPosts.push({
+      ...postToUnshift,
+      uiUuid: postToUnshift.postUuid + " " + uuidV4(),
+      left: calcUiPostLeft(-1, postCardWidth, postRowContentWidth),
     });
-    postRow.postContentFirstPostIndex = 0;
-    postRow.uiPostContentOffset = 0;
-  } else {
-    const posts = postRow.posts;
-    const uiPostsToSet = new Array<UiPost>();
+  }
 
-    let postsRunningIndex = 0;
-    for (let index = 0; index < postsToShowInRow; ++index) {
-      if (postsRunningIndex == posts.length) {
-        postsRunningIndex = 0;
-      }
-      const post = posts[postsRunningIndex];
-      const postToPush: UiPost = {
-        ...post,
-        uiUuid: post.postUuid + "" + uuidV4(),
-      };
-      uiPostsToSet.push(postToPush);
-      postsRunningIndex++;
+  let postsRunningIndex = 0;
+  for (
+    let index = 0;
+    index < postsToShowInRow && index < postRow.posts.length;
+    ++index
+  ) {
+    if (postsRunningIndex == posts.length) {
+      postsRunningIndex = 0;
     }
-    postRow.postContentFirstPostIndex = 0;
+    const post = posts[postsRunningIndex];
+    postRow.uiPosts.push({
+      ...post,
+      uiUuid: post.postUuid + "" + uuidV4(),
+      left: calcUiPostLeft(index, postCardWidth, postRowContentWidth),
+    });
+    postsRunningIndex++;
+  }
+
+  if (
+    postRow.posts.length > postsToShowInRow &&
+    userFrontPageSortOption != UserFrontPagePostSortOrderOptionsEnum.New
+  ) {
     if (postsRunningIndex == posts.length) {
       postsRunningIndex = 0;
     }
     const postToPush = posts[postsRunningIndex];
-    uiPostsToSet.push({
+    postRow.uiPosts.push({
       ...postToPush,
       uiUuid: postToPush.postUuid + "" + uuidV4(),
+      left: calcUiPostLeft(
+        postRow.uiPosts.length - 1,
+        postCardWidth,
+        postRowContentWidth
+      ),
     });
-
-    const postToUnshift = posts[posts.length - 1];
-
-    uiPostsToSet.unshift({
-      ...postToUnshift,
-      uiUuid: postToUnshift.postUuid + " " + uuidV4(),
-    });
-    postRow.uiPosts = uiPostsToSet;
   }
   return postRow;
+};
+
+const calcUiPostLeft = (
+  uiPostIndex: number,
+  postCardWidth: number,
+  postRowContentWidth: number
+) => {
+  return ((postCardWidth * uiPostIndex) / postRowContentWidth) * 100;
 };
 
 const setPostRowsHasAtLeast1PostRow = (state: PostRowsState) => {
@@ -102,6 +134,7 @@ const initialState: PostRowsState = {
   clickedOnPlayPauseButton: false,
   getPostRowsPaused: false,
   postCardWidth: 0,
+  postRowContentWidth: 0,
 };
 export const postRowsSlice = createSlice({
   name: "postRows",
@@ -148,7 +181,11 @@ export const postRowsSlice = createSlice({
         );
         if (uiPostIndex >= 0) {
           const uiPost = postRow.uiPosts[uiPostIndex];
-          postRow.uiPosts[uiPostIndex] = { ...post, uiUuid: uiPost.uiUuid };
+          postRow.uiPosts[uiPostIndex] = {
+            ...post,
+            uiUuid: uiPost.uiUuid,
+            left: uiPost.left,
+          };
         }
       }
     },
@@ -180,7 +217,11 @@ export const postRowsSlice = createSlice({
         );
         if (uiPostIndex >= 0) {
           const uiPost = postRow.uiPosts[uiPostIndex];
-          postRow.uiPosts[uiPostIndex] = { ...post, uiUuid: uiPost.uiUuid };
+          postRow.uiPosts[uiPostIndex] = {
+            ...post,
+            uiUuid: uiPost.uiUuid,
+            left: uiPost.left,
+          };
         }
       }
     },
@@ -226,13 +267,14 @@ export const postRowsSlice = createSlice({
       );
     },
 
-    postRowMouseDownMoved: (
+    movePostRow: (
       state,
       action: {
         type: string;
         payload: {
           postRowUuid: string;
           movementDiff: number;
+          postsToShowInRow: number;
         };
       }
     ) => {
@@ -244,52 +286,71 @@ export const postRowsSlice = createSlice({
         return;
       }
 
+      const postCardWidthPercentage =
+        (state.postCardWidth / state.postRowContentWidth) * 100;
+
+      postRow.uiPosts = postRow.uiPosts.filter((post) => {
+        if (
+          post.left + postCardWidthPercentage > -postCardWidthPercentage &&
+          post.left < 100 + postCardWidthPercentage
+        ) {
+          return post;
+        }
+      });
+
       const movementDiff = action.payload.movementDiff;
-      let updatedPostCardOffset = postRow.uiPostContentOffset + movementDiff;
-      if (updatedPostCardOffset >= state.postCardWidth) {
-        const updatedFirstPostIndex: number =
-          (postRow.postContentFirstPostIndex == 0
-            ? postRow.posts.length
-            : postRow.postContentFirstPostIndex) - 1;
-        postRow.postContentFirstPostIndex = updatedFirstPostIndex;
+      const percentDelta = (movementDiff / state.postRowContentWidth) * 100;
+      postRow.uiPosts.forEach((post) => {
+        post.left += percentDelta;
+      });
 
-        postRow.uiPosts.pop();
+      const firstUiPost = postRow.uiPosts[0];
+      if (percentDelta < 0) {
+        const lastUiPost = postRow.uiPosts[postRow.uiPosts.length - 1];
+        if (lastUiPost.left < 100) {
+          const lastUiPostIndex = postRow.posts.findIndex(
+            (post) => post.postUuid == lastUiPost.postUuid
+          );
+          if (lastUiPostIndex == -1) {
+            return;
+          }
+          let indexToPush: number;
+          if (lastUiPostIndex == postRow.posts.length - 1) {
+            indexToPush = 0;
+          } else {
+            indexToPush = lastUiPostIndex + 1;
+          }
+          const postToPush = postRow.posts[indexToPush];
+          postRow.uiPosts.push({
+            ...postToPush,
+            uiUuid: postToPush.postUuid + " " + uuidV4(),
+            left: lastUiPost.left + postCardWidthPercentage,
+          });
+        }
+      } else if (percentDelta > 0) {
+        if (firstUiPost.left + postCardWidthPercentage >= 0) {
+          const firstUiPostIndex = postRow.posts.findIndex(
+            (post) => post.postUuid == firstUiPost.postUuid
+          );
+          if (firstUiPostIndex == -1) {
+            return;
+          }
+          let postToUnShift: Post;
+          if (firstUiPostIndex == 0) {
+            postToUnShift = postRow.posts[postRow.posts.length - 1];
+          } else {
+            postToUnShift = postRow.posts[firstUiPostIndex - 1];
+          }
 
-        const postIndexToInsert =
-          (updatedFirstPostIndex == 0
-            ? postRow.posts.length
-            : updatedFirstPostIndex) - 1;
-        const postToUnshift = postRow.posts[postIndexToInsert];
-        postRow.uiPosts.unshift({
-          ...postToUnshift,
-          uiUuid: postToUnshift.postUuid + " " + uuidV4(),
-        });
-
-        updatedPostCardOffset -= state.postCardWidth;
-      } else if (updatedPostCardOffset <= -state.postCardWidth) {
-        postRow.uiPosts.shift();
-        postRow.postContentFirstPostIndex =
-          postRow.postContentFirstPostIndex == postRow.posts.length - 1
-            ? 0
-            : postRow.postContentFirstPostIndex + 1;
-
-        const lastPostUuid =
-          postRow.uiPosts[postRow.uiPosts.length - 1].postUuid;
-        const lastPostIndex = postRow.posts.findIndex(
-          (post) => post.postUuid == lastPostUuid
-        );
-        const postIndexToPush =
-          lastPostIndex == postRow.posts.length - 1 ? 0 : lastPostIndex + 1;
-        const postToPush = postRow.posts[postIndexToPush];
-        postRow.uiPosts.push({
-          ...postToPush,
-          uiUuid: postToPush.postUuid + " " + uuidV4(),
-        });
-        updatedPostCardOffset += state.postCardWidth;
+          postRow.uiPosts.unshift({
+            ...postToUnShift,
+            uiUuid: postToUnShift.postUuid + " " + uuidV4(),
+            left: firstUiPost.left - postCardWidthPercentage,
+          });
+        }
       }
-      postRow.uiPostContentOffset = updatedPostCardOffset;
     },
-    shiftPostsAndUiPosts: (
+    addPostsToFrontOfRow: (
       state,
       action: {
         type: string;
@@ -309,58 +370,53 @@ export const postRowsSlice = createSlice({
       }
 
       const postsToInsert = action.payload.posts;
-      postsToInsert.reverse();
-      postsToInsert.forEach((post) => {
-        postRow.posts.unshift(post);
-      });
+      postRow.posts = [...postsToInsert, ...postRow.posts];
 
       if (postRow.posts.length > MAX_POSTS_PER_ROW) {
         postRow.posts.splice(MAX_POSTS_PER_ROW - postRow.posts.length);
       }
+
       const updatedUiPosts = new Array<UiPost>();
-      const postsToShowInRow = action.payload.postsToShowInRow;
-      let postsRunningIndex = 0;
-      for (let i = 0; i < postsToShowInRow; ++i) {
-        if (postsRunningIndex == postRow.posts.length) {
-          postsRunningIndex = 0;
-        }
-        const post = postRow.posts[postsRunningIndex];
 
-        let uiUuid = `${post.postUuid}-${uuidV4()}`;
-        const foundUuidPost = postRow.uiPosts.find(
-          (uuidPost) => uuidPost.postUuid == post.postUuid
+      let runningPostIndex = postRow.posts.length - 1;
+      for (let i = 0; i < action.payload.postsToShowInRow + 2; ++i) {
+        if (runningPostIndex == postRow.posts.length) {
+          runningPostIndex = 0;
+        }
+        const postToPush = postRow.posts[runningPostIndex];
+        const postToPushFromUiPosts = postRow.uiPosts.find((uiPost) =>
+          uiPost.uiUuid.startsWith(postToPush.postUuid)
         );
-        if (foundUuidPost != undefined) {
-          uiUuid = foundUuidPost.uiUuid;
+        if (postToPushFromUiPosts != undefined) {
+          updatedUiPosts.push(postToPushFromUiPosts);
+        } else {
+          updatedUiPosts.push({
+            ...postToPush,
+            uiUuid: `${postToPush.postUuid}-${uuidV4()}`,
+            left: 0,
+          });
         }
-        updatedUiPosts.push({
-          ...post,
-          uiUuid: uiUuid,
-        });
-        postsRunningIndex++;
+        runningPostIndex++;
       }
 
-      if (postsRunningIndex == postRow.posts.length) {
-        postsRunningIndex = 0;
-      }
-      const post = postRow.posts[postsRunningIndex];
-      updatedUiPosts.push({
-        ...post,
-        uiUuid: `${post.postUuid}-${uuidV4()}`,
-      });
-
-      const lastPost = postRow.posts[postRow.posts.length - 1];
-      updatedUiPosts.unshift({
-        ...lastPost,
-        uiUuid: `${lastPost.postUuid}-${uuidV4()}`,
+      updatedUiPosts.forEach((uiPost, index) => {
+        uiPost.left = calcUiPostLeft(
+          index - 2,
+          state.postCardWidth,
+          state.postRowContentWidth
+        );
       });
 
       postRow.uiPosts = updatedUiPosts;
-      postRow.uiPostContentOffset = 0;
-      postRow.postContentFirstPostIndex = 0;
     },
     setPostCardWidth: (state, action: { type: string; payload: number }) => {
       state.postCardWidth = action.payload;
+    },
+    setPostRowContentWidth: (
+      state,
+      action: { type: string; payload: number }
+    ) => {
+      state.postRowContentWidth = action.payload;
     },
   },
   extraReducers(builder) {
@@ -391,8 +447,9 @@ export const {
   mouseLeavePostRow,
   clearPostRows,
   toggleClickedOnPlayPauseButton,
-  postRowMouseDownMoved,
-  shiftPostsAndUiPosts,
+  movePostRow,
   setPostCardWidth,
+  setPostRowContentWidth,
+  addPostsToFrontOfRow,
 } = postRowsSlice.actions;
 export default postRowsSlice.reducer;

@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from "../redux/store";
 
 import { KeepAwake } from "@capacitor-community/keep-awake";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import {
   APP_INITIALIZATION_ROUTE,
@@ -27,6 +27,10 @@ import SinglePostView from "./PostPagesAndElements/SinglePostView";
 import RedditPostSettings from "./SettingsPages/RedditPostSettings";
 import RedditSignIn from "./SettingsPages/RedditSignIn.tsx";
 import RedditWatcherSettings from "./SettingsPages/RedditWatcherSettings";
+import {
+  setPostCardWidth,
+  setPostRowContentWidth,
+} from "../redux/slice/PostRowsSlice.ts";
 
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -76,8 +80,29 @@ const RouterView: React.FC = () => {
     );
   }, [darkmode]);
 
+  const postsToShowInRow = useAppSelector(
+    (state) => state.appConfig.postsToShowInRow
+  );
+  const rootDivRef = useRef(null);
+  useEffect(() => {
+    const contentResizeObserver = new ResizeObserver(() => {
+      if (rootDivRef.current != undefined) {
+        const div = rootDivRef.current as unknown as HTMLDivElement;
+
+        const baseFontSize = parseFloat(getComputedStyle(div).fontSize);
+        const postRowContentWidth =
+          div.clientWidth - baseFontSize * POST_ROW_SCROLL_BTN_WIDTH_EM * 2;
+        dispatch(setPostCardWidth(postRowContentWidth / postsToShowInRow));
+        dispatch(setPostRowContentWidth(postRowContentWidth));
+      }
+    });
+    const div = rootDivRef.current;
+    if (div != undefined) {
+      contentResizeObserver.observe(div);
+    }
+  }, [dispatch, postsToShowInRow]);
   return (
-    <div className="root-app">
+    <div className="root-app" ref={rootDivRef}>
       <NavigationHamburgerMenu />
       <AppNotification />
       <ContextMenu />

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
 import { PostRow } from "../../model/PostRow";
@@ -6,36 +6,47 @@ import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
 import {
   mouseEnterPostRow,
   mouseLeavePostRow,
-  postRowMouseDownMoved,
+  movePostRow,
 } from "../../redux/slice/PostRowsSlice";
-import store, { useAppDispatch, useAppSelector } from "../../redux/store";
+import { useAppDispatch, useAppSelector } from "../../redux/store";
 import PostMediaElement from "./PostMediaElement.tsx";
 import getPlatform from "../../util/PlatformUtil.ts";
 import { Platform } from "../../model/Platform.ts";
-import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants.ts";
 import { setPostAndRowUuid } from "../../redux/slice/SinglePostPageSlice.ts";
+import { UiPost } from "../../model/Post/Post.ts";
+import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
+import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 
 type Props = { postRow: PostRow };
 const PostRowView: React.FC<Props> = ({ postRow }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const autoScrollPostRow = useAppSelector(
-    (state) => state.appConfig.autoScrollPostRow
+
+  const darkMode = useAppSelector((state) => state.appConfig.darkMode);
+  const postCardWidth = useAppSelector((state) => state.postRows.postCardWidth);
+  const postRowContentWidth = useAppSelector(
+    (state) => state.postRows.postRowContentWidth
   );
+
   const postsToShowInRow = useAppSelector(
     (state) => state.appConfig.postsToShowInRow
   );
-  const darkMode = useAppSelector((state) => state.appConfig.darkMode);
-  const postCardWidth = useAppSelector((state) => state.postRows.postCardWidth);
+  const autoScrollPostRowOption = useAppSelector(
+    (state) => state.appConfig.autoScrollPostRowOption
+  );
 
-  const postRowContentDiv = useRef(null);
+  const userFrontPageSortOption = useAppSelector(
+    (state) => state.appConfig.userFrontPagePostSortOrderOption
+  );
+
+  const [postCardTransition, setPostCardTransition] = useState(true);
 
   const postContentMouseDownLastX = useRef(0);
   const postContentMouseDownTotalX = useRef(0);
   const postContentMouseDown = useRef(false);
   const autoScrollInterval = useRef<NodeJS.Timeout>();
-  const mosueWheelPostRowScrollKeyDown = useRef(false);
+  const mouseWheelPostRowScrollKeyDown = useRef(false);
 
   const handleMouseDownTouchStart = useCallback((clientX: number) => {
     postContentMouseDown.current = true;
@@ -57,9 +68,10 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
           return;
         }
         dispatch(
-          postRowMouseDownMoved({
+          movePostRow({
             postRowUuid: postRow.postRowUuid,
             movementDiff: diff,
+            postsToShowInRow: postsToShowInRow,
           })
         );
         postContentMouseDownLastX.current = clientX;
@@ -67,45 +79,109 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     },
     [dispatch, postRow.postRowUuid, postRow.posts.length, postsToShowInRow]
   );
+  const postRowContentDiv = useRef(null);
 
+  const handleMovePostRowLeftButtonClick = useCallback(() => {
+    let firstVisiblePostLeftPx: number | undefined;
+    for (const uiPost of postRow.uiPosts) {
+      firstVisiblePostLeftPx = uiPost.left * 0.01 * postRowContentWidth;
+      if (firstVisiblePostLeftPx + postCardWidth > 0) {
+        break;
+      }
+    }
+    if (firstVisiblePostLeftPx == undefined) {
+      return;
+    }
+    dispatch(
+      movePostRow({
+        postRowUuid: postRow.postRowUuid,
+        postsToShowInRow: postsToShowInRow,
+        movementDiff: -(firstVisiblePostLeftPx + postCardWidth),
+      })
+    );
+  }, [
+    dispatch,
+    postCardWidth,
+    postRow.postRowUuid,
+    postRow.uiPosts,
+    postRowContentWidth,
+    postsToShowInRow,
+  ]);
+
+  const handleMovePostRowRightButtonClick = useCallback(
+    (uiPosts: Array<UiPost>) => {
+      let firstVisiblePostLeftPx: number | undefined;
+      for (const uiPost of uiPosts) {
+        firstVisiblePostLeftPx = uiPost.left * 0.01 * postRowContentWidth;
+        if (firstVisiblePostLeftPx + postCardWidth >= 0) {
+          break;
+        }
+      }
+      if (firstVisiblePostLeftPx == undefined) {
+        return;
+      }
+      dispatch(
+        movePostRow({
+          postRowUuid: postRow.postRowUuid,
+          postsToShowInRow: postsToShowInRow,
+          movementDiff: firstVisiblePostLeftPx * -1,
+        })
+      );
+    },
+    [
+      dispatch,
+      postCardWidth,
+      postRow.postRowUuid,
+      postRowContentWidth,
+      postsToShowInRow,
+    ]
+  );
   const createAutoScrollInterval = useCallback(() => {
-    if (!autoScrollPostRow) {
+    if (autoScrollInterval.current != undefined) {
+      clearInterval(autoScrollInterval.current);
+    }
+    if (autoScrollPostRowOption == AutoScrollPostRowOptionEnum.Off) {
       return;
     }
     if (postRow.posts.length > postsToShowInRow) {
+      handleMovePostRowRightButtonClick(postRow.uiPosts);
       autoScrollInterval.current = setInterval(() => {
-        const userFrontPageSortOption =
-          store.getState().appConfig.userFrontPagePostSortOrderOption;
         if (
           userFrontPageSortOption ==
           UserFrontPagePostSortOrderOptionsEnum.NotSelected
         ) {
-          handleMouseTouchMove(postCardWidth, true);
-          postContentMouseDownLastX.current = 0;
+          handleMovePostRowRightButtonClick(postRow.uiPosts);
         }
       }, 6000);
     }
   }, [
-    autoScrollPostRow,
-    postCardWidth,
+    autoScrollPostRowOption,
+    handleMovePostRowRightButtonClick,
     postRow.posts.length,
-    handleMouseTouchMove,
     postsToShowInRow,
+    userFrontPageSortOption,
   ]);
 
+  const createIntervalTimeout = useRef<NodeJS.Timeout | undefined>();
   useEffect(() => {
-    createAutoScrollInterval();
-    return () => clearInterval(autoScrollInterval.current);
-  }, [createAutoScrollInterval]);
-
-  useEffect(() => {
-    if (autoScrollInterval.current != undefined) {
+    if (createIntervalTimeout.current != undefined) {
+      clearTimeout(createIntervalTimeout.current);
+    }
+    if (autoScrollInterval != undefined) {
       clearInterval(autoScrollInterval.current);
     }
-    if (autoScrollPostRow) {
+
+    createIntervalTimeout.current = setTimeout(() => {
       createAutoScrollInterval();
-    }
-  }, [createAutoScrollInterval, autoScrollPostRow]);
+    }, 100);
+
+    return () => {
+      if (autoScrollInterval != undefined) {
+        clearInterval(autoScrollInterval.current);
+      }
+    };
+  }, [createAutoScrollInterval]);
+
   return (
     <div
       className="postRow"
@@ -115,6 +191,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
           getPlatform() == Platform.Web ||
           getPlatform() == Platform.Unknown
         ) {
+          setPostCardTransition(false);
           if (autoScrollInterval.current != undefined) {
             clearInterval(autoScrollInterval.current);
             autoScrollInterval.current = undefined;
@@ -129,6 +206,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
           getPlatform() == Platform.Web ||
           getPlatform() == Platform.Unknown
         ) {
+          setPostCardTransition(true);
           createAutoScrollInterval();
           dispatch(mouseLeavePostRow());
         }
@@ -159,19 +237,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
               postRow.posts.length > postsToShowInRow ? "visible" : "hidden",
           }}
           onClick={() => {
-            let movementDiff = postCardWidth * -1;
-            if (postRow.uiPostContentOffset < 0) {
-              movementDiff = postRow.uiPostContentOffset * -1 - postCardWidth;
-            } else if (postRow.uiPostContentOffset > 0) {
-              movementDiff = postRow.uiPostContentOffset * -1;
-            }
-
-            dispatch(
-              postRowMouseDownMoved({
-                postRowUuid: postRow.postRowUuid,
-                movementDiff: movementDiff,
-              })
-            );
+            handleMovePostRowLeftButtonClick();
           }}
         />
       </div>
@@ -191,14 +257,14 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
           div.focus();
         }}
         onKeyDown={(event) => {
-          mosueWheelPostRowScrollKeyDown.current = event.shiftKey;
+          mouseWheelPostRowScrollKeyDown.current = event.shiftKey;
         }}
         onKeyUp={() => {
-          mosueWheelPostRowScrollKeyDown.current = false;
+          mouseWheelPostRowScrollKeyDown.current = false;
         }}
         onWheel={(event) => {
           if (
-            mosueWheelPostRowScrollKeyDown.current &&
+            mouseWheelPostRowScrollKeyDown.current &&
             postRow.posts.length > postsToShowInRow
           ) {
             event.stopPropagation();
@@ -209,28 +275,31 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
               movementDiff = movementDiff * -1;
             }
             dispatch(
-              postRowMouseDownMoved({
+              movePostRow({
                 postRowUuid: postRow.postRowUuid,
                 movementDiff: movementDiff,
+                postsToShowInRow: postsToShowInRow,
               })
             );
           }
         }}
       >
-        {postRow.uiPosts.map((post, index) => (
+        {postRow.uiPosts.map((post) => (
           <div
             key={post.uiUuid}
-            className="postCard"
+            className={`post-card ${
+              postCardTransition &&
+              autoScrollPostRowOption ==
+                AutoScrollPostRowOptionEnum.SmoothContinuousScroll &&
+              userFrontPageSortOption !=
+                UserFrontPagePostSortOrderOptionsEnum.New
+                ? "post-card-transition"
+                : ""
+            }`}
             style={{
-              minWidth: `calc((100% - (10px * ${postsToShowInRow} ) )/${postsToShowInRow})`,
-              maxWidth: `calc((100% - (10px * ${postsToShowInRow} ) )/${postsToShowInRow})`,
-              left: `${
-                postCardWidth *
-                  (postRow.posts.length > postsToShowInRow
-                    ? index - 1
-                    : index) +
-                postRow.uiPostContentOffset
-              }px`,
+              minWidth: `${postCardWidth - 10}px`,
+              maxWidth: `${postCardWidth - 10}px`,
+              left: `${post.left}%`,
             }}
             onContextMenu={(event) => {
               event.preventDefault();
@@ -324,18 +393,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
           }
           className="postRowScrollImg"
           onClick={() => {
-            let movementDiff = postCardWidth;
-            if (postRow.uiPostContentOffset < 0) {
-              movementDiff = postRow.uiPostContentOffset * -1;
-            } else if (postRow.uiPostContentOffset > 0) {
-              movementDiff = postCardWidth - postRow.uiPostContentOffset;
-            }
-            dispatch(
-              postRowMouseDownMoved({
-                postRowUuid: postRow.postRowUuid,
-                movementDiff: movementDiff,
-              })
-            );
+            handleMovePostRowRightButtonClick(postRow.uiPosts);
           }}
           style={{
             visibility:

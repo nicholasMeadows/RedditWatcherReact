@@ -18,10 +18,10 @@ import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOr
 import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
 import { submitAppNotification } from "../redux/slice/AppNotificationSlice";
 import {
+  addPostsToFrontOfRow,
   createPostRowAndInsertAtBeginning,
   createPostRowAndPushToRows,
   postRowRemoveAt,
-  shiftPostsAndUiPosts,
 } from "../redux/slice/PostRowsSlice";
 import {
   addSubredditsToSubscribedList,
@@ -646,7 +646,7 @@ function applyUpdatedStateValues(
   }
   if (updatedValues.shiftPostsAndUiPosts != undefined) {
     store.dispatch(
-      shiftPostsAndUiPosts({
+      addPostsToFrontOfRow({
         ...updatedValues.shiftPostsAndUiPosts,
         postsToShowInRow: store.getState().appConfig.postsToShowInRow,
       })

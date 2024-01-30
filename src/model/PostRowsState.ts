@@ -8,4 +8,5 @@ export interface PostRowsState {
   clickedOnPlayPauseButton: boolean;
   getPostRowsPaused: boolean;
   postCardWidth: number;
+  postRowContentWidth: number;
 }

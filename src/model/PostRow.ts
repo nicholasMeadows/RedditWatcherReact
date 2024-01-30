@@ -4,6 +4,4 @@ export interface PostRow {
   postRowUuid: string;
   posts: Array<Post>;
   uiPosts: Array<UiPost>;
-  uiPostContentOffset: number;
-  postContentFirstPostIndex: number;
 }

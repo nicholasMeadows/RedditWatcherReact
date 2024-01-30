@@ -36,9 +36,11 @@ import store from "../store";
 import { clearPostRows } from "./PostRowsSlice";
 import { resetRedditClient } from "./RedditClientSlice";
 import { resetSubredditListsLoaded } from "./RedditListsSlice";
+import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 
 const defaultSubredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
-const defaultAutoScrollPostRow = true;
+const defaultAutoScrollPostRowOption =
+  AutoScrollPostRowOptionEnum.SmoothContinuousScroll;
 const defaultSelectedSubredditListSortOption =
   SelectedSubredditListSortOptionEnum.Alphabetically;
 const defaultRandomIterationSelectWeightOption =
@@ -255,7 +257,7 @@ const initialState: AppConfigState = {
     clientSecretValidationError: undefined,
   },
   subredditSortOrderOption: defaultSubredditSortOrderOption,
-  autoScrollPostRow: defaultAutoScrollPostRow,
+  autoScrollPostRowOption: defaultAutoScrollPostRowOption,
   selectedSubredditListSortOption: defaultSelectedSubredditListSortOption,
   randomIterationSelectWeightOption: defaultRandomIterationSelectWeightOption,
   selectSubredditListMenuSortOption: defaultSelectSubredditListMenuSortOption,
@@ -306,11 +308,8 @@ export const appConfigSlice = createSlice({
       state.subredditSortOrderOption = action.payload;
       saveConfig(state);
     },
-    setAutoScrollPostRow: (
-      state,
-      action: { type: string; payload: boolean }
-    ) => {
-      state.autoScrollPostRow = action.payload;
+    setAutoScrollPostRowOption: (state, action) => {
+      state.autoScrollPostRowOption = action.payload;
       saveConfig(state);
     },
     setSelectedSubredditListSortOption: (state, action) => {
@@ -465,7 +464,7 @@ export const appConfigSlice = createSlice({
       const incoming = action.payload as AppConfigState;
       state.redditCredentials = incoming.redditCredentials;
       state.subredditSortOrderOption = incoming.subredditSortOrderOption;
-      state.autoScrollPostRow = incoming.autoScrollPostRow;
+      state.autoScrollPostRowOption = incoming.autoScrollPostRowOption;
       state.selectedSubredditListSortOption =
         incoming.selectedSubredditListSortOption;
       state.randomIterationSelectWeightOption =
@@ -496,7 +495,7 @@ export const {
   setPassword,
   setUsername,
   setSubredditSortOrderOption,
-  setAutoScrollPostRow,
+  setAutoScrollPostRowOption,
   setSelectedSubredditListSortOption,
   setRandomIterationSelectWeightOption,
   setSelectSubredditListMenuSortOption,

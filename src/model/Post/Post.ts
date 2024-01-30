@@ -17,4 +17,5 @@ export interface Post {
 
 export interface UiPost extends Post {
   uiUuid: string;
+  left: number;
 }

@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  setPostCardWidth,
   setScrollY,
   toggleClickedOnPlayPauseButton,
 } from "../../redux/slice/PostRowsSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import PostRowView from "./PostRowView";
 import SideBar from "./SideBar";
-import { POST_ROW_SCROLL_BTN_WIDTH_EM } from "../../RedditWatcherConstants.ts";
 
 const PostRowCollectionView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -16,36 +14,12 @@ const PostRowCollectionView: React.FC = () => {
   const postRowsToShowInView = useAppSelector(
     (state) => state.appConfig.postRowsToShowInView
   );
-  const postsToShowInRow = useAppSelector(
-    (state) => state.appConfig.postsToShowInRow
-  );
 
   const getPostRowsPaused = useAppSelector(
     (state) => state.postRows.getPostRowsPaused
   );
   const postRowsDivRef = useRef(null);
   const [scrollBarWidth, setScrollBarWidth] = useState(0);
-
-  useEffect(() => {
-    const contentResizeObserver = new ResizeObserver(() => {
-      if (postRowsDivRef.current != undefined) {
-        const div = postRowsDivRef.current as unknown as HTMLDivElement;
-
-        const baseFontSize = parseFloat(getComputedStyle(div).fontSize);
-        dispatch(
-          setPostCardWidth(
-            (div.clientWidth -
-              baseFontSize * POST_ROW_SCROLL_BTN_WIDTH_EM * 2) /
-              postsToShowInRow
-          )
-        );
-      }
-    });
-    const div = postRowsDivRef.current;
-    if (div != undefined) {
-      contentResizeObserver.observe(div);
-    }
-  }, [postsToShowInRow]);
 
   useEffect(() => {
     const scrollDiv = postRowsDivRef.current as unknown as HTMLDivElement;
