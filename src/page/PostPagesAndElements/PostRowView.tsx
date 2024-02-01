@@ -3,7 +3,15 @@ import { useAppDispatch, useAppSelector } from "../../redux/store";
 import getPlatform from "../../util/PlatformUtil.ts";
 import { Platform } from "../../model/Platform.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
-import { MouseEvent, useCallback, useContext, useEffect, useRef } from "react";
+import {
+  KeyboardEvent,
+  MouseEvent,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  WheelEvent,
+} from "react";
 import {
   mouseEnterPostRow,
   mouseLeavePostRow,
@@ -53,8 +61,10 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
 
   const autoScrollPostInterval = useRef<NodeJS.Timeout>();
 
+  const rootPostRowDivRef = useRef(null);
   const postRowContentDivRef = useRef(null);
 
+  const mouseScrollModifierPressed = useRef(false);
   const postContentMouseDownLastX = useRef(0);
   const postContentMouseDownTotalX = useRef(0);
   const postContentMouseDown = useRef(false);
@@ -204,6 +214,10 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
       clearTimeout(restartAutoScrollIntervalTimeout.current);
       restartAutoScrollIntervalTimeout.current = undefined;
     }
+
+    const rootDiv = rootPostRowDivRef.current as unknown as HTMLDivElement;
+    rootDiv.tabIndex = 1;
+    rootDiv.focus();
   }, [dispatch, postRow.postRowUuid]);
 
   const handlePostRowMouseLeave = useCallback(() => {
@@ -222,6 +236,8 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
         createAutoScrollInterval();
       }, 3000);
     }
+    const rootDiv = rootPostRowDivRef.current as unknown as HTMLDivElement;
+    rootDiv.tabIndex = -1;
   }, [
     createAutoScrollInterval,
     dispatch,
@@ -230,6 +246,24 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     postsToShowInRow,
     postRow.userFrontPagePostSortOrderOptionAtRowCreation,
   ]);
+
+  const handlePostRowKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      mouseScrollModifierPressed.current = event.shiftKey;
+    },
+    []
+  );
+  const handlePostRowKeyUp = useCallback(() => {
+    mouseScrollModifierPressed.current = false;
+  }, []);
+
+  const handleMouseWheel = useCallback(
+    (event: WheelEvent<HTMLDivElement>) => {
+      handleMouseTouchMove(event.deltaY, mouseScrollModifierPressed.current);
+      handleMouseUpTouchEnd();
+    },
+    [handleMouseTouchMove, handleMouseUpTouchEnd]
+  );
 
   const stopPostCardTransition = useCallback(
     (uiPost: UiPost, event: MouseEvent<HTMLDivElement>) => {
@@ -271,10 +305,14 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
   return (
     <div
       className="postRow"
+      ref={rootPostRowDivRef}
       onMouseEnter={() => handlePostRowMouseEnter()}
       onMouseLeave={() => handlePostRowMouseLeave()}
       onTouchStart={() => handlePostRowMouseEnter()}
       onTouchEnd={() => handlePostRowMouseLeave()}
+      onKeyDown={(event) => handlePostRowKeyDown(event)}
+      onKeyUp={() => handlePostRowKeyUp()}
+      onWheel={(event) => handleMouseWheel(event)}
     >
       <div
         hidden={hideScrollButtonDivs()}
@@ -297,7 +335,11 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
           }}
         />
       </div>
-      <div className="postRowContent" ref={postRowContentDivRef}>
+      <div
+        className="postRowContent"
+        ref={postRowContentDivRef}
+        onMouseLeave={() => handleMouseUpTouchEnd()}
+      >
         {postRow.uiPosts.map((post) => (
           <div
             key={post.uiUuid}
