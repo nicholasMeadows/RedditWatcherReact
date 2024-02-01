@@ -7,6 +7,23 @@ import store from "../store.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { MAX_POSTS_PER_ROW } from "../../RedditWatcherConstants.ts";
 
+let mouseLeavePostRowDelayTimeout: NodeJS.Timeout | undefined;
+export const mouseLeavePostRow = createAsyncThunk(
+  "postRows/mouseLeavePostRow",
+  async () => {
+    if (mouseLeavePostRowDelayTimeout != undefined) {
+      clearTimeout(mouseLeavePostRowDelayTimeout);
+      mouseLeavePostRowDelayTimeout = undefined;
+    }
+
+    await new Promise<void>((resolve) => {
+      mouseLeavePostRowDelayTimeout = setTimeout(() => {
+        resolve();
+      }, 1000);
+    });
+  }
+);
+
 export const createPostRowAndInsertAtBeginning = createAsyncThunk(
   "postRows/createPostRowAndInsertAtBegining",
   async (data: Array<Post>) => {
@@ -212,6 +229,10 @@ export const postRowsSlice = createSlice({
       }
     },
     mouseEnterPostRow: (state, action: { type: string; payload: string }) => {
+      if (mouseLeavePostRowDelayTimeout != undefined) {
+        clearTimeout(mouseLeavePostRowDelayTimeout);
+        mouseLeavePostRowDelayTimeout = undefined;
+      }
       const foundPostRow = state.postRows.find(
         (postRow) => postRow.postRowUuid == action.payload
       );
@@ -222,20 +243,6 @@ export const postRowsSlice = createSlice({
         state,
         state.scrollY,
         action.payload,
-        state.clickedOnPlayPauseButton
-      );
-    },
-    mouseLeavePostRow: (state) => {
-      const foundPostRow = state.postRows.find(
-        (postRow) => postRow.postRowUuid == state.mouseOverPostRowUuid
-      );
-      if (foundPostRow != undefined) {
-        state.mouseOverPostRowUuid = undefined;
-      }
-      setGetPostRowsPaused(
-        state,
-        state.scrollY,
-        undefined,
         state.clickedOnPlayPauseButton
       );
     },
@@ -407,13 +414,28 @@ export const postRowsSlice = createSlice({
     },
   },
   extraReducers(builder) {
-    builder.addCase(
-      createPostRowAndInsertAtBeginning.fulfilled,
-      (state, action: { type: string; payload: PostRow }) => {
-        setPostRowsHasAtLeast1PostRow(state);
-        state.postRows.unshift(action.payload);
-      }
-    );
+    builder
+      .addCase(
+        createPostRowAndInsertAtBeginning.fulfilled,
+        (state, action: { type: string; payload: PostRow }) => {
+          setPostRowsHasAtLeast1PostRow(state);
+          state.postRows.unshift(action.payload);
+        }
+      )
+      .addCase(mouseLeavePostRow.fulfilled, (state) => {
+        const foundPostRow = state.postRows.find(
+          (postRow) => postRow.postRowUuid == state.mouseOverPostRowUuid
+        );
+        if (foundPostRow != undefined) {
+          state.mouseOverPostRowUuid = undefined;
+        }
+        setGetPostRowsPaused(
+          state,
+          state.scrollY,
+          undefined,
+          state.clickedOnPlayPauseButton
+        );
+      });
   },
 });
 
@@ -423,7 +445,6 @@ export const {
   incrementPostAttachment,
   decrementPostAttachment,
   mouseEnterPostRow,
-  mouseLeavePostRow,
   clearPostRows,
   toggleClickedOnPlayPauseButton,
   movePostRow,
