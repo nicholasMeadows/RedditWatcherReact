@@ -7,6 +7,6 @@ export interface PostRowsState {
   mouseOverPostRowUuid: string | undefined;
   clickedOnPlayPauseButton: boolean;
   getPostRowsPaused: boolean;
-  postCardWidth: number;
-  postRowContentWidth: number;
+  postCardWidthPercentage: number;
+  postRowContentWidthPx: number;
 }

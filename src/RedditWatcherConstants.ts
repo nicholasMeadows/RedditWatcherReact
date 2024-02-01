@@ -33,3 +33,6 @@ export const SINGLE_POST_PAGE_MAX_SCALE = 6;
 export const SINGLE_POST_PAGE_SCALE_STEP = 0.1;
 
 export const POST_ROW_SCROLL_BTN_WIDTH_EM = 3;
+
+export const POST_CARD_LEFT_MARGIN_EM = 0.6;
+export const POST_CARD_RIGHT_MARGIN_EM = 0.6;

@@ -4,8 +4,8 @@ import { Post, UiPost } from "../../model/Post/Post";
 import { PostRow } from "../../model/PostRow";
 import { PostRowsState } from "../../model/PostRowsState";
 import store from "../store.ts";
-import { MAX_POSTS_PER_ROW } from "../../RedditWatcherConstants.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
+import { MAX_POSTS_PER_ROW } from "../../RedditWatcherConstants.ts";
 
 export const createPostRowAndPushToRows = createAsyncThunk(
   "postRows/createPostRowAndPushToRows",
@@ -14,8 +14,8 @@ export const createPostRowAndPushToRows = createAsyncThunk(
     return createPostRow(
       data,
       state.appConfig.postsToShowInRow,
-      state.postRows.postCardWidth,
-      state.postRows.postRowContentWidth,
+      state.postRows.postCardWidthPercentage,
+      state.postRows.postRowContentWidthPx,
       state.appConfig.userFrontPagePostSortOrderOption
     );
   }
@@ -28,8 +28,8 @@ export const createPostRowAndInsertAtBeginning = createAsyncThunk(
     return createPostRow(
       data,
       state.appConfig.postsToShowInRow,
-      state.postRows.postCardWidth,
-      state.postRows.postRowContentWidth,
+      state.postRows.postCardWidthPercentage,
+      state.postRows.postRowContentWidthPx,
       state.appConfig.userFrontPagePostSortOrderOption
     );
   }
@@ -38,7 +38,7 @@ export const createPostRowAndInsertAtBeginning = createAsyncThunk(
 const createPostRow = (
   posts: Array<Post>,
   postsToShowInRow: number,
-  postCardWidth: number,
+  postCardWidthPercentage: number,
   postRowContentWidth: number,
   userFrontPageSortOption: UserFrontPagePostSortOrderOptionsEnum
 ): PostRow => {
@@ -58,7 +58,7 @@ const createPostRow = (
     postRow.uiPosts.push({
       ...postToUnshift,
       uiUuid: postToUnshift.postUuid + " " + uuidV4(),
-      left: calcUiPostLeft(-1, postCardWidth),
+      leftPercentage: -postCardWidthPercentage,
     });
   }
 
@@ -75,7 +75,7 @@ const createPostRow = (
     postRow.uiPosts.push({
       ...post,
       uiUuid: post.postUuid + "" + uuidV4(),
-      left: calcUiPostLeft(index, postCardWidth),
+      leftPercentage: calcUiPostLeft(index, postCardWidthPercentage),
     });
     postsRunningIndex++;
   }
@@ -91,14 +91,20 @@ const createPostRow = (
     postRow.uiPosts.push({
       ...postToPush,
       uiUuid: postToPush.postUuid + "" + uuidV4(),
-      left: calcUiPostLeft(postRow.uiPosts.length - 1, postCardWidth),
+      leftPercentage: calcUiPostLeft(
+        postRow.uiPosts.length - 1,
+        postCardWidthPercentage
+      ),
     });
   }
   return postRow;
 };
 
-const calcUiPostLeft = (uiPostIndex: number, postCardWidth: number) => {
-  return postCardWidth * uiPostIndex;
+const calcUiPostLeft = (
+  uiPostIndex: number,
+  postCardWidthPercentage: number
+) => {
+  return postCardWidthPercentage * uiPostIndex;
 };
 
 const setPostRowsHasAtLeast1PostRow = (state: PostRowsState) => {
@@ -126,8 +132,8 @@ const initialState: PostRowsState = {
   mouseOverPostRowUuid: undefined,
   clickedOnPlayPauseButton: false,
   getPostRowsPaused: false,
-  postCardWidth: 0,
-  postRowContentWidth: 0,
+  postCardWidthPercentage: 0,
+  postRowContentWidthPx: 0,
 };
 export const postRowsSlice = createSlice({
   name: "postRows",
@@ -177,7 +183,7 @@ export const postRowsSlice = createSlice({
           postRow.uiPosts[uiPostIndex] = {
             ...post,
             uiUuid: uiPost.uiUuid,
-            left: uiPost.left,
+            leftPercentage: uiPost.leftPercentage,
           };
         }
       }
@@ -213,7 +219,7 @@ export const postRowsSlice = createSlice({
           postRow.uiPosts[uiPostIndex] = {
             ...post,
             uiUuid: uiPost.uiUuid,
-            left: uiPost.left,
+            leftPercentage: uiPost.leftPercentage,
           };
         }
       }
@@ -266,7 +272,7 @@ export const postRowsSlice = createSlice({
         type: string;
         payload: {
           postRowUuid: string;
-          movementDiff: number;
+          movementDiffPx: number;
           postsToShowInRow: number;
         };
       }
@@ -279,28 +285,24 @@ export const postRowsSlice = createSlice({
         return;
       }
 
-      // const postCardWidthPercentage =
-      //   (state.postCardWidth / state.postRowContentWidth) * 100;
-
       postRow.uiPosts = postRow.uiPosts.filter((post) => {
         if (
-          post.left + state.postCardWidth > -state.postCardWidth &&
-          post.left < state.postRowContentWidth + state.postCardWidth
+          post.leftPercentage + state.postCardWidthPercentage >
+            -state.postCardWidthPercentage &&
+          post.leftPercentage < 100 + state.postCardWidthPercentage
         ) {
           return post;
         }
       });
-
-      const movementDiff = action.payload.movementDiff;
-      // const percentDelta = (movementDiff / state.postRowContentWidth) * 100;
+      const movementDiffPx = action.payload.movementDiffPx;
+      const movementDiffPercent =
+        (movementDiffPx / state.postRowContentWidthPx) * 100;
       postRow.uiPosts.forEach((post) => {
-        post.left += movementDiff;
+        post.leftPercentage += movementDiffPercent;
       });
-
-      const firstUiPost = postRow.uiPosts[0];
-      if (movementDiff < 0) {
+      if (movementDiffPx < 0) {
         const lastUiPost = postRow.uiPosts[postRow.uiPosts.length - 1];
-        if (lastUiPost.left < state.postRowContentWidth) {
+        if (lastUiPost.leftPercentage < 100) {
           const lastUiPostIndex = postRow.posts.findIndex(
             (post) => post.postUuid == lastUiPost.postUuid
           );
@@ -317,15 +319,13 @@ export const postRowsSlice = createSlice({
           postRow.uiPosts.push({
             ...postToPush,
             uiUuid: postToPush.postUuid + " " + uuidV4(),
-            left:
-              lastUiPost.left +
-              state.postCardWidth *
-                (postRow.postRowContentWidthAtCreation /
-                  state.postRowContentWidth),
+            leftPercentage:
+              lastUiPost.leftPercentage + state.postCardWidthPercentage,
           });
         }
-      } else if (movementDiff > 0) {
-        if (firstUiPost.left + state.postCardWidth >= 0) {
+      } else if (movementDiffPx > 0) {
+        const firstUiPost = postRow.uiPosts[0];
+        if (firstUiPost.leftPercentage + state.postCardWidthPercentage >= 0) {
           const firstUiPostIndex = postRow.posts.findIndex(
             (post) => post.postUuid == firstUiPost.postUuid
           );
@@ -342,11 +342,8 @@ export const postRowsSlice = createSlice({
           postRow.uiPosts.unshift({
             ...postToUnShift,
             uiUuid: postToUnShift.postUuid + " " + uuidV4(),
-            left:
-              firstUiPost.left -
-              state.postCardWidth *
-                (postRow.postRowContentWidthAtCreation /
-                  state.postRowContentWidth),
+            leftPercentage:
+              firstUiPost.leftPercentage - state.postCardWidthPercentage,
           });
         }
       }
@@ -394,55 +391,32 @@ export const postRowsSlice = createSlice({
           updatedUiPosts.push({
             ...postToPush,
             uiUuid: `${postToPush.postUuid}-${uuidV4()}`,
-            left: 0,
+            leftPercentage: 0,
           });
         }
         runningPostIndex++;
       }
 
       updatedUiPosts.forEach((uiPost, index) => {
-        uiPost.left = calcUiPostLeft(index - 2, state.postCardWidth);
+        uiPost.leftPercentage = calcUiPostLeft(
+          index - 1,
+          state.postCardWidthPercentage
+        );
       });
 
       postRow.uiPosts = updatedUiPosts;
     },
-    setPostCardWidth: (state, action: { type: string; payload: number }) => {
-      state.postCardWidth = action.payload;
-    },
-    setPostRowContentWidth: (
+    setPostCardWidthPercentage: (
       state,
       action: { type: string; payload: number }
     ) => {
-      state.postRowContentWidth = action.payload;
+      state.postCardWidthPercentage = action.payload;
     },
-    stopSmoothPostTransition: (
+    setPostRowContentWidthPx: (
       state,
-      action: {
-        type: string;
-        payload: {
-          postRowUuid: string;
-          secondPostCardPxLeft: number;
-        };
-      }
+      action: { type: string; payload: number }
     ) => {
-      const postRowUuid = action.payload.postRowUuid;
-      const postRow = state.postRows.find(
-        (row) => row.postRowUuid == postRowUuid
-      );
-      if (postRow == undefined) {
-        return;
-      }
-      const secondPostCardPxLeft = action.payload.secondPostCardPxLeft;
-      postRow.uiPosts.forEach((uiPost, index) => {
-        const scaleFactor =
-          postRow.postRowContentWidthAtCreation / state.postRowContentWidth;
-        uiPost.left =
-          secondPostCardPxLeft +
-          (index - 1) * state.postCardWidth * scaleFactor;
-        // (state.postCardWidth *
-        //   (postRow.postRowContentWidthAtCreation /
-        //     state.postRowContentWidth));
-      });
+      state.postRowContentWidthPx = action.payload;
     },
   },
   extraReducers(builder) {
@@ -474,9 +448,8 @@ export const {
   clearPostRows,
   toggleClickedOnPlayPauseButton,
   movePostRow,
-  setPostCardWidth,
-  setPostRowContentWidth,
+  setPostCardWidthPercentage,
+  setPostRowContentWidthPx,
   addPostsToFrontOfRow,
-  stopSmoothPostTransition,
 } = postRowsSlice.actions;
 export default postRowsSlice.reducer;
