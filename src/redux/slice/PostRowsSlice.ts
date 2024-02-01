@@ -34,6 +34,7 @@ const createPostRow = (
     posts: posts,
     uiPosts: [],
     postRowContentWidthAtCreation: postRowContentWidth,
+    userFrontPagePostSortOrderOptionAtRowCreation: userFrontPageSortOption,
   };
 
   if (

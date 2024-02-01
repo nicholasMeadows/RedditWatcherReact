@@ -45,10 +45,6 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     (state) => state.postRows.mouseOverPostRowUuid
   );
 
-  const userFrontPageSortOption = useAppSelector(
-    (state) => state.appConfig.userFrontPagePostSortOrderOption
-  );
-
   const autoScrollPostRowOption = useAppSelector(
     (state) => state.appConfig.autoScrollPostRowOption
   );
@@ -152,7 +148,8 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     }
     if (
       postRow.posts.length <= postsToShowInRow ||
-      userFrontPageSortOption == UserFrontPagePostSortOrderOptionsEnum.New ||
+      postRow.userFrontPagePostSortOrderOptionAtRowCreation ==
+        UserFrontPagePostSortOrderOptionsEnum.New ||
       autoScrollPostRowOption == AutoScrollPostRowOptionEnum.Off
     ) {
       return;
@@ -166,7 +163,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     handleMovePostRowRightButtonClick,
     postRow.posts.length,
     postsToShowInRow,
-    userFrontPageSortOption,
+    postRow.userFrontPagePostSortOrderOptionAtRowCreation,
   ]);
 
   useEffect(() => {
@@ -179,7 +176,8 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
         if (
           autoScrollPostRowOption ==
             AutoScrollPostRowOptionEnum.SmoothContinuousScroll &&
-          userFrontPageSortOption != UserFrontPagePostSortOrderOptionsEnum.New
+          postRow.userFrontPagePostSortOrderOptionAtRowCreation !=
+            UserFrontPagePostSortOrderOptionsEnum.New
         ) {
           handleMovePostRowRightButtonClick();
         }
@@ -216,7 +214,8 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     }
     if (
       postRow.posts.length > postsToShowInRow &&
-      userFrontPageSortOption != UserFrontPagePostSortOrderOptionsEnum.New
+      postRow.userFrontPagePostSortOrderOptionAtRowCreation !=
+        UserFrontPagePostSortOrderOptionsEnum.New
     ) {
       restartAutoScrollIntervalTimeout.current = setTimeout(() => {
         handleMovePostRowRightButtonClick();
@@ -229,7 +228,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
     handleMovePostRowRightButtonClick,
     postRow.posts.length,
     postsToShowInRow,
-    userFrontPageSortOption,
+    postRow.userFrontPagePostSortOrderOptionAtRowCreation,
   ]);
 
   const stopPostCardTransition = useCallback(
@@ -309,7 +308,7 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
               left: `${post.leftPercentage}%`,
               transition: `${
                 mouseOverPostRowUuid == postRow.postRowUuid ||
-                userFrontPageSortOption ==
+                postRow.userFrontPagePostSortOrderOptionAtRowCreation ==
                   UserFrontPagePostSortOrderOptionsEnum.New ||
                 autoScrollPostRowOption ==
                   AutoScrollPostRowOptionEnum.ScrollByPostWidth
