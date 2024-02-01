@@ -7,20 +7,6 @@ import store from "../store.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { MAX_POSTS_PER_ROW } from "../../RedditWatcherConstants.ts";
 
-export const createPostRowAndPushToRows = createAsyncThunk(
-  "postRows/createPostRowAndPushToRows",
-  async (data: Array<Post>) => {
-    const state = store.getState();
-    return createPostRow(
-      data,
-      state.appConfig.postsToShowInRow,
-      state.postRows.postCardWidthPercentage,
-      state.postRows.postRowContentWidthPx,
-      state.appConfig.userFrontPagePostSortOrderOption
-    );
-  }
-);
-
 export const createPostRowAndInsertAtBeginning = createAsyncThunk(
   "postRows/createPostRowAndInsertAtBegining",
   async (data: Array<Post>) => {
@@ -420,21 +406,13 @@ export const postRowsSlice = createSlice({
     },
   },
   extraReducers(builder) {
-    builder
-      .addCase(
-        createPostRowAndPushToRows.fulfilled,
-        (state, action: { type: string; payload: PostRow }) => {
-          setPostRowsHasAtLeast1PostRow(state);
-          state.postRows.push(action.payload);
-        }
-      )
-      .addCase(
-        createPostRowAndInsertAtBeginning.fulfilled,
-        (state, action: { type: string; payload: PostRow }) => {
-          setPostRowsHasAtLeast1PostRow(state);
-          state.postRows.unshift(action.payload);
-        }
-      );
+    builder.addCase(
+      createPostRowAndInsertAtBeginning.fulfilled,
+      (state, action: { type: string; payload: PostRow }) => {
+        setPostRowsHasAtLeast1PostRow(state);
+        state.postRows.unshift(action.payload);
+      }
+    );
   },
 });
 

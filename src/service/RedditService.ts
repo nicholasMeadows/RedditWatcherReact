@@ -20,7 +20,6 @@ import { submitAppNotification } from "../redux/slice/AppNotificationSlice";
 import {
   addPostsToFrontOfRow,
   createPostRowAndInsertAtBeginning,
-  createPostRowAndPushToRows,
   postRowRemoveAt,
 } from "../redux/slice/PostRowsSlice";
 import {
@@ -474,7 +473,6 @@ function addPostRow(
   const postRows = getPostsFromSubredditsState.postRows;
   const lastPostRowWasSortOrderNew =
     getPostsFromSubredditsState.lastPostRowWasSortOrderNew;
-  // ShowHidLoadingSpinner(false);
 
   if (posts.length == 0) {
     let msg = `Got 0 posts. Trying again in a little bit.`;
@@ -494,39 +492,32 @@ function addPostRow(
   }
 
   posts = sortPostsByCreate(posts);
-  if (postRows.length == 0) {
-    getPostsFromSubredditsState.getPostsUpdatedValues.createPostRowAndPushToRows =
-      posts;
-    // store.dispatch(createPostRowAndPushToRows(posts));
-  } else {
-    if (lastPostRowWasSortOrderNew) {
-      const postsAlreadyInViewModel = postRows[0].posts;
-      const postsToAddToViewModel = new Array<Post>();
+  if (lastPostRowWasSortOrderNew) {
+    const postsAlreadyInViewModel = postRows[0].posts;
+    const postsToAddToViewModel = new Array<Post>();
 
-      for (const post of posts) {
-        const foundPosts = postsAlreadyInViewModel.filter(
-          (p) => p.postId == post.postId
-        );
+    for (const post of posts) {
+      const foundPosts = postsAlreadyInViewModel.filter(
+        (p) => p.postId == post.postId
+      );
 
-        if (foundPosts.length == 0) {
-          postsToAddToViewModel.push(post);
-        } else {
-          break;
-        }
+      if (foundPosts.length == 0) {
+        postsToAddToViewModel.push(post);
+      } else {
+        break;
       }
-
-      if (postsToAddToViewModel.length > 0) {
-        const postRowUuid = postRows[0].postRowUuid;
-        getPostsFromSubredditsState.getPostsUpdatedValues.shiftPostsAndUiPosts =
-          {
-            postRowUuid: postRowUuid,
-            posts: postsToAddToViewModel,
-          };
-      }
-    } else {
-      getPostsFromSubredditsState.getPostsUpdatedValues.createPostRowAndPushToRows =
-        posts;
     }
+
+    if (postsToAddToViewModel.length > 0) {
+      const postRowUuid = postRows[0].postRowUuid;
+      getPostsFromSubredditsState.getPostsUpdatedValues.shiftPostsAndUiPosts = {
+        postRowUuid: postRowUuid,
+        posts: postsToAddToViewModel,
+      };
+    }
+  } else {
+    getPostsFromSubredditsState.getPostsUpdatedValues.createPostRowAndInsertAtBeginning =
+      posts;
   }
   getPostsFromSubredditsState.getPostsUpdatedValues.lastPostRowWasSortOrderNew =
     true;
@@ -637,11 +628,6 @@ function applyUpdatedStateValues(
       createPostRowAndInsertAtBeginning(
         updatedValues.createPostRowAndInsertAtBeginning
       )
-    );
-  }
-  if (updatedValues.createPostRowAndPushToRows != undefined) {
-    store.dispatch(
-      createPostRowAndPushToRows(updatedValues.createPostRowAndPushToRows)
     );
   }
   if (updatedValues.shiftPostsAndUiPosts != undefined) {

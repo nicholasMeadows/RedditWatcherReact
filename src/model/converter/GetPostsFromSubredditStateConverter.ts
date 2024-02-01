@@ -48,7 +48,6 @@ export type GetPostsUpdatedValues = {
   nsfwRedditListIndex: number | undefined;
   lastPostRowWasSortOrderNew: boolean | undefined;
   createPostRowAndInsertAtBeginning: Array<Post> | undefined;
-  createPostRowAndPushToRows: Array<Post> | undefined;
   shiftPostsAndUiPosts: { postRowUuid: string; posts: Array<Post> } | undefined;
 };
 
@@ -92,7 +91,6 @@ export class GetPostsFromSubredditStateConverter {
         nsfwRedditListIndex: undefined,
         lastPostRowWasSortOrderNew: undefined,
         createPostRowAndInsertAtBeginning: undefined,
-        createPostRowAndPushToRows: undefined,
         shiftPostsAndUiPosts: undefined,
       },
     };
