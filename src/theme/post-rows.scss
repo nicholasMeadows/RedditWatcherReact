@@ -69,11 +69,14 @@
   flex-direction: column;
   border-radius: 1em;
   position: relative;
+  overflow: hidden;
 }
 
 .postCardHeader {
   flex-shrink: 1;
   flex-grow: 0;
+  max-width: 100%;
+  word-wrap: anywhere;
 }
 
 .postCardHeaderText {
