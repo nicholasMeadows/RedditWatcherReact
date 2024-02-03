@@ -25,7 +25,9 @@ export const searchReddit = createAsyncThunk(
 export const subOrUnSubFromSubreddit = createAsyncThunk(
   "redditSearch/subOrUnSubFromSubreddit",
   async (subredditSearchResult: SubredditAccountSearchResult) => {
-    const name = subredditSearchResult.displayName;
+    const name = subredditSearchResult.isUser
+      ? subredditSearchResult.displayNamePrefixed
+      : subredditSearchResult.displayName;
     if (subredditSearchResult.isSubscribed) {
       await unsubscribe(name);
     } else {
