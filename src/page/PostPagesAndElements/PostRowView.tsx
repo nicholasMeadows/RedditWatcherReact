@@ -5,7 +5,6 @@ import { Platform } from "../../model/Platform.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
 import {
   KeyboardEvent,
-  MouseEvent,
   useCallback,
   useContext,
   useEffect,
@@ -266,11 +265,10 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
   );
 
   const stopPostCardTransition = useCallback(
-    (uiPost: UiPost, event: MouseEvent<HTMLDivElement>) => {
+    (uiPost: UiPost, postCardDiv: HTMLDivElement) => {
       const marginLeft = fontSize * POST_CARD_LEFT_MARGIN_EM;
       const postRowContentDiv =
         postRowContentDivRef.current as unknown as HTMLDivElement;
-      const postCardDiv = event.currentTarget as HTMLDivElement;
 
       const currentPostCardLeftPx =
         postCardDiv.getBoundingClientRect().left -
@@ -363,6 +361,10 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
               className={"post-card-inner"}
               onTouchStart={(event) => {
                 handleMouseDownTouchStart(event.touches[0].clientX);
+                stopPostCardTransition(
+                  post,
+                  event.currentTarget as HTMLDivElement
+                );
               }}
               onTouchEnd={() => {
                 handleMouseUpTouchEnd();
@@ -416,7 +418,10 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
               onMouseEnter={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                stopPostCardTransition(post, event);
+                stopPostCardTransition(
+                  post,
+                  event.currentTarget as HTMLDivElement
+                );
               }}
             >
               <div className="postCardHeader">
