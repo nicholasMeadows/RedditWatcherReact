@@ -100,7 +100,7 @@ export const redditClientSlice = createSlice({
       state,
       action: { type: string; payload: Subreddit }
     ) => {
-      const subreddit = action.payload;
+      const subreddit = { ...action.payload };
       if (
         subreddit.displayNamePrefixed.startsWith("u/") &&
         !subreddit.displayName.startsWith("u_")
