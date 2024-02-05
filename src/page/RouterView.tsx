@@ -24,8 +24,8 @@ import ContextMenu from "./ContextMenu";
 import ModifySubredditLists from "./ModifySubredditListsPagesAndElements/ModifySubredditLists";
 import ModifySubredditQueue from "./ModifySubredditQueue";
 import NavigationHamburgerMenu from "./NavigationHamburgerMenu.tsx";
-import PostRowCollectionView from "./PostPagesAndElements/PostRowCollectionView";
-import SinglePostView from "./PostPagesAndElements/SinglePostView";
+import PostRowPage from "./PostRowsPage/PostRowPage.tsx";
+import SinglePostView from "./SinglePostView.tsx";
 import RedditPostSettings from "./SettingsPages/RedditPostSettings";
 import RedditSignIn from "./SettingsPages/RedditSignIn.tsx";
 import RedditWatcherSettings from "./SettingsPages/RedditWatcherSettings";
@@ -154,7 +154,7 @@ const RouterView: React.FC = () => {
               element={<AppInitialization />}
             />
             <Route path={REDDIT_SIGN_IN_ROUTE} element={<RedditSignIn />} />
-            <Route path={POST_ROW_ROUTE} element={<PostRowCollectionView />} />
+            <Route path={POST_ROW_ROUTE} element={<PostRowPage />} />
             <Route
               path={REDDIT_POST_SETTINGS_ROUTE}
               element={<RedditPostSettings />}

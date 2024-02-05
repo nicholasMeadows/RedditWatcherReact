@@ -1,7 +1,7 @@
 import React, { MouseEvent, useCallback, useEffect, useRef } from "react";
-import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../../RedditWatcherConstants";
-import SideBarSubredditMenuEvent from "../../model/Events/SideBarSubredditMenuEvent";
-import { setSideBarSubredditMenuEvent } from "../../redux/slice/ContextMenuSlice";
+import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../RedditWatcherConstants.ts";
+import SideBarSubredditMenuEvent from "../model/Events/SideBarSubredditMenuEvent.ts";
+import { setSideBarSubredditMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import {
   decreaseTimeTillNextGetPostsSeconds,
   setListToFilterByUuid,
@@ -12,9 +12,9 @@ import {
   setSideBarButtonMoved,
   setSideBarOpen,
   subredditListsUpdated,
-} from "../../redux/slice/SideBarSlice";
-import { useAppDispatch, useAppSelector } from "../../redux/store";
-import SearchRedditBar from "../ModifySubredditListsPagesAndElements/SearchRedditBar";
+} from "../redux/slice/SideBarSlice.ts";
+import { useAppDispatch, useAppSelector } from "../redux/store.ts";
+import SearchRedditBar from "./ModifySubredditListsPagesAndElements/SearchRedditBar.tsx";
 
 const SideBar: React.FC = () => {
   const dispatch = useAppDispatch();

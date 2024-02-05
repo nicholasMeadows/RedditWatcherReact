@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import {
   setScrollY,
   toggleClickedOnPlayPauseButton,
-} from "../../redux/slice/PostRowsSlice";
-import { useAppDispatch, useAppSelector } from "../../redux/store";
-import PostRowView from "./PostRowView";
-import SideBar from "./SideBar";
+} from "../../redux/slice/PostRowsSlice.ts";
+import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
+import PostRow from "./PostRow.tsx";
+import SideBar from "../SideBar.tsx";
 
-const PostRowCollectionView: React.FC = () => {
+const PostRowPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const postRows = useAppSelector((state) => state.postRows.postRows);
 
@@ -66,7 +66,7 @@ const PostRowCollectionView: React.FC = () => {
               maxHeight: `calc(100%/${postRowsToShowInView})`,
             }}
           >
-            <PostRowView postRow={postRow} />
+            <PostRow postRow={postRow} />
           </div>
         ))}
       </div>
@@ -84,4 +84,4 @@ const PostRowCollectionView: React.FC = () => {
   );
 };
 
-export default PostRowCollectionView;
+export default PostRowPage;

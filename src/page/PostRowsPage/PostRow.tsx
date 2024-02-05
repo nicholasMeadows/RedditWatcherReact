@@ -1,5 +1,5 @@
-import { PostRow } from "../../model/PostRow";
-import { useAppDispatch, useAppSelector } from "../../redux/store";
+import { PostRow } from "../../model/PostRow.ts";
+import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import getPlatform from "../../util/PlatformUtil.ts";
 import { Platform } from "../../model/Platform.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
@@ -30,7 +30,7 @@ import { UiPost } from "../../model/Post/Post.ts";
 import { RootFontSizeContext } from "../Context.ts";
 
 type Props = { postRow: PostRow };
-const PostRowView: React.FC<Props> = ({ postRow }) => {
+const PostRow: React.FC<Props> = ({ postRow }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
@@ -480,4 +480,4 @@ const PostRowView: React.FC<Props> = ({ postRow }) => {
   );
 };
 
-export default PostRowView;
+export default PostRow;

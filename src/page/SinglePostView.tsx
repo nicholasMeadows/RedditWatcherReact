@@ -3,18 +3,18 @@ import {
   SINGLE_POST_PAGE_MAX_SCALE,
   SINGLE_POST_PAGE_MIN_SCALE,
   SINGLE_POST_PAGE_SCALE_STEP,
-} from "../../RedditWatcherConstants";
-import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent";
-import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
+} from "../RedditWatcherConstants.ts";
+import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
+import { setPostContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import {
   goToNexPostInRow,
   goToPreviousPostInRow,
   setImgScale,
   setImgXPercentage,
   setImgYPercentage,
-} from "../../redux/slice/SinglePostPageSlice";
-import { useAppDispatch, useAppSelector } from "../../redux/store";
-import PostMediaElement from "./PostMediaElement.tsx";
+} from "../redux/slice/SinglePostPageSlice.ts";
+import { useAppDispatch, useAppSelector } from "../redux/store.ts";
+import PostMediaElement from "./PostRowsPage/PostMediaElement.tsx";
 
 const SinglePostView: React.FC = () => {
   const dispatch = useAppDispatch();

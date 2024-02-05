@@ -7,12 +7,12 @@ import React, {
   useState,
   WheelEventHandler,
 } from "react";
-import { Post } from "../../model/Post/Post";
+import { Post } from "../../model/Post/Post.ts";
 import {
   decrementPostAttachment,
   incrementPostAttachment,
-} from "../../redux/slice/PostRowsSlice";
-import { useAppDispatch } from "../../redux/store";
+} from "../../redux/slice/PostRowsSlice.ts";
+import { useAppDispatch } from "../../redux/store.ts";
 
 type Props = {
   postRowUuid: string;
