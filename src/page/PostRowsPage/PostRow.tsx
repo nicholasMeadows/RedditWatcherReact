@@ -2,9 +2,10 @@ import { PostRow } from "../../model/PostRow.ts";
 import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import getPlatform from "../../util/PlatformUtil.ts";
 import { Platform } from "../../model/Platform.ts";
-import PostMediaElement from "./PostMediaElement.tsx";
 import {
+  FC,
   KeyboardEvent,
+  MouseEvent,
   useCallback,
   useContext,
   useEffect,
@@ -16,23 +17,16 @@ import {
   mouseLeavePostRow,
   movePostRow,
 } from "../../redux/slice/PostRowsSlice.ts";
-import { useNavigate } from "react-router-dom";
-import { setPostAndRowUuid } from "../../redux/slice/SinglePostPageSlice.ts";
-import {
-  POST_CARD_LEFT_MARGIN_EM,
-  SINGPLE_POST_ROUTE,
-} from "../../RedditWatcherConstants.ts";
-import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice.ts";
-import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent.ts";
+import { POST_CARD_LEFT_MARGIN_EM } from "../../RedditWatcherConstants.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { UiPost } from "../../model/Post/Post.ts";
-import { RootFontSizeContext } from "../Context.ts";
+import { PostCardContext, RootFontSizeContext } from "../Context.ts";
+import PostCard from "./PostCard.tsx";
 
 type Props = { postRow: PostRow };
-const PostRow: React.FC<Props> = ({ postRow }) => {
+const PostRow: FC<Props> = ({ postRow }) => {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
 
   const { fontSize } = useContext(RootFontSizeContext);
@@ -46,10 +40,6 @@ const PostRow: React.FC<Props> = ({ postRow }) => {
 
   const postRowContentWidthPx = useAppSelector(
     (state) => state.postRows.postRowContentWidthPx
-  );
-
-  const mouseOverPostRowUuid = useAppSelector(
-    (state) => state.postRows.mouseOverPostRowUuid
   );
 
   const autoScrollPostRowOption = useAppSelector(
@@ -79,8 +69,11 @@ const PostRow: React.FC<Props> = ({ postRow }) => {
   }, []);
 
   const handleMouseTouchMove = useCallback(
-    (clientX: number, postContentMouseDown: boolean) => {
-      if (!postContentMouseDown || postRow.posts.length <= postsToShowInRow) {
+    (clientX: number, postContentMouseDownOverride = false) => {
+      if (
+        (!postContentMouseDownOverride && !postContentMouseDown.current) ||
+        postRow.posts.length <= postsToShowInRow
+      ) {
         return;
       }
       const diff = clientX - postContentMouseDownLastX.current;
@@ -258,7 +251,7 @@ const PostRow: React.FC<Props> = ({ postRow }) => {
 
   const handleMouseWheel = useCallback(
     (event: WheelEvent<HTMLDivElement>) => {
-      handleMouseTouchMove(event.deltaY, mouseScrollModifierPressed.current);
+      handleMouseTouchMove(event.deltaY, true);
       handleMouseUpTouchEnd();
     },
     [handleMouseTouchMove, handleMouseUpTouchEnd]
@@ -279,6 +272,7 @@ const PostRow: React.FC<Props> = ({ postRow }) => {
       const targetUiPostLeftPx =
         targetUiPostLeftPercentage * 0.01 * postRowContentWidthPx;
 
+      console.log(currentPostCardLeftPx - targetUiPostLeftPx);
       dispatch(
         movePostRow({
           postRowUuid: postRow.postRowUuid,
@@ -299,6 +293,23 @@ const PostRow: React.FC<Props> = ({ postRow }) => {
   const hideScrollButtonDivs = () => {
     return getPlatform() == Platform.Android || getPlatform() == Platform.Ios;
   };
+
+  const handlePostCardClickCapture = useCallback((event: MouseEvent) => {
+    if (postContentMouseDownTotalX.current > 50) {
+      console.log("Preventing default");
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, []);
+
+  const handleOnMouseEnter = useCallback(
+    (event: MouseEvent, uiPost: UiPost) => {
+      event.preventDefault();
+      event.stopPropagation();
+      stopPostCardTransition(uiPost, event.currentTarget as HTMLDivElement);
+    },
+    [stopPostCardTransition]
+  );
 
   return (
     <div
@@ -338,121 +349,24 @@ const PostRow: React.FC<Props> = ({ postRow }) => {
         ref={postRowContentDivRef}
         onMouseLeave={() => handleMouseUpTouchEnd()}
       >
-        {postRow.uiPosts.map((post) => (
-          <div
-            key={post.uiUuid}
-            className={`post-card-outer`}
-            style={{
-              minWidth: `${postCardWidthPercentage}%`,
-              maxWidth: `${postCardWidthPercentage}%`,
-              left: `${post.leftPercentage}%`,
-              transition: `${
-                mouseOverPostRowUuid == postRow.postRowUuid ||
-                postRow.userFrontPagePostSortOrderOptionAtRowCreation ==
-                  UserFrontPagePostSortOrderOptionsEnum.New ||
-                autoScrollPostRowOption ==
-                  AutoScrollPostRowOptionEnum.ScrollByPostWidth
-                  ? "none"
-                  : "left 6000ms linear"
-              }`,
+        {postRow.uiPosts.map((uiPost) => (
+          <PostCardContext.Provider
+            value={{
+              uiPost: uiPost,
+              postRowUuid: postRow.postRowUuid,
+              userFrontPagePostSortOrderOptionAtRowCreation:
+                postRow.userFrontPagePostSortOrderOptionAtRowCreation,
+              handleMouseDownTouchStart: handleMouseDownTouchStart,
+              stopPostCardTransition: stopPostCardTransition,
+              handleMouseUpTouchEnd: handleMouseUpTouchEnd,
+              handleMouseTouchMove: handleMouseTouchMove,
+              handlePostCardClickCapture: handlePostCardClickCapture,
+              handleOnMouseEnter: handleOnMouseEnter,
             }}
+            key={uiPost.uiUuid}
           >
-            <div
-              className={"post-card-inner"}
-              onTouchStart={(event) => {
-                handleMouseDownTouchStart(event.touches[0].clientX);
-                stopPostCardTransition(
-                  post,
-                  event.currentTarget as HTMLDivElement
-                );
-              }}
-              onTouchEnd={() => {
-                handleMouseUpTouchEnd();
-              }}
-              onTouchMove={(event) => {
-                handleMouseTouchMove(
-                  event.touches[0].clientX,
-                  postContentMouseDown.current
-                );
-              }}
-              onMouseDown={(event) => {
-                handleMouseDownTouchStart(event.clientX);
-              }}
-              onMouseUp={() => {
-                handleMouseUpTouchEnd();
-              }}
-              onMouseMove={(event) => {
-                handleMouseTouchMove(
-                  event.clientX,
-                  postContentMouseDown.current
-                );
-              }}
-              onContextMenu={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                const postContextMenuEvent: PostContextMenuEvent = {
-                  post: post,
-                  x: event.clientX,
-                  y: event.clientY,
-                };
-                dispatch(
-                  setPostContextMenuEvent({ event: postContextMenuEvent })
-                );
-              }}
-              onClick={() => {
-                dispatch(
-                  setPostAndRowUuid({
-                    postRowUuid: postRow.postRowUuid,
-                    postUuid: post.postUuid,
-                  })
-                );
-                navigate(`${SINGPLE_POST_ROUTE}`);
-              }}
-              onClickCapture={(event) => {
-                if (postContentMouseDownTotalX.current > 50) {
-                  console.log("Preventing default");
-                  event.preventDefault();
-                  event.stopPropagation();
-                }
-              }}
-              onMouseEnter={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                stopPostCardTransition(
-                  post,
-                  event.currentTarget as HTMLDivElement
-                );
-              }}
-            >
-              <div className="postCardHeader">
-                <p className="postCardHeaderText">{`${
-                  post.subreddit.displayName
-                }${post.attachments.length > 1 ? " (Gallery)" : ""}`}</p>
-                {post.subreddit.fromList.length > 0 && (
-                  <p className="postCardHeaderText">{`From List: ${post.subreddit.fromList}`}</p>
-                )}
-                <p className="postCardHeaderText">
-                  {new Date(post.created * 1000).toLocaleDateString("en-us", {
-                    month: "long",
-                    day: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-                {!post.subreddit.displayName.startsWith("u_") && (
-                  <p className="postCardHeaderText">{`Subscribers: ${post.subreddit.subscribers.toLocaleString()}`}</p>
-                )}
-                <p className="postCardHeaderText">{post.randomSourceString}</p>
-              </div>
-              <div className="post-card-content">
-                <PostMediaElement
-                  postRowUuid={postRow.postRowUuid}
-                  post={post}
-                />
-              </div>
-            </div>
-          </div>
+            <PostCard />
+          </PostCardContext.Provider>
         ))}
       </div>
       <div
