@@ -1,7 +1,5 @@
 import { FC, useContext } from "react";
 import PostMediaElement from "./PostMediaElement.tsx";
-import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
-import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent.ts";
 import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice.ts";
 import { setPostAndRowUuid } from "../../redux/slice/SinglePostPageSlice.ts";
@@ -9,6 +7,9 @@ import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants.ts";
 import { PostCardContext } from "../Context.ts";
 import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import { useNavigate } from "react-router-dom";
+import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
+import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
+import { mouseLeavePostRow } from "../../redux/slice/PostRowsSlice.ts";
 
 const PostCard: FC = () => {
   const dispatch = useAppDispatch();
@@ -17,22 +18,18 @@ const PostCard: FC = () => {
     uiPost,
     postRowUuid,
     userFrontPagePostSortOrderOptionAtRowCreation,
-    handleMouseDownTouchStart,
-    stopPostCardTransition,
-    handleMouseUpTouchEnd,
-    handleMouseTouchMove,
-    handlePostCardClickCapture,
+    mouseOverPostRow,
+    totalMovementX,
   } = useContext(PostCardContext);
 
   const postCardWidthPercentage = useAppSelector(
     (state) => state.postRows.postCardWidthPercentage
   );
-  const mouseOverPostRowUuid = useAppSelector(
-    (state) => state.postRows.mouseOverPostRowUuid
-  );
+
   const autoScrollPostRowOption = useAppSelector(
     (state) => state.appConfig.autoScrollPostRowOption
   );
+
   return (
     <div
       className={`post-card-outer`}
@@ -41,7 +38,7 @@ const PostCard: FC = () => {
         maxWidth: `${postCardWidthPercentage}%`,
         left: `${uiPost.leftPercentage}%`,
         transition: `${
-          mouseOverPostRowUuid == postRowUuid ||
+          mouseOverPostRow ||
           userFrontPagePostSortOrderOptionAtRowCreation ==
             UserFrontPagePostSortOrderOptionsEnum.New ||
           autoScrollPostRowOption ==
@@ -53,25 +50,6 @@ const PostCard: FC = () => {
     >
       <div
         className={"post-card-inner"}
-        onTouchStart={(event) => {
-          handleMouseDownTouchStart(event.touches[0].clientX);
-          stopPostCardTransition(uiPost, event.currentTarget as HTMLDivElement);
-        }}
-        onTouchEnd={() => {
-          handleMouseUpTouchEnd();
-        }}
-        onTouchMove={(event) => {
-          handleMouseTouchMove(event.touches[0].clientX);
-        }}
-        onMouseDown={(event) => {
-          handleMouseDownTouchStart(event.clientX);
-        }}
-        onMouseUp={() => {
-          handleMouseUpTouchEnd();
-        }}
-        onMouseMove={(event) => {
-          handleMouseTouchMove(event.clientX);
-        }}
         onContextMenu={(event) => {
           event.preventDefault();
           event.stopPropagation();
@@ -82,6 +60,12 @@ const PostCard: FC = () => {
           };
           dispatch(setPostContextMenuEvent({ event: postContextMenuEvent }));
         }}
+        onClickCapture={(event) => {
+          if (totalMovementX.current >= 50) {
+            event.stopPropagation();
+            event.preventDefault();
+          }
+        }}
         onClick={() => {
           dispatch(
             setPostAndRowUuid({
@@ -90,14 +74,7 @@ const PostCard: FC = () => {
             })
           );
           navigate(`${SINGPLE_POST_ROUTE}`);
-        }}
-        onClickCapture={(event) => {
-          handlePostCardClickCapture(event);
-        }}
-        onMouseEnter={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          stopPostCardTransition(uiPost, event.currentTarget as HTMLDivElement);
+          dispatch(mouseLeavePostRow(postRowUuid));
         }}
       >
         <div className="postCardHeader">

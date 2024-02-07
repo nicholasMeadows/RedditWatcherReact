@@ -49,20 +49,15 @@ export class WaitUtil {
     return;
   }
 
-  static async WaitUntilPointerNotOverPostRow(
-    mouseOverPostRowUuid: () => string | undefined
-  ) {
-    const isMouseOverPostRow = () => {
-      return mouseOverPostRowUuid() != undefined;
-    };
-    if (isMouseOverPostRow()) {
+  static async WaitUntilPointerNotOverPostRow(mouseOverPostRow: () => boolean) {
+    if (mouseOverPostRow()) {
       store.dispatch(
         submitAppNotification({
           message: "Waiting until mouse is not over row",
         })
       );
     }
-    while (isMouseOverPostRow()) {
+    while (mouseOverPostRow()) {
       await new Promise<void>((res) => setTimeout(() => res(), 100));
     }
     return;

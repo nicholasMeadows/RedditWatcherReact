@@ -126,9 +126,14 @@ async function getPostsOrchestrationStart() {
       await WaitUtil.WaitUntilPostRowComponentIsVisible(
         () => store.getState().postRows.postRows.length
       );
-      await WaitUtil.WaitUntilPointerNotOverPostRow(
-        () => store.getState().postRows.mouseOverPostRowUuid
-      );
+      await WaitUtil.WaitUntilPointerNotOverPostRow(() => {
+        return (
+          store
+            .getState()
+            .postRows.postRows.find((postRow) => postRow.mouseOverPostRow) !=
+          undefined
+        );
+      });
 
       if (state.postRows.postRows.length == 10) {
         getPostsFromSubredditsState.getPostsUpdatedValues.postRowRemoveAt =
