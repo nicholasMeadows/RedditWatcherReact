@@ -468,7 +468,10 @@ export const postRowsSlice = createSlice({
     },
     postRowScrollLeftPressed: (
       state,
-      action: { type: string; payload: { postRowUuid: string } }
+      action: {
+        type: string;
+        payload: { postRowUuid: string; snapToPostCard?: boolean | undefined };
+      }
     ) => {
       const postRowUuid = action.payload.postRowUuid;
       const postRow = state.postRows.find(
@@ -486,15 +489,20 @@ export const postRowsSlice = createSlice({
       }
       const lastVisibleUiPostRight =
         lastVisibleUiPost.leftPercentage + state.postCardWidthPercentage;
-      let movementPercentage: number;
-      if (lastVisibleUiPostRight == 100) {
-        movementPercentage = state.postCardWidthPercentage * -1;
-      } else {
+
+      let snapToPostCard = action.payload.snapToPostCard;
+      if (snapToPostCard == undefined) {
+        snapToPostCard = true;
+      }
+
+      let movementPercentage: number = state.postCardWidthPercentage * -1;
+      if (snapToPostCard && lastVisibleUiPostRight != 100) {
         movementPercentage =
           100 -
           state.postCardWidthPercentage -
           lastVisibleUiPost.leftPercentage;
       }
+
       handleMoveUiPosts(
         state,
         postRow,

@@ -92,6 +92,7 @@ const PostRow: FC<Props> = ({ postRow }) => {
           dispatch(
             postRowScrollLeftPressed({
               postRowUuid: postRow.postRowUuid,
+              snapToPostCard: snapToPost,
             })
           );
         } else if (
