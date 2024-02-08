@@ -7,6 +7,7 @@ import SelectedSubredditListSortOptionEnum from "../../model/config/enums/Select
 import SortOrderDirectionOptionsEnum from "../../model/config/enums/SortOrderDirectionOptionsEnum";
 import SubredditSortOrderOptionsEnum from "../../model/config/enums/SubredditSortOrderOptionsEnum";
 import {
+  setAutoScrollPostRowDirectionOption,
   setAutoScrollPostRowOption,
   setConcatRedditUrlMaxLength,
   setContentFiltering,
@@ -25,6 +26,7 @@ import {
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import { checkPlatformForSubredditSortOrderOption } from "../../util/PlatformUtil";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
+import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 
 const RedditWatcherSettings: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -34,6 +36,9 @@ const RedditWatcherSettings: React.FC = () => {
   );
   const autoScrollPostRowOption = useAppSelector(
     (state) => state.appConfig.autoScrollPostRowOption
+  );
+  const autoScrollPostRowOptionDirection = useAppSelector(
+    (state) => state.appConfig.autoScrollPostRowDirectionOption
   );
   const selectedSubredditListSortOption = useAppSelector(
     (state) => state.appConfig.selectedSubredditListSortOption
@@ -127,6 +132,26 @@ const RedditWatcherSettings: React.FC = () => {
           className="select"
         >
           {Object.entries(AutoScrollPostRowOptionEnum).map((key) => {
+            return (
+              <option key={key[0]} value={key[1]}>
+                {key[1]}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+      <hr />
+
+      <div className="settings-item flex-column">
+        <label className="select-label">Auto Scroll Post Row Direction</label>
+        <select
+          value={autoScrollPostRowOptionDirection}
+          onChange={(event) =>
+            dispatch(setAutoScrollPostRowDirectionOption(event.target.value))
+          }
+          className="select"
+        >
+          {Object.entries(AutoScrollPostRowDirectionOptionEnum).map((key) => {
             return (
               <option key={key[0]} value={key[1]}>
                 {key[1]}

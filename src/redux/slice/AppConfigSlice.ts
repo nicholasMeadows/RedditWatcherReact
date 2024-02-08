@@ -37,10 +37,13 @@ import { clearPostRows } from "./PostRowsSlice";
 import { resetRedditClient } from "./RedditClientSlice";
 import { resetSubredditListsLoaded } from "./RedditListsSlice";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
+import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 
 const defaultSubredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
 const defaultAutoScrollPostRowOption =
   AutoScrollPostRowOptionEnum.SmoothContinuousScroll;
+const defaultAutoScrollPostRowDirectionOption =
+  AutoScrollPostRowDirectionOptionEnum.Left;
 const defaultSelectedSubredditListSortOption =
   SelectedSubredditListSortOptionEnum.Alphabetically;
 const defaultRandomIterationSelectWeightOption =
@@ -258,6 +261,7 @@ const initialState: AppConfigState = {
   },
   subredditSortOrderOption: defaultSubredditSortOrderOption,
   autoScrollPostRowOption: defaultAutoScrollPostRowOption,
+  autoScrollPostRowDirectionOption: defaultAutoScrollPostRowDirectionOption,
   selectedSubredditListSortOption: defaultSelectedSubredditListSortOption,
   randomIterationSelectWeightOption: defaultRandomIterationSelectWeightOption,
   selectSubredditListMenuSortOption: defaultSelectSubredditListMenuSortOption,
@@ -310,6 +314,10 @@ export const appConfigSlice = createSlice({
     },
     setAutoScrollPostRowOption: (state, action) => {
       state.autoScrollPostRowOption = action.payload;
+      saveConfig(state);
+    },
+    setAutoScrollPostRowDirectionOption: (state, action) => {
+      state.autoScrollPostRowDirectionOption = action.payload;
       saveConfig(state);
     },
     setSelectedSubredditListSortOption: (state, action) => {
@@ -496,6 +504,7 @@ export const {
   setUsername,
   setSubredditSortOrderOption,
   setAutoScrollPostRowOption,
+  setAutoScrollPostRowDirectionOption,
   setSelectedSubredditListSortOption,
   setRandomIterationSelectWeightOption,
   setSelectSubredditListMenuSortOption,

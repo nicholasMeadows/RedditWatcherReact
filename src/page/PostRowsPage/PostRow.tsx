@@ -14,6 +14,7 @@ import {
 } from "../../redux/slice/PostRowsSlice.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
+import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 
 type Props = { postRow: PostRow };
 const PostRow: FC<Props> = ({ postRow }) => {
@@ -25,6 +26,9 @@ const PostRow: FC<Props> = ({ postRow }) => {
 
   const autoScrollPostRowOption = useAppSelector(
     (state) => state.appConfig.autoScrollPostRowOption
+  );
+  const autoScrollPostRowDirectionOption = useAppSelector(
+    (state) => state.appConfig.autoScrollPostRowDirectionOption
   );
   const hideScrollButtonDivs = () => {
     return getPlatform() == Platform.Android || getPlatform() == Platform.Ios;
@@ -80,21 +84,32 @@ const PostRow: FC<Props> = ({ postRow }) => {
         return;
       }
 
-      createAutoScrollIntervalDelay.current = setTimeout(() => {
-        dispatch(
-          postRowScrollRightPressed({
-            postRowUuid: postRow.postRowUuid,
-            snapToPostCard: snapToPost,
-          })
-        );
-
-        autoScrollInterval.current = setInterval(() => {
+      const dispatchMostRowScroll = () => {
+        if (
+          autoScrollPostRowDirectionOption ==
+          AutoScrollPostRowDirectionOptionEnum.Left
+        ) {
+          dispatch(
+            postRowScrollLeftPressed({
+              postRowUuid: postRow.postRowUuid,
+            })
+          );
+        } else if (
+          autoScrollPostRowDirectionOption ==
+          AutoScrollPostRowDirectionOptionEnum.Right
+        ) {
           dispatch(
             postRowScrollRightPressed({
               postRowUuid: postRow.postRowUuid,
               snapToPostCard: snapToPost,
             })
           );
+        }
+      };
+      createAutoScrollIntervalDelay.current = setTimeout(() => {
+        dispatchMostRowScroll();
+        autoScrollInterval.current = setInterval(() => {
+          dispatchMostRowScroll();
         }, 6000);
       }, 1000);
     },

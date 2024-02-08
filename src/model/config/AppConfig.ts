@@ -10,11 +10,13 @@ import SubredditSortOrderOptionsEnum from "./enums/SubredditSortOrderOptionsEnum
 import TopTimeFrameOptionsEnum from "./enums/TopTimeFrameOptionsEnum";
 import UserFrontPagePostSortOrderOptionsEnum from "./enums/UserFrontPagePostSortOrderOptionsEnum";
 import { AutoScrollPostRowOptionEnum } from "./enums/AutoScrollPostRowOptionEnum.ts";
+import { AutoScrollPostRowDirectionOptionEnum } from "./enums/AutoScrollPostRowDirectionOptionEnum.ts";
 
 export interface AppConfig {
   redditCredentials: RedditCredentials;
   subredditSortOrderOption: SubredditSortOrderOptionsEnum;
   autoScrollPostRowOption: AutoScrollPostRowOptionEnum;
+  autoScrollPostRowDirectionOption: AutoScrollPostRowDirectionOptionEnum;
   selectedSubredditListSortOption: SelectedSubredditListSortOptionEnum;
   randomIterationSelectWeightOption: RandomIterationSelectWeightOptionsEnum;
   selectSubredditListMenuSortOption: SelectSubredditListMenuSortOptionEnum;
