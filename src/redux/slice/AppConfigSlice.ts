@@ -1,9 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
+  MAX_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD,
   Max_CONCAT_REDDIT_URL_LENGTH,
   MAX_POST_ROWS_TO_SHOW_IN_VIEW,
   MAX_POSTS_TO_SHOW_IN_ROW,
   MAX_REDDIT_API_ITEM_LIMIT,
+  MIN_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD,
   MIN_CONCAT_REDDIT_URL_LENGTH,
   MIN_POST_ROWS_TO_SHOW_IN_VIEW,
   MIN_POSTS_TO_SHOW_IN_ROW,
@@ -44,6 +46,7 @@ const defaultAutoScrollPostRowOption =
   AutoScrollPostRowOptionEnum.SmoothContinuousScroll;
 const defaultAutoScrollPostRowDirectionOption =
   AutoScrollPostRowDirectionOptionEnum.Left;
+const defaultAutoScrollPostRowRateSecondsForSinglePostCard = 5;
 const defaultSelectedSubredditListSortOption =
   SelectedSubredditListSortOptionEnum.Alphabetically;
 const defaultRandomIterationSelectWeightOption =
@@ -248,6 +251,17 @@ function validatePostRowsToShowInViewField(postRowsToShowInView: number) {
   );
 }
 
+function validateAutoScrollPostRowRateSecondsForSinglePostCardField(
+  postsPerSecond: number
+) {
+  return ValidationUtil.validateNumberRequire(
+    "Seconds to Move Single Post Card",
+    postsPerSecond,
+    MIN_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD,
+    MAX_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD
+  );
+}
+
 const initialState: AppConfigState = {
   redditCredentials: {
     username: "",
@@ -262,6 +276,9 @@ const initialState: AppConfigState = {
   subredditSortOrderOption: defaultSubredditSortOrderOption,
   autoScrollPostRowOption: defaultAutoScrollPostRowOption,
   autoScrollPostRowDirectionOption: defaultAutoScrollPostRowDirectionOption,
+  autoScrollPostRowRateSecondsForSinglePostCard:
+    defaultAutoScrollPostRowRateSecondsForSinglePostCard,
+  autoScrollPostRowRateSecondsForSinglePostCardValidationError: undefined,
   selectedSubredditListSortOption: defaultSelectedSubredditListSortOption,
   randomIterationSelectWeightOption: defaultRandomIterationSelectWeightOption,
   selectSubredditListMenuSortOption: defaultSelectSubredditListMenuSortOption,
@@ -319,6 +336,19 @@ export const appConfigSlice = createSlice({
     setAutoScrollPostRowDirectionOption: (state, action) => {
       state.autoScrollPostRowDirectionOption = action.payload;
       saveConfig(state);
+    },
+    setAutoScrollPostRowRateSecondsForSinglePostCard: (state, action) => {
+      state.autoScrollPostRowRateSecondsForSinglePostCard = action.payload;
+      saveConfig(state);
+    },
+    validateAutoScrollPostRowRateSecondsForSinglePostCard: (
+      state,
+      action: { type: string; payload: number }
+    ) => {
+      state.autoScrollPostRowRateSecondsForSinglePostCardValidationError =
+        validateAutoScrollPostRowRateSecondsForSinglePostCardField(
+          action.payload
+        );
     },
     setSelectedSubredditListSortOption: (state, action) => {
       state.selectedSubredditListSortOption = action.payload;
@@ -505,6 +535,8 @@ export const {
   setSubredditSortOrderOption,
   setAutoScrollPostRowOption,
   setAutoScrollPostRowDirectionOption,
+  setAutoScrollPostRowRateSecondsForSinglePostCard,
+  validateAutoScrollPostRowRateSecondsForSinglePostCard,
   setSelectedSubredditListSortOption,
   setRandomIterationSelectWeightOption,
   setSelectSubredditListMenuSortOption,

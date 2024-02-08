@@ -30,6 +30,8 @@ const REDDIT_CLIENT_SECRET_KEY = "clientSecret";
 const SUBREDDIT_SORT_ORDER_OPTION_KEY = "subredditSortOrderOption";
 const AUTO_SCROLL_POST_ROW = "autoScrollPostRowOption";
 const AUTO_SCROLL_POST_ROW_DIRECTION = "autoScrollPostRowDirectionOption";
+const AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD =
+  "autoScrollPostRowRateSecondsForSinglePostCard";
 const SELECTED_SUBREDDIT_LIST_SORT_OPTION = "selectedSubredditListSortOption";
 const RANDOM_ITERATION_SELECT_WEIGHT_OPTION =
   "randomIterationSelectWeightOption";
@@ -120,6 +122,8 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
   const autoScrollPostRowDirectionOption =
     configJsonObj[AUTO_SCROLL_POST_ROW_DIRECTION] ||
     AutoScrollPostRowDirectionOptionEnum.Left;
+  const autoScrollPostRowRateSecondsForSinglePostCard =
+    configJsonObj[AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD] || 5;
   const selectedSubredditListSortOption =
     configJsonObj[SELECTED_SUBREDDIT_LIST_SORT_OPTION] ||
     SelectedSubredditListSortOptionEnum.Alphabetically;
@@ -162,6 +166,8 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
     subredditSortOrderOption: subredditSortOrderOption,
     autoScrollPostRowOption: autoScrollPostRowOption,
     autoScrollPostRowDirectionOption: autoScrollPostRowDirectionOption,
+    autoScrollPostRowRateSecondsForSinglePostCard:
+      autoScrollPostRowRateSecondsForSinglePostCard,
     selectedSubredditListSortOption: selectedSubredditListSortOption,
     randomIterationSelectWeightOption: randomIterationSelectWeightOption,
     selectSubredditListMenuSortOption: selectSubredditListMenuSortOption,

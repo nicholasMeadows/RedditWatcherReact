@@ -9,6 +9,7 @@ import SubredditSortOrderOptionsEnum from "../../model/config/enums/SubredditSor
 import {
   setAutoScrollPostRowDirectionOption,
   setAutoScrollPostRowOption,
+  setAutoScrollPostRowRateSecondsForSinglePostCard,
   setConcatRedditUrlMaxLength,
   setContentFiltering,
   setPostRowsToShowInView,
@@ -19,6 +20,7 @@ import {
   setSelectSubredditListMenuSortOption,
   setSortOrderDirectionOption,
   setSubredditSortOrderOption,
+  validateAutoScrollPostRowRateSecondsForSinglePostCard,
   validateConcateRedditUrlLength,
   validatePostRowsToShowInView,
   validatePostsToShowInRow,
@@ -40,6 +42,20 @@ const RedditWatcherSettings: React.FC = () => {
   const autoScrollPostRowOptionDirection = useAppSelector(
     (state) => state.appConfig.autoScrollPostRowDirectionOption
   );
+
+  const autoScrollPostRowRateSecondsForSinglePostCard = useAppSelector(
+    (state) => state.appConfig.autoScrollPostRowRateSecondsForSinglePostCard
+  );
+  const autoScrollPostRowRateSecondsForSinglePostCardValidationError =
+    useAppSelector(
+      (state) =>
+        state.appConfig
+          .autoScrollPostRowRateSecondsForSinglePostCardValidationError
+    );
+  const [
+    localAutoScrollPostRowRateSecondsForSinglePostCard,
+    setLocalAutoScrollPostRowRateSecondsForSinglePostCard,
+  ] = useState(autoScrollPostRowRateSecondsForSinglePostCard);
   const selectedSubredditListSortOption = useAppSelector(
     (state) => state.appConfig.selectedSubredditListSortOption
   );
@@ -161,6 +177,35 @@ const RedditWatcherSettings: React.FC = () => {
         </select>
       </div>
       <hr />
+
+      <div className="settings-item flex-column">
+        <label className="select-label">
+          Auto Scroll Post Rows Rate (Seconds to move single post card)
+        </label>
+        <input
+          value={localAutoScrollPostRowRateSecondsForSinglePostCard}
+          className="input"
+          type="number"
+          onChange={(event) => {
+            const inputValue = parseFloat(event.target.value);
+            dispatch(
+              validateAutoScrollPostRowRateSecondsForSinglePostCard(inputValue)
+            );
+            setLocalAutoScrollPostRowRateSecondsForSinglePostCard(inputValue);
+          }}
+          onBlur={(event) => {
+            const inputValue = parseFloat(event.target.value);
+            dispatch(
+              setAutoScrollPostRowRateSecondsForSinglePostCard(inputValue)
+            );
+          }}
+        />
+        <p className="settings-item-error">
+          {autoScrollPostRowRateSecondsForSinglePostCardValidationError}
+        </p>
+      </div>
+      <hr />
+
       <div className="settings-item flex-column">
         <label className="select-label">Subreddit list Sort</label>
         <select

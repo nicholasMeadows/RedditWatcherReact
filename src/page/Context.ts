@@ -17,3 +17,6 @@ type PostCardContextObj = {
   totalMovementX: MutableRefObject<number>;
 };
 export const PostCardContext = createContext({} as PostCardContextObj);
+
+export const AutoScrollPostRowRateSecondsForSinglePostCardContext =
+  createContext(5000);

@@ -2,8 +2,11 @@ import { PostRow } from "../../model/PostRow.ts";
 import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import getPlatform from "../../util/PlatformUtil.ts";
 import { Platform } from "../../model/Platform.ts";
-import { FC, useCallback, useEffect, useRef } from "react";
-import { PostCardContext } from "../Context.ts";
+import { FC, useCallback, useContext, useEffect, useRef } from "react";
+import {
+  AutoScrollPostRowRateSecondsForSinglePostCardContext,
+  PostCardContext,
+} from "../Context.ts";
 import PostCard from "./PostCard.tsx";
 import {
   mouseEnterPostRow,
@@ -30,6 +33,10 @@ const PostRow: FC<Props> = ({ postRow }) => {
   const autoScrollPostRowDirectionOption = useAppSelector(
     (state) => state.appConfig.autoScrollPostRowDirectionOption
   );
+  const autoScrollPostRowRateMs = useContext(
+    AutoScrollPostRowRateSecondsForSinglePostCardContext
+  );
+
   const hideScrollButtonDivs = () => {
     return getPlatform() == Platform.Android || getPlatform() == Platform.Ios;
   };
@@ -111,7 +118,7 @@ const PostRow: FC<Props> = ({ postRow }) => {
         dispatchMostRowScroll();
         autoScrollInterval.current = setInterval(() => {
           dispatchMostRowScroll();
-        }, 6000);
+        }, autoScrollPostRowRateMs);
       }, 1000);
     },
     [
@@ -122,6 +129,7 @@ const PostRow: FC<Props> = ({ postRow }) => {
       postRow.posts.length,
       postRow.userFrontPagePostSortOrderOptionAtRowCreation,
       postsToShowInRow,
+      autoScrollPostRowRateMs,
     ]
   );
 

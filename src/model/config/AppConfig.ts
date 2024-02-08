@@ -17,6 +17,7 @@ export interface AppConfig {
   subredditSortOrderOption: SubredditSortOrderOptionsEnum;
   autoScrollPostRowOption: AutoScrollPostRowOptionEnum;
   autoScrollPostRowDirectionOption: AutoScrollPostRowDirectionOptionEnum;
+  autoScrollPostRowRateSecondsForSinglePostCard: number;
   selectedSubredditListSortOption: SelectedSubredditListSortOptionEnum;
   randomIterationSelectWeightOption: RandomIterationSelectWeightOptionsEnum;
   selectSubredditListMenuSortOption: SelectSubredditListMenuSortOptionEnum;
