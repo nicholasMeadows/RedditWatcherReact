@@ -114,6 +114,7 @@ const PostRow: FC<Props> = ({ postRow }) => {
       }, 1000);
     },
     [
+      autoScrollPostRowDirectionOption,
       autoScrollPostRowOption,
       dispatch,
       postRow.postRowUuid,
