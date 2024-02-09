@@ -114,11 +114,13 @@ const RouterView: React.FC = () => {
         dispatch(setPostRowContentWidthPx(postRowContentWidthPx));
 
         const postCardWidthPx = postRowContentWidthPx / postsToShowInRow;
-
+        const postCardWidthPercentage =
+          (postCardWidthPx / postRowContentWidthPx) * 100;
         dispatch(
-          setPostCardWidthPercentage(
-            (postCardWidthPx / postRowContentWidthPx) * 100
-          )
+          setPostCardWidthPercentage({
+            postCardWidthPercentage: postCardWidthPercentage,
+            postsToShowInRow: postsToShowInRow,
+          })
         );
       }
     });

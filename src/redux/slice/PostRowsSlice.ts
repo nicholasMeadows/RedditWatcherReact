@@ -365,9 +365,47 @@ export const postRowsSlice = createSlice({
     },
     setPostCardWidthPercentage: (
       state,
-      action: { type: string; payload: number }
+      action: {
+        type: string;
+        payload: { postCardWidthPercentage: number; postsToShowInRow: number };
+      }
     ) => {
-      state.postCardWidthPercentage = action.payload;
+      const postCardWidthPercentage = action.payload.postCardWidthPercentage;
+      const postsToShowInRow = action.payload.postsToShowInRow;
+      state.postCardWidthPercentage = postCardWidthPercentage;
+
+      state.postRows.forEach((postRow) => {
+        const uiPostsToSet = new Array<UiPost>();
+        if (postRow.posts.length <= postsToShowInRow) {
+          postRow.posts.forEach((post, index) => {
+            uiPostsToSet.push({
+              ...post,
+              uiUuid: `${post.postUuid}-${uuidV4()}`,
+              leftPercentage: postCardWidthPercentage * index,
+            });
+          });
+        } else {
+          let runningIndex = postRow.posts.findIndex(
+            (post) => post.postUuid == postRow.uiPosts[0].postUuid
+          );
+          if (runningIndex == -1) {
+            return;
+          }
+          for (let i = -1; i <= postsToShowInRow; ++i) {
+            if (runningIndex == postRow.posts.length) {
+              runningIndex = 0;
+            }
+            const post = postRow.posts[runningIndex];
+            uiPostsToSet.push({
+              ...post,
+              uiUuid: `${post.postUuid}-${uuidV4()}`,
+              leftPercentage: postCardWidthPercentage * i,
+            });
+            runningIndex++;
+          }
+        }
+        postRow.uiPosts = uiPostsToSet;
+      });
     },
     setPostRowContentWidthPx: (
       state,
