@@ -15,9 +15,9 @@ import {
   postRowScrollLeftPressed,
   postRowScrollRightPressed,
 } from "../../redux/slice/PostRowsSlice.ts";
+import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
-import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 
 type Props = { postRow: PostRow };
 const PostRow: FC<Props> = ({ postRow }) => {
@@ -26,7 +26,6 @@ const PostRow: FC<Props> = ({ postRow }) => {
   const postsToShowInRow = useAppSelector(
     (state) => state.appConfig.postsToShowInRow
   );
-
   const autoScrollPostRowOption = useAppSelector(
     (state) => state.appConfig.autoScrollPostRowOption
   );
@@ -37,41 +36,45 @@ const PostRow: FC<Props> = ({ postRow }) => {
     AutoScrollPostRowRateSecondsForSinglePostCardContext
   );
 
-  const hideScrollButtonDivs = () => {
-    return getPlatform() == Platform.Android || getPlatform() == Platform.Ios;
-  };
+  const postRowDivRef = useRef(null);
+  const postRowContentDivRef = useRef(null);
 
+  const mouseWheelPostScrollModifierPressed = useRef(false);
   const mouseOrTouchOnPostCard = useRef(false);
   const lastMovementX = useRef(0);
   const totalMovementX = useRef(0);
-  const handleMouseOrTouchStart = (clientX: number) => {
-    mouseOrTouchOnPostCard.current = true;
-    lastMovementX.current = clientX;
-    totalMovementX.current = 0;
-  };
-  const handleMouseOrTouchEnd = () => {
-    mouseOrTouchOnPostCard.current = false;
-    lastMovementX.current = 0;
-  };
-  const handlePostRowMove = (
-    clientX: number,
-    mouseOrTouchOnPostCard: boolean
-  ) => {
-    if (!mouseOrTouchOnPostCard || postRow.posts.length <= postsToShowInRow) {
-      return;
-    }
-    const movement = clientX - lastMovementX.current;
-    totalMovementX.current += Math.abs(movement);
-    dispatch(
-      moveUiPosts({ postRowUuid: postRow.postRowUuid, movementPx: movement })
-    );
-    lastMovementX.current = clientX;
-  };
 
   const createAutoScrollIntervalDelay = useRef<NodeJS.Timeout | undefined>(
     undefined
   );
   const autoScrollInterval = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  const handleMouseOrTouchStart = useCallback((clientX: number) => {
+    mouseOrTouchOnPostCard.current = true;
+    lastMovementX.current = clientX;
+    totalMovementX.current = 0;
+  }, []);
+
+  const handleMouseOrTouchEnd = useCallback(() => {
+    mouseOrTouchOnPostCard.current = false;
+    lastMovementX.current = 0;
+  }, []);
+
+  const handlePostRowMove = useCallback(
+    (clientX: number, mouseOrTouchOnPostCard: boolean) => {
+      if (!mouseOrTouchOnPostCard || postRow.posts.length <= postsToShowInRow) {
+        return;
+      }
+      const movement = clientX - lastMovementX.current;
+      totalMovementX.current += Math.abs(movement);
+      dispatch(
+        moveUiPosts({ postRowUuid: postRow.postRowUuid, movementPx: movement })
+      );
+      lastMovementX.current = clientX;
+    },
+    [dispatch, postRow.postRowUuid, postRow.posts.length, postsToShowInRow]
+  );
+
   const createAutoScrollInterval = useCallback(
     (snapToPost = true) => {
       if (createAutoScrollIntervalDelay.current != undefined) {
@@ -134,7 +137,7 @@ const PostRow: FC<Props> = ({ postRow }) => {
   );
 
   useEffect(() => {
-    createAutoScrollInterval();
+    createAutoScrollInterval(false);
     return () => {
       if (createAutoScrollIntervalDelay.current != undefined) {
         clearTimeout(createAutoScrollIntervalDelay.current);
@@ -207,10 +210,10 @@ const PostRow: FC<Props> = ({ postRow }) => {
     [createAutoScrollInterval, dispatch, postRow.postRowUuid]
   );
 
-  const postRowDivRef = useRef(null);
-  const postRowContentDivRef = useRef(null);
+  const hideScrollButtonDivs = useCallback(() => {
+    return getPlatform() == Platform.Android || getPlatform() == Platform.Ios;
+  }, []);
 
-  const mouseWheelPostScrollModifierPressed = useRef(false);
   return (
     <div
       className="postRow"

@@ -53,10 +53,10 @@ const createPostRow = (
     postRow.posts.length > postsToShowInRow &&
     userFrontPageSortOption != UserFrontPagePostSortOrderOptionsEnum.New
   ) {
-    const postToUnshift = posts[posts.length - 1];
+    const post = posts[posts.length - 1];
     postRow.uiPosts.push({
-      ...postToUnshift,
-      uiUuid: postToUnshift.postUuid + " " + uuidV4(),
+      ...post,
+      uiUuid: post.postUuid + " " + uuidV4(),
       leftPercentage: -postCardWidthPercentage,
     });
   }
@@ -391,7 +391,7 @@ export const postRowsSlice = createSlice({
           if (runningIndex == -1) {
             return;
           }
-          for (let i = -1; i <= postsToShowInRow; ++i) {
+          for (let i = -1; i <= postsToShowInRow + 1; ++i) {
             if (runningIndex == postRow.posts.length) {
               runningIndex = 0;
             }
