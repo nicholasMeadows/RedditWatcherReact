@@ -11,6 +11,7 @@ import { Post } from "../../model/Post/Post.ts";
 import {
   decrementPostAttachment,
   incrementPostAttachment,
+  jumpToPostAttachment,
 } from "../../redux/slice/PostRowsSlice.ts";
 import { useAppDispatch } from "../../redux/store.ts";
 
@@ -224,6 +225,31 @@ const PostMediaElement: React.FC<Props> = ({
           src={post.attachments[post.currentAttachmentIndex].url}
           className="post-element-media-element"
         />
+      )}
+
+      {post.attachments.length > 1 && (
+        <div className={"attachment-indicator-box"}>
+          {post.attachments.map((attachment, index) => {
+            return (
+              <div
+                className={`attachment-indicator ${
+                  post.attachments[post.currentAttachmentIndex] == attachment
+                    ? "attachment-indicator-active"
+                    : ""
+                }`}
+                onClick={() => {
+                  dispatch(
+                    jumpToPostAttachment({
+                      postRowUuid: postRowUuid,
+                      postUuid: post.postUuid,
+                      attachmentIndex: index,
+                    })
+                  );
+                }}
+              ></div>
+            );
+          })}
+        </div>
       )}
     </div>
   );

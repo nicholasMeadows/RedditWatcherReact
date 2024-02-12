@@ -293,6 +293,39 @@ export const postRowsSlice = createSlice({
         }
       }
     },
+    jumpToPostAttachment: (
+      state,
+      action: {
+        type: string;
+        payload: {
+          postRowUuid: string;
+          postUuid: string;
+          attachmentIndex: number;
+        };
+      }
+    ) => {
+      const postRowUuid = action.payload.postRowUuid;
+      const postRow = state.postRows.find(
+        (postRow) => postRow.postRowUuid == postRowUuid
+      );
+      if (postRow == undefined) {
+        return;
+      }
+
+      const postUuid = action.payload.postUuid;
+      const post = postRow.posts.find((post) => post.postUuid == postUuid);
+      if (post == undefined) {
+        return;
+      }
+      post.currentAttachmentIndex = action.payload.attachmentIndex;
+      const uiPost = postRow.uiPosts.find(
+        (uiPost) => uiPost.postUuid == postUuid
+      );
+      if (uiPost == undefined) {
+        return;
+      }
+      uiPost.currentAttachmentIndex = action.payload.attachmentIndex;
+    },
     clearPostRows: (state) => {
       state.postRows = [];
       state.postRowsHasAtLeast1PostRow = false;
@@ -587,6 +620,7 @@ export const {
   postRowRemoveAt,
   incrementPostAttachment,
   decrementPostAttachment,
+  jumpToPostAttachment,
   mouseEnterPostRow,
   mouseLeavePostRowTimeout,
   clearPostRows,

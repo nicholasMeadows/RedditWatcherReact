@@ -54,3 +54,24 @@
   -ms-user-select: none;
   // transition: left 200ms ease-out, top 200ms ease-out, transform 200ms ease-out;
 }
+
+.attachment-indicator-box {
+  position: absolute;
+  bottom: 1em;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: center;
+  gap: 0.5em;
+}
+
+.attachment-indicator {
+  background-color: rgba(159, 159, 159, 0.37);
+  height: 0.8em;
+  width: 0.8em;
+  border-radius: 0.8em;
+}
+
+.attachment-indicator-active {
+  background-color: rgb(159, 159, 159);
+}
