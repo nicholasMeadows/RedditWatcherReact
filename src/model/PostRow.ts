@@ -8,5 +8,4 @@ export interface PostRow {
   postRowContentWidthAtCreation: number;
   userFrontPagePostSortOrderOptionAtRowCreation: UserFrontPagePostSortOrderOptionsEnum;
   mouseOverPostRow: boolean;
-  mouseLeavePostRowTimeout: NodeJS.Timeout | undefined;
 }

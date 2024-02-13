@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from "../redux/store";
 
 import { KeepAwake } from "@capacitor-community/keep-awake";
 import { useEffect, useRef, useState } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import {
   APP_INITIALIZATION_ROUTE,
   MODIFY_SUBREDDIT_LISTS_ROUTE,
@@ -32,6 +32,7 @@ import RedditWatcherSettings from "./SettingsPages/RedditWatcherSettings";
 import getPlatform from "../util/PlatformUtil.ts";
 import { Platform } from "../model/Platform.ts";
 import {
+  setCurrentLocation,
   setPostCardWidthPercentage,
   setPostRowContentWidthPx,
 } from "../redux/slice/PostRowsSlice.ts";
@@ -40,6 +41,7 @@ import { RootFontSizeContext } from "./Context.ts";
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
   const darkmode = useAppSelector((state) => state.appConfig.darkMode);
+  const location = useLocation();
 
   const [rootFontSize, setRootFontSize] = useState(0);
   useEffect(() => {
@@ -54,6 +56,10 @@ const RouterView: React.FC = () => {
       document.removeEventListener("click", documentClickedEvent);
     };
   }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(setCurrentLocation(location.pathname));
+  }, [dispatch, location]);
 
   useEffect(() => {
     let background = "white";

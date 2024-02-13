@@ -5,17 +5,49 @@ import { PostRow } from "../../model/PostRow";
 import { PostRowsState } from "../../model/PostRowsState";
 import store from "../store.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
-import { MAX_POSTS_PER_ROW } from "../../RedditWatcherConstants.ts";
+import {
+  MAX_POSTS_PER_ROW,
+  POST_ROW_ROUTE,
+} from "../../RedditWatcherConstants.ts";
+
+export const setCurrentLocation = createAsyncThunk(
+  "postRows/setCurrentLocation",
+  async (path: string) => {
+    return { path: path, timeout: createGetPostRowPausedTimeout() };
+  }
+);
+export const setScrollY = createAsyncThunk(
+  "postRows/setScrollY",
+  async (scrollY: number) => {
+    return { scrollY: scrollY, timeout: createGetPostRowPausedTimeout() };
+  }
+);
+
+export const toggleClickedOnPlayPauseButton = createAsyncThunk(
+  "postRows/toggleClickedOnPlayPauseButton",
+  async () => {
+    return createGetPostRowPausedTimeout();
+  }
+);
 
 export const mouseLeavePostRow = createAsyncThunk(
   "postRows/mouseLeavePostRow",
   async (postRowUuid: string) => {
-    const timeout = setTimeout(() => {
-      store.dispatch(mouseLeavePostRowTimeout(postRowUuid));
-    }, 1000);
+    const timeout = createGetPostRowPausedTimeout();
     return { postRowUuid: postRowUuid, timeout: timeout };
   }
 );
+const createGetPostRowPausedTimeout = () => {
+  return setTimeout(() => {
+    store.dispatch(checkGetPostRowPausedConditions());
+  }, 2000);
+};
+const clearGetPostRowPausedTimeout = (state: PostRowsState) => {
+  if (state.getPostRowsPausedTimeout != undefined) {
+    clearTimeout(state.getPostRowsPausedTimeout);
+    state.getPostRowsPausedTimeout = undefined;
+  }
+};
 
 export const createPostRowAndInsertAtBeginning = createAsyncThunk(
   "postRows/createPostRowAndInsertAtBegining",
@@ -46,7 +78,6 @@ const createPostRow = (
     postRowContentWidthAtCreation: postRowContentWidth,
     userFrontPagePostSortOrderOptionAtRowCreation: userFrontPageSortOption,
     mouseOverPostRow: false,
-    mouseLeavePostRowTimeout: undefined,
   };
 
   if (
@@ -110,21 +141,6 @@ const setPostRowsHasAtLeast1PostRow = (state: PostRowsState) => {
   if (!state.postRowsHasAtLeast1PostRow) {
     state.postRowsHasAtLeast1PostRow = true;
   }
-};
-
-const setGetPostRowsPaused = (
-  state: PostRowsState,
-  scrollY: number,
-  clickedOnPlayPauseButton: boolean
-) => {
-  if (clickedOnPlayPauseButton) {
-    state.getPostRowsPaused = true;
-    return;
-  }
-  const mouseOverPostRow = state.postRows.find(
-    (postRow) => postRow.mouseOverPostRow
-  );
-  state.getPostRowsPaused = scrollY != 0 || mouseOverPostRow != undefined;
 };
 
 const handleMoveUiPosts = (
@@ -197,25 +213,38 @@ const handleMoveUiPosts = (
 };
 
 const initialState: PostRowsState = {
+  getPostRowsPaused: false,
+  getPostRowsPausedTimeout: undefined,
+  currentPath: "",
   scrollY: 0,
+  clickedOnPlayPauseButton: false,
   postRowsHasAtLeast1PostRow: false,
   postRows: new Array<PostRow>(),
-  clickedOnPlayPauseButton: false,
-  getPostRowsPaused: false,
   postCardWidthPercentage: 0,
   postRowContentWidthPx: 0,
 };
+
 export const postRowsSlice = createSlice({
   name: "postRows",
   initialState: initialState,
   reducers: {
-    setScrollY: (state, action) => {
-      state.scrollY = action.payload;
-      setGetPostRowsPaused(
-        state,
-        action.payload,
-        state.clickedOnPlayPauseButton
+    checkGetPostRowPausedConditions: (state) => {
+      if (state.postRows.length == 0) {
+        state.getPostRowsPaused = false;
+        return;
+      }
+      if (state.clickedOnPlayPauseButton) {
+        state.getPostRowsPaused = true;
+        return;
+      }
+
+      const mouseOverPostRow = state.postRows.find(
+        (postRow) => postRow.mouseOverPostRow
       );
+      state.getPostRowsPaused =
+        state.scrollY != 0 ||
+        mouseOverPostRow != undefined ||
+        state.currentPath != POST_ROW_ROUTE;
     },
     postRowRemoveAt: (state, action: { type: string; payload: number }) => {
       state.postRows.splice(action.payload, 1);
@@ -330,14 +359,7 @@ export const postRowsSlice = createSlice({
       state.postRows = [];
       state.postRowsHasAtLeast1PostRow = false;
     },
-    toggleClickedOnPlayPauseButton: (state) => {
-      state.clickedOnPlayPauseButton = !state.clickedOnPlayPauseButton;
-      setGetPostRowsPaused(
-        state,
-        state.scrollY,
-        state.clickedOnPlayPauseButton
-      );
-    },
+
     addPostsToFrontOfRow: (
       state,
       action: {
@@ -453,37 +475,9 @@ export const postRowsSlice = createSlice({
       if (postRow == undefined) {
         return;
       }
-
-      if (postRow.mouseLeavePostRowTimeout != undefined) {
-        clearTimeout(postRow.mouseLeavePostRowTimeout);
-        postRow.mouseLeavePostRowTimeout = undefined;
-      }
-
       postRow.mouseOverPostRow = true;
-      setGetPostRowsPaused(
-        state,
-        state.scrollY,
-        state.clickedOnPlayPauseButton
-      );
-    },
-    mouseLeavePostRowTimeout: (
-      state,
-      action: { type: string; payload: string }
-    ) => {
-      const postRowUuid = action.payload;
-      const postRow = state.postRows.find(
-        (postRow) => postRow.postRowUuid == postRowUuid
-      );
-      if (postRow == undefined) {
-        return;
-      }
-      postRow.mouseLeavePostRowTimeout = undefined;
-      postRow.mouseOverPostRow = false;
-      setGetPostRowsPaused(
-        state,
-        state.scrollY,
-        state.clickedOnPlayPauseButton
-      );
+      clearGetPostRowPausedTimeout(state);
+      state.getPostRowsPaused = true;
     },
     moveUiPosts: (
       state,
@@ -591,6 +585,45 @@ export const postRowsSlice = createSlice({
         }
       )
       .addCase(
+        setCurrentLocation.fulfilled,
+        (
+          state,
+          action: {
+            type: string;
+            payload: { path: string; timeout: NodeJS.Timeout };
+          }
+        ) => {
+          clearGetPostRowPausedTimeout(state);
+          state.getPostRowsPausedTimeout = action.payload.timeout;
+          state.getPostRowsPaused = true;
+          state.currentPath = action.payload.path;
+        }
+      )
+      .addCase(
+        setScrollY.fulfilled,
+        (
+          state,
+          action: {
+            type: string;
+            payload: { scrollY: number; timeout: NodeJS.Timeout };
+          }
+        ) => {
+          clearGetPostRowPausedTimeout(state);
+          state.getPostRowsPausedTimeout = action.payload.timeout;
+          state.getPostRowsPaused = true;
+          state.scrollY = action.payload.scrollY;
+        }
+      )
+      .addCase(
+        toggleClickedOnPlayPauseButton.fulfilled,
+        (state, action: { type: string; payload: NodeJS.Timeout }) => {
+          clearGetPostRowPausedTimeout(state);
+          state.getPostRowsPausedTimeout = action.payload;
+          state.getPostRowsPaused = true;
+          state.clickedOnPlayPauseButton = !state.clickedOnPlayPauseButton;
+        }
+      )
+      .addCase(
         mouseLeavePostRow.fulfilled,
         (
           state,
@@ -599,32 +632,29 @@ export const postRowsSlice = createSlice({
             payload: { postRowUuid: string; timeout: NodeJS.Timeout };
           }
         ) => {
-          const postRowUuid = action.payload.postRowUuid;
+          clearGetPostRowPausedTimeout(state);
+          state.getPostRowsPausedTimeout = action.payload.timeout;
+          state.getPostRowsPaused = true;
           const postRow = state.postRows.find(
-            (postRow) => postRow.postRowUuid == postRowUuid
+            (postRow) => postRow.postRowUuid == action.payload.postRowUuid
           );
           if (postRow == undefined) {
             return;
           }
-          if (postRow.mouseLeavePostRowTimeout != undefined) {
-            clearTimeout(postRow.mouseLeavePostRowTimeout);
-          }
-          postRow.mouseLeavePostRowTimeout = action.payload.timeout;
+          postRow.mouseOverPostRow = false;
         }
       );
   },
 });
 
 export const {
-  setScrollY,
+  checkGetPostRowPausedConditions,
   postRowRemoveAt,
   incrementPostAttachment,
   decrementPostAttachment,
   jumpToPostAttachment,
   mouseEnterPostRow,
-  mouseLeavePostRowTimeout,
   clearPostRows,
-  toggleClickedOnPlayPauseButton,
   setPostCardWidthPercentage,
   setPostRowContentWidthPx,
   addPostsToFrontOfRow,
