@@ -14,6 +14,7 @@ import {
   jumpToPostAttachment,
 } from "../../redux/slice/PostRowsSlice.ts";
 import { useAppDispatch } from "../../redux/store.ts";
+import { v4 as uuidV4 } from "uuid";
 
 type Props = {
   postRowUuid: string;
@@ -232,6 +233,7 @@ const PostMediaElement: React.FC<Props> = ({
           {post.attachments.map((attachment, index) => {
             return (
               <div
+                key={uuidV4()}
                 className={`attachment-indicator ${
                   post.attachments[post.currentAttachmentIndex] == attachment
                     ? "attachment-indicator-active"
