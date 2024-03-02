@@ -1,18 +1,21 @@
-import { app, BrowserWindow, globalShortcut } from "electron";
-import electronSquirrelStartup from "electron-squirrel-startup";
-import path, { dirname } from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const { app, BrowserWindow, globalShortcut } = require("electron");
+const path = require("node:path");
+const electronSquirrelStartup = require("electron-squirrel-startup");
+// import { app, BrowserWindow, globalShortcut } from "electron";
+// import electronSquirrelStartup from "electron-squirrel-startup";
+// import path, { dirname } from "path";
+// import { fileURLToPath } from "url";
+//
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = dirname(__filename);
 
 if (electronSquirrelStartup) app.quit();
 
 const isDev = () => {
   return process.env.APP_DEV != undefined;
 };
+
 const createWindow = () => {
-  isDev();
   const win = new BrowserWindow({
     width: 800,
     height: 600,
@@ -21,7 +24,7 @@ const createWindow = () => {
     win.removeMenu();
   }
 
-  win.loadFile(path.resolve(__dirname, "dist", "index.html"));
+  win.loadFile(path.join(__dirname, "dist", "index.html"));
   win.webContents.session.webRequest.onBeforeSendHeaders(
     (details, callback) => {
       let requestHeadersToReturn;
