@@ -21,6 +21,7 @@ import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFro
 import getPlatform from "../util/PlatformUtil";
 import { AutoScrollPostRowOptionEnum } from "../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
+import { WindowElectronAPI } from "../model/WindowElectronAPI.ts";
 
 const REDDIT_CREDENTIALS_KEY = "redditCredentials";
 const REDDIT_USERNAME_KEY = "username";
@@ -53,14 +54,11 @@ const DARK_MODE = "darkMode";
 
 export async function loadSubredditListsFromFile() {
   await checkForOrCreateConfigFolder();
-  await checkForOrCreateSubredditListsFile();
+  await checkForOrCreateSubredditListsFile(encode("[]"));
 
-  const fileContent = await Filesystem.readFile({
-    path: CONFIG_DIR + "/" + SUBREDDIT_LISTS_FILE,
-    directory: Directory.Data,
-  });
+  const encodedFileContent = await readSubredditListsFromFile();
   const subredditLists = JSON.parse(
-    decode(fileContent.data as string)
+    decode(encodedFileContent)
   ) as Array<SubredditLists>;
 
   subredditLists.forEach((list) => {
@@ -73,15 +71,11 @@ export async function loadSubredditListsFromFile() {
 
 export async function loadConfig() {
   await checkForOrCreateConfigFolder();
-  await checkForOrCreateConfigFile();
+  await checkForOrCreateConfigFile(encode("{}"));
 
-  const fileContent = await Filesystem.readFile({
-    path: CONFIG_DIR + "/" + CONFIG_FILE,
-    directory: Directory.Data,
-  });
-
+  const encodedFileContent = await readConfigFromFile();
   const loadedConfig = fillInMissingFieldsInConfigObj(
-    JSON.parse(decode(fileContent.data as string))
+    JSON.parse(decode(encodedFileContent))
   );
   await saveConfig(loadedConfig);
   return loadedConfig;
@@ -187,12 +181,50 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
   return loadedConfig;
 }
 
+async function readConfigFromFile() {
+  let fileContentEncodedString: string;
+  if (getPlatform() === Platform.Electron) {
+    const windowElectronAPI = window as unknown as WindowElectronAPI;
+    fileContentEncodedString =
+      await windowElectronAPI.electronAPI.readConfigFromFile();
+  } else {
+    const fileContent = await Filesystem.readFile({
+      path: CONFIG_DIR + "/" + CONFIG_FILE,
+      directory: Directory.Data,
+    });
+    fileContentEncodedString = fileContent.data as string;
+  }
+  return fileContentEncodedString;
+}
+
+async function readSubredditListsFromFile() {
+  let fileContentEncodedString: string;
+  if (getPlatform() === Platform.Electron) {
+    const windowElectronAPI = window as unknown as WindowElectronAPI;
+    fileContentEncodedString =
+      await windowElectronAPI.electronAPI.readSubredditListsFromFile();
+  } else {
+    const fileContent = await Filesystem.readFile({
+      path: CONFIG_DIR + "/" + SUBREDDIT_LISTS_FILE,
+      directory: Directory.Data,
+    });
+    fileContentEncodedString = fileContent.data as string;
+  }
+  return fileContentEncodedString;
+}
+
 export async function saveConfig(config: AppConfig) {
-  await Filesystem.writeFile({
-    path: CONFIG_DIR + "/" + CONFIG_FILE,
-    directory: Directory.Data,
-    data: encode(JSON.stringify(config)),
-  });
+  const encodedFileContent = encode(JSON.stringify(config));
+  if (getPlatform() === Platform.Electron) {
+    const windowElectronAPI = window as unknown as WindowElectronAPI;
+    await windowElectronAPI.electronAPI.saveConfig(encodedFileContent);
+  } else {
+    await Filesystem.writeFile({
+      path: CONFIG_DIR + "/" + CONFIG_FILE,
+      directory: Directory.Data,
+      data: encodedFileContent,
+    });
+  }
 }
 
 export function exportConfigDownload(file: File) {
@@ -217,11 +249,17 @@ export function exportConfigDownload(file: File) {
 export async function saveSubredditLists(
   subredditLists: Array<SubredditLists>
 ) {
-  await Filesystem.writeFile({
-    path: CONFIG_DIR + "/" + SUBREDDIT_LISTS_FILE,
-    directory: Directory.Data,
-    data: encode(JSON.stringify(subredditLists)),
-  });
+  const data = encode(JSON.stringify(subredditLists));
+  if (getPlatform() === Platform.Electron) {
+    const windowElectronAPI = window as unknown as WindowElectronAPI;
+    await windowElectronAPI.electronAPI.saveSubredditLists(data);
+  } else {
+    await Filesystem.writeFile({
+      path: CONFIG_DIR + "/" + SUBREDDIT_LISTS_FILE,
+      directory: Directory.Data,
+      data: data,
+    });
+  }
 }
 
 function encode(config: string) {
@@ -234,69 +272,88 @@ function decode(json: string) {
 
 async function checkForOrCreateConfigFolder() {
   console.log("About to check for config folder");
-  const dataDirectorFiles = await Filesystem.readdir({
-    path: "",
-    directory: Directory.Data,
-  });
-  const foundConfigDir =
-    dataDirectorFiles.files.filter(
-      (file) =>
-        file.name == CONFIG_DIR.replace("/", "") && file.type == "directory"
-    ).length != 0;
-  console.log("Found config Directory: ", foundConfigDir);
-  if (!foundConfigDir) {
-    console.log("Did not find config directory. Creating config folder");
-    await Filesystem.mkdir({
+  if (getPlatform() === Platform.Electron) {
+    const windowElectronAPI = window as unknown as WindowElectronAPI;
+    await windowElectronAPI.electronAPI.checkForOrCreateConfigFolder();
+  } else {
+    const dataDirectorFiles = await Filesystem.readdir({
+      path: "",
+      directory: Directory.Data,
+    });
+    const foundConfigDir =
+      dataDirectorFiles.files.filter(
+        (file) =>
+          file.name == CONFIG_DIR.replace("/", "") && file.type == "directory"
+      ).length != 0;
+    console.log("Found config Directory: ", foundConfigDir);
+    if (!foundConfigDir) {
+      console.log("Did not find config directory. Creating config folder");
+      await Filesystem.mkdir({
+        path: CONFIG_DIR,
+        directory: Directory.Data,
+      });
+    }
+  }
+}
+
+async function checkForOrCreateConfigFile(defaultFileValue: string) {
+  console.log("About to check for config file");
+  if (getPlatform() === Platform.Electron) {
+    const windowElectronAPI = window as unknown as WindowElectronAPI;
+    await windowElectronAPI.electronAPI.checkForOrCreateConfigFile(
+      defaultFileValue
+    );
+  } else {
+    const configDirFiles = await Filesystem.readdir({
       path: CONFIG_DIR,
       directory: Directory.Data,
     });
+
+    const foundConfigJson =
+      configDirFiles.files.filter(
+        (file) => file.name == CONFIG_FILE && file.type == "file"
+      ).length != 0;
+    console.log("Found config json ", foundConfigJson);
+    if (!foundConfigJson) {
+      console.log("Did not find config json. Creating config.json");
+
+      await Filesystem.writeFile({
+        path: CONFIG_DIR + "/" + CONFIG_FILE,
+        directory: Directory.Data,
+        data: defaultFileValue,
+      });
+    }
   }
 }
 
-async function checkForOrCreateConfigFile() {
-  console.log("About to check for config file");
-  const configDirFiles = await Filesystem.readdir({
-    path: CONFIG_DIR,
-    directory: Directory.Data,
-  });
-
-  const foundConfigJson =
-    configDirFiles.files.filter(
-      (file) => file.name == CONFIG_FILE && file.type == "file"
-    ).length != 0;
-  console.log("Found config json ", foundConfigJson);
-  if (!foundConfigJson) {
-    console.log("Did not find config json. Creating config.json");
-
-    await Filesystem.writeFile({
-      path: CONFIG_DIR + "/" + CONFIG_FILE,
-      directory: Directory.Data,
-      data: encode("{}"),
-    });
-  }
-}
-
-async function checkForOrCreateSubredditListsFile() {
+async function checkForOrCreateSubredditListsFile(defaultFileValue: string) {
   console.log("About to check for subreddit lists file");
-  const configDirFiles = await Filesystem.readdir({
-    path: CONFIG_DIR,
-    directory: Directory.Data,
-  });
-
-  const foundConfigJson =
-    configDirFiles.files.filter(
-      (file) => file.name == SUBREDDIT_LISTS_FILE && file.type == "file"
-    ).length != 0;
-  console.log("Found subreddit lists json ", foundConfigJson);
-  if (!foundConfigJson) {
-    console.log(
-      "Did not find subreddit lists json. Creating subreddit lists.json"
+  if (getPlatform() === Platform.Electron) {
+    const windowElectronAPI = window as unknown as WindowElectronAPI;
+    await windowElectronAPI.electronAPI.checkForOrCreateSubredditListsFile(
+      defaultFileValue
     );
-
-    await Filesystem.writeFile({
-      path: CONFIG_DIR + "/" + SUBREDDIT_LISTS_FILE,
+  } else {
+    const configDirFiles = await Filesystem.readdir({
+      path: CONFIG_DIR,
       directory: Directory.Data,
-      data: encode("[]"),
     });
+
+    const foundConfigJson =
+      configDirFiles.files.filter(
+        (file) => file.name == SUBREDDIT_LISTS_FILE && file.type == "file"
+      ).length != 0;
+    console.log("Found subreddit lists json ", foundConfigJson);
+    if (!foundConfigJson) {
+      console.log(
+        "Did not find subreddit lists json. Creating subreddit lists.json"
+      );
+
+      await Filesystem.writeFile({
+        path: CONFIG_DIR + "/" + SUBREDDIT_LISTS_FILE,
+        directory: Directory.Data,
+        data: defaultFileValue,
+      });
+    }
   }
 }
