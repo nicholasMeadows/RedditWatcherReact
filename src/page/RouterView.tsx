@@ -1,7 +1,7 @@
-import { useAppDispatch, useAppSelector } from "../redux/store";
+import store, { useAppDispatch, useAppSelector } from "../redux/store";
 
 import { KeepAwake } from "@capacitor-community/keep-awake";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import {
   APP_INITIALIZATION_ROUTE,
@@ -37,6 +37,10 @@ import {
   setPostRowContentWidthPx,
 } from "../redux/slice/PostRowsSlice.ts";
 import { RootFontSizeContext } from "./Context.ts";
+import {
+  setPostRowsToShowInView,
+  setPostsToShowInRow,
+} from "../redux/slice/AppConfigSlice.ts";
 
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -44,16 +48,41 @@ const RouterView: React.FC = () => {
   const location = useLocation();
 
   const [rootFontSize, setRootFontSize] = useState(0);
+
+  const wheelEventHandler = useCallback(
+    (event: WheelEvent) => {
+      const ctrlKeyPressed = event.ctrlKey;
+      if (ctrlKeyPressed) {
+        event.preventDefault();
+        const appConfigState = store.getState().appConfig;
+        const currentPostRowsToShowInView = appConfigState.postRowsToShowInView;
+        const currentPostsToShowInRow = appConfigState.postsToShowInRow;
+
+        const deltaY = event.deltaY;
+        if (deltaY > 0) {
+          dispatch(setPostsToShowInRow(currentPostsToShowInRow + 0.1));
+          dispatch(setPostRowsToShowInView(currentPostRowsToShowInView + 0.1));
+        } else if (deltaY < 0) {
+          dispatch(setPostsToShowInRow(currentPostsToShowInRow - 0.1));
+          dispatch(setPostRowsToShowInView(currentPostRowsToShowInView - 0.1));
+        }
+      }
+    },
+    [dispatch]
+  );
+
   useEffect(() => {
     const documentClickedEvent = () => {
       dispatch(closeContextMenu());
     };
 
     document.addEventListener("click", documentClickedEvent);
+    document.addEventListener("wheel", wheelEventHandler, { passive: false });
     KeepAwake.keepAwake();
 
     return () => {
       document.removeEventListener("click", documentClickedEvent);
+      document.removeEventListener("wheel", wheelEventHandler);
     };
   }, [dispatch]);
 
