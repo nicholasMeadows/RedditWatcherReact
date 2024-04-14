@@ -1,41 +1,31 @@
 import { useEffect, useState } from "react";
-import ContentFilteringOptionEnum from "../../model/config/enums/ContentFilteringOptionEnum";
-import RandomIterationSelectWeightOptionsEnum from "../../model/config/enums/RandomIterationSelectWeightOptionsEnum";
-import SelectSubredditIterationMethodOptionsEnum from "../../model/config/enums/SelectSubredditIterationMethodOptionsEnum";
-import SelectSubredditListMenuSortOptionEnum from "../../model/config/enums/SelectSubredditListMenuSortOptionEnum";
-import SelectedSubredditListSortOptionEnum from "../../model/config/enums/SelectedSubredditListSortOptionEnum";
-import SortOrderDirectionOptionsEnum from "../../model/config/enums/SortOrderDirectionOptionsEnum";
-import SubredditSortOrderOptionsEnum from "../../model/config/enums/SubredditSortOrderOptionsEnum";
+import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import {
   setAutoScrollPostRowDirectionOption,
   setAutoScrollPostRowOption,
   setAutoScrollPostRowRateSecondsForSinglePostCard,
   setConcatRedditUrlMaxLength,
-  setContentFiltering,
   setPostRowsToShowInView,
   setPostsToShowInRow,
   setRandomIterationSelectWeightOption,
-  setSelectedSubredditListSortOption,
   setSelectSubredditIterationMethodOption,
   setSelectSubredditListMenuSortOption,
   setSortOrderDirectionOption,
-  setSubredditSortOrderOption,
   validateAutoScrollPostRowRateSecondsForSinglePostCard,
   validateConcateRedditUrlLength,
   validatePostRowsToShowInView,
   validatePostsToShowInRow,
-} from "../../redux/slice/AppConfigSlice";
-import { useAppDispatch, useAppSelector } from "../../redux/store";
-import { checkPlatformForSubredditSortOrderOption } from "../../util/PlatformUtil";
+} from "../../redux/slice/AppConfigSlice.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
+import RandomIterationSelectWeightOptionsEnum from "../../model/config/enums/RandomIterationSelectWeightOptionsEnum.ts";
+import SelectSubredditListMenuSortOptionEnum from "../../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
+import SortOrderDirectionOptionsEnum from "../../model/config/enums/SortOrderDirectionOptionsEnum.ts";
+import SelectSubredditIterationMethodOptionsEnum from "../../model/config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
 
-const RedditWatcherSettings: React.FC = () => {
+const ApplicationSettings: React.FC = () => {
   const dispatch = useAppDispatch();
 
-  const subredditSortOrderOption = useAppSelector(
-    (state) => state.appConfig.subredditSortOrderOption
-  );
   const autoScrollPostRowOption = useAppSelector(
     (state) => state.appConfig.autoScrollPostRowOption
   );
@@ -56,9 +46,7 @@ const RedditWatcherSettings: React.FC = () => {
     localAutoScrollPostRowRateSecondsForSinglePostCard,
     setLocalAutoScrollPostRowRateSecondsForSinglePostCard,
   ] = useState(autoScrollPostRowRateSecondsForSinglePostCard);
-  const selectedSubredditListSortOption = useAppSelector(
-    (state) => state.appConfig.selectedSubredditListSortOption
-  );
+
   const randomIterationSelectWeightOption = useAppSelector(
     (state) => state.appConfig.randomIterationSelectWeightOption
   );
@@ -80,9 +68,7 @@ const RedditWatcherSettings: React.FC = () => {
   const concatRedditUrlMaxLengthValidationError = useAppSelector(
     (state) => state.appConfig.concatRedditUrlMaxLengthValidationError
   );
-  const contentFiltering = useAppSelector(
-    (state) => state.appConfig.contentFiltering
-  );
+
   const statePostsToShowInRow = useAppSelector(
     (state) => state.appConfig.postsToShowInRow
   );
@@ -111,25 +97,24 @@ const RedditWatcherSettings: React.FC = () => {
   useEffect(() => {
     setLocalPostRowsToShowInView(statePostRowsToShowInView);
   }, [statePostRowsToShowInView]);
+
   return (
     <div className="reddit-watcher-settings">
       <hr />
       <div className="settings-item flex-column">
-        <label className="select-label">Subreddit Sort</label>
+        <label className="select-label">
+          Random SubReddit Selection Iteration Weight
+        </label>
         <select
-          value={subredditSortOrderOption}
+          value={randomIterationSelectWeightOption}
           onChange={(event) =>
-            dispatch(setSubredditSortOrderOption(event.target.value))
+            dispatch(setRandomIterationSelectWeightOption(event.target.value))
           }
           className="select"
         >
-          {Object.entries(SubredditSortOrderOptionsEnum).map((key) => {
+          {Object.entries(RandomIterationSelectWeightOptionsEnum).map((key) => {
             return (
-              <option
-                hidden={!checkPlatformForSubredditSortOrderOption(key[1])}
-                key={key[0]}
-                value={key[1]}
-              >
+              <option key={key[0]} value={key[1]}>
                 {key[1]}
               </option>
             );
@@ -137,7 +122,69 @@ const RedditWatcherSettings: React.FC = () => {
         </select>
       </div>
       <hr />
-
+      <div className="settings-item flex-column">
+        <label className="select-label">
+          Side Bar Select Subreddit List Menu Sort By
+        </label>
+        <select
+          value={selectSubredditListMenuSortOption}
+          onChange={(event) =>
+            dispatch(setSelectSubredditListMenuSortOption(event.target.value))
+          }
+          className="select"
+        >
+          {Object.entries(SelectSubredditListMenuSortOptionEnum).map((key) => {
+            return (
+              <option key={key[0]} value={key[1]}>
+                {key[1]}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+      <hr />
+      <div className="settings-item flex-column">
+        <label className="select-label">Sort order</label>
+        <select
+          value={sortOrderDirectionOption}
+          onChange={(event) =>
+            dispatch(setSortOrderDirectionOption(event.target.value))
+          }
+          className="select"
+        >
+          {Object.entries(SortOrderDirectionOptionsEnum).map((key) => {
+            return (
+              <option key={key[0]} value={key[1]}>
+                {key[1]}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+      <hr />
+      <div className="settings-item flex-column">
+        <label className="select-label">Subreddit Iteration method</label>
+        <select
+          value={selectSubredditIterationMethodOption}
+          onChange={(event) =>
+            dispatch(
+              setSelectSubredditIterationMethodOption(event.target.value)
+            )
+          }
+          className="select"
+        >
+          {Object.entries(SelectSubredditIterationMethodOptionsEnum).map(
+            (key) => {
+              return (
+                <option key={key[0]} value={key[1]}>
+                  {key[1]}
+                </option>
+              );
+            }
+          )}
+        </select>
+      </div>
+      <hr />
       <div className="settings-item flex-column">
         <label className="select-label">Auto Scroll Post Row</label>
         <select
@@ -156,8 +203,8 @@ const RedditWatcherSettings: React.FC = () => {
           })}
         </select>
       </div>
-      <hr />
 
+      <hr />
       <div className="settings-item flex-column">
         <label className="select-label">Auto Scroll Post Row Direction</label>
         <select
@@ -176,8 +223,8 @@ const RedditWatcherSettings: React.FC = () => {
           })}
         </select>
       </div>
-      <hr />
 
+      <hr />
       <div className="settings-item flex-column">
         <label className="select-label">
           Auto Scroll Post Rows Rate (Seconds to move single post card)
@@ -204,108 +251,7 @@ const RedditWatcherSettings: React.FC = () => {
           {autoScrollPostRowRateSecondsForSinglePostCardValidationError}
         </p>
       </div>
-      <hr />
 
-      <div className="settings-item flex-column">
-        <label className="select-label">Subreddit list Sort</label>
-        <select
-          value={selectedSubredditListSortOption}
-          onChange={(event) =>
-            dispatch(setSelectedSubredditListSortOption(event.target.value))
-          }
-          className="select"
-        >
-          {Object.entries(SelectedSubredditListSortOptionEnum).map((key) => {
-            return (
-              <option key={key[0]} value={key[1]}>
-                {key[1]}
-              </option>
-            );
-          })}
-        </select>
-      </div>
-      <hr />
-      <div className="settings-item flex-column">
-        <label className="select-label">Random Iteration Weight</label>
-        <select
-          value={randomIterationSelectWeightOption}
-          onChange={(event) =>
-            dispatch(setRandomIterationSelectWeightOption(event.target.value))
-          }
-          className="select"
-        >
-          {Object.entries(RandomIterationSelectWeightOptionsEnum).map((key) => {
-            return (
-              <option key={key[0]} value={key[1]}>
-                {key[1]}
-              </option>
-            );
-          })}
-        </select>
-      </div>
-      <hr />
-      <div className="settings-item flex-column">
-        <label className="select-label">Select Subreddit List Menu Sort</label>
-        <select
-          value={selectSubredditListMenuSortOption}
-          onChange={(event) =>
-            dispatch(setSelectSubredditListMenuSortOption(event.target.value))
-          }
-          className="select"
-        >
-          {Object.entries(SelectSubredditListMenuSortOptionEnum).map((key) => {
-            return (
-              <option key={key[0]} value={key[1]}>
-                {key[1]}
-              </option>
-            );
-          })}
-        </select>
-      </div>
-      <hr />
-      <div className="settings-item flex-column">
-        <label className="select-label">Sort order Direction</label>
-        <select
-          value={sortOrderDirectionOption}
-          onChange={(event) =>
-            dispatch(setSortOrderDirectionOption(event.target.value))
-          }
-          className="select"
-        >
-          {Object.entries(SortOrderDirectionOptionsEnum).map((key) => {
-            return (
-              <option key={key[0]} value={key[1]}>
-                {key[1]}
-              </option>
-            );
-          })}
-        </select>
-      </div>
-      <hr />
-      <div className="settings-item flex-column">
-        <label className="select-label">
-          Select Subreddit Iteration method
-        </label>
-        <select
-          value={selectSubredditIterationMethodOption}
-          onChange={(event) =>
-            dispatch(
-              setSelectSubredditIterationMethodOption(event.target.value)
-            )
-          }
-          className="select"
-        >
-          {Object.entries(SelectSubredditIterationMethodOptionsEnum).map(
-            (key) => {
-              return (
-                <option key={key[0]} value={key[1]}>
-                  {key[1]}
-                </option>
-              );
-            }
-          )}
-        </select>
-      </div>
       <hr />
       <div className="settings-item flex-column">
         <label className="select-label">Reddit URL Max Length</label>
@@ -327,25 +273,7 @@ const RedditWatcherSettings: React.FC = () => {
           {concatRedditUrlMaxLengthValidationError}
         </p>
       </div>
-      <hr />
-      <div className="settings-item flex-column">
-        <label className="select-label">Content Filtering</label>
-        <select
-          value={contentFiltering}
-          onChange={(event) =>
-            dispatch(setContentFiltering(event.target.value))
-          }
-          className="select"
-        >
-          {Object.entries(ContentFilteringOptionEnum).map((key) => {
-            return (
-              <option key={key[0]} value={key[1]}>
-                {key[1]}
-              </option>
-            );
-          })}
-        </select>
-      </div>
+
       <hr />
       <div className="settings-item flex-column">
         <label className="select-label">Posts to Show In Row</label>
@@ -391,4 +319,4 @@ const RedditWatcherSettings: React.FC = () => {
   );
 };
 
-export default RedditWatcherSettings;
+export default ApplicationSettings;

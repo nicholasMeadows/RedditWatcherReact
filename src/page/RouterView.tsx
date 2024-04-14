@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import {
   APP_INITIALIZATION_ROUTE,
+  APPLICATION_SETTINGS_ROUTE,
   MODIFY_SUBREDDIT_LISTS_ROUTE,
   MODIFY_SUBREDDIT_QUEUE_ROUTE,
   NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT,
@@ -12,9 +13,8 @@ import {
   POST_CARD_RIGHT_MARGIN_EM,
   POST_ROW_ROUTE,
   POST_ROW_SCROLL_BTN_WIDTH_EM,
-  REDDIT_POST_SETTINGS_ROUTE,
   REDDIT_SIGN_IN_ROUTE,
-  REDDIT_WATCHER_SETTINGS_ROUTE,
+  REDDIT_SOURCE_SETTINGS_ROUTE,
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
 import { closeContextMenu } from "../redux/slice/ContextMenuSlice";
@@ -26,9 +26,9 @@ import ModifySubredditQueue from "./ModifySubredditQueue";
 import NavigationHamburgerMenu from "./NavigationHamburgerMenu.tsx";
 import PostRowPage from "./PostRowsPage/PostRowPage.tsx";
 import SinglePostView from "./SinglePostView.tsx";
-import RedditPostSettings from "./SettingsPages/RedditPostSettings";
+import RedditSourceSettings from "./SettingsPages/RedditSourceSettings.tsx";
 import RedditSignIn from "./SettingsPages/RedditSignIn.tsx";
-import RedditWatcherSettings from "./SettingsPages/RedditWatcherSettings";
+import ApplicationSettings from "./SettingsPages/ApplicationSettings.tsx";
 import getPlatform from "../util/PlatformUtil.ts";
 import { Platform } from "../model/Platform.ts";
 import {
@@ -193,12 +193,12 @@ const RouterView: React.FC = () => {
             <Route path={REDDIT_SIGN_IN_ROUTE} element={<RedditSignIn />} />
             <Route path={POST_ROW_ROUTE} element={<PostRowPage />} />
             <Route
-              path={REDDIT_POST_SETTINGS_ROUTE}
-              element={<RedditPostSettings />}
+              path={REDDIT_SOURCE_SETTINGS_ROUTE}
+              element={<RedditSourceSettings />}
             />
             <Route
-              path={REDDIT_WATCHER_SETTINGS_ROUTE}
-              element={<RedditWatcherSettings />}
+              path={APPLICATION_SETTINGS_ROUTE}
+              element={<ApplicationSettings />}
             />
             <Route path={SINGPLE_POST_ROUTE} element={<SinglePostView />} />
             <Route

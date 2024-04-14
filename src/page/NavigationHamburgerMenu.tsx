@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   APP_INITIALIZATION_ROUTE,
+  APPLICATION_SETTINGS_ROUTE,
   MODIFY_SUBREDDIT_LISTS_ROUTE,
   MODIFY_SUBREDDIT_QUEUE_ROUTE,
   NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT,
   POST_ROW_ROUTE,
-  REDDIT_POST_SETTINGS_ROUTE,
   REDDIT_SIGN_IN_ROUTE,
-  REDDIT_WATCHER_SETTINGS_ROUTE,
+  REDDIT_SOURCE_SETTINGS_ROUTE,
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
@@ -66,10 +66,10 @@ const NavigationHamburgerMenu: React.FC = () => {
       case POST_ROW_ROUTE:
         pageName = "Home";
         break;
-      case REDDIT_POST_SETTINGS_ROUTE:
+      case REDDIT_SOURCE_SETTINGS_ROUTE:
         pageName = "Post Settings";
         break;
-      case REDDIT_WATCHER_SETTINGS_ROUTE:
+      case APPLICATION_SETTINGS_ROUTE:
         pageName = "App Settings";
         break;
       case SINGPLE_POST_ROUTE:
@@ -199,17 +199,14 @@ const NavigationHamburgerMenu: React.FC = () => {
               <hr />
               <div
                 className="drawer-popout-item"
-                onClick={() => navigateTo(REDDIT_WATCHER_SETTINGS_ROUTE)}
+                onClick={() => navigateTo(APPLICATION_SETTINGS_ROUTE)}
               >
-                <p className="drawer-popout-item-text">
-                  {" "}
-                  Reddit Watcher Settings
-                </p>
+                <p className="drawer-popout-item-text">App Settings</p>
               </div>
               <hr />
               <div
                 className="drawer-popout-item"
-                onClick={() => navigateTo(REDDIT_POST_SETTINGS_ROUTE)}
+                onClick={() => navigateTo(REDDIT_SOURCE_SETTINGS_ROUTE)}
               >
                 <p className="drawer-popout-item-text">Reddit Post Settings</p>
               </div>
