@@ -18,6 +18,7 @@
     "generate-icons": "npx @capacitor/assets generate --iconBackgroundColor \"#ff5700\" --iconBackgroundColorDark \"#ff5700\" --splashBackgroundColor \"#ff5700\" --splashBackgroundColorDark \"#ff5700\" --assetPath ./public",
     "test": "",
     "electron": "npm run build && cd electron && npm run start",
+    "build-electron": "npm run build && cd electron && npm run package && npm run make && npm run publish",
     "electron-package": "npm run build && cd electron && npm run package",
     "electron-make": "npm run build && cd electron && npm run make",
     "electron-publish": "npm run build && cd electron && npm run publish"
