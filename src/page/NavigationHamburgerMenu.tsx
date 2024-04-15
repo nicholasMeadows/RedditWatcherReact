@@ -22,7 +22,6 @@ import {
   setPageName,
   setShowBackButton,
 } from "../redux/slice/NavigationDrawerSlice";
-import { clearSearchResults } from "../redux/slice/RedditSearchSlice";
 import { useAppDispatch, useAppSelector } from "../redux/store";
 
 const NavigationHamburgerMenu: React.FC = () => {
@@ -91,7 +90,6 @@ const NavigationHamburgerMenu: React.FC = () => {
 
     dispatch(setShowBackButton(showBackButton));
     dispatch(closeContextMenu());
-    dispatch(clearSearchResults());
   }, [dispatch, location, redditAuthStatus]);
 
   const navigateTo = (pathName: string) => {

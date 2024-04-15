@@ -1,16 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { RedditSearchItemContextMenuEvent } from "../../model/Events/RedditSearchItemContextMenuEvent";
-import { Platform } from "../../model/Platform";
 import { setRedditSearchItemContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
-import {
-  clearSearchResults,
-  searchReddit,
-  setSearchBarInput,
-  setSearchResultsOpen,
-  subOrUnSubFromSubreddit,
-} from "../../redux/slice/RedditSearchSlice";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
-import getPlatform from "../../util/PlatformUtil";
+import useSearchReddit from "../../hook/use-search-reddit.ts";
 
 type Props = {
   darkmodeOverride?: boolean;
@@ -18,18 +10,11 @@ type Props = {
 const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
   const dispatch = useAppDispatch();
   const darkmode = useAppSelector((state) => state.appConfig.darkMode);
-  const searchBarInput = useAppSelector(
-    (state) => state.redditSearch.searchBarInput
-  );
-  const searchResults = useAppSelector(
-    (state) => state.redditSearch.searchResults
-  );
-  const searchResultsOpen = useAppSelector(
-    (state) => state.redditSearch.searchResultsOpen
-  );
 
-  const searchInputRef = useRef(null);
-
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const { searchResults, clearSearchResults, subOrUnSubFromSubreddit } =
+    useSearchReddit(searchInputRef);
+  const [searchResultsOpen, setSearchResultsOpen] = useState<boolean>(false);
   const [
     expandCollapseSearchResultsImgSrc,
     setExpandCollapseSearchResultsImgSrc,
@@ -60,22 +45,6 @@ const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
           type="text"
           className="reddit-search-input"
           placeholder="Search Reddit"
-          value={searchBarInput}
-          onChange={(changeEvent) => {
-            const inputValue = changeEvent.target.value;
-            dispatch(setSearchBarInput(inputValue));
-          }}
-          onKeyUp={(keyboardEvent) => {
-            if (keyboardEvent.key == "Enter") {
-              dispatch(searchReddit());
-            }
-          }}
-          onBlur={() => {
-            const platform = getPlatform();
-            if (platform == Platform.Android || platform == Platform.Ios) {
-              dispatch(searchReddit());
-            }
-          }}
         />
 
         <div className="reddit-search-bar-control-imgs-div">
@@ -89,19 +58,25 @@ const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
                 : "expand-search-results-img"
             }`}
             onClick={() => {
-              dispatch(setSearchResultsOpen(!searchResultsOpen));
+              setSearchResultsOpen(!searchResultsOpen);
             }}
           />
           <img
             alt={""}
-            hidden={searchBarInput.length == 0}
+            hidden={
+              searchInputRef.current === null
+                ? true
+                : searchInputRef.current.value.length === 0
+            }
             src={clearSearchInputImgSrc}
             className="reddit-search-bar-control-img"
             onClick={() => {
-              dispatch(setSearchBarInput(""));
-              dispatch(setSearchResultsOpen(false));
+              if (searchInputRef.current !== null) {
+                searchInputRef.current.value = "";
+              }
+              setSearchResultsOpen(false);
               setTimeout(() => {
-                dispatch(clearSearchResults());
+                clearSearchResults();
               }, 200);
             }}
           />
@@ -156,7 +131,7 @@ const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
             <button
               className="search-result-sub-unsub-button"
               onClick={() => {
-                dispatch(subOrUnSubFromSubreddit(searchResult));
+                subOrUnSubFromSubreddit(searchResult);
               }}
             >
               {searchResult.isSubscribed ? "UnSubscribe" : "Subscribe"}

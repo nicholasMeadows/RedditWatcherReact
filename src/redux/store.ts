@@ -8,7 +8,6 @@ import navigationDrawerReducer from "./slice/NavigationDrawerSlice";
 import postRowsReducer from "./slice/PostRowsSlice";
 import redditClientReducer from "./slice/RedditClientSlice";
 import subredditListsReducer from "./slice/RedditListsSlice";
-import redditSearchReducer from "./slice/RedditSearchSlice";
 import sideBarReducer from "./slice/SideBarSlice";
 import singlePostPageSliceReducer from "./slice/SinglePostPageSlice";
 
@@ -19,7 +18,6 @@ const store = configureStore({
     redditClient: redditClientReducer,
     postRows: postRowsReducer,
     subredditLists: subredditListsReducer,
-    redditSearch: redditSearchReducer,
     contextMenu: contextMenuReducer,
     appNotification: appNotificationReducer,
     sideBar: sideBarReducer,
