@@ -1,26 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { SubredditLists } from "../../model/SubredditList/SubredditLists";
-import {
-  loadSubredditListsFromFile,
-  saveSubredditLists,
-} from "../../service/ConfigService";
+import { saveSubredditLists } from "../../service/ConfigService";
 import { v4 as uuidV4 } from "uuid";
 import store from "../store";
 import { ModifySubredditListMode } from "../../model/ModifySubredditListMode";
 import { Subreddit } from "../../model/Subreddit/Subreddit";
 import RedditListsState from "../../model/RedditListsState.ts";
-
-export const loadSubredditLists = createAsyncThunk(
-  "redditLists/loadSubredditLists",
-  async () => {
-    const subredditLists = await loadSubredditListsFromFile();
-    subredditLists.forEach((list) => {
-      list.subredditListUuid = uuidV4();
-      list.subreddits.map((subreddit) => (subreddit.subredditUuid = uuidV4()));
-    });
-    return subredditLists;
-  }
-);
 
 export const selectRandomLists = createAsyncThunk(
   "redditLists/selectRandomLists",
@@ -217,26 +202,22 @@ export const redditListsSlice = createSlice({
     resetSubredditListsLoaded: (state) => {
       state.subredditListsLoaded = false;
     },
+    setSubredditLists: (
+      state,
+      action: { type: string; payload: SubredditLists[] }
+    ) => {
+      state.subredditLists = action.payload;
+      state.subredditListsLoaded = true;
+    },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(loadSubredditLists.fulfilled, (state, action) => {
-        state.subredditLists = action.payload;
-        state.subredditListsLoaded = true;
-      })
-      .addCase(loadSubredditLists.rejected, (state) => {
-        state.subredditLists = [];
-        state.subredditListsLoaded = true;
-      })
-      .addCase(selectRandomLists.fulfilled, (state, action) => {
-        const subredditUuidsToSelect = action.payload as string[];
-        state.subredditLists.forEach((list) => {
-          list.selected = subredditUuidsToSelect.includes(
-            list.subredditListUuid
-          );
-        });
-        saveSubredditLists(state.subredditLists);
+    builder.addCase(selectRandomLists.fulfilled, (state, action) => {
+      const subredditUuidsToSelect = action.payload as string[];
+      state.subredditLists.forEach((list) => {
+        list.selected = subredditUuidsToSelect.includes(list.subredditListUuid);
       });
+      saveSubredditLists(state.subredditLists);
+    });
   },
 });
 
@@ -254,5 +235,6 @@ export const {
   showDeleteListConfirmationBox,
   deleteList,
   resetSubredditListsLoaded,
+  setSubredditLists,
 } = redditListsSlice.actions;
 export default redditListsSlice.reducer;

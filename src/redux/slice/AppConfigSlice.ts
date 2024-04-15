@@ -29,7 +29,6 @@ import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/User
 import {
   exportConfigDownload,
   fillInMissingFieldsInConfigObj,
-  loadConfig,
   saveConfig,
   saveSubredditLists,
 } from "../../service/ConfigService";
@@ -66,14 +65,6 @@ const defaultRedditApiItemLimit = 25;
 const defaultPostsToShowInRow = 4;
 const defaultPostRowsToShowInView = 3;
 const defaultDarkMode = false;
-
-export const loadAppConfig = createAsyncThunk(
-  "appConfig/loadAppConfig",
-  async () => {
-    const config = await loadConfig();
-    return config;
-  }
-);
 
 export const importAppConfig = createAsyncThunk(
   "appConfig/importAppConfig",
@@ -496,9 +487,7 @@ export const appConfigSlice = createSlice({
     resetConfigLoaded: (state) => {
       state.configLoaded = false;
     },
-  },
-  extraReducers: (builder) => {
-    builder.addCase(loadAppConfig.fulfilled, (state, action) => {
+    setAppConfig: (state, action: { type: string; payload: AppConfig }) => {
       const incoming = action.payload as AppConfigState;
       state.redditCredentials = incoming.redditCredentials;
       state.subredditSortOrderOption = incoming.subredditSortOrderOption;
@@ -523,7 +512,7 @@ export const appConfigSlice = createSlice({
       state.postRowsToShowInView = incoming.postRowsToShowInView;
       state.darkMode = incoming.darkMode;
       state.configLoaded = true;
-    });
+    },
   },
 });
 
@@ -556,5 +545,6 @@ export const {
   setPostRowsToShowInView,
   toggleDarkMode,
   resetConfigLoaded,
+  setAppConfig,
 } = appConfigSlice.actions;
 export default appConfigSlice.reducer;
