@@ -1,9 +1,7 @@
-import { useAppSelector } from "../redux/store";
 import useInitializeApp from "../hook/use-initialize-app.ts";
 
 const AppInitialization: React.FC = () => {
-  useInitializeApp();
-  const text = useAppSelector((state) => state.appInitialization.text);
+  const text = useInitializeApp();
   return (
     <>
       <div className="app-initialization-wrapper">

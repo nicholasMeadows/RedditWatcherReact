@@ -12,7 +12,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import store, { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState.ts";
-import { setText } from "../redux/slice/AppInitializationSlice.ts";
 import { authenticateReddit } from "../redux/slice/RedditClientSlice.ts";
 import { startLoopingForPosts } from "../service/RedditService.ts";
 import { setAppConfig } from "../redux/slice/AppConfigSlice.ts";
@@ -32,7 +31,7 @@ export default function useInitializeApp() {
   );
 
   const postRows = useAppSelector((state) => state.postRows.postRows);
-
+  const [initializeAppPageText, setInitializeAppPageText] = useState("");
   useEffect(() => {
     const init = async () => {
       if (config === undefined) {
@@ -82,7 +81,7 @@ export default function useInitializeApp() {
           RedditAuthenticationStatus.NOT_YET_AUTHED
         ) {
           console.log("Authenticating Reddit");
-          dispatch(setText("Logging In..."));
+          setInitializeAppPageText("Logging In...");
           dispatch(authenticateReddit());
         } else if (
           redditAuthenticationStatus ==
@@ -90,7 +89,7 @@ export default function useInitializeApp() {
         ) {
           navigate(REDDIT_SIGN_IN_ROUTE);
         } else if (postRows.length == 0) {
-          dispatch(setText("Getting Posts..."));
+          setInitializeAppPageText("Getting Posts...");
           const loopingForPosts = store.getState().redditClient.loopingForPosts;
           if (!loopingForPosts) {
             startLoopingForPosts();
@@ -109,4 +108,6 @@ export default function useInitializeApp() {
     redditAuthenticationStatus,
     subredditLists,
   ]);
+
+  return initializeAppPageText;
 }
