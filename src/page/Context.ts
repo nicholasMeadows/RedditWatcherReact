@@ -20,3 +20,20 @@ export const PostCardContext = createContext({} as PostCardContextObj);
 
 export const AutoScrollPostRowRateSecondsForSinglePostCardContext =
   createContext(5000);
+
+type singlePostPageContextData = {
+  postRowUuid: string | undefined;
+  postUuid: string | undefined;
+  setSinglePostPagePostRowUuid: React.Dispatch<
+    React.SetStateAction<string | undefined>
+  >;
+  setSinglePostPagePostUuid: React.Dispatch<
+    React.SetStateAction<string | undefined>
+  >;
+};
+export const SinglePostPageContext = createContext<singlePostPageContextData>({
+  postRowUuid: undefined,
+  postUuid: undefined,
+  setSinglePostPagePostRowUuid: () => {},
+  setSinglePostPagePostUuid: () => {},
+});

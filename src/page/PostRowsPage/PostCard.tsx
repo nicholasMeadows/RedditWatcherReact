@@ -2,11 +2,11 @@ import { FC, useContext } from "react";
 import PostMediaElement from "./PostMediaElement.tsx";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent.ts";
 import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice.ts";
-import { setPostAndRowUuid } from "../../redux/slice/SinglePostPageSlice.ts";
 import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants.ts";
 import {
   AutoScrollPostRowRateSecondsForSinglePostCardContext,
   PostCardContext,
+  SinglePostPageContext,
 } from "../Context.ts";
 import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import { useNavigate } from "react-router-dom";
@@ -36,6 +36,9 @@ const PostCard: FC = () => {
   const autoScrollPostRowRateMs = useContext(
     AutoScrollPostRowRateSecondsForSinglePostCardContext
   );
+
+  const { setSinglePostPagePostRowUuid, setSinglePostPagePostUuid } =
+    useContext(SinglePostPageContext);
 
   return (
     <div
@@ -74,12 +77,8 @@ const PostCard: FC = () => {
           }
         }}
         onClick={() => {
-          dispatch(
-            setPostAndRowUuid({
-              postRowUuid: postRowUuid,
-              postUuid: uiPost.postUuid,
-            })
-          );
+          setSinglePostPagePostRowUuid(postRowUuid);
+          setSinglePostPagePostUuid(uiPost.postUuid);
           navigate(`${SINGPLE_POST_ROUTE}`);
           dispatch(mouseLeavePostRow(postRowUuid));
         }}

@@ -36,7 +36,7 @@ import {
   setPostCardWidthPercentage,
   setPostRowContentWidthPx,
 } from "../redux/slice/PostRowsSlice.ts";
-import { RootFontSizeContext } from "./Context.ts";
+import { RootFontSizeContext, SinglePostPageContext } from "./Context.ts";
 import {
   setPostRowsToShowInView,
   setPostsToShowInRow,
@@ -164,53 +164,70 @@ const RouterView: React.FC = () => {
       contentResizeObserver.observe(div);
     }
   }, [dispatch, postsToShowInRow]);
+
+  const [singlePostPagePostRowUuid, setSinglePostPagePostRowUuid] = useState<
+    string | undefined
+  >(undefined);
+  const [singlePostPagePostUuid, setSinglePostPagePostUuid] = useState<
+    string | undefined
+  >(undefined);
+
   return (
     <div className="root-app" ref={rootDivRef}>
       <RootFontSizeContext.Provider value={{ fontSize: rootFontSize }}>
-        <NavigationHamburgerMenu />
-        <AppNotification />
-        <ContextMenu />
-        <div
-          style={{
-            marginTop: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
-            height: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
-            maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+        <SinglePostPageContext.Provider
+          value={{
+            postRowUuid: singlePostPagePostRowUuid,
+            postUuid: singlePostPagePostUuid,
+            setSinglePostPagePostRowUuid: setSinglePostPagePostRowUuid,
+            setSinglePostPagePostUuid: setSinglePostPagePostUuid,
           }}
-          className="app-body"
         >
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Navigate to={APP_INITIALIZATION_ROUTE} replace={true} />
-              }
-            />
-            <Route
-              index
-              path={APP_INITIALIZATION_ROUTE}
-              element={<AppInitialization />}
-            />
-            <Route path={REDDIT_SIGN_IN_ROUTE} element={<RedditSignIn />} />
-            <Route path={POST_ROW_ROUTE} element={<PostRowPage />} />
-            <Route
-              path={REDDIT_SOURCE_SETTINGS_ROUTE}
-              element={<RedditSourceSettings />}
-            />
-            <Route
-              path={APPLICATION_SETTINGS_ROUTE}
-              element={<ApplicationSettings />}
-            />
-            <Route path={SINGPLE_POST_ROUTE} element={<SinglePostView />} />
-            <Route
-              path={MODIFY_SUBREDDIT_LISTS_ROUTE}
-              element={<ModifySubredditLists />}
-            />
-            <Route
-              path={MODIFY_SUBREDDIT_QUEUE_ROUTE}
-              element={<ModifySubredditQueue />}
-            />
-          </Routes>
-        </div>
+          <NavigationHamburgerMenu />
+          <AppNotification />
+          <ContextMenu />
+          <div
+            style={{
+              marginTop: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
+              height: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+              maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+            }}
+            className="app-body"
+          >
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <Navigate to={APP_INITIALIZATION_ROUTE} replace={true} />
+                }
+              />
+              <Route
+                index
+                path={APP_INITIALIZATION_ROUTE}
+                element={<AppInitialization />}
+              />
+              <Route path={REDDIT_SIGN_IN_ROUTE} element={<RedditSignIn />} />
+              <Route path={POST_ROW_ROUTE} element={<PostRowPage />} />
+              <Route
+                path={REDDIT_SOURCE_SETTINGS_ROUTE}
+                element={<RedditSourceSettings />}
+              />
+              <Route
+                path={APPLICATION_SETTINGS_ROUTE}
+                element={<ApplicationSettings />}
+              />
+              <Route path={SINGPLE_POST_ROUTE} element={<SinglePostView />} />
+              <Route
+                path={MODIFY_SUBREDDIT_LISTS_ROUTE}
+                element={<ModifySubredditLists />}
+              />
+              <Route
+                path={MODIFY_SUBREDDIT_QUEUE_ROUTE}
+                element={<ModifySubredditQueue />}
+              />
+            </Routes>
+          </div>
+        </SinglePostPageContext.Provider>
       </RootFontSizeContext.Provider>
     </div>
   );
