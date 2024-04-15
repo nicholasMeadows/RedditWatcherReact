@@ -1,7 +1,7 @@
 {
   "name": "reddit-watcher",
   "private": true,
-  "version": "0.0.1",
+  "version": "1.0.0",
   "type": "module",
   "main": "electron-entry.js",
   "author": "Nicholas",
