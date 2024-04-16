@@ -3,10 +3,6 @@ import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import getPlatform from "../../util/PlatformUtil.ts";
 import { Platform } from "../../model/Platform.ts";
 import { FC, useCallback, useContext, useEffect, useRef } from "react";
-import {
-  AutoScrollPostRowRateSecondsForSinglePostCardContext,
-  PostCardContext,
-} from "../Context.ts";
 import PostCard from "./PostCard.tsx";
 import {
   mouseEnterPostRow,
@@ -18,6 +14,8 @@ import {
 import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
+import { PostCardContext } from "../../context/post-card-context.ts";
+import { AutoScrollPostRowRateSecondsForSinglePostCardContext } from "../../context/auto-scroll-post-row-rate-seconds-for-single-post-card-context.ts";
 
 type Props = { postRow: PostRow };
 const PostRow: FC<Props> = ({ postRow }) => {

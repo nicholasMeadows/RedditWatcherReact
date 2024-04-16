@@ -1,11 +1,6 @@
 import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
 import CustomContextMenuEvent from "../model/Events/CustomContextMenuEvent.ts";
 import { useContext } from "react";
-import {
-  ContextMenuContext,
-  ContextMenuContextData,
-  InitialContextMenuContextData,
-} from "../page/Context.ts";
 import { Post } from "../model/Post/Post.ts";
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
@@ -14,6 +9,11 @@ import SubredditListItemContextMenuEvent from "../model/Events/SubredditListItem
 import SubredditListContextMenuEvent from "../model/Events/SubredditListContextMenuEvent.ts";
 import SideBarSubredditMenuEvent from "../model/Events/SideBarSubredditMenuEvent.ts";
 import { RedditSearchItemContextMenuEvent } from "../model/Events/RedditSearchItemContextMenuEvent.ts";
+import {
+  ContextMenuContext,
+  ContextMenuContextData,
+  InitialContextMenuContextData,
+} from "../context/context-menu-context.ts";
 
 interface ContextDataObjects {
   post?: Post | undefined;

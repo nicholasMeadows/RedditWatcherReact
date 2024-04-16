@@ -16,8 +16,8 @@ import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
 import PostMediaElement from "./PostRowsPage/PostMediaElement.tsx";
 import { useSinglePostPageGoToNextPrevPost } from "../hook/use-single-post-page-go-to-next-prev-post.ts";
 import { useSinglePostPageFindPost } from "../hook/use-single-post-page-find-post.ts";
-import { SinglePostPageContext } from "./Context.ts";
 import { useContextMenu } from "../hook/use-context-menu.ts";
+import { SinglePostPageContext } from "../context/single-post-page-context.ts";
 
 const SinglePostView: FC = () => {
   const contextMenu = useContextMenu();

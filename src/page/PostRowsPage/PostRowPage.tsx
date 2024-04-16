@@ -6,7 +6,7 @@ import {
 import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import PostRow from "./PostRow.tsx";
 import SideBar from "../SideBar.tsx";
-import { AutoScrollPostRowRateSecondsForSinglePostCardContext } from "../Context.ts";
+import { AutoScrollPostRowRateSecondsForSinglePostCardContext } from "../../context/auto-scroll-post-row-rate-seconds-for-single-post-card-context.ts";
 
 const PostRowPage: React.FC = () => {
   const dispatch = useAppDispatch();

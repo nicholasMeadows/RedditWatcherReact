@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import { SinglePostPageContext } from "../page/Context.ts";
 import store from "../redux/store.ts";
+import { SinglePostPageContext } from "../context/single-post-page-context.ts";
 
 export function useSinglePostPageGoToNextPrevPost() {
   const { postRowUuid, postUuid, setSinglePostPagePostUuid } = useContext(

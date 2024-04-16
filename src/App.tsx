@@ -21,14 +21,14 @@ import "./theme/variables.css";
 import { Provider } from "react-redux";
 import RouterView from "./page/RouterView";
 import store from "./redux/store";
+import { useState } from "react";
 import {
   ContextMenuContext,
   ContextMenuContextData,
   InitialContextMenuContextData,
-  RootFontSizeContext,
-  SinglePostPageContext,
-} from "./page/Context.ts";
-import { useState } from "react";
+} from "./context/context-menu-context.ts";
+import { RootFontSizeContext } from "./context/root-font-size-context.ts";
+import { SinglePostPageContext } from "./context/single-post-page-context.ts";
 
 const App: React.FC = () => {
   const [rootFontSize, setRootFontSize] = useState(0);

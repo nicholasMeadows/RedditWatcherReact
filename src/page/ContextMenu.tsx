@@ -8,8 +8,8 @@ import {
   showUpdateListBox,
 } from "../redux/slice/RedditListsSlice";
 import { addSubredditToQueue } from "../redux/slice/RedditClientSlice";
-import { ContextMenuContext } from "./Context.ts";
 import { useContextMenu } from "../hook/use-context-menu.ts";
+import { ContextMenuContext } from "../context/context-menu-context.ts";
 
 const ContextMenu: React.FC = () => {
   const dispatch = useAppDispatch();

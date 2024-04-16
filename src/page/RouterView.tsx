@@ -40,7 +40,7 @@ import {
   setPostsToShowInRow,
 } from "../redux/slice/AppConfigSlice.ts";
 import { useContextMenu } from "../hook/use-context-menu.ts";
-import { RootFontSizeContext } from "./Context.ts";
+import { RootFontSizeContext } from "../context/root-font-size-context.ts";
 
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();

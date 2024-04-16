@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
-import { SinglePostPageContext } from "../page/Context.ts";
 import { Post } from "../model/Post/Post.ts";
 import store from "../redux/store.ts";
+import { SinglePostPageContext } from "../context/single-post-page-context.ts";
 
 export function useSinglePostPageFindPost() {
   const { postRowUuid, postUuid } = useContext(SinglePostPageContext);

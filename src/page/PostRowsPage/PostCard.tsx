@@ -2,17 +2,15 @@ import { FC, useContext } from "react";
 import PostMediaElement from "./PostMediaElement.tsx";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent.ts";
 import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants.ts";
-import {
-  AutoScrollPostRowRateSecondsForSinglePostCardContext,
-  PostCardContext,
-  SinglePostPageContext,
-} from "../Context.ts";
 import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import { useNavigate } from "react-router-dom";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { mouseLeavePostRow } from "../../redux/slice/PostRowsSlice.ts";
 import { useContextMenu } from "../../hook/use-context-menu.ts";
+import { PostCardContext } from "../../context/post-card-context.ts";
+import { AutoScrollPostRowRateSecondsForSinglePostCardContext } from "../../context/auto-scroll-post-row-rate-seconds-for-single-post-card-context.ts";
+import { SinglePostPageContext } from "../../context/single-post-page-context.ts";
 
 const PostCard: FC = () => {
   const dispatch = useAppDispatch();
