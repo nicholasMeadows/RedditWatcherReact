@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   APP_INITIALIZATION_ROUTE,
@@ -17,23 +17,18 @@ import {
   importAppConfig,
   toggleDarkMode,
 } from "../redux/slice/AppConfigSlice";
-import {
-  setPageName,
-  setShowBackButton,
-} from "../redux/slice/NavigationDrawerSlice";
 import { useAppDispatch, useAppSelector } from "../redux/store";
 import { useContextMenu } from "../hook/use-context-menu.ts";
+import { NavigationDrawerContext } from "../context/navigation-drawer-context.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const contextMenu = useContextMenu();
-  const pageName = useAppSelector((state) => state.navigationDrawer.pageName);
+  const { navigationDrawerContextData, setNavigationDrawerContextData } =
+    useContext(NavigationDrawerContext);
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
-  const showBackButton = useAppSelector(
-    (state) => state.navigationDrawer.showBackButton
-  );
   const redditAuthStatus = useAppSelector(
     (state) => state.redditClient.redditAuthenticationStatus
   );
@@ -82,16 +77,24 @@ const NavigationHamburgerMenu: React.FC = () => {
         pageName = "Modify Subreddit Queue";
         break;
     }
-    dispatch(setPageName(pageName));
 
     const showBackButton =
       redditAuthStatus == RedditAuthenticationStatus.AUTHENTICATED &&
       pathname != POST_ROW_ROUTE &&
       pathname != APP_INITIALIZATION_ROUTE;
 
-    dispatch(setShowBackButton(showBackButton));
+    setNavigationDrawerContextData({
+      pageName: pageName,
+      showBackButton: showBackButton,
+    });
     contextMenu.closeContextMenu();
-  }, [dispatch, location, redditAuthStatus]);
+  }, [
+    contextMenu,
+    dispatch,
+    location,
+    redditAuthStatus,
+    setNavigationDrawerContextData,
+  ]);
 
   const navigateTo = (pathName: string) => {
     setPopoutDrawerOpen(false);
@@ -134,13 +137,19 @@ const NavigationHamburgerMenu: React.FC = () => {
             onClick={() => {
               navigate(-1);
             }}
-            style={{ display: `${showBackButton ? "" : "none"}` }}
+            style={{
+              display: `${
+                navigationDrawerContextData.showBackButton ? "" : "none"
+              }`,
+            }}
           >
             <img alt={""} src={`assets/back_arrow_white.png`} />
           </div>
 
           <div className="top-bar-title-box">
-            <p className="tool-bar-title">{pageName}</p>
+            <p className="tool-bar-title">
+              {navigationDrawerContextData.pageName}
+            </p>
           </div>
         </div>
       </div>

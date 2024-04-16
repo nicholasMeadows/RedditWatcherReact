@@ -3,7 +3,6 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import thunk from "redux-thunk";
 import appConfigReducer from "./slice/AppConfigSlice";
 import appNotificationReducer from "./slice/AppNotificationSlice";
-import navigationDrawerReducer from "./slice/NavigationDrawerSlice";
 import postRowsReducer from "./slice/PostRowsSlice";
 import redditClientReducer from "./slice/RedditClientSlice";
 import subredditListsReducer from "./slice/RedditListsSlice";
@@ -12,7 +11,6 @@ import sideBarReducer from "./slice/SideBarSlice";
 const store = configureStore({
   reducer: {
     appConfig: appConfigReducer,
-    navigationDrawer: navigationDrawerReducer,
     redditClient: redditClientReducer,
     postRows: postRowsReducer,
     subredditLists: subredditListsReducer,

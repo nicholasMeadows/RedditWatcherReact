@@ -29,6 +29,7 @@ import {
 } from "./context/context-menu-context.ts";
 import { RootFontSizeContext } from "./context/root-font-size-context.ts";
 import { SinglePostPageContext } from "./context/single-post-page-context.ts";
+import { NavigationDrawerContext } from "./context/navigation-drawer-context.ts";
 
 const App: React.FC = () => {
   const [rootFontSize, setRootFontSize] = useState(0);
@@ -40,6 +41,12 @@ const App: React.FC = () => {
   >(undefined);
   const [contextMenuData, setContextMenuData] =
     useState<ContextMenuContextData>(InitialContextMenuContextData);
+  const initialNavigationDrawerContextData = {
+    pageName: "Home",
+    showBackButton: false,
+  };
+  const [navigationDrawerContextData, setNavigationDrawerContextData] =
+    useState(initialNavigationDrawerContextData);
   return (
     <Provider store={store}>
       <HashRouter>
@@ -62,7 +69,15 @@ const App: React.FC = () => {
                 },
               }}
             >
-              <RouterView />
+              <NavigationDrawerContext.Provider
+                value={{
+                  navigationDrawerContextData: navigationDrawerContextData,
+                  setNavigationDrawerContextData:
+                    setNavigationDrawerContextData,
+                }}
+              >
+                <RouterView />
+              </NavigationDrawerContext.Provider>
             </ContextMenuContext.Provider>
           </SinglePostPageContext.Provider>
         </RootFontSizeContext.Provider>
