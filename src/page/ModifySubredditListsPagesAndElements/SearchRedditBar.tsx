@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { RedditSearchItemContextMenuEvent } from "../../model/Events/RedditSearchItemContextMenuEvent";
-import { setRedditSearchItemContextMenuEvent } from "../../redux/slice/ContextMenuSlice";
-import { useAppDispatch, useAppSelector } from "../../redux/store";
+import { useAppSelector } from "../../redux/store";
 import useSearchReddit from "../../hook/use-search-reddit.ts";
+import { useContextMenu } from "../../hook/use-context-menu.ts";
 
 type Props = {
   darkmodeOverride?: boolean;
 };
 const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
-  const dispatch = useAppDispatch();
+  const contextMenu = useContextMenu();
   const darkmode = useAppSelector((state) => state.appConfig.darkMode);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -115,9 +115,7 @@ const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
                 y: event.clientY,
                 searchResultItem: searchResult,
               };
-              dispatch(
-                setRedditSearchItemContextMenuEvent({ event: customEvent })
-              );
+              contextMenu.setRedditSearchItemContextMenuEvent(customEvent);
             }}
           >
             <p className="search-result-p">

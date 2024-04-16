@@ -1,7 +1,6 @@
 import React, { MouseEvent, useCallback, useEffect, useRef } from "react";
 import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../RedditWatcherConstants.ts";
 import SideBarSubredditMenuEvent from "../model/Events/SideBarSubredditMenuEvent.ts";
-import { setSideBarSubredditMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import {
   decreaseTimeTillNextGetPostsSeconds,
   setListToFilterByUuid,
@@ -15,9 +14,11 @@ import {
 } from "../redux/slice/SideBarSlice.ts";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import SearchRedditBar from "./ModifySubredditListsPagesAndElements/SearchRedditBar.tsx";
+import { useContextMenu } from "../hook/use-context-menu.ts";
 
 const SideBar: React.FC = () => {
   const dispatch = useAppDispatch();
+  const contextMenu = useContextMenu();
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
   const subredditLists = useAppSelector(
     (state) => state.subredditLists.subredditLists
@@ -238,10 +239,8 @@ const SideBar: React.FC = () => {
                   x: event.clientX,
                   y: event.clientY,
                 };
-                dispatch(
-                  setSideBarSubredditMenuEvent({
-                    event: subredditContextMenuEvent,
-                  })
+                contextMenu.setSideBarSubredditMenuEvent(
+                  subredditContextMenuEvent
                 );
               }}
               key={subreddit.subredditUuid}

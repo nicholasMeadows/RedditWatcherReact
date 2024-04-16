@@ -13,15 +13,14 @@ import {
   SINGLE_POST_PAGE_SCALE_STEP,
 } from "../RedditWatcherConstants.ts";
 import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
-import { setPostContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
-import { useAppDispatch } from "../redux/store.ts";
 import PostMediaElement from "./PostRowsPage/PostMediaElement.tsx";
 import { useSinglePostPageGoToNextPrevPost } from "../hook/use-single-post-page-go-to-next-prev-post.ts";
 import { useSinglePostPageFindPost } from "../hook/use-single-post-page-find-post.ts";
 import { SinglePostPageContext } from "./Context.ts";
+import { useContextMenu } from "../hook/use-context-menu.ts";
 
 const SinglePostView: FC = () => {
-  const dispatch = useAppDispatch();
+  const contextMenu = useContextMenu();
   const { postRowUuid } = useContext(SinglePostPageContext);
   const post = useSinglePostPageFindPost();
   const { goToNextPost, goToPreviousPost } =
@@ -266,9 +265,7 @@ const SinglePostView: FC = () => {
                   x: event.clientX,
                   y: event.clientY,
                 };
-                dispatch(
-                  setPostContextMenuEvent({ event: postContextMenuEvent })
-                );
+                contextMenu.setPostContextMenuEvent(postContextMenuEvent);
               }}
               className="flex flex-column max-width-height-percentage single-post-view-post-element"
             >

@@ -17,17 +17,18 @@ import {
   importAppConfig,
   toggleDarkMode,
 } from "../redux/slice/AppConfigSlice";
-import { closeContextMenu } from "../redux/slice/ContextMenuSlice";
 import {
   setPageName,
   setShowBackButton,
 } from "../redux/slice/NavigationDrawerSlice";
 import { useAppDispatch, useAppSelector } from "../redux/store";
+import { useContextMenu } from "../hook/use-context-menu.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const contextMenu = useContextMenu();
   const pageName = useAppSelector((state) => state.navigationDrawer.pageName);
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
   const showBackButton = useAppSelector(
@@ -89,7 +90,7 @@ const NavigationHamburgerMenu: React.FC = () => {
       pathname != APP_INITIALIZATION_ROUTE;
 
     dispatch(setShowBackButton(showBackButton));
-    dispatch(closeContextMenu());
+    contextMenu.closeContextMenu();
   }, [dispatch, location, redditAuthStatus]);
 
   const navigateTo = (pathName: string) => {

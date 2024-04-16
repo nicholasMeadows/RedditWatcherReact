@@ -21,12 +21,51 @@ import "./theme/variables.css";
 import { Provider } from "react-redux";
 import RouterView from "./page/RouterView";
 import store from "./redux/store";
+import {
+  ContextMenuContext,
+  ContextMenuContextData,
+  InitialContextMenuContextData,
+  RootFontSizeContext,
+  SinglePostPageContext,
+} from "./page/Context.ts";
+import { useState } from "react";
 
 const App: React.FC = () => {
+  const [rootFontSize, setRootFontSize] = useState(0);
+  const [singlePostPagePostRowUuid, setSinglePostPagePostRowUuid] = useState<
+    string | undefined
+  >(undefined);
+  const [singlePostPagePostUuid, setSinglePostPagePostUuid] = useState<
+    string | undefined
+  >(undefined);
+  const [contextMenuData, setContextMenuData] =
+    useState<ContextMenuContextData>(InitialContextMenuContextData);
   return (
     <Provider store={store}>
       <HashRouter>
-        <RouterView />
+        <RootFontSizeContext.Provider
+          value={{ fontSize: rootFontSize, setRootFontSize: setRootFontSize }}
+        >
+          <SinglePostPageContext.Provider
+            value={{
+              postRowUuid: singlePostPagePostRowUuid,
+              postUuid: singlePostPagePostUuid,
+              setSinglePostPagePostRowUuid: setSinglePostPagePostRowUuid,
+              setSinglePostPagePostUuid: setSinglePostPagePostUuid,
+            }}
+          >
+            <ContextMenuContext.Provider
+              value={{
+                contextMenuData: contextMenuData,
+                setContextMenuData: (data) => {
+                  setContextMenuData(data);
+                },
+              }}
+            >
+              <RouterView />
+            </ContextMenuContext.Provider>
+          </SinglePostPageContext.Provider>
+        </RootFontSizeContext.Provider>
       </HashRouter>
     </Provider>
   );

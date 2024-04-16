@@ -1,7 +1,6 @@
 import { FC, useContext } from "react";
 import PostMediaElement from "./PostMediaElement.tsx";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent.ts";
-import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice.ts";
 import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants.ts";
 import {
   AutoScrollPostRowRateSecondsForSinglePostCardContext,
@@ -13,10 +12,12 @@ import { useNavigate } from "react-router-dom";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { mouseLeavePostRow } from "../../redux/slice/PostRowsSlice.ts";
+import { useContextMenu } from "../../hook/use-context-menu.ts";
 
 const PostCard: FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const contextMenu = useContextMenu();
   const {
     uiPost,
     postRowUuid,
@@ -68,7 +69,7 @@ const PostCard: FC = () => {
             x: event.clientX,
             y: event.clientY,
           };
-          dispatch(setPostContextMenuEvent({ event: postContextMenuEvent }));
+          contextMenu.setPostContextMenuEvent(postContextMenuEvent);
         }}
         onClickCapture={(event) => {
           if (totalMovementX.current >= 50) {

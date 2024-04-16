@@ -3,7 +3,6 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import thunk from "redux-thunk";
 import appConfigReducer from "./slice/AppConfigSlice";
 import appNotificationReducer from "./slice/AppNotificationSlice";
-import contextMenuReducer from "./slice/ContextMenuSlice";
 import navigationDrawerReducer from "./slice/NavigationDrawerSlice";
 import postRowsReducer from "./slice/PostRowsSlice";
 import redditClientReducer from "./slice/RedditClientSlice";
@@ -17,7 +16,6 @@ const store = configureStore({
     redditClient: redditClientReducer,
     postRows: postRowsReducer,
     subredditLists: subredditListsReducer,
-    contextMenu: contextMenuReducer,
     appNotification: appNotificationReducer,
     sideBar: sideBarReducer,
   },
