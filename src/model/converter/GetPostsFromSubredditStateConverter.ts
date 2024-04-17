@@ -14,7 +14,7 @@ import { PostRow } from "../PostRow.ts";
 import { Post } from "../Post/Post.ts";
 import RandomIterationSelectWeightOptionsEnum from "../config/enums/RandomIterationSelectWeightOptionsEnum.ts";
 import SelectedSubredditListSortOptionEnum from "../config/enums/SelectedSubredditListSortOptionEnum.ts";
-import { PostRowsState } from "../PostRowsState.ts";
+import { PostRowsContextData } from "../../context/post-rows-context.ts";
 
 export type GetPostsFromSubredditState = {
   postRows: Array<PostRow>;
@@ -53,7 +53,7 @@ export type GetPostsUpdatedValues = {
 
 export class GetPostsFromSubredditStateConverter {
   convert(
-    postRowsState: PostRowsState,
+    postRowsState: PostRowsContextData,
     appConfigState: AppConfigState,
     redditClientState: RedditClientState,
     redditListsState: RedditListsState

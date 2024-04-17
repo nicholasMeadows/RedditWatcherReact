@@ -1,5 +1,8 @@
 import { useContext } from "react";
-import { PostRowsContext } from "../context/post-rows-context.ts";
+import {
+  PostRowsContext,
+  PostRowsContextData,
+} from "../context/post-rows-context.ts";
 import store from "../redux/store.ts";
 import { Post, UiPost } from "../model/Post/Post.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
@@ -9,7 +12,6 @@ import {
   MAX_POSTS_PER_ROW,
   POST_ROW_ROUTE,
 } from "../RedditWatcherConstants.ts";
-import { PostRowsState } from "../model/PostRowsState.ts";
 
 export type UsePostRows = {
   setCurrentLocation: (path: string) => void;
@@ -47,7 +49,7 @@ export type UsePostRows = {
     postRowUuid: string,
     snapToPostCard?: boolean | undefined
   ) => void;
-  getPostRowsContextData: () => PostRowsState;
+  getPostRowsContextData: () => PostRowsContextData;
 };
 
 export default function usePostRows(): UsePostRows {

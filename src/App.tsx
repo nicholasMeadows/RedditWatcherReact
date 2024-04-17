@@ -40,8 +40,10 @@ import { Subreddit } from "./model/Subreddit/Subreddit.ts";
 import { SubredditLists } from "./model/SubredditList/SubredditLists.ts";
 import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "./RedditWatcherConstants.ts";
 import { PostRow } from "./model/PostRow.ts";
-import { PostRowsState } from "./model/PostRowsState.ts";
-import { PostRowsContext } from "./context/post-rows-context.ts";
+import {
+  PostRowsContext,
+  PostRowsContextData,
+} from "./context/post-rows-context.ts";
 
 const App: React.FC = () => {
   const [rootFontSize, setRootFontSize] = useState(0);
@@ -70,8 +72,8 @@ const App: React.FC = () => {
     timeTillNextGetPostsSeconds: 0,
   });
 
-  const [postRowsContextData, setPostRowsContextData] = useState<PostRowsState>(
-    {
+  const [postRowsContextData, setPostRowsContextData] =
+    useState<PostRowsContextData>({
       getPostRowsPaused: false,
       getPostRowsPausedTimeout: undefined,
       currentPath: "",
@@ -81,8 +83,7 @@ const App: React.FC = () => {
       postRows: new Array<PostRow>(),
       postCardWidthPercentage: 0,
       postRowContentWidthPx: 0,
-    }
-  );
+    });
 
   const redditServiceRef = useRef(new RedditService());
 
