@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { v4 as uuidV4 } from "uuid";
-import authenticate from "../../client/RedditClient";
+import RedditClient from "../../client/RedditClient";
 import { RedditAuthenticationStatus } from "../../model/RedditAuthenticationState";
 import { RedditClientState } from "../../model/RedditClientState";
 import { Subreddit } from "../../model/Subreddit/Subreddit";
@@ -25,7 +25,7 @@ export const authenticateReddit = createAsyncThunk(
         clientId != undefined &&
         clientSecret != undefined
       ) {
-        const authRes = await authenticate(
+        const authRes = await new RedditClient().authenticate(
           username,
           password,
           clientId,
@@ -44,13 +44,13 @@ export const authenticateReddit = createAsyncThunk(
 );
 
 const initialState: RedditClientState = {
-  accessToken: undefined,
-  accessTokenExpiration: undefined,
+  // accessToken: undefined,
+  // accessTokenExpiration: undefined,
+  // rateLimitResetsAtEpoch: undefined,
+  // rateLimitRemaining: undefined,
+  // rateLimitUsed: undefined,
   redditAuthenticationStatus: RedditAuthenticationStatus.NOT_YET_AUTHED,
   masterSubscribedSubredditList: [],
-  rateLimitResetsAtEpoch: undefined,
-  rateLimitRemaining: undefined,
-  rateLimitUsed: undefined,
   subredditQueue: new Array<SubredditQueueItem>(),
   subredditIndex: 0,
   nsfwRedditListIndex: 0,
@@ -63,12 +63,6 @@ export const redditClientSlice = createSlice({
   name: "redditClient",
   initialState: initialState,
   reducers: {
-    setAccessToken: (state, action) => {
-      state.accessToken = action.payload;
-    },
-    setAccessTokenExpiration: (state, action) => {
-      state.accessTokenExpiration = action.payload;
-    },
     setMasterSubscribedSubredditList: (
       state,
       action: { type: string; payload: Array<Subreddit> }
@@ -80,15 +74,6 @@ export const redditClientSlice = createSlice({
       action: { type: string; payload: Array<Subreddit> }
     ) => {
       state.masterSubscribedSubredditList.push(...action.payload);
-    },
-    setRateLimitResetsAtEpoch: (state, action) => {
-      state.rateLimitResetsAtEpoch = action.payload;
-    },
-    setRateLimitRemaining: (state, action) => {
-      state.rateLimitRemaining = action.payload;
-    },
-    setRateLimitUsed: (state, action) => {
-      state.rateLimitUsed = action.payload;
     },
     subredditQueueRemoveAt: (
       state,
@@ -184,11 +169,11 @@ export const redditClientSlice = createSlice({
       state.loopingForPostsTimeout = action.payload;
     },
     resetRedditClient: (state) => {
-      state.accessToken = undefined;
-      state.accessTokenExpiration = undefined;
-      state.rateLimitRemaining = undefined;
-      state.rateLimitResetsAtEpoch = undefined;
-      state.rateLimitUsed = undefined;
+      // state.accessToken = undefined;
+      // state.accessTokenExpiration = undefined;
+      // state.rateLimitRemaining = undefined;
+      // state.rateLimitResetsAtEpoch = undefined;
+      // state.rateLimitUsed = undefined;
       state.redditAuthenticationStatus =
         RedditAuthenticationStatus.NOT_YET_AUTHED;
       state.loopingForPosts = false;
@@ -198,9 +183,7 @@ export const redditClientSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(authenticateReddit.fulfilled, (state, action) => {
-        state.accessToken = action.payload.accessToken;
-        state.accessTokenExpiration = action.payload.expiration;
+      .addCase(authenticateReddit.fulfilled, (state) => {
         state.redditAuthenticationStatus =
           RedditAuthenticationStatus.AUTHENTICATED;
       })
@@ -212,13 +195,8 @@ export const redditClientSlice = createSlice({
 });
 
 export const {
-  setAccessToken,
-  setAccessTokenExpiration,
   setMasterSubscribedSubredditList,
   addSubredditsToSubscribedList,
-  setRateLimitResetsAtEpoch,
-  setRateLimitRemaining,
-  setRateLimitUsed,
   subredditQueueRemoveAt,
   setSubredditIndex,
   setNsfwRedditListIndex,

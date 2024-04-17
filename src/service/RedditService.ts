@@ -1,13 +1,5 @@
 import { v4 as uuidV4 } from "uuid";
 import { MAX_POSTS_PER_ROW } from "../RedditWatcherConstants";
-import {
-  callSearchRedditForSubRedditAndUser,
-  callSubscribe,
-  callUnsubscribe,
-  getPostsForSubredditUri,
-  getSubscribedSubReddits,
-  getUserFrontPage,
-} from "../client/RedditClient";
 import { Post } from "../model/Post/Post";
 import { Subreddit } from "../model/Subreddit/Subreddit";
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult";
@@ -55,6 +47,7 @@ import {
   GetPostsFromSubredditState,
   GetPostsFromSubredditStateConverter,
 } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
+import RedditClient from "../client/RedditClient.ts";
 
 export async function startLoopingForPosts() {
   console.log("starting to loop for posts");
@@ -163,7 +156,9 @@ export async function getPostsFromSubreddit(
       getPostsFromSubredditsState.userFrontPagePostSortOrderOption
     )
   ) {
-    posts = await getUserFrontPage(getPostsFromSubredditsState);
+    posts = await new RedditClient().getUserFrontPage(
+      getPostsFromSubredditsState
+    );
   } else {
     const [postsArr, fromSubredditsArr] = await getPostsBasedOnSettings(
       getPostsFromSubredditsState
@@ -431,7 +426,7 @@ async function getPostsForSubreddit(
     getPostsFromSubredditsState.redditApiItemLimit
   );
   console.log("about to get posts for subreddit uri ", url);
-  let posts = await getPostsForSubredditUri(url);
+  let posts = await new RedditClient().getPostsForSubredditUri(url);
   posts = posts.map<Post>((value) => {
     value.randomSourceString = randomSourceString;
     return value;
@@ -631,13 +626,13 @@ function applyUpdatedStateValues(
 }
 
 async function loadSubscribedSubreddits(async: boolean = true) {
-  let results = await getSubscribedSubReddits(undefined);
+  let results = await new RedditClient().getSubscribedSubReddits(undefined);
   store.dispatch(setMasterSubscribedSubredditList(results.subreddits));
   const asyncLoopForRemainingSubreddits = async () => {
     const remainingSubreddits = new Array<Subreddit>();
 
     while (results.after != undefined) {
-      results = await getSubscribedSubReddits(results.after);
+      results = await new RedditClient().getSubscribedSubReddits(results.after);
       remainingSubreddits.push(...results.subreddits);
     }
     store.dispatch(addSubredditsToSubscribedList(remainingSubreddits));
@@ -653,9 +648,8 @@ export async function searchRedditForSubRedditAndUser(
   searchTerm: string
 ): Promise<Array<SubredditAccountSearchResult>> {
   const state = store.getState();
-  let { users, subreddits } = await callSearchRedditForSubRedditAndUser(
-    searchTerm
-  );
+  let { users, subreddits } =
+    await new RedditClient().callSearchRedditForSubRedditAndUser(searchTerm);
 
   if (state.appConfig.contentFiltering == ContentFilteringOptionEnum.SFW) {
     users = users.filter((result) => !result.over18);
@@ -687,15 +681,11 @@ export async function searchRedditForSubRedditAndUser(
 }
 
 export async function unsubscribe(name: string) {
-  await callUnsubscribe(name);
-  refreshSubreddits();
+  await new RedditClient().callUnsubscribe(name);
+  await loadSubscribedSubreddits(false);
 }
 
 export async function subscribe(name: string) {
-  await callSubscribe(name);
-  refreshSubreddits();
-}
-
-async function refreshSubreddits() {
+  await new RedditClient().callSubscribe(name);
   await loadSubscribedSubreddits(false);
 }
