@@ -2,20 +2,21 @@ import { RefObject, useEffect, useState } from "react";
 import getPlatform from "../util/PlatformUtil.ts";
 import { Platform } from "../model/Platform.ts";
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult.ts";
-import {
-  searchRedditForSubRedditAndUser,
-  subscribe,
-  unsubscribe,
-} from "../service/RedditService.ts";
+import RedditService from "../service/RedditService.ts";
 
-export default function useSearchReddit(inputRef: RefObject<HTMLInputElement>) {
+export default function useSearchReddit(
+  redditService: RedditService,
+  inputRef: RefObject<HTMLInputElement>
+) {
   const [searchRedditResults, setSearchRedditResults] = useState<
     SubredditAccountSearchResult[]
   >([]);
 
   const searchReddit = async (input: string) => {
     try {
-      setSearchRedditResults(await searchRedditForSubRedditAndUser(input));
+      setSearchRedditResults(
+        await redditService.searchRedditForSubRedditAndUser(input)
+      );
     } catch (e) {
       console.log("exception", e);
       setSearchRedditResults([]);
@@ -63,9 +64,9 @@ export default function useSearchReddit(inputRef: RefObject<HTMLInputElement>) {
       ? subredditSearchResult.displayNamePrefixed
       : subredditSearchResult.displayName;
     if (subredditSearchResult.isSubscribed) {
-      await unsubscribe(name);
+      await redditService.unsubscribe(name);
     } else {
-      await subscribe(name);
+      await redditService.subscribe(name);
     }
     const foundSearchResult = searchRedditResults.find(
       (result) =>

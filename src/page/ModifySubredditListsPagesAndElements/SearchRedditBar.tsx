@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { RedditSearchItemContextMenuEvent } from "../../model/Events/RedditSearchItemContextMenuEvent";
 import { useAppSelector } from "../../redux/store";
 import useSearchReddit from "../../hook/use-search-reddit.ts";
 import { useContextMenu } from "../../hook/use-context-menu.ts";
+import { RedditServiceContext } from "../../context/reddit-service-context.ts";
 
 type Props = {
   darkmodeOverride?: boolean;
@@ -10,10 +11,10 @@ type Props = {
 const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
   const contextMenu = useContextMenu();
   const darkmode = useAppSelector((state) => state.appConfig.darkMode);
-
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const redditService = useContext(RedditServiceContext);
   const { searchResults, clearSearchResults, subOrUnSubFromSubreddit } =
-    useSearchReddit(searchInputRef);
+    useSearchReddit(redditService, searchInputRef);
   const [searchResultsOpen, setSearchResultsOpen] = useState<boolean>(false);
   const [
     expandCollapseSearchResultsImgSrc,

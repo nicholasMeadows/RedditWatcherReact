@@ -30,6 +30,8 @@ import {
 import { RootFontSizeContext } from "./context/root-font-size-context.ts";
 import { SinglePostPageContext } from "./context/single-post-page-context.ts";
 import { NavigationDrawerContext } from "./context/navigation-drawer-context.ts";
+import { RedditServiceContext } from "./context/reddit-service-context.ts";
+import RedditService from "./service/RedditService.ts";
 
 const App: React.FC = () => {
   const [rootFontSize, setRootFontSize] = useState(0);
@@ -76,7 +78,9 @@ const App: React.FC = () => {
                     setNavigationDrawerContextData,
                 }}
               >
-                <RouterView />
+                <RedditServiceContext.Provider value={new RedditService()}>
+                  <RouterView />
+                </RedditServiceContext.Provider>
               </NavigationDrawerContext.Provider>
             </ContextMenuContext.Provider>
           </SinglePostPageContext.Provider>

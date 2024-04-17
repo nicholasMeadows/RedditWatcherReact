@@ -13,12 +13,12 @@ import { useNavigate } from "react-router-dom";
 import store, { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState.ts";
 import { authenticateReddit } from "../redux/slice/RedditClientSlice.ts";
-import { startLoopingForPosts } from "../service/RedditService.ts";
 import { setAppConfig } from "../redux/slice/AppConfigSlice.ts";
 import { v4 as uuidV4 } from "uuid";
 import { setSubredditLists } from "../redux/slice/RedditListsSlice.ts";
+import RedditService from "../service/RedditService.ts";
 
-export default function useInitializeApp() {
+export default function useInitializeApp(redditService: RedditService) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [config, setConfig] = useState<AppConfig | undefined>(undefined);
@@ -92,7 +92,7 @@ export default function useInitializeApp() {
           setInitializeAppPageText("Getting Posts...");
           const loopingForPosts = store.getState().redditClient.loopingForPosts;
           if (!loopingForPosts) {
-            startLoopingForPosts();
+            redditService.startLoopingForPosts();
           }
         } else {
           navigate(POST_ROW_ROUTE);

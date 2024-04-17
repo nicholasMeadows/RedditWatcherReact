@@ -1,7 +1,10 @@
 import useInitializeApp from "../hook/use-initialize-app.ts";
+import { useContext } from "react";
+import { RedditServiceContext } from "../context/reddit-service-context.ts";
 
 const AppInitialization: React.FC = () => {
-  const text = useInitializeApp();
+  const redditService = useContext(RedditServiceContext);
+  const text = useInitializeApp(redditService);
   return (
     <>
       <div className="app-initialization-wrapper">
