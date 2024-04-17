@@ -16,7 +16,6 @@ import {
   GetPostsFromSubredditStateConverter,
 } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
 import { Post } from "../model/Post/Post.ts";
-import { WaitUtil } from "../util/WaitUtil.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { MAX_POSTS_PER_ROW } from "../RedditWatcherConstants.ts";
 import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum.ts";
@@ -35,19 +34,17 @@ import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/Sel
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum.ts";
 import { GetPostsForSubredditUrlConverter } from "../model/converter/GetPostsForSubredditUrlConverter.ts";
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum.ts";
-import {
-  addPostsToFrontOfRow,
-  createPostRowAndInsertAtBeginning,
-  postRowRemoveAt,
-} from "../redux/slice/PostRowsSlice.ts";
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult.ts";
 import { v4 as uuidV4 } from "uuid";
 import { UseAppNotification } from "../hook/use-app-notification.ts";
 import { UseSideBar } from "../hook/use-side-bar.ts";
+import { UsePostRows } from "../hook/use-post-rows.ts";
+import { WaitUtil } from "../util/WaitUtil.ts";
 
 export default class RedditService {
   private declare appNotification: UseAppNotification;
   private declare sideBar: UseSideBar;
+  private declare usePostRows: UsePostRows;
 
   setAppNotification(appNotification: UseAppNotification) {
     this.appNotification = appNotification;
@@ -55,6 +52,10 @@ export default class RedditService {
 
   setSideBar(sideBar: UseSideBar) {
     this.sideBar = sideBar;
+  }
+
+  setUsePostRows(usePostRows: UsePostRows) {
+    this.usePostRows = usePostRows;
   }
 
   async startLoopingForPosts() {
@@ -87,7 +88,7 @@ export default class RedditService {
       getPostsFromSubredditsState = JSON.parse(
         JSON.stringify(
           stateConverter.convert(
-            state.postRows,
+            this.usePostRows.getPostRowsContextData(),
             state.appConfig,
             state.redditClient,
             state.subredditLists
@@ -118,12 +119,12 @@ export default class RedditService {
           postsFromSubreddits = fromSubreddits;
         }
         await WaitUtil.WaitUntilGetPostsIsNotPaused(
-          () => store.getState().postRows.getPostRowsPaused
+          () => this.usePostRows.getPostRowsContextData().getPostRowsPaused
         );
 
-        if (state.postRows.postRows.length == 10) {
+        if (this.usePostRows.getPostRowsContextData().postRows.length == 10) {
           getPostsFromSubredditsState.getPostsUpdatedValues.postRowRemoveAt =
-            state.postRows.postRows.length - 1;
+            this.usePostRows.getPostRowsContextData().postRows.length - 1;
         }
 
         this.addPostRow(
@@ -600,7 +601,7 @@ export default class RedditService {
       );
     }
     if (updatedValues.postRowRemoveAt != undefined) {
-      store.dispatch(postRowRemoveAt(updatedValues.postRowRemoveAt));
+      this.usePostRows.postRowRemoveAt(updatedValues.postRowRemoveAt);
     }
     if (updatedValues.subredditsToShowInSideBar != undefined) {
       this.sideBar.setSubredditsToShowInSideBar(
@@ -626,18 +627,15 @@ export default class RedditService {
       );
     }
     if (updatedValues.createPostRowAndInsertAtBeginning != undefined) {
-      store.dispatch(
-        createPostRowAndInsertAtBeginning(
-          updatedValues.createPostRowAndInsertAtBeginning
-        )
+      this.usePostRows.createPostRowAndInsertAtBeginning(
+        updatedValues.createPostRowAndInsertAtBeginning
       );
     }
     if (updatedValues.shiftPostsAndUiPosts != undefined) {
-      store.dispatch(
-        addPostsToFrontOfRow({
-          ...updatedValues.shiftPostsAndUiPosts,
-          postsToShowInRow: store.getState().appConfig.postsToShowInRow,
-        })
+      this.usePostRows.addPostsToFrontOfRow(
+        updatedValues.shiftPostsAndUiPosts.postRowUuid,
+        updatedValues.shiftPostsAndUiPosts.posts,
+        store.getState().appConfig.postsToShowInRow
       );
     }
   }

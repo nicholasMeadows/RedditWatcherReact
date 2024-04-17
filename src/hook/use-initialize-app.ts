@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   loadConfig,
   loadSubredditListsFromFile,
@@ -17,6 +17,7 @@ import { setAppConfig } from "../redux/slice/AppConfigSlice.ts";
 import { v4 as uuidV4 } from "uuid";
 import { setSubredditLists } from "../redux/slice/RedditListsSlice.ts";
 import RedditService from "../service/RedditService.ts";
+import { PostRowsContext } from "../context/post-rows-context.ts";
 
 export default function useInitializeApp(redditService: RedditService) {
   const dispatch = useAppDispatch();
@@ -30,8 +31,9 @@ export default function useInitializeApp(redditService: RedditService) {
     (state) => state.redditClient.redditAuthenticationStatus
   );
 
-  const postRows = useAppSelector((state) => state.postRows.postRows);
   const [initializeAppPageText, setInitializeAppPageText] = useState("");
+  const { postRowsContextData } = useContext(PostRowsContext);
+
   useEffect(() => {
     const init = async () => {
       if (config === undefined) {
@@ -88,7 +90,7 @@ export default function useInitializeApp(redditService: RedditService) {
           RedditAuthenticationStatus.AUTHENTICATION_DENIED
         ) {
           navigate(REDDIT_SIGN_IN_ROUTE);
-        } else if (postRows.length == 0) {
+        } else if (postRowsContextData.postRows.length == 0) {
           setInitializeAppPageText("Getting Posts...");
           const loopingForPosts = store.getState().redditClient.loopingForPosts;
           if (!loopingForPosts) {
@@ -104,8 +106,9 @@ export default function useInitializeApp(redditService: RedditService) {
     config,
     dispatch,
     navigate,
-    postRows.length,
+    postRowsContextData.postRows.length,
     redditAuthenticationStatus,
+    redditService,
     subredditLists,
   ]);
 

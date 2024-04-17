@@ -18,11 +18,13 @@ import { useSinglePostPageGoToNextPrevPost } from "../hook/use-single-post-page-
 import { useSinglePostPageFindPost } from "../hook/use-single-post-page-find-post.ts";
 import { useContextMenu } from "../hook/use-context-menu.ts";
 import { SinglePostPageContext } from "../context/single-post-page-context.ts";
+import { PostRowsContext } from "../context/post-rows-context.ts";
 
 const SinglePostView: FC = () => {
+  const { postRowsContextData } = useContext(PostRowsContext);
   const contextMenu = useContextMenu();
   const { postRowUuid } = useContext(SinglePostPageContext);
-  const post = useSinglePostPageFindPost();
+  const post = useSinglePostPageFindPost(postRowsContextData.postRows);
   const { goToNextPost, goToPreviousPost } =
     useSinglePostPageGoToNextPrevPost();
 
@@ -38,13 +40,17 @@ const SinglePostView: FC = () => {
 
   const goToNextPostClicked = useCallback(() => {
     resetImgPositionAndScale();
-    goToNextPost();
-  }, [goToNextPost, resetImgPositionAndScale]);
+    goToNextPost(postRowsContextData.postRows);
+  }, [goToNextPost, postRowsContextData.postRows, resetImgPositionAndScale]);
 
   const goToPrevPostClicked = useCallback(() => {
     resetImgPositionAndScale();
-    goToPreviousPost();
-  }, [goToPreviousPost, resetImgPositionAndScale]);
+    goToPreviousPost(postRowsContextData.postRows);
+  }, [
+    goToPreviousPost,
+    postRowsContextData.postRows,
+    resetImgPositionAndScale,
+  ]);
 
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);

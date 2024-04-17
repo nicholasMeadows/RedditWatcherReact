@@ -1,14 +1,13 @@
 import { useContext } from "react";
-import store from "../redux/store.ts";
 import { SinglePostPageContext } from "../context/single-post-page-context.ts";
+import { PostRow } from "../model/PostRow.ts";
 
 export function useSinglePostPageGoToNextPrevPost() {
   const { postRowUuid, postUuid, setSinglePostPagePostUuid } = useContext(
     SinglePostPageContext
   );
 
-  const findPostRow = () => {
-    const postRows = store.getState().postRows.postRows;
+  const findPostRow = (postRows: Array<PostRow>) => {
     const postRowIndex = postRows.findIndex(
       (postRow) => postRow.postRowUuid === postRowUuid
     );
@@ -18,8 +17,8 @@ export function useSinglePostPageGoToNextPrevPost() {
     return postRows[postRowIndex];
   };
 
-  const goToNextPost = () => {
-    const postRow = findPostRow();
+  const goToNextPost = (postRows: Array<PostRow>) => {
+    const postRow = findPostRow(postRows);
     if (postRow === undefined) {
       return;
     }
@@ -36,8 +35,8 @@ export function useSinglePostPageGoToNextPrevPost() {
     }
   };
 
-  const goToPreviousPost = () => {
-    const postRow = findPostRow();
+  const goToPreviousPost = (postRows: Array<PostRow>) => {
+    const postRow = findPostRow(postRows);
     if (postRow === undefined) {
       return;
     }

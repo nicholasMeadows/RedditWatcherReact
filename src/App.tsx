@@ -21,7 +21,7 @@ import "./theme/variables.css";
 import { Provider } from "react-redux";
 import RouterView from "./page/RouterView";
 import store from "./redux/store";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ContextMenuContext,
   ContextMenuContextData,
@@ -39,6 +39,9 @@ import { SideBarContext, SideBarFields } from "./context/side-bar-context.ts";
 import { Subreddit } from "./model/Subreddit/Subreddit.ts";
 import { SubredditLists } from "./model/SubredditList/SubredditLists.ts";
 import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "./RedditWatcherConstants.ts";
+import { PostRow } from "./model/PostRow.ts";
+import { PostRowsState } from "./model/PostRowsState.ts";
+import { PostRowsContext } from "./context/post-rows-context.ts";
 
 const App: React.FC = () => {
   const [rootFontSize, setRootFontSize] = useState(0);
@@ -67,6 +70,22 @@ const App: React.FC = () => {
     timeTillNextGetPostsSeconds: 0,
   });
 
+  const [postRowsContextData, setPostRowsContextData] = useState<PostRowsState>(
+    {
+      getPostRowsPaused: false,
+      getPostRowsPausedTimeout: undefined,
+      currentPath: "",
+      scrollY: 0,
+      clickedOnPlayPauseButton: false,
+      postRowsHasAtLeast1PostRow: false,
+      postRows: new Array<PostRow>(),
+      postCardWidthPercentage: 0,
+      postRowContentWidthPx: 0,
+    }
+  );
+
+  const redditServiceRef = useRef(new RedditService());
+
   return (
     <Provider store={store}>
       <HashRouter>
@@ -89,7 +108,7 @@ const App: React.FC = () => {
                 },
               }}
             >
-              <RedditServiceContext.Provider value={new RedditService()}>
+              <RedditServiceContext.Provider value={redditServiceRef.current}>
                 <AppNotificationContext.Provider
                   value={{
                     appNotifications: appNotifications,
@@ -102,7 +121,14 @@ const App: React.FC = () => {
                       setSidebarContextData: setSidebarContextData,
                     }}
                   >
-                    <RouterView />
+                    <PostRowsContext.Provider
+                      value={{
+                        postRowsContextData: postRowsContextData,
+                        setPostRowsContextData: setPostRowsContextData,
+                      }}
+                    >
+                      <RouterView />
+                    </PostRowsContext.Provider>
                   </SideBarContext.Provider>
                 </AppNotificationContext.Provider>
               </RedditServiceContext.Provider>

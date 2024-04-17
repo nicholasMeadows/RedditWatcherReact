@@ -2,20 +2,21 @@ import { FC, useContext } from "react";
 import PostMediaElement from "./PostMediaElement.tsx";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent.ts";
 import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants.ts";
-import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
+import { useAppSelector } from "../../redux/store.ts";
 import { useNavigate } from "react-router-dom";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
-import { mouseLeavePostRow } from "../../redux/slice/PostRowsSlice.ts";
 import { useContextMenu } from "../../hook/use-context-menu.ts";
 import { PostCardContext } from "../../context/post-card-context.ts";
 import { AutoScrollPostRowRateSecondsForSinglePostCardContext } from "../../context/auto-scroll-post-row-rate-seconds-for-single-post-card-context.ts";
 import { SinglePostPageContext } from "../../context/single-post-page-context.ts";
+import usePostRows from "../../hook/use-post-rows.ts";
+import { PostRowsContext } from "../../context/post-rows-context.ts";
 
 const PostCard: FC = () => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const contextMenu = useContextMenu();
+  const postRowsHook = usePostRows();
   const {
     uiPost,
     postRowUuid,
@@ -24,9 +25,7 @@ const PostCard: FC = () => {
     totalMovementX,
   } = useContext(PostCardContext);
 
-  const postCardWidthPercentage = useAppSelector(
-    (state) => state.postRows.postCardWidthPercentage
-  );
+  const { postRowsContextData } = useContext(PostRowsContext);
 
   const autoScrollPostRowOption = useAppSelector(
     (state) => state.appConfig.autoScrollPostRowOption
@@ -43,8 +42,8 @@ const PostCard: FC = () => {
     <div
       className={`post-card-outer`}
       style={{
-        minWidth: `${postCardWidthPercentage}%`,
-        maxWidth: `${postCardWidthPercentage}%`,
+        minWidth: `${postRowsContextData.postCardWidthPercentage}%`,
+        maxWidth: `${postRowsContextData.postCardWidthPercentage}%`,
         left: `${uiPost.leftPercentage}%`,
         transition: `${
           mouseOverPostRow ||
@@ -79,7 +78,7 @@ const PostCard: FC = () => {
           setSinglePostPagePostRowUuid(postRowUuid);
           setSinglePostPagePostUuid(uiPost.postUuid);
           navigate(`${SINGPLE_POST_ROUTE}`);
-          dispatch(mouseLeavePostRow(postRowUuid));
+          postRowsHook.mouseLeavePostRow(postRowUuid);
         }}
       >
         <div className="postCardHeader">

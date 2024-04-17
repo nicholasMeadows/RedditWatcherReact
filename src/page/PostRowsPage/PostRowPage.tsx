@@ -1,23 +1,18 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  setScrollY,
-  toggleClickedOnPlayPauseButton,
-} from "../../redux/slice/PostRowsSlice.ts";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import PostRow from "./PostRow.tsx";
 import SideBar from "../SideBar.tsx";
 import { AutoScrollPostRowRateSecondsForSinglePostCardContext } from "../../context/auto-scroll-post-row-rate-seconds-for-single-post-card-context.ts";
+import { PostRowsContext } from "../../context/post-rows-context.ts";
+import usePostRows from "../../hook/use-post-rows.ts";
 
 const PostRowPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const postRows = useAppSelector((state) => state.postRows.postRows);
+  const postRowsHook = usePostRows();
+  const { postRowsContextData } = useContext(PostRowsContext);
 
   const postRowsToShowInView = useAppSelector(
     (state) => state.appConfig.postRowsToShowInView
-  );
-
-  const getPostRowsPaused = useAppSelector(
-    (state) => state.postRows.getPostRowsPaused
   );
 
   const autoScrollPostRowRateSecondsForSinglePostCard = useAppSelector(
@@ -31,13 +26,13 @@ const PostRowPage: React.FC = () => {
   useEffect(() => {
     const scrollDiv = postRowsDivRef.current as unknown as HTMLDivElement;
     setScrollBarWidth(scrollDiv.offsetWidth - scrollDiv.clientWidth);
-  }, [postRowsDivRef, postRows]);
+  }, [postRowsDivRef, postRowsContextData.postRows]);
 
   useEffect(() => {
     const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
       const key = keyboardEvent.key;
       if (key == " ") {
-        dispatch(toggleClickedOnPlayPauseButton());
+        postRowsHook.toggleClickedOnPlayPauseButton();
       }
     };
 
@@ -68,13 +63,13 @@ const PostRowPage: React.FC = () => {
         onScroll={(event) => {
           const target = event.target as HTMLElement;
           const scrollTop = target.scrollTop;
-          dispatch(setScrollY(scrollTop));
+          postRowsHook.setScrollY(scrollTop);
         }}
       >
         <AutoScrollPostRowRateSecondsForSinglePostCardContext.Provider
           value={autoScrollPostRowRateMs}
         >
-          {postRows.map((postRow) => (
+          {postRowsContextData.postRows.map((postRow) => (
             <div
               key={"post-row-" + postRow.postRowUuid}
               style={{
@@ -90,10 +85,12 @@ const PostRowPage: React.FC = () => {
 
       <div
         className={"play-pause-button-div"}
-        onClick={() => dispatch(toggleClickedOnPlayPauseButton())}
+        onClick={() => postRowsHook.toggleClickedOnPlayPauseButton()}
       >
         <img
-          src={`assets/${getPostRowsPaused ? "pause" : "play"}_black.png`}
+          src={`assets/${
+            postRowsContextData.getPostRowsPaused ? "pause" : "play"
+          }_black.png`}
           className={"play-pause-button-img"}
         />
       </div>

@@ -7,7 +7,6 @@ import TopTimeFrameOptionsEnum from "../config/enums/TopTimeFrameOptionsEnum.ts"
 import SelectSubredditIterationMethodOptionsEnum from "../config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
 import SortOrderDirectionOptionsEnum from "../config/enums/SortOrderDirectionOptionsEnum.ts";
 import { SubredditLists } from "../SubredditList/SubredditLists.ts";
-import { PostRowsState } from "../PostRowsState.ts";
 import { AppConfigState } from "../config/AppConfigState.ts";
 import { RedditClientState } from "../RedditClientState.ts";
 import RedditListsState from "../RedditListsState.ts";
@@ -15,6 +14,7 @@ import { PostRow } from "../PostRow.ts";
 import { Post } from "../Post/Post.ts";
 import RandomIterationSelectWeightOptionsEnum from "../config/enums/RandomIterationSelectWeightOptionsEnum.ts";
 import SelectedSubredditListSortOptionEnum from "../config/enums/SelectedSubredditListSortOptionEnum.ts";
+import { PostRowsState } from "../PostRowsState.ts";
 
 export type GetPostsFromSubredditState = {
   postRows: Array<PostRow>;

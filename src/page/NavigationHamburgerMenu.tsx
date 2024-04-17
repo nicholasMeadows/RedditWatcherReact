@@ -19,13 +19,14 @@ import {
 } from "../redux/slice/AppConfigSlice";
 import { useAppDispatch, useAppSelector } from "../redux/store";
 import { useContextMenu } from "../hook/use-context-menu.ts";
+import usePostRows from "../hook/use-post-rows.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const contextMenu = useContextMenu();
-
+  const postRows = usePostRows();
   const [pageName, setPageName] = useState("");
   const [showBackButton, setShowBackButton] = useState(false);
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
@@ -248,7 +249,12 @@ const NavigationHamburgerMenu: React.FC = () => {
                   const input = event.target as HTMLInputElement;
                   if (input.files != undefined) {
                     setImportClicked(true);
-                    dispatch(importAppConfig(input.files[0]));
+                    dispatch(
+                      importAppConfig({
+                        file: input.files[0],
+                        usePostRows: postRows,
+                      })
+                    );
                   }
                 }}
               />

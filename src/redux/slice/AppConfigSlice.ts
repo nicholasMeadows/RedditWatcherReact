@@ -34,11 +34,11 @@ import {
 } from "../../service/ConfigService";
 import { ValidationUtil } from "../../util/ValidationUtil";
 import store from "../store";
-import { clearPostRows } from "./PostRowsSlice";
 import { resetRedditClient } from "./RedditClientSlice";
 import { resetSubredditListsLoaded } from "./RedditListsSlice";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
+import { UsePostRows } from "../../hook/use-post-rows.ts";
 
 const defaultSubredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
 const defaultAutoScrollPostRowOption =
@@ -68,10 +68,10 @@ const defaultDarkMode = false;
 
 export const importAppConfig = createAsyncThunk(
   "appConfig/importAppConfig",
-  async (file: File) => {
+  async (params: { file: File; usePostRows: UsePostRows }) => {
     try {
       console.log("importing app config");
-      const text = await file.text();
+      const text = await params.file.text();
       const parsed = JSON.parse(text);
       if (parsed["appConfig"] != undefined) {
         console.log(
@@ -149,7 +149,7 @@ export const importAppConfig = createAsyncThunk(
       }
 
       console.log("done importing");
-      store.dispatch(clearPostRows());
+      params.usePostRows.clearPostRows();
       store.dispatch(resetConfigLoaded());
       store.dispatch(resetSubredditListsLoaded());
       store.dispatch(resetRedditClient());
