@@ -29,7 +29,6 @@ import {
 } from "./context/context-menu-context.ts";
 import { RootFontSizeContext } from "./context/root-font-size-context.ts";
 import { SinglePostPageContext } from "./context/single-post-page-context.ts";
-import { NavigationDrawerContext } from "./context/navigation-drawer-context.ts";
 import { RedditServiceContext } from "./context/reddit-service-context.ts";
 import RedditService from "./service/RedditService.ts";
 import {
@@ -47,13 +46,6 @@ const App: React.FC = () => {
   >(undefined);
   const [contextMenuData, setContextMenuData] =
     useState<ContextMenuContextData>(InitialContextMenuContextData);
-  const initialNavigationDrawerContextData = {
-    pageName: "Home",
-    showBackButton: false,
-  };
-  const [navigationDrawerContextData, setNavigationDrawerContextData] =
-    useState(initialNavigationDrawerContextData);
-
   const [appNotifications, setAppNotifications] = useState<
     AppNotificationItem[]
   >([]);
@@ -79,24 +71,16 @@ const App: React.FC = () => {
                 },
               }}
             >
-              <NavigationDrawerContext.Provider
-                value={{
-                  navigationDrawerContextData: navigationDrawerContextData,
-                  setNavigationDrawerContextData:
-                    setNavigationDrawerContextData,
-                }}
-              >
-                <RedditServiceContext.Provider value={new RedditService()}>
-                  <AppNotificationContext.Provider
-                    value={{
-                      appNotifications: appNotifications,
-                      setAppNotifications: setAppNotifications,
-                    }}
-                  >
-                    <RouterView />
-                  </AppNotificationContext.Provider>
-                </RedditServiceContext.Provider>
-              </NavigationDrawerContext.Provider>
+              <RedditServiceContext.Provider value={new RedditService()}>
+                <AppNotificationContext.Provider
+                  value={{
+                    appNotifications: appNotifications,
+                    setAppNotifications: setAppNotifications,
+                  }}
+                >
+                  <RouterView />
+                </AppNotificationContext.Provider>
+              </RedditServiceContext.Provider>
             </ContextMenuContext.Provider>
           </SinglePostPageContext.Provider>
         </RootFontSizeContext.Provider>
