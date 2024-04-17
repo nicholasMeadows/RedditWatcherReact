@@ -2,7 +2,6 @@ import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import thunk from "redux-thunk";
 import appConfigReducer from "./slice/AppConfigSlice";
-import appNotificationReducer from "./slice/AppNotificationSlice";
 import postRowsReducer from "./slice/PostRowsSlice";
 import redditClientReducer from "./slice/RedditClientSlice";
 import subredditListsReducer from "./slice/RedditListsSlice";
@@ -14,7 +13,6 @@ const store = configureStore({
     redditClient: redditClientReducer,
     postRows: postRowsReducer,
     subredditLists: subredditListsReducer,
-    appNotification: appNotificationReducer,
     sideBar: sideBarReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk),

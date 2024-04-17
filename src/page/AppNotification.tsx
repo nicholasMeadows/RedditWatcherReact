@@ -1,11 +1,10 @@
-import { useAppDispatch, useAppSelector } from "../redux/store";
-import { dismissAppNotification } from "../redux/slice/AppNotificationSlice.ts";
+import { useContext } from "react";
+import { AppNotificationContext } from "../context/app-notification-context.ts";
+import useAppNotifiction from "../hook/use-app-notification.ts";
 
 const AppNotification: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const appNotifications = useAppSelector(
-    (state) => state.appNotification.notifications
-  );
+  const { appNotifications } = useContext(AppNotificationContext);
+  const appNotification = useAppNotifiction();
   return (
     <div className="app-notification-root">
       {appNotifications.map((appNotificationItem) => {
@@ -16,7 +15,7 @@ const AppNotification: React.FC = () => {
               appNotificationItem.showNotification ? "show-notification" : ""
             }`}
             onClick={() => {
-              dispatch(dismissAppNotification(appNotificationItem));
+              appNotification.dismissAppNotification(appNotificationItem);
             }}
           >
             <p className="notification-text">

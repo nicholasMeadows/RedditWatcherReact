@@ -22,7 +22,6 @@ import {
 } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
 import { Post } from "../model/Post/Post.ts";
 import { WaitUtil } from "../util/WaitUtil.ts";
-import { submitAppNotification } from "../redux/slice/AppNotificationSlice.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { MAX_POSTS_PER_ROW } from "../RedditWatcherConstants.ts";
 import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum.ts";
@@ -48,8 +47,15 @@ import {
 } from "../redux/slice/PostRowsSlice.ts";
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult.ts";
 import { v4 as uuidV4 } from "uuid";
+import { UseAppNotification } from "../hook/use-app-notification.ts";
 
 export default class RedditService {
+  private declare appNotification: UseAppNotification;
+
+  setAppNotification(appNotification: UseAppNotification) {
+    this.appNotification = appNotification;
+  }
+
   async startLoopingForPosts() {
     console.log("starting to loop for posts");
     store.dispatch(setLoopingForPosts(true));
@@ -125,13 +131,11 @@ export default class RedditService {
           getPostsFromSubredditsState
         );
       } catch (e) {
-        store.dispatch(
-          submitAppNotification({
-            message: `Got exception while trying to get post. ${
-              (e as DOMException).message
-            }`,
-          })
-        );
+        this.appNotification.submitAppNotification({
+          message: `Got exception while trying to get post. ${
+            (e as DOMException).message
+          }`,
+        });
         console.log("Caught exception while getPosts ", e);
       }
     } while (this.settingsChanged(getPostsFromSubredditsState));
@@ -475,7 +479,7 @@ export default class RedditService {
       if (fromSubreddits.length == 1) {
         msg = `Got 0 posts from ${fromSubreddits[0].displayNamePrefixed}. Trying again in a little bit.`;
       }
-      store.dispatch(submitAppNotification({ message: msg }));
+      this.appNotification.submitAppNotification({ message: msg });
       return;
     }
 

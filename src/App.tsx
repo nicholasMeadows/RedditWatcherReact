@@ -32,6 +32,10 @@ import { SinglePostPageContext } from "./context/single-post-page-context.ts";
 import { NavigationDrawerContext } from "./context/navigation-drawer-context.ts";
 import { RedditServiceContext } from "./context/reddit-service-context.ts";
 import RedditService from "./service/RedditService.ts";
+import {
+  AppNotificationContext,
+  AppNotificationItem,
+} from "./context/app-notification-context.ts";
 
 const App: React.FC = () => {
   const [rootFontSize, setRootFontSize] = useState(0);
@@ -49,6 +53,10 @@ const App: React.FC = () => {
   };
   const [navigationDrawerContextData, setNavigationDrawerContextData] =
     useState(initialNavigationDrawerContextData);
+
+  const [appNotifications, setAppNotifications] = useState<
+    AppNotificationItem[]
+  >([]);
   return (
     <Provider store={store}>
       <HashRouter>
@@ -79,7 +87,14 @@ const App: React.FC = () => {
                 }}
               >
                 <RedditServiceContext.Provider value={new RedditService()}>
-                  <RouterView />
+                  <AppNotificationContext.Provider
+                    value={{
+                      appNotifications: appNotifications,
+                      setAppNotifications: setAppNotifications,
+                    }}
+                  >
+                    <RouterView />
+                  </AppNotificationContext.Provider>
                 </RedditServiceContext.Provider>
               </NavigationDrawerContext.Provider>
             </ContextMenuContext.Provider>
