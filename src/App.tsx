@@ -35,6 +35,10 @@ import {
   AppNotificationContext,
   AppNotificationItem,
 } from "./context/app-notification-context.ts";
+import { SideBarContext, SideBarFields } from "./context/side-bar-context.ts";
+import { Subreddit } from "./model/Subreddit/Subreddit.ts";
+import { SubredditLists } from "./model/SubredditList/SubredditLists.ts";
+import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "./RedditWatcherConstants.ts";
 
 const App: React.FC = () => {
   const [rootFontSize, setRootFontSize] = useState(0);
@@ -49,6 +53,20 @@ const App: React.FC = () => {
   const [appNotifications, setAppNotifications] = useState<
     AppNotificationItem[]
   >([]);
+
+  const [sidebarContextData, setSidebarContextData] = useState<SideBarFields>({
+    subredditsToShowInSideBar: new Array<Subreddit>(),
+    subredditsToShow: new Array<Subreddit>(),
+    mostRecentSubredditGotten: undefined,
+    availableSubredditListsForFilter: new Array<SubredditLists>(),
+    listToFilterByUuid: SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED,
+    searchInput: "",
+    sideBarOpen: false,
+    openSidebarButtonTopPercent: 50,
+    mouseOverSubredditList: false,
+    timeTillNextGetPostsSeconds: 0,
+  });
+
   return (
     <Provider store={store}>
       <HashRouter>
@@ -78,7 +96,14 @@ const App: React.FC = () => {
                     setAppNotifications: setAppNotifications,
                   }}
                 >
-                  <RouterView />
+                  <SideBarContext.Provider
+                    value={{
+                      sidebarContextData: sidebarContextData,
+                      setSidebarContextData: setSidebarContextData,
+                    }}
+                  >
+                    <RouterView />
+                  </SideBarContext.Provider>
                 </AppNotificationContext.Provider>
               </RedditServiceContext.Provider>
             </ContextMenuContext.Provider>

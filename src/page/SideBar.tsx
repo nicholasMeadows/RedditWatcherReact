@@ -1,69 +1,44 @@
-import React, { MouseEvent, useCallback, useEffect, useRef } from "react";
+import React, {
+  MouseEvent,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../RedditWatcherConstants.ts";
 import SideBarSubredditMenuEvent from "../model/Events/SideBarSubredditMenuEvent.ts";
-import {
-  decreaseTimeTillNextGetPostsSeconds,
-  setListToFilterByUuid,
-  setMouseDownOnOpenSidebarButton,
-  setMouseOverSubredditList,
-  setOpenSidebarButtonTopPercent,
-  setSearchInput,
-  setSideBarButtonMoved,
-  setSideBarOpen,
-  subredditListsUpdated,
-} from "../redux/slice/SideBarSlice.ts";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import SearchRedditBar from "./ModifySubredditListsPagesAndElements/SearchRedditBar.tsx";
 import { useContextMenu } from "../hook/use-context-menu.ts";
+import useSideBar from "../hook/use-side-bar.ts";
+import { SideBarContext } from "../context/side-bar-context.ts";
 
 const SideBar: React.FC = () => {
+  const sideBarButtonMoved = useRef(false);
   const dispatch = useAppDispatch();
   const contextMenu = useContextMenu();
+  const sideBar = useSideBar();
+  const { sidebarContextData } = useContext(SideBarContext);
+  const [sideBarOpen, setSideBarOpen] = useState(false);
+
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
   const subredditLists = useAppSelector(
     (state) => state.subredditLists.subredditLists
-  );
-  const subredditsToShow = useAppSelector(
-    (state) => state.sideBar.subredditsToShow
-  );
-  const mostRecentSubredditGotten = useAppSelector(
-    (state) => state.sideBar.mostRecentSubredditGotten
-  );
-
-  const availableSubredditListsForFilter = useAppSelector(
-    (state) => state.sideBar.availableSubredditListsForFilter
-  );
-  const listToFilterByUuid = useAppSelector(
-    (state) => state.sideBar.listToFilterByUuid
-  );
-
-  const sideBarOpen = useAppSelector((state) => state.sideBar.sideBarOpen);
-
-  const sideBarButtonMoved = useAppSelector(
-    (state) => state.sideBar.sideBarButtonMoved
-  );
-  const mouseDownOnOpenSidebarButton = useAppSelector(
-    (state) => state.sideBar.mouseDownOnOpenSidebarButton
-  );
-  const openSidebarButtonTopPercent = useAppSelector(
-    (state) => state.sideBar.openSidebarButtonTopPercent
-  );
-
-  const mouseOverSubredditList = useAppSelector(
-    (state) => state.sideBar.mouseOverSubredditList
   );
 
   const openSideBarButtonColumnDivRef = useRef(null);
   const openSideBarButtonDivRef = useRef(null);
   const subredditListDivRef = useRef(null);
   useEffect(() => {
-    dispatch(subredditListsUpdated());
+    sideBar.subredditListsUpdated();
   }, [dispatch, subredditLists]);
 
   const scrollToMostRecentSubredditGotten = useCallback(() => {
-    const foundSubredditIndex = subredditsToShow.findIndex(
+    const foundSubredditIndex = sidebarContextData.subredditsToShow.findIndex(
       (subreddit) =>
-        subreddit.subredditUuid == mostRecentSubredditGotten?.subredditUuid
+        subreddit.subredditUuid ==
+        sidebarContextData.mostRecentSubredditGotten?.subredditUuid
     );
     if (foundSubredditIndex >= 0) {
       const subredditListDiv =
@@ -74,21 +49,25 @@ const SideBar: React.FC = () => {
       const offsetTop = subredditNameElement.offsetTop;
       subredditListDiv.scrollTo({ top: offsetTop, behavior: "smooth" });
     }
-  }, [mostRecentSubredditGotten, subredditsToShow]);
+  }, [
+    sidebarContextData.mostRecentSubredditGotten,
+    sidebarContextData.subredditsToShow,
+  ]);
 
   useEffect(() => {
-    if (!mouseOverSubredditList) {
+    if (!sidebarContextData.mouseOverSubredditList) {
       scrollToMostRecentSubredditGotten();
     }
   }, [
     scrollToMostRecentSubredditGotten,
-    mouseOverSubredditList,
-    mostRecentSubredditGotten,
-    subredditsToShow,
+    sidebarContextData.mouseOverSubredditList,
+    sidebarContextData.subredditsToShow,
   ]);
+  const mouseDownOnOpenSidebarButton = useRef<boolean>(false);
+
   const handleOpenCloseButtonMouseMove = (event: MouseEvent) => {
-    if (mouseDownOnOpenSidebarButton) {
-      dispatch(setSideBarButtonMoved(true));
+    if (mouseDownOnOpenSidebarButton.current) {
+      sideBarButtonMoved.current = true;
       const openSideBarButtonColumnDiv =
         openSideBarButtonColumnDivRef.current as unknown as HTMLDivElement;
       const openSideBarButtonDiv =
@@ -114,33 +93,30 @@ const SideBar: React.FC = () => {
       } else if (updatedPercentage > maxPercentage) {
         updatedPercentage = maxPercentage;
       }
-      dispatch(setOpenSidebarButtonTopPercent(updatedPercentage));
+      sideBar.setOpenSidebarButtonTopPercent(updatedPercentage);
     }
   };
 
   const handleOpenCloseBtnMouseDown = () => {
-    dispatch(setMouseDownOnOpenSidebarButton(true));
+    mouseDownOnOpenSidebarButton.current = true;
   };
   const handleOpenCloseBtnMouseUp = () => {
-    dispatch(setMouseDownOnOpenSidebarButton(false));
-    if (!sideBarButtonMoved) {
-      dispatch(setSideBarOpen(!sideBarOpen));
+    mouseDownOnOpenSidebarButton.current = false;
+    if (!sideBarButtonMoved.current) {
+      setSideBarOpen(!sideBarOpen);
     }
-    dispatch(setSideBarButtonMoved(false));
+    sideBarButtonMoved.current = false;
   };
-
-  const timeTillNextGetPostsSeconds = useAppSelector(
-    (state) => state.sideBar.timeTillNextGetPostsSeconds
-  );
 
   useEffect(() => {
     const interval = setInterval(() => {
-      dispatch(decreaseTimeTillNextGetPostsSeconds());
+      sideBar.decreaseTimeTillNextGetPostsSeconds();
     }, 1000);
     return () => {
       clearInterval(interval);
     };
-  }, [dispatch]);
+  }, [dispatch, sideBar]);
+
   return (
     <div className="side-bar">
       <div ref={openSideBarButtonColumnDivRef} className="open-close-column">
@@ -148,7 +124,7 @@ const SideBar: React.FC = () => {
           ref={openSideBarButtonDivRef}
           className="open-close-btn-div"
           style={{
-            top: `${openSidebarButtonTopPercent}%`,
+            top: `${sidebarContextData.openSidebarButtonTopPercent}%`,
           }}
           onMouseMove={(event) => {
             handleOpenCloseButtonMouseMove(event);
@@ -184,28 +160,31 @@ const SideBar: React.FC = () => {
           <label className="subreddit-list-select-label">Subreddit List</label>
           <select
             className="subreddit-list-select"
-            value={listToFilterByUuid}
+            value={sidebarContextData.listToFilterByUuid}
             onChange={(event) => {
               console.log(event.target.value);
-              dispatch(setListToFilterByUuid(event.target.value));
+              sideBar.setListToFilterByUuid(event.target.value);
             }}
           >
             <option value={SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED}>
               {SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED}
             </option>
-            {availableSubredditListsForFilter.map((subredditList) => {
-              return (
-                <option
-                  selected={
-                    listToFilterByUuid == subredditList.subredditListUuid
-                  }
-                  key={subredditList.subredditListUuid}
-                  value={subredditList.subredditListUuid}
-                >
-                  {subredditList.listName}
-                </option>
-              );
-            })}
+            {sidebarContextData.availableSubredditListsForFilter.map(
+              (subredditList) => {
+                return (
+                  <option
+                    selected={
+                      sidebarContextData.listToFilterByUuid ==
+                      subredditList.subredditListUuid
+                    }
+                    key={subredditList.subredditListUuid}
+                    value={subredditList.subredditListUuid}
+                  >
+                    {subredditList.listName}
+                  </option>
+                );
+              }
+            )}
           </select>
         </div>
         <hr className="hr" />
@@ -218,7 +197,7 @@ const SideBar: React.FC = () => {
             type="text"
             className="search-in-list-input"
             onChange={(event) => {
-              dispatch(setSearchInput(event.target.value));
+              sideBar.setSearchInput(event.target.value);
             }}
           />
         </div>
@@ -226,10 +205,10 @@ const SideBar: React.FC = () => {
         <div
           className="subreddit-list"
           ref={subredditListDivRef}
-          onMouseEnter={() => dispatch(setMouseOverSubredditList(true))}
-          onMouseLeave={() => dispatch(setMouseOverSubredditList(false))}
+          onMouseEnter={() => sideBar.setMouseOverSubredditList(true)}
+          onMouseLeave={() => sideBar.setMouseOverSubredditList(false)}
         >
-          {subredditsToShow.map((subreddit) => (
+          {sidebarContextData.subredditsToShow.map((subreddit) => (
             <p
               onContextMenu={(event) => {
                 event.preventDefault();
@@ -246,7 +225,7 @@ const SideBar: React.FC = () => {
               key={subreddit.subredditUuid}
               className={`subreddit-list-item ${
                 subreddit.subredditUuid ==
-                mostRecentSubredditGotten?.subredditUuid
+                sidebarContextData.mostRecentSubredditGotten?.subredditUuid
                   ? "subreddit-list-item-highlight"
                   : ""
               }`}
@@ -260,7 +239,7 @@ const SideBar: React.FC = () => {
 
         <div className={"next-post-countdown-timer-text-box"}>
           <p className={"next-post-countdown-timer-text"}>
-            {`Getting next posts in ${timeTillNextGetPostsSeconds} seconds`}
+            {`Getting next posts in ${sidebarContextData.timeTillNextGetPostsSeconds} seconds`}
           </p>
         </div>
       </div>

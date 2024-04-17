@@ -43,18 +43,21 @@ import { useContextMenu } from "../hook/use-context-menu.ts";
 import { RootFontSizeContext } from "../context/root-font-size-context.ts";
 import useAppNotifiction from "../hook/use-app-notification.ts";
 import { RedditServiceContext } from "../context/reddit-service-context.ts";
+import useSideBar from "../hook/use-side-bar.ts";
 
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
   const contextMenu = useContextMenu();
   const appNotification = useAppNotifiction();
+  const sideBar = useSideBar();
   const darkmode = useAppSelector((state) => state.appConfig.darkMode);
   const location = useLocation();
   const { setRootFontSize } = useContext(RootFontSizeContext);
   const redditService = useContext(RedditServiceContext);
   useEffect(() => {
     redditService.setAppNotification(appNotification);
-  }, [appNotification, redditService]);
+    redditService.setSideBar(sideBar);
+  }, [appNotification, redditService, sideBar]);
 
   const wheelEventHandler = useCallback(
     (event: WheelEvent) => {

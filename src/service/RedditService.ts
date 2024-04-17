@@ -9,11 +9,6 @@ import {
   setSubredditIndex,
   subredditQueueRemoveAt,
 } from "../redux/slice/RedditClientSlice.ts";
-import {
-  setMostRecentSubredditGotten,
-  setSubredditsToShowInSideBar,
-  setTimeTillNextGetPostsSeconds,
-} from "../redux/slice/SideBarSlice.ts";
 import RedditClient from "../client/RedditClient.ts";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import {
@@ -48,12 +43,18 @@ import {
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult.ts";
 import { v4 as uuidV4 } from "uuid";
 import { UseAppNotification } from "../hook/use-app-notification.ts";
+import { UseSideBar } from "../hook/use-side-bar.ts";
 
 export default class RedditService {
   private declare appNotification: UseAppNotification;
+  private declare sideBar: UseSideBar;
 
   setAppNotification(appNotification: UseAppNotification) {
     this.appNotification = appNotification;
+  }
+
+  setSideBar(sideBar: UseSideBar) {
+    this.sideBar = sideBar;
   }
 
   async startLoopingForPosts() {
@@ -67,7 +68,7 @@ export default class RedditService {
     getPostsFunction();
 
     const startWaitingToGetPosts = () => {
-      store.dispatch(setTimeTillNextGetPostsSeconds(10));
+      this.sideBar.setTimeTillNextGetPostsSeconds(10);
       const timeout = setTimeout(async () => {
         await getPostsFunction();
         startWaitingToGetPosts();
@@ -594,16 +595,16 @@ export default class RedditService {
       );
     }
     if (updatedValues.mostRecentSubredditGotten != undefined) {
-      store.dispatch(
-        setMostRecentSubredditGotten(updatedValues.mostRecentSubredditGotten)
+      this.sideBar.setMostRecentSubredditGotten(
+        updatedValues.mostRecentSubredditGotten
       );
     }
     if (updatedValues.postRowRemoveAt != undefined) {
       store.dispatch(postRowRemoveAt(updatedValues.postRowRemoveAt));
     }
     if (updatedValues.subredditsToShowInSideBar != undefined) {
-      store.dispatch(
-        setSubredditsToShowInSideBar(updatedValues.subredditsToShowInSideBar)
+      this.sideBar.setSubredditsToShowInSideBar(
+        updatedValues.subredditsToShowInSideBar
       );
     }
     if (updatedValues.masterSubscribedSubredditList != undefined) {

@@ -5,7 +5,6 @@ import appConfigReducer from "./slice/AppConfigSlice";
 import postRowsReducer from "./slice/PostRowsSlice";
 import redditClientReducer from "./slice/RedditClientSlice";
 import subredditListsReducer from "./slice/RedditListsSlice";
-import sideBarReducer from "./slice/SideBarSlice";
 
 const store = configureStore({
   reducer: {
@@ -13,7 +12,6 @@ const store = configureStore({
     redditClient: redditClientReducer,
     postRows: postRowsReducer,
     subredditLists: subredditListsReducer,
-    sideBar: sideBarReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk),
 });
