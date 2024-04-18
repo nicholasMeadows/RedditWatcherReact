@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   APP_INITIALIZATION_ROUTE,
@@ -20,6 +20,9 @@ import {
 import { useAppDispatch, useAppSelector } from "../redux/store";
 import { useContextMenu } from "../hook/use-context-menu.ts";
 import usePostRows from "../hook/use-post-rows.ts";
+import useRedditClient from "../hook/use-reddit-client.ts";
+import { RedditClientContext } from "../context/reddit-client-context.ts";
+import { RedditServiceContext } from "../context/reddit-service-context.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -27,12 +30,12 @@ const NavigationHamburgerMenu: React.FC = () => {
   const location = useLocation();
   const contextMenu = useContextMenu();
   const postRows = usePostRows();
+  const redditClient = useRedditClient();
+  const { redditClientContextData } = useContext(RedditClientContext);
+  const redditService = useContext(RedditServiceContext);
   const [pageName, setPageName] = useState("");
   const [showBackButton, setShowBackButton] = useState(false);
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
-  const redditAuthStatus = useAppSelector(
-    (state) => state.redditClient.redditAuthenticationStatus
-  );
 
   const [popoutDrawerOpen, setPopoutDrawerOpen] = useState(false);
   const fileSelectorRef = useRef(null);
@@ -80,14 +83,15 @@ const NavigationHamburgerMenu: React.FC = () => {
     }
 
     const showBackButton =
-      redditAuthStatus == RedditAuthenticationStatus.AUTHENTICATED &&
+      redditClientContextData.redditAuthenticationStatus ==
+        RedditAuthenticationStatus.AUTHENTICATED &&
       pathname != POST_ROW_ROUTE &&
       pathname != APP_INITIALIZATION_ROUTE;
 
     setPageName(pageName);
     setShowBackButton(showBackButton);
     contextMenu.closeContextMenu();
-  }, [dispatch, location, redditAuthStatus]);
+  }, [dispatch, location, redditClientContextData.redditAuthenticationStatus]);
   const navigateTo = (pathName: string) => {
     setPopoutDrawerOpen(false);
     if (window.location.href.endsWith(POST_ROW_ROUTE)) {
@@ -160,7 +164,8 @@ const NavigationHamburgerMenu: React.FC = () => {
             top: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
           }}
         >
-          {redditAuthStatus == RedditAuthenticationStatus.AUTHENTICATED && (
+          {redditClientContextData.redditAuthenticationStatus ==
+            RedditAuthenticationStatus.AUTHENTICATED && (
             <div className="drawer-popout-main">
               <div
                 className="drawer-popout-item"
@@ -253,6 +258,8 @@ const NavigationHamburgerMenu: React.FC = () => {
                       importAppConfig({
                         file: input.files[0],
                         usePostRows: postRows,
+                        redditClient: redditClient,
+                        redditService: redditService,
                       })
                     );
                   }

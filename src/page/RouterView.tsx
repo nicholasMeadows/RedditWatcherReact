@@ -40,6 +40,7 @@ import useAppNotifiction from "../hook/use-app-notification.ts";
 import { RedditServiceContext } from "../context/reddit-service-context.ts";
 import useSideBar from "../hook/use-side-bar.ts";
 import usePostRows from "../hook/use-post-rows.ts";
+import useRedditClient from "../hook/use-reddit-client.ts";
 
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -47,6 +48,7 @@ const RouterView: React.FC = () => {
   const appNotification = useAppNotifiction();
   const sideBar = useSideBar();
   const postRows = usePostRows();
+  const redditClient = useRedditClient();
   const darkmode = useAppSelector((state) => state.appConfig.darkMode);
   const location = useLocation();
   const { setRootFontSize } = useContext(RootFontSizeContext);
@@ -55,7 +57,8 @@ const RouterView: React.FC = () => {
     redditService.setAppNotification(appNotification);
     redditService.setSideBar(sideBar);
     redditService.setUsePostRows(postRows);
-  }, [appNotification, postRows, redditService, sideBar]);
+    redditService.setRedditClient(redditClient);
+  }, [appNotification, postRows, redditClient, redditService, sideBar]);
 
   const wheelEventHandler = useCallback(
     (event: WheelEvent) => {

@@ -1,81 +1,72 @@
-import { useAppDispatch, useAppSelector } from "../redux/store";
-import {
-  moveSubredditQueueItemBack,
-  moveSubredditQueueItemForward,
-  removeSubredditQueueItem,
-} from "../redux/slice/RedditClientSlice";
+import { useContext } from "react";
+import { RedditClientContext } from "../context/reddit-client-context.ts";
+import useRedditClient from "../hook/use-reddit-client.ts";
 
 const ModifySubredditQueue: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const subredditQueue = useAppSelector(
-    (state) => state.redditClient.subredditQueue
-  );
+  const redditClient = useRedditClient();
+  const { redditClientContextData } = useContext(RedditClientContext);
 
   return (
     <>
       <div className="modify-subreddit-queue-ion-content">
         <div className="modify-subreddit-queue-root">
-          {subredditQueue.length == 0 && (
+          {redditClientContextData.subredditQueue.length == 0 && (
             <h3 className="empty-subreddit-queue-text">
               Subreddit Queue is Empty...
             </h3>
           )}
 
-          {subredditQueue.length != 0 && (
+          {redditClientContextData.subredditQueue.length != 0 && (
             <>
-              {subredditQueue.map((subredditQueueItem) => (
-                <div
-                  key={subredditQueueItem.subredditQueueItemUuid}
-                  className="subreddit-queue-item"
-                >
-                  <h1 className={"subreddit-queue-item-label"}>
-                    {subredditQueueItem.displayName}
-                  </h1>
+              {redditClientContextData.subredditQueue.map(
+                (subredditQueueItem) => (
+                  <div
+                    key={subredditQueueItem.subredditQueueItemUuid}
+                    className="subreddit-queue-item"
+                  >
+                    <h1 className={"subreddit-queue-item-label"}>
+                      {subredditQueueItem.displayName}
+                    </h1>
 
-                  <div className="subreddit-queue-item-controls">
-                    <span
-                      className="queue-item-control-delete"
-                      onClick={() =>
-                        dispatch(
-                          removeSubredditQueueItem(
+                    <div className="subreddit-queue-item-controls">
+                      <span
+                        className="queue-item-control-delete"
+                        onClick={() =>
+                          redditClient.removeSubredditQueueItem(
                             subredditQueueItem.subredditQueueItemUuid
                           )
-                        )
-                      }
-                    >
-                      {" "}
-                      &#10006;{" "}
-                    </span>
-                    <span
-                      className="queue-item-control-move-up-down"
-                      onClick={() => {
-                        dispatch(
-                          moveSubredditQueueItemForward(
+                        }
+                      >
+                        {" "}
+                        &#10006;{" "}
+                      </span>
+                      <span
+                        className="queue-item-control-move-up-down"
+                        onClick={() => {
+                          redditClient.moveSubredditQueueItemForward(
                             subredditQueueItem.subredditQueueItemUuid
-                          )
-                        );
-                      }}
-                    >
-                      {" "}
-                      &#10094;{" "}
-                    </span>
+                          );
+                        }}
+                      >
+                        {" "}
+                        &#10094;{" "}
+                      </span>
 
-                    <span
-                      className="queue-item-control-move-up-down queue-item-control-move-down-margin-left"
-                      onClick={() =>
-                        dispatch(
-                          moveSubredditQueueItemBack(
+                      <span
+                        className="queue-item-control-move-up-down queue-item-control-move-down-margin-left"
+                        onClick={() =>
+                          redditClient.moveSubredditQueueItemBack(
                             subredditQueueItem.subredditQueueItemUuid
                           )
-                        )
-                      }
-                    >
-                      {" "}
-                      &#10095;{" "}
-                    </span>
+                        }
+                      >
+                        {" "}
+                        &#10095;{" "}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </>
           )}
         </div>

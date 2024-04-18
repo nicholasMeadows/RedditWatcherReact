@@ -156,7 +156,8 @@ export default class RedditClient {
   }
 
   async getUserFrontPage(
-    getPostsFromSubredditsState: GetPostsFromSubredditState
+    getPostsFromSubredditsState: GetPostsFromSubredditState,
+    masterSubscribedSubredditList: Array<Subreddit>
   ): Promise<Array<Post>> {
     // CheckIsUserLoggedIn();
     const authInfo = await this.getAuthInfo();
@@ -201,7 +202,7 @@ export default class RedditClient {
     const children: Array<ChildDataObj<T3>> = redditResponse.data.children;
 
     children.forEach((child) => {
-      const post = convertPost(child.data);
+      const post = convertPost(child.data, masterSubscribedSubredditList);
       if (
         post != null &&
         post.attachments != null &&
@@ -214,7 +215,10 @@ export default class RedditClient {
     return posts;
   }
 
-  async getPostsForSubredditUri(uri: string): Promise<Array<Post>> {
+  async getPostsForSubredditUri(
+    uri: string,
+    masterSubscribedSubredditList: Array<Subreddit>
+  ): Promise<Array<Post>> {
     // CheckIsUserLoggedIn();
     const authInfo = await this.getAuthInfo();
     this.checkRateLimits();
@@ -237,7 +241,7 @@ export default class RedditClient {
     const children: Array<ChildDataObj<T3>> = responseObj.data.children;
     const posts = new Array<Post>();
     children.forEach((child) => {
-      const post = convertPost(child.data);
+      const post = convertPost(child.data, masterSubscribedSubredditList);
       if (
         post != undefined &&
         post.attachments != undefined &&

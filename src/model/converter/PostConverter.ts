@@ -25,7 +25,10 @@ const ALLOWED_DOMAINS = [
   DOMAIN_REDDIT4,
 ];
 
-export function convertPost(post: T3): Post {
+export function convertPost(
+  post: T3,
+  masterSubscribedSubredditList: Array<Subreddit>
+): Post {
   const subredditDisplayName = post.subreddit;
 
   let fromList = "";
@@ -48,12 +51,10 @@ export function convertPost(post: T3): Post {
     subscribers: post.subreddit_subscribers,
     over18: post.over_18,
     isSubscribed:
-      store
-        .getState()
-        .redditClient.masterSubscribedSubredditList.find(
-          (sub) =>
-            sub.displayName.toLowerCase() == subredditDisplayName.toLowerCase()
-        ) != undefined,
+      masterSubscribedSubredditList.find(
+        (sub) =>
+          sub.displayName.toLowerCase() == subredditDisplayName.toLowerCase()
+      ) != undefined,
     fromList: fromList,
     subredditUuid: uuidV4(),
     isUser: post.subreddit_name_prefixed.startsWith("u_"),

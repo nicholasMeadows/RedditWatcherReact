@@ -7,13 +7,14 @@ import {
   showDeleteListConfirmationBox,
   showUpdateListBox,
 } from "../redux/slice/RedditListsSlice";
-import { addSubredditToQueue } from "../redux/slice/RedditClientSlice";
 import { useContextMenu } from "../hook/use-context-menu.ts";
 import { ContextMenuContext } from "../context/context-menu-context.ts";
+import useRedditClient from "../hook/use-reddit-client.ts";
 
 const ContextMenu: React.FC = () => {
   const dispatch = useAppDispatch();
   const contextMenu = useContextMenu();
+  const redditClient = useRedditClient();
   const { contextMenuData } = useContext(ContextMenuContext);
   const subredditLists = useAppSelector(
     (state) => state.subredditLists.subredditLists
@@ -178,7 +179,7 @@ const ContextMenu: React.FC = () => {
           hidden={!contextMenuData.showButtonControls.showSkipToSubreddit}
           onClick={() => {
             if (contextMenuData.subreddit != undefined) {
-              dispatch(addSubredditToQueue(contextMenuData.subreddit));
+              redditClient.addSubredditToQueue(contextMenuData.subreddit);
             }
             contextMenu.closeContextMenu();
           }}

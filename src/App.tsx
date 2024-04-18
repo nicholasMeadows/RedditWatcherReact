@@ -44,6 +44,12 @@ import {
   PostRowsContext,
   PostRowsContextData,
 } from "./context/post-rows-context.ts";
+import { RedditAuthenticationStatus } from "./model/RedditAuthenticationState.ts";
+import { SubredditQueueItem } from "./model/Subreddit/SubredditQueueItem.ts";
+import {
+  RedditClientContext,
+  RedditClientContextData,
+} from "./context/reddit-client-context.ts";
 
 const App: React.FC = () => {
   const [rootFontSize, setRootFontSize] = useState(0);
@@ -85,6 +91,11 @@ const App: React.FC = () => {
       postRowContentWidthPx: 0,
     });
 
+  const [redditClientContextData, setRedditClientContextData] =
+    useState<RedditClientContextData>({
+      redditAuthenticationStatus: RedditAuthenticationStatus.NOT_YET_AUTHED,
+      subredditQueue: new Array<SubredditQueueItem>(),
+    });
   const redditServiceRef = useRef(new RedditService());
 
   return (
@@ -128,7 +139,15 @@ const App: React.FC = () => {
                         setPostRowsContextData: setPostRowsContextData,
                       }}
                     >
-                      <RouterView />
+                      <RedditClientContext.Provider
+                        value={{
+                          redditClientContextData: redditClientContextData,
+                          setRedditClientContextData:
+                            setRedditClientContextData,
+                        }}
+                      >
+                        <RouterView />
+                      </RedditClientContext.Provider>
                     </PostRowsContext.Provider>
                   </SideBarContext.Provider>
                 </AppNotificationContext.Provider>

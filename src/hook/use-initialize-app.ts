@@ -10,26 +10,27 @@ import {
   REDDIT_SIGN_IN_ROUTE,
 } from "../RedditWatcherConstants.ts";
 import { useNavigate } from "react-router-dom";
-import store, { useAppDispatch, useAppSelector } from "../redux/store.ts";
+import { useAppDispatch } from "../redux/store.ts";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState.ts";
-import { authenticateReddit } from "../redux/slice/RedditClientSlice.ts";
 import { setAppConfig } from "../redux/slice/AppConfigSlice.ts";
 import { v4 as uuidV4 } from "uuid";
 import { setSubredditLists } from "../redux/slice/RedditListsSlice.ts";
 import RedditService from "../service/RedditService.ts";
 import { PostRowsContext } from "../context/post-rows-context.ts";
+import { RedditClientContext } from "../context/reddit-client-context.ts";
+import { UseRedditClient } from "./use-reddit-client.ts";
 
-export default function useInitializeApp(redditService: RedditService) {
+export default function useInitializeApp(
+  redditService: RedditService,
+  redditClient: UseRedditClient
+) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [config, setConfig] = useState<AppConfig | undefined>(undefined);
   const [subredditLists, setSubredditListsState] = useState<
     SubredditLists[] | undefined
   >(undefined);
-
-  const redditAuthenticationStatus = useAppSelector(
-    (state) => state.redditClient.redditAuthenticationStatus
-  );
+  const { redditClientContextData } = useContext(RedditClientContext);
 
   const [initializeAppPageText, setInitializeAppPageText] = useState("");
   const { postRowsContextData } = useContext(PostRowsContext);
@@ -79,21 +80,20 @@ export default function useInitializeApp(redditService: RedditService) {
         }
 
         if (
-          redditAuthenticationStatus ==
+          redditClientContextData.redditAuthenticationStatus ==
           RedditAuthenticationStatus.NOT_YET_AUTHED
         ) {
           console.log("Authenticating Reddit");
           setInitializeAppPageText("Logging In...");
-          dispatch(authenticateReddit());
+          redditClient.authenticateReddit();
         } else if (
-          redditAuthenticationStatus ==
+          redditClientContextData.redditAuthenticationStatus ==
           RedditAuthenticationStatus.AUTHENTICATION_DENIED
         ) {
           navigate(REDDIT_SIGN_IN_ROUTE);
         } else if (postRowsContextData.postRows.length == 0) {
           setInitializeAppPageText("Getting Posts...");
-          const loopingForPosts = store.getState().redditClient.loopingForPosts;
-          if (!loopingForPosts) {
+          if (!redditService.loopingForPosts) {
             redditService.startLoopingForPosts();
           }
         } else {
@@ -107,7 +107,7 @@ export default function useInitializeApp(redditService: RedditService) {
     dispatch,
     navigate,
     postRowsContextData.postRows.length,
-    redditAuthenticationStatus,
+    redditClientContextData.redditAuthenticationStatus,
     redditService,
     subredditLists,
   ]);

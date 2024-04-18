@@ -1,14 +1,4 @@
 import store from "../redux/store.ts";
-import {
-  addSubredditsToSubscribedList,
-  setLastPostRowWasSortOrderNew,
-  setLoopingForPosts,
-  setLoopingForPostsTimeout,
-  setMasterSubscribedSubredditList,
-  setNsfwRedditListIndex,
-  setSubredditIndex,
-  subredditQueueRemoveAt,
-} from "../redux/slice/RedditClientSlice.ts";
 import RedditClient from "../client/RedditClient.ts";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import {
@@ -40,11 +30,20 @@ import { UseAppNotification } from "../hook/use-app-notification.ts";
 import { UseSideBar } from "../hook/use-side-bar.ts";
 import { UsePostRows } from "../hook/use-post-rows.ts";
 import { WaitUtil } from "../util/WaitUtil.ts";
+import { UseRedditClient } from "../hook/use-reddit-client.ts";
 
 export default class RedditService {
   private declare appNotification: UseAppNotification;
   private declare sideBar: UseSideBar;
   private declare usePostRows: UsePostRows;
+  private declare redditClient: UseRedditClient;
+
+  loopingForPosts = false;
+  loopingForPostsTimeout: NodeJS.Timeout | undefined = undefined;
+  lastPostRowWasSortOrderNew: boolean = false;
+  subredditIndex: number = 0;
+  nsfwRedditListIndex: number = 0;
+  masterSubscribedSubredditList: Array<Subreddit> = [];
 
   setAppNotification(appNotification: UseAppNotification) {
     this.appNotification = appNotification;
@@ -58,9 +57,13 @@ export default class RedditService {
     this.usePostRows = usePostRows;
   }
 
+  setRedditClient(redditClient: UseRedditClient) {
+    this.redditClient = redditClient;
+  }
+
   async startLoopingForPosts() {
     console.log("starting to loop for posts");
-    store.dispatch(setLoopingForPosts(true));
+    this.loopingForPosts = true;
     await this.loadSubscribedSubreddits();
 
     const getPostsFunction = async () => {
@@ -74,7 +77,7 @@ export default class RedditService {
         await getPostsFunction();
         startWaitingToGetPosts();
       }, 10000);
-      store.dispatch(setLoopingForPostsTimeout(timeout));
+      this.loopingForPostsTimeout = timeout;
     };
     startWaitingToGetPosts();
   }
@@ -90,8 +93,12 @@ export default class RedditService {
           stateConverter.convert(
             this.usePostRows.getPostRowsContextData(),
             state.appConfig,
-            state.redditClient,
-            state.subredditLists
+            this.redditClient.getRedditClientContextData(),
+            state.subredditLists,
+            this.lastPostRowWasSortOrderNew,
+            this.subredditIndex,
+            this.nsfwRedditListIndex,
+            this.masterSubscribedSubredditList
           )
         )
       );
@@ -168,7 +175,8 @@ export default class RedditService {
       )
     ) {
       posts = await new RedditClient().getUserFrontPage(
-        getPostsFromSubredditsState
+        getPostsFromSubredditsState,
+        this.masterSubscribedSubredditList
       );
     } else {
       const [postsArr, fromSubredditsArr] = await this.getPostsBasedOnSettings(
@@ -443,7 +451,10 @@ export default class RedditService {
       getPostsFromSubredditsState.redditApiItemLimit
     );
     console.log("about to get posts for subreddit uri ", url);
-    let posts = await new RedditClient().getPostsForSubredditUri(url);
+    let posts = await new RedditClient().getPostsForSubredditUri(
+      url,
+      this.masterSubscribedSubredditList
+    );
     posts = posts.map<Post>((value) => {
       value.randomSourceString = randomSourceString;
       return value;
@@ -529,7 +540,6 @@ export default class RedditService {
   private settingsChanged(originalState: GetPostsFromSubredditState) {
     const state = store.getState();
     const appConfigState = state.appConfig;
-    const redditClientState = state.redditClient;
 
     const subredditQueuesEqual = (
       queue1: Array<Subreddit>,
@@ -554,7 +564,7 @@ export default class RedditService {
       originalState.contentFiltering == appConfigState.contentFiltering &&
       subredditQueuesEqual(
         originalState.subredditQueue,
-        redditClientState.subredditQueue
+        this.redditClient.getRedditClientContextData().subredditQueue
       ) &&
       originalState.concatRedditUrlMaxLength ==
         appConfigState.concatRedditUrlMaxLength &&
@@ -591,8 +601,8 @@ export default class RedditService {
     const updatedValues = getPostsFromSubredditState.getPostsUpdatedValues;
 
     if (updatedValues.subredditQueueRemoveAt != undefined) {
-      store.dispatch(
-        subredditQueueRemoveAt(updatedValues.subredditQueueRemoveAt)
+      this.redditClient.subredditQueueRemoveAt(
+        updatedValues.subredditQueueRemoveAt
       );
     }
     if (updatedValues.mostRecentSubredditGotten != undefined) {
@@ -609,22 +619,19 @@ export default class RedditService {
       );
     }
     if (updatedValues.masterSubscribedSubredditList != undefined) {
-      store.dispatch(
-        setMasterSubscribedSubredditList(
-          updatedValues.masterSubscribedSubredditList
-        )
+      this.redditClient.setMasterSubscribedSubredditList(
+        updatedValues.masterSubscribedSubredditList
       );
     }
     if (updatedValues.subredditIndex != undefined) {
-      store.dispatch(setSubredditIndex(updatedValues.subredditIndex));
+      this.subredditIndex = updatedValues.subredditIndex;
     }
     if (updatedValues.nsfwRedditListIndex != undefined) {
-      store.dispatch(setNsfwRedditListIndex(updatedValues.nsfwRedditListIndex));
+      this.nsfwRedditListIndex = updatedValues.nsfwRedditListIndex;
     }
     if (updatedValues.lastPostRowWasSortOrderNew != undefined) {
-      store.dispatch(
-        setLastPostRowWasSortOrderNew(updatedValues.lastPostRowWasSortOrderNew)
-      );
+      this.lastPostRowWasSortOrderNew =
+        updatedValues.lastPostRowWasSortOrderNew;
     }
     if (updatedValues.createPostRowAndInsertAtBeginning != undefined) {
       this.usePostRows.createPostRowAndInsertAtBeginning(
@@ -642,7 +649,7 @@ export default class RedditService {
 
   private async loadSubscribedSubreddits(async: boolean = true) {
     let results = await new RedditClient().getSubscribedSubReddits(undefined);
-    store.dispatch(setMasterSubscribedSubredditList(results.subreddits));
+    this.redditClient.setMasterSubscribedSubredditList(results.subreddits);
     const asyncLoopForRemainingSubreddits = async () => {
       const remainingSubreddits = new Array<Subreddit>();
 
@@ -652,7 +659,7 @@ export default class RedditService {
         );
         remainingSubreddits.push(...results.subreddits);
       }
-      store.dispatch(addSubredditsToSubscribedList(remainingSubreddits));
+      this.masterSubscribedSubredditList.push(...remainingSubreddits);
     };
     if (async) {
       asyncLoopForRemainingSubreddits();
