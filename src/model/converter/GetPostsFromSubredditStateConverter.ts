@@ -7,14 +7,14 @@ import TopTimeFrameOptionsEnum from "../config/enums/TopTimeFrameOptionsEnum.ts"
 import SelectSubredditIterationMethodOptionsEnum from "../config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
 import SortOrderDirectionOptionsEnum from "../config/enums/SortOrderDirectionOptionsEnum.ts";
 import { SubredditLists } from "../SubredditList/SubredditLists.ts";
-import { PostRowsState } from "../PostRowsState.ts";
 import { AppConfigState } from "../config/AppConfigState.ts";
-import { RedditClientState } from "../RedditClientState.ts";
-import RedditListsState from "../RedditListsState.ts";
 import { PostRow } from "../PostRow.ts";
 import { Post } from "../Post/Post.ts";
 import RandomIterationSelectWeightOptionsEnum from "../config/enums/RandomIterationSelectWeightOptionsEnum.ts";
 import SelectedSubredditListSortOptionEnum from "../config/enums/SelectedSubredditListSortOptionEnum.ts";
+import { PostRowsContextData } from "../../context/post-rows-context.ts";
+import { RedditClientContextData } from "../../context/reddit-client-context.ts";
+import RedditListContextData from "../../context/reddit-list-context.ts";
 
 export type GetPostsFromSubredditState = {
   postRows: Array<PostRow>;
@@ -53,10 +53,14 @@ export type GetPostsUpdatedValues = {
 
 export class GetPostsFromSubredditStateConverter {
   convert(
-    postRowsState: PostRowsState,
+    postRowsState: PostRowsContextData,
     appConfigState: AppConfigState,
-    redditClientState: RedditClientState,
-    redditListsState: RedditListsState
+    redditClientContextData: RedditClientContextData,
+    redditListContextData: RedditListContextData,
+    lastPostRowWasSortOrderNew: boolean,
+    subredditIndex: number,
+    nsfwRedditListIndex: number,
+    masterSubscribedSubredditList: Array<Subreddit>
   ): GetPostsFromSubredditState {
     return {
       postRows: postRowsState.postRows,
@@ -64,7 +68,7 @@ export class GetPostsFromSubredditStateConverter {
       userFrontPagePostSortOrderOption:
         appConfigState.userFrontPagePostSortOrderOption,
       contentFiltering: appConfigState.contentFiltering,
-      subredditQueue: redditClientState.subredditQueue,
+      subredditQueue: redditClientContextData.subredditQueue,
       concatRedditUrlMaxLength: appConfigState.concatRedditUrlMaxLength,
       postSortOrder: appConfigState.postSortOrderOption,
       topTimeFrame: appConfigState.topTimeFrameOption,
@@ -72,11 +76,11 @@ export class GetPostsFromSubredditStateConverter {
       selectSubredditIterationMethodOption:
         appConfigState.selectSubredditIterationMethodOption,
       sortOrderDirection: appConfigState.sortOrderDirectionOption,
-      nsfwSubredditIndex: redditClientState.nsfwRedditListIndex,
-      masterSubredditList: redditClientState.masterSubscribedSubredditList,
-      subredditIndex: redditClientState.subredditIndex,
-      subredditLists: redditListsState.subredditLists,
-      lastPostRowWasSortOrderNew: redditClientState.lastPostRowWasSortOrderNew,
+      nsfwSubredditIndex: nsfwRedditListIndex,
+      masterSubredditList: masterSubscribedSubredditList,
+      subredditIndex: subredditIndex,
+      subredditLists: redditListContextData.subredditLists,
+      lastPostRowWasSortOrderNew: lastPostRowWasSortOrderNew,
       randomIterationSelectWeightOption:
         appConfigState.randomIterationSelectWeightOption,
       selectedSubredditListSortOption:

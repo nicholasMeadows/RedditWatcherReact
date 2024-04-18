@@ -2,12 +2,8 @@ import { MouseEvent, useRef } from "react";
 import SubredditListContextMenuEvent from "../../model/Events/SubredditListContextMenuEvent";
 import SubredditListItemContextMenuEvent from "../../model/Events/SubredditListItemContextMenuEvent";
 import { SubredditLists } from "../../model/SubredditList/SubredditLists";
-import {
-  setSubredditListContextMenuEvent,
-  setSubredditListItemContextMenuEvent,
-} from "../../redux/slice/ContextMenuSlice";
-import { toggleSubredditListSelected } from "../../redux/slice/RedditListsSlice";
-import { useAppDispatch } from "../../redux/store";
+import { useContextMenu } from "../../hook/use-context-menu.ts";
+import useRedditList from "../../hook/use-reddit-list.ts";
 
 type Props = {
   subredditList: SubredditLists;
@@ -19,7 +15,8 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
   subredditListUuidClicked,
   accordionOnClick,
 }) => {
-  const dispatch = useAppDispatch();
+  const contextMenu = useContextMenu();
+  const redditListsHook = useRedditList();
   const panelDivRef = useRef(null);
   return (
     <>
@@ -45,10 +42,8 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
             x: event.clientX,
             y: event.clientY,
           };
-          dispatch(
-            setSubredditListContextMenuEvent({
-              event: subredditListContextMenuEvent,
-            })
+          contextMenu.setSubredditListContextMenuEvent(
+            subredditListContextMenuEvent
           );
         }}
       >
@@ -62,7 +57,7 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
             event.stopPropagation();
           }}
           onChange={() => {
-            dispatch(toggleSubredditListSelected(subredditList));
+            redditListsHook.toggleSubredditListSelected(subredditList);
           }}
         />
         <label className="subredditListLabel text-color">
@@ -91,10 +86,8 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
                   x: event.clientX,
                   y: event.clientY,
                 };
-              dispatch(
-                setSubredditListItemContextMenuEvent({
-                  event: subredditListItemContextMenuEvent,
-                })
+              contextMenu.setSubredditListItemContextMenuEvent(
+                subredditListItemContextMenuEvent
               );
             }}
           >

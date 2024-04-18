@@ -1,7 +1,7 @@
 import store, { useAppDispatch, useAppSelector } from "../redux/store";
 
 import { KeepAwake } from "@capacitor-community/keep-awake";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import {
   APP_INITIALIZATION_ROUTE,
@@ -17,7 +17,6 @@ import {
   REDDIT_SOURCE_SETTINGS_ROUTE,
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
-import { closeContextMenu } from "../redux/slice/ContextMenuSlice";
 import AppInitialization from "./AppInitialization";
 import AppNotification from "./AppNotification";
 import ContextMenu from "./ContextMenu";
@@ -32,22 +31,44 @@ import ApplicationSettings from "./SettingsPages/ApplicationSettings.tsx";
 import getPlatform from "../util/PlatformUtil.ts";
 import { Platform } from "../model/Platform.ts";
 import {
-  setCurrentLocation,
-  setPostCardWidthPercentage,
-  setPostRowContentWidthPx,
-} from "../redux/slice/PostRowsSlice.ts";
-import { RootFontSizeContext } from "./Context.ts";
-import {
   setPostRowsToShowInView,
   setPostsToShowInRow,
 } from "../redux/slice/AppConfigSlice.ts";
+import { useContextMenu } from "../hook/use-context-menu.ts";
+import { RootFontSizeContext } from "../context/root-font-size-context.ts";
+import useAppNotifiction from "../hook/use-app-notification.ts";
+import { RedditServiceContext } from "../context/reddit-service-context.ts";
+import useSideBar from "../hook/use-side-bar.ts";
+import usePostRows from "../hook/use-post-rows.ts";
+import useRedditClient from "../hook/use-reddit-client.ts";
+import useRedditList from "../hook/use-reddit-list.ts";
 
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
+  const contextMenu = useContextMenu();
+  const appNotification = useAppNotifiction();
+  const sideBar = useSideBar();
+  const postRows = usePostRows();
+  const redditClient = useRedditClient();
+  const redditLists = useRedditList();
   const darkmode = useAppSelector((state) => state.appConfig.darkMode);
   const location = useLocation();
-
-  const [rootFontSize, setRootFontSize] = useState(0);
+  const { setRootFontSize } = useContext(RootFontSizeContext);
+  const redditService = useContext(RedditServiceContext);
+  useEffect(() => {
+    redditService.setAppNotification(appNotification);
+    redditService.setSideBar(sideBar);
+    redditService.setUsePostRows(postRows);
+    redditService.setRedditClient(redditClient);
+    redditService.setRedditLists(redditLists);
+  }, [
+    appNotification,
+    postRows,
+    redditClient,
+    redditLists,
+    redditService,
+    sideBar,
+  ]);
 
   const wheelEventHandler = useCallback(
     (event: WheelEvent) => {
@@ -72,22 +93,26 @@ const RouterView: React.FC = () => {
   );
 
   useEffect(() => {
-    const documentClickedEvent = () => {
-      dispatch(closeContextMenu());
-    };
-
-    document.addEventListener("click", documentClickedEvent);
     document.addEventListener("wheel", wheelEventHandler, { passive: false });
     KeepAwake.keepAwake();
 
     return () => {
-      document.removeEventListener("click", documentClickedEvent);
       document.removeEventListener("wheel", wheelEventHandler);
     };
-  }, [dispatch]);
+  }, [dispatch, wheelEventHandler]);
 
   useEffect(() => {
-    dispatch(setCurrentLocation(location.pathname));
+    const documentClickedEvent = () => {
+      contextMenu.closeContextMenu();
+    };
+    document.addEventListener("click", documentClickedEvent);
+    return () => {
+      document.removeEventListener("click", documentClickedEvent);
+    };
+  }, [contextMenu]);
+
+  useEffect(() => {
+    postRows.setCurrentLocation(location.pathname);
   }, [dispatch, location]);
 
   useEffect(() => {
@@ -146,16 +171,15 @@ const RouterView: React.FC = () => {
             ? baseFontSize * POST_ROW_SCROLL_BTN_WIDTH_EM * 2
             : 0;
         const postRowContentWidthPx = div.clientWidth - scrollButtonWidths;
-        dispatch(setPostRowContentWidthPx(postRowContentWidthPx));
+        postRows.setPostRowContentWidthPx(postRowContentWidthPx);
 
         const postCardWidthPx = postRowContentWidthPx / postsToShowInRow;
         const postCardWidthPercentage =
           (postCardWidthPx / postRowContentWidthPx) * 100;
-        dispatch(
-          setPostCardWidthPercentage({
-            postCardWidthPercentage: postCardWidthPercentage,
-            postsToShowInRow: postsToShowInRow,
-          })
+
+        postRows.setPostCardWidthPercentage(
+          postCardWidthPercentage,
+          postsToShowInRow
         );
       }
     });
@@ -164,54 +188,51 @@ const RouterView: React.FC = () => {
       contentResizeObserver.observe(div);
     }
   }, [dispatch, postsToShowInRow]);
+
   return (
     <div className="root-app" ref={rootDivRef}>
-      <RootFontSizeContext.Provider value={{ fontSize: rootFontSize }}>
-        <NavigationHamburgerMenu />
-        <AppNotification />
-        <ContextMenu />
-        <div
-          style={{
-            marginTop: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
-            height: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
-            maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
-          }}
-          className="app-body"
-        >
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Navigate to={APP_INITIALIZATION_ROUTE} replace={true} />
-              }
-            />
-            <Route
-              index
-              path={APP_INITIALIZATION_ROUTE}
-              element={<AppInitialization />}
-            />
-            <Route path={REDDIT_SIGN_IN_ROUTE} element={<RedditSignIn />} />
-            <Route path={POST_ROW_ROUTE} element={<PostRowPage />} />
-            <Route
-              path={REDDIT_SOURCE_SETTINGS_ROUTE}
-              element={<RedditSourceSettings />}
-            />
-            <Route
-              path={APPLICATION_SETTINGS_ROUTE}
-              element={<ApplicationSettings />}
-            />
-            <Route path={SINGPLE_POST_ROUTE} element={<SinglePostView />} />
-            <Route
-              path={MODIFY_SUBREDDIT_LISTS_ROUTE}
-              element={<ModifySubredditLists />}
-            />
-            <Route
-              path={MODIFY_SUBREDDIT_QUEUE_ROUTE}
-              element={<ModifySubredditQueue />}
-            />
-          </Routes>
-        </div>
-      </RootFontSizeContext.Provider>
+      <NavigationHamburgerMenu />
+      <AppNotification />
+      <ContextMenu />
+      <div
+        style={{
+          marginTop: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
+          height: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+          maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+        }}
+        className="app-body"
+      >
+        <Routes>
+          <Route
+            path="/"
+            element={<Navigate to={APP_INITIALIZATION_ROUTE} replace={true} />}
+          />
+          <Route
+            index
+            path={APP_INITIALIZATION_ROUTE}
+            element={<AppInitialization />}
+          />
+          <Route path={REDDIT_SIGN_IN_ROUTE} element={<RedditSignIn />} />
+          <Route path={POST_ROW_ROUTE} element={<PostRowPage />} />
+          <Route
+            path={REDDIT_SOURCE_SETTINGS_ROUTE}
+            element={<RedditSourceSettings />}
+          />
+          <Route
+            path={APPLICATION_SETTINGS_ROUTE}
+            element={<ApplicationSettings />}
+          />
+          <Route path={SINGPLE_POST_ROUTE} element={<SinglePostView />} />
+          <Route
+            path={MODIFY_SUBREDDIT_LISTS_ROUTE}
+            element={<ModifySubredditLists />}
+          />
+          <Route
+            path={MODIFY_SUBREDDIT_QUEUE_ROUTE}
+            element={<ModifySubredditQueue />}
+          />
+        </Routes>
+      </div>
     </div>
   );
 };

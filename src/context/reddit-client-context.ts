@@ -1,0 +1,19 @@
+import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState.ts";
+import { SubredditQueueItem } from "../model/Subreddit/SubredditQueueItem.ts";
+import { createContext } from "react";
+
+export type RedditClientContextData = {
+  redditAuthenticationStatus: RedditAuthenticationStatus;
+  subredditQueue: Array<SubredditQueueItem>;
+};
+
+type RedditClientContextObj = {
+  redditClientContextData: RedditClientContextData;
+  setRedditClientContextData: React.Dispatch<
+    React.SetStateAction<RedditClientContextData>
+  >;
+};
+
+export const RedditClientContext = createContext<RedditClientContextObj>(
+  {} as RedditClientContextObj
+);

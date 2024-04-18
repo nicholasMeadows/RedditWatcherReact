@@ -8,13 +8,9 @@ import React, {
   WheelEventHandler,
 } from "react";
 import { Post } from "../../model/Post/Post.ts";
-import {
-  decrementPostAttachment,
-  incrementPostAttachment,
-  jumpToPostAttachment,
-} from "../../redux/slice/PostRowsSlice.ts";
 import { useAppDispatch } from "../../redux/store.ts";
 import { v4 as uuidV4 } from "uuid";
+import usePostRows from "../../hook/use-post-rows.ts";
 
 type Props = {
   postRowUuid: string;
@@ -47,6 +43,7 @@ const PostMediaElement: React.FC<Props> = ({
   onTouchMove,
 }) => {
   const dispatch = useAppDispatch();
+  const postRowsHook = usePostRows();
   const [carouselArrowLightDarkPart, setCarouselArrowLightDarkPart] =
     useState("light");
 
@@ -57,12 +54,7 @@ const PostMediaElement: React.FC<Props> = ({
   const setupAutoIncrementPostAttachmentInterval = useCallback(() => {
     if (post.attachments.length > 1 && autoIncrementAttachments) {
       autoIncrementPostAttachmentInterval.current = setInterval(() => {
-        dispatch(
-          incrementPostAttachment({
-            postRowUuid: postRowUuid,
-            postUuid: post.postUuid,
-          })
-        );
+        postRowsHook.incrementPostAttachment(postRowUuid, post.postUuid);
       }, 5000);
     }
   }, [autoIncrementAttachments, dispatch, post, postRowUuid]);
@@ -161,12 +153,7 @@ const PostMediaElement: React.FC<Props> = ({
         onClick={(event) => {
           event.stopPropagation();
           event.preventDefault();
-          dispatch(
-            decrementPostAttachment({
-              postRowUuid: postRowUuid,
-              postUuid: post.postUuid,
-            })
-          );
+          postRowsHook.decrementPostAttachment(postRowUuid, post.postUuid);
         }}
       />
       <img
@@ -178,12 +165,7 @@ const PostMediaElement: React.FC<Props> = ({
         onClick={(event) => {
           event.stopPropagation();
           event.preventDefault();
-          dispatch(
-            incrementPostAttachment({
-              postRowUuid: postRowUuid,
-              postUuid: post.postUuid,
-            })
-          );
+          postRowsHook.incrementPostAttachment(postRowUuid, post.postUuid);
         }}
       />
 
@@ -240,12 +222,10 @@ const PostMediaElement: React.FC<Props> = ({
                     : ""
                 }`}
                 onClick={() => {
-                  dispatch(
-                    jumpToPostAttachment({
-                      postRowUuid: postRowUuid,
-                      postUuid: post.postUuid,
-                      attachmentIndex: index,
-                    })
+                  postRowsHook.jumpToPostAttachment(
+                    postRowUuid,
+                    post.postUuid,
+                    index
                   );
                 }}
               ></div>

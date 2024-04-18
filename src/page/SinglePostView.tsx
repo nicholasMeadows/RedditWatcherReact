@@ -1,48 +1,56 @@
-import { TouchEvent, useCallback, useEffect, useRef, useState } from "react";
+import {
+  FC,
+  TouchEvent,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   SINGLE_POST_PAGE_MAX_SCALE,
   SINGLE_POST_PAGE_MIN_SCALE,
   SINGLE_POST_PAGE_SCALE_STEP,
 } from "../RedditWatcherConstants.ts";
 import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
-import { setPostContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
-import {
-  goToNexPostInRow,
-  goToPreviousPostInRow,
-  setImgScale,
-  setImgXPercentage,
-  setImgYPercentage,
-} from "../redux/slice/SinglePostPageSlice.ts";
-import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import PostMediaElement from "./PostRowsPage/PostMediaElement.tsx";
+import { useSinglePostPageGoToNextPrevPost } from "../hook/use-single-post-page-go-to-next-prev-post.ts";
+import { useSinglePostPageFindPost } from "../hook/use-single-post-page-find-post.ts";
+import { useContextMenu } from "../hook/use-context-menu.ts";
+import { SinglePostPageContext } from "../context/single-post-page-context.ts";
+import { PostRowsContext } from "../context/post-rows-context.ts";
 
-const SinglePostView: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const postRowUuid = useAppSelector(
-    (state) => state.singlePostPage.postRowUuid
-  );
-  const post = useAppSelector((state) => {
-    const postRowUuid = state.singlePostPage.postRowUuid;
-    const postUuid = state.singlePostPage.postUuid;
-    if (postRowUuid == undefined || postUuid == undefined) {
-      return;
-    }
+const SinglePostView: FC = () => {
+  const { postRowsContextData } = useContext(PostRowsContext);
+  const contextMenu = useContextMenu();
+  const { postRowUuid } = useContext(SinglePostPageContext);
+  const post = useSinglePostPageFindPost(postRowsContextData.postRows);
+  const { goToNextPost, goToPreviousPost } =
+    useSinglePostPageGoToNextPrevPost();
 
-    const postRow = state.postRows.postRows.find(
-      (pr) => pr.postRowUuid == postRowUuid
-    );
-    if (postRow != undefined) {
-      return postRow.posts.find((p) => p.postUuid == postUuid);
-    }
-  });
+  const [imgScale, setImgScale] = useState(1);
+  const [imgXPercent, setImgXPercentage] = useState(50);
+  const [imgYPercent, setImgYPercentage] = useState(50);
 
-  const imgScale = useAppSelector((state) => state.singlePostPage.imgScale);
-  const imgXPercent = useAppSelector(
-    (state) => state.singlePostPage.imgXPercent
-  );
-  const imgYPercent = useAppSelector(
-    (state) => state.singlePostPage.imgYPercent
-  );
+  const resetImgPositionAndScale = useCallback(() => {
+    setImgXPercentage(50);
+    setImgYPercentage(50);
+    setImgScale(1);
+  }, []);
+
+  const goToNextPostClicked = useCallback(() => {
+    resetImgPositionAndScale();
+    goToNextPost(postRowsContextData.postRows);
+  }, [goToNextPost, postRowsContextData.postRows, resetImgPositionAndScale]);
+
+  const goToPrevPostClicked = useCallback(() => {
+    resetImgPositionAndScale();
+    goToPreviousPost(postRowsContextData.postRows);
+  }, [
+    goToPreviousPost,
+    postRowsContextData.postRows,
+    resetImgPositionAndScale,
+  ]);
 
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -64,30 +72,21 @@ const SinglePostView: React.FC = () => {
     const isRightSwipe = distance < -minSwipeDistance;
 
     if (isLeftSwipe) {
-      goToNextPost();
+      goToNextPostClicked();
     }
 
     if (isRightSwipe) {
-      goToPreviousPost();
+      goToPrevPostClicked();
     }
   };
-
-  const goToNextPost = useCallback(() => {
-    dispatch(goToNexPostInRow());
-  }, [dispatch]);
-
-  const goToPreviousPost = useCallback(() => {
-    dispatch(goToPreviousPostInRow());
-  }, [dispatch]);
-
   useEffect(() => {
     const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
       const key = keyboardEvent.key;
 
       if (key == "ArrowRight") {
-        goToNextPost();
+        goToNextPostClicked();
       } else if (key == "ArrowLeft") {
-        goToPreviousPost();
+        goToPrevPostClicked();
       }
     };
 
@@ -95,13 +94,7 @@ const SinglePostView: React.FC = () => {
     return () => {
       document.body.removeEventListener("keyup", documentKeyUpEvent);
     };
-  }, [goToNextPost, goToPreviousPost]);
-
-  useEffect(() => {
-    dispatch(setImgXPercentage(50));
-    dispatch(setImgYPercentage(50));
-    dispatch(setImgScale(1));
-  }, [dispatch]);
+  }, [goToNextPostClicked, goToPrevPostClicked]);
 
   const postElementDivWrapperRef = useRef(null);
 
@@ -145,13 +138,13 @@ const SinglePostView: React.FC = () => {
         const imgBottom = imgBottomOverride || imgRect.bottom;
 
         if (parentLeft < imgLeft && imgRight < parentRight) {
-          dispatch(setImgXPercentage(50));
+          setImgXPercentage(50);
         } else if (parentLeft < imgLeft) {
           const diff = imgLeft - parentLeft;
-          dispatch(setImgXPercentage(imgXPercent - (diff / parentWidth) * 100));
+          setImgXPercentage(imgXPercent - (diff / parentWidth) * 100);
         } else if (parentRight > imgRight) {
           const diff = parentRight - imgRight;
-          dispatch(setImgXPercentage(imgXPercent + (diff / parentWidth) * 100));
+          setImgXPercentage(imgXPercent + (diff / parentWidth) * 100);
         } else {
           const percentageMovementX = (movementX / parentWidth) * 100;
           const updatedImgXPercent = imgXPercent + percentageMovementX;
@@ -160,22 +153,18 @@ const SinglePostView: React.FC = () => {
             ((imgWidth - parentWidth) / 2 / parentWidth) * 100
           );
           if (Math.abs(updatedImgXPercent - 50) < maxXDelta) {
-            dispatch(setImgXPercentage(updatedImgXPercent));
+            setImgXPercentage(updatedImgXPercent);
           }
         }
 
         if (parentTop < imgTop && imgBottom < parentBottom) {
-          dispatch(setImgYPercentage(50));
+          setImgYPercentage(50);
         } else if (parentTop < imgTop) {
           const diff = imgTop - parentTop;
-          dispatch(
-            setImgYPercentage(imgYPercent - (diff / parentHeight) * 100)
-          );
+          setImgYPercentage(imgYPercent - (diff / parentHeight) * 100);
         } else if (imgBottom < parentBottom) {
           const diff = parentBottom - imgBottom;
-          dispatch(
-            setImgYPercentage(imgYPercent + (diff / parentHeight) * 100)
-          );
+          setImgYPercentage(imgYPercent + (diff / parentHeight) * 100);
         } else {
           const percentageMovementY = (movementY / parentHeight) * 100;
           const updatedImgYPercent = imgYPercent + percentageMovementY;
@@ -184,12 +173,12 @@ const SinglePostView: React.FC = () => {
             ((imgHeight - parentHeight) / 2 / parentHeight) * 100
           );
           if (Math.abs(updatedImgYPercent - 50) < maxYDelta) {
-            dispatch(setImgYPercentage(updatedImgYPercent));
+            setImgYPercentage(updatedImgYPercent);
           }
         }
       }
     },
-    [dispatch, imgXPercent, imgYPercent]
+    [imgXPercent, imgYPercent]
   );
 
   const handlePostElementImageScale = useCallback(
@@ -210,12 +199,12 @@ const SinglePostView: React.FC = () => {
         updatedScale > SINGLE_POST_PAGE_MAX_SCALE
       ) {
         if (updatedScale < SINGLE_POST_PAGE_MIN_SCALE) {
-          dispatch(setImgXPercentage(50));
-          dispatch(setImgYPercentage(50));
+          setImgXPercentage(50);
+          setImgYPercentage(50);
         }
         return;
       }
-      dispatch(setImgScale(updatedScale));
+      setImgScale(updatedScale);
 
       const rect = postElementImageElement.getBoundingClientRect();
 
@@ -258,67 +247,6 @@ const SinglePostView: React.FC = () => {
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
   };
 
-  // useEffect(() => {
-  //   if (post == undefined || post.attachments.length <= 1) {
-  //     return;
-  //   }
-  //   const attachment = post.attachments[post.currentAttachmentIndex];
-  //   if (attachment.mediaType != "IMAGE") {
-  //     return;
-  //   }
-  //
-  //   const imgEl = document.createElement("img");
-  //   imgEl.crossOrigin = "anonymous";
-  //   imgEl.onload = () => {
-  //     const canvas = document.createElement("canvas");
-  //     const context = canvas.getContext && canvas.getContext("2d");
-  //     const defaultRGB = { r: 0, g: 0, b: 0 }; // for non-supporting envs
-  //     if (!context) {
-  //       return defaultRGB;
-  //     }
-  //
-  //     const blockSize = 5; // only visit every 5 pixels
-  //
-  //     let data;
-  //     const width = (canvas.width =
-  //       imgEl.naturalWidth || imgEl.offsetWidth || imgEl.width);
-  //     const height = (canvas.height =
-  //       imgEl.naturalHeight || imgEl.offsetHeight || imgEl.height);
-  //     let i = -4;
-  //
-  //     const rgb = { r: 0, g: 0, b: 0 };
-  //     let count = 0;
-  //
-  //     context.drawImage(imgEl, 0, 0);
-  //
-  //     try {
-  //       data = context.getImageData(0, 0, width, height);
-  //     } catch (e) {
-  //       /* security error, img on diff domain */
-  //       return defaultRGB;
-  //     }
-  //
-  //     const length = data.data.length;
-  //
-  //     while ((i += blockSize * 4) < length) {
-  //       ++count;
-  //       rgb.r += data.data[i];
-  //       rgb.g += data.data[i + 1];
-  //       rgb.b += data.data[i + 2];
-  //     }
-  //
-  //     // ~~ used to floor values
-  //     rgb.r = ~~(rgb.r / count);
-  //     rgb.g = ~~(rgb.g / count);
-  //     rgb.b = ~~(rgb.b / count);
-  //
-  //     console.log(
-  //       rgb.r + rgb.g + rgb.b <= 765 / 2 ? "image is dark" : "image is light"
-  //     );
-  //   };
-  //   imgEl.src = attachment.url;
-  // }, [post]);
-
   return (
     <>
       {post != undefined && (
@@ -332,7 +260,7 @@ const SinglePostView: React.FC = () => {
             {post.subreddit.displayNamePrefixed}
           </h4>
 
-          {post != undefined && postRowUuid != undefined && (
+          {postRowUuid != undefined && (
             <div
               ref={postElementDivWrapperRef}
               onContextMenu={(event) => {
@@ -343,9 +271,7 @@ const SinglePostView: React.FC = () => {
                   x: event.clientX,
                   y: event.clientY,
                 };
-                dispatch(
-                  setPostContextMenuEvent({ event: postContextMenuEvent })
-                );
+                contextMenu.setPostContextMenuEvent(postContextMenuEvent);
               }}
               className="flex flex-column max-width-height-percentage single-post-view-post-element"
             >
@@ -459,7 +385,7 @@ const SinglePostView: React.FC = () => {
             <div className="post-control-button-wrapper">
               <button
                 className="post-control-button"
-                onClick={() => goToPreviousPost()}
+                onClick={() => goToPrevPostClicked()}
               >
                 Previous
               </button>
@@ -467,7 +393,7 @@ const SinglePostView: React.FC = () => {
             <div className="post-control-button-wrapper">
               <button
                 className="post-control-button"
-                onClick={() => goToNextPost()}
+                onClick={() => goToNextPostClicked()}
               >
                 Next
               </button>

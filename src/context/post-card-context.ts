@@ -1,13 +1,6 @@
-import { createContext, MutableRefObject } from "react";
 import { UiPost } from "../model/Post/Post.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
-
-type RootFontSizeContextObj = {
-  fontSize: number;
-};
-export const RootFontSizeContext = createContext<RootFontSizeContextObj>(
-  {} as RootFontSizeContextObj
-);
+import { createContext, MutableRefObject } from "react";
 
 type PostCardContextObj = {
   uiPost: UiPost;
@@ -17,6 +10,3 @@ type PostCardContextObj = {
   totalMovementX: MutableRefObject<number>;
 };
 export const PostCardContext = createContext({} as PostCardContextObj);
-
-export const AutoScrollPostRowRateSecondsForSinglePostCardContext =
-  createContext(5000);

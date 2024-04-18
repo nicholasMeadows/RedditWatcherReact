@@ -29,17 +29,17 @@ import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/User
 import {
   exportConfigDownload,
   fillInMissingFieldsInConfigObj,
-  loadConfig,
   saveConfig,
   saveSubredditLists,
 } from "../../service/ConfigService";
 import { ValidationUtil } from "../../util/ValidationUtil";
 import store from "../store";
-import { clearPostRows } from "./PostRowsSlice";
-import { resetRedditClient } from "./RedditClientSlice";
-import { resetSubredditListsLoaded } from "./RedditListsSlice";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
+import { UsePostRows } from "../../hook/use-post-rows.ts";
+import { UseRedditClient } from "../../hook/use-reddit-client.ts";
+import RedditService from "../../service/RedditService.ts";
+import { UseRedditList } from "../../hook/use-reddit-list.ts";
 
 const defaultSubredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
 const defaultAutoScrollPostRowOption =
@@ -67,20 +67,18 @@ const defaultPostsToShowInRow = 4;
 const defaultPostRowsToShowInView = 3;
 const defaultDarkMode = false;
 
-export const loadAppConfig = createAsyncThunk(
-  "appConfig/loadAppConfig",
-  async () => {
-    const config = await loadConfig();
-    return config;
-  }
-);
-
 export const importAppConfig = createAsyncThunk(
   "appConfig/importAppConfig",
-  async (file: File) => {
+  async (params: {
+    file: File;
+    usePostRows: UsePostRows;
+    redditClient: UseRedditClient;
+    redditService: RedditService;
+    redditListsHook: UseRedditList;
+  }) => {
     try {
       console.log("importing app config");
-      const text = await file.text();
+      const text = await params.file.text();
       const parsed = JSON.parse(text);
       if (parsed["appConfig"] != undefined) {
         console.log(
@@ -158,10 +156,9 @@ export const importAppConfig = createAsyncThunk(
       }
 
       console.log("done importing");
-      store.dispatch(clearPostRows());
+      params.usePostRows.clearPostRows();
       store.dispatch(resetConfigLoaded());
-      store.dispatch(resetSubredditListsLoaded());
-      store.dispatch(resetRedditClient());
+      params.redditClient.resetRedditClient(params.redditService);
     } catch (e) {
       console.log("exception", e);
     }
@@ -170,11 +167,11 @@ export const importAppConfig = createAsyncThunk(
 
 export const exportAppConfig = createAsyncThunk(
   "appConfig/exportAppConfig",
-  async () => {
+  async (subredditLists: Array<SubredditLists>) => {
     const state = store.getState();
     const configObj: ImportExportConfig = {
       appConfig: state.appConfig as AppConfig,
-      subredditLists: state.subredditLists.subredditLists,
+      subredditLists: subredditLists,
     };
     const myFile = new File(
       [JSON.stringify(configObj)],
@@ -496,9 +493,7 @@ export const appConfigSlice = createSlice({
     resetConfigLoaded: (state) => {
       state.configLoaded = false;
     },
-  },
-  extraReducers: (builder) => {
-    builder.addCase(loadAppConfig.fulfilled, (state, action) => {
+    setAppConfig: (state, action: { type: string; payload: AppConfig }) => {
       const incoming = action.payload as AppConfigState;
       state.redditCredentials = incoming.redditCredentials;
       state.subredditSortOrderOption = incoming.subredditSortOrderOption;
@@ -523,7 +518,7 @@ export const appConfigSlice = createSlice({
       state.postRowsToShowInView = incoming.postRowsToShowInView;
       state.darkMode = incoming.darkMode;
       state.configLoaded = true;
-    });
+    },
   },
 });
 
@@ -556,5 +551,6 @@ export const {
   setPostRowsToShowInView,
   toggleDarkMode,
   resetConfigLoaded,
+  setAppConfig,
 } = appConfigSlice.actions;
 export default appConfigSlice.reducer;
