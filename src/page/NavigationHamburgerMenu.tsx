@@ -25,6 +25,7 @@ import { RedditClientContext } from "../context/reddit-client-context.ts";
 import { RedditServiceContext } from "../context/reddit-service-context.ts";
 import { RedditListContext } from "../context/reddit-list-context.ts";
 import useRedditList from "../hook/use-reddit-list.ts";
+import packageJson from "../../package.json";
 
 const NavigationHamburgerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -281,6 +282,11 @@ const NavigationHamburgerMenu: React.FC = () => {
             >
               <p className="drawer-popout-item-text">Export Config</p>
             </div>
+            <hr />
+          </div>
+
+          <div className={"app-version-div"}>
+            <p>App Version: {packageJson.version}</p>
           </div>
         </div>
       </div>
