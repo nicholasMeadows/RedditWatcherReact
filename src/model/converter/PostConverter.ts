@@ -1,9 +1,9 @@
 import { v4 as uuidV4 } from "uuid";
-import store from "../../redux/store";
 import { Attachment } from "../Post/Attachment";
 import { Post } from "../Post/Post";
 import { T3 } from "../RedditApiResponse/Types/T3/T3";
 import { Subreddit } from "../Subreddit/Subreddit";
+import { SubredditLists } from "../SubredditList/SubredditLists.ts";
 
 const DOMAIN_REDGIFS = "redgifs.com";
 const DOMAIN_IMGUR1 = "i.imgur.com";
@@ -27,12 +27,13 @@ const ALLOWED_DOMAINS = [
 
 export function convertPost(
   post: T3,
-  masterSubscribedSubredditList: Array<Subreddit>
+  masterSubscribedSubredditList: Array<Subreddit>,
+  subredditLists: Array<SubredditLists>
 ): Post {
   const subredditDisplayName = post.subreddit;
 
   let fromList = "";
-  store.getState().subredditLists.subredditLists.forEach((list) => {
+  subredditLists.forEach((list) => {
     const foundSubreddit = list.subreddits.find(
       (subreddit) => subreddit.displayName == subredditDisplayName
     );

@@ -14,15 +14,16 @@ import { useAppDispatch } from "../redux/store.ts";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState.ts";
 import { setAppConfig } from "../redux/slice/AppConfigSlice.ts";
 import { v4 as uuidV4 } from "uuid";
-import { setSubredditLists } from "../redux/slice/RedditListsSlice.ts";
 import RedditService from "../service/RedditService.ts";
 import { PostRowsContext } from "../context/post-rows-context.ts";
 import { RedditClientContext } from "../context/reddit-client-context.ts";
 import { UseRedditClient } from "./use-reddit-client.ts";
+import { UseRedditList } from "./use-reddit-list.ts";
 
 export default function useInitializeApp(
   redditService: RedditService,
-  redditClient: UseRedditClient
+  redditClient: UseRedditClient,
+  redditListsHook: UseRedditList
 ) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -55,7 +56,7 @@ export default function useInitializeApp(
             (subreddit) => (subreddit.subredditUuid = uuidV4())
           );
         });
-        dispatch(setSubredditLists(subredditLists));
+        redditListsHook.setSubredditLists(subredditLists);
         setSubredditListsState(subredditLists);
       } else {
         const redditCredentials = config.redditCredentials;

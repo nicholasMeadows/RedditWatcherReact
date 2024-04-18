@@ -19,6 +19,7 @@ import {
 // import store from "../redux/store";
 import { GetPostsFromSubredditState } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
 import store from "../redux/store.ts";
+import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 
 const REDDIT_BASE_URL = "https://www.reddit.com";
 const REDDIT_OAUTH_BASE_URL = "https://oauth.reddit.com";
@@ -157,7 +158,8 @@ export default class RedditClient {
 
   async getUserFrontPage(
     getPostsFromSubredditsState: GetPostsFromSubredditState,
-    masterSubscribedSubredditList: Array<Subreddit>
+    masterSubscribedSubredditList: Array<Subreddit>,
+    redditLists: Array<SubredditLists>
   ): Promise<Array<Post>> {
     // CheckIsUserLoggedIn();
     const authInfo = await this.getAuthInfo();
@@ -202,7 +204,11 @@ export default class RedditClient {
     const children: Array<ChildDataObj<T3>> = redditResponse.data.children;
 
     children.forEach((child) => {
-      const post = convertPost(child.data, masterSubscribedSubredditList);
+      const post = convertPost(
+        child.data,
+        masterSubscribedSubredditList,
+        redditLists
+      );
       if (
         post != null &&
         post.attachments != null &&
@@ -217,7 +223,8 @@ export default class RedditClient {
 
   async getPostsForSubredditUri(
     uri: string,
-    masterSubscribedSubredditList: Array<Subreddit>
+    masterSubscribedSubredditList: Array<Subreddit>,
+    redditLists: Array<SubredditLists>
   ): Promise<Array<Post>> {
     // CheckIsUserLoggedIn();
     const authInfo = await this.getAuthInfo();
@@ -241,7 +248,11 @@ export default class RedditClient {
     const children: Array<ChildDataObj<T3>> = responseObj.data.children;
     const posts = new Array<Post>();
     children.forEach((child) => {
-      const post = convertPost(child.data, masterSubscribedSubredditList);
+      const post = convertPost(
+        child.data,
+        masterSubscribedSubredditList,
+        redditLists
+      );
       if (
         post != undefined &&
         post.attachments != undefined &&

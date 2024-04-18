@@ -13,6 +13,7 @@ import SearchRedditBar from "./ModifySubredditListsPagesAndElements/SearchReddit
 import { useContextMenu } from "../hook/use-context-menu.ts";
 import useSideBar from "../hook/use-side-bar.ts";
 import { SideBarContext } from "../context/side-bar-context.ts";
+import { RedditListContext } from "../context/reddit-list-context.ts";
 
 const SideBar: React.FC = () => {
   const sideBarButtonMoved = useRef(false);
@@ -20,19 +21,17 @@ const SideBar: React.FC = () => {
   const contextMenu = useContextMenu();
   const sideBar = useSideBar();
   const { sidebarContextData } = useContext(SideBarContext);
+  const { redditListContextData } = useContext(RedditListContext);
   const [sideBarOpen, setSideBarOpen] = useState(false);
 
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
-  const subredditLists = useAppSelector(
-    (state) => state.subredditLists.subredditLists
-  );
 
   const openSideBarButtonColumnDivRef = useRef(null);
   const openSideBarButtonDivRef = useRef(null);
   const subredditListDivRef = useRef(null);
   useEffect(() => {
-    sideBar.subredditListsUpdated();
-  }, [dispatch, subredditLists]);
+    sideBar.subredditListsUpdated(redditListContextData.subredditLists);
+  }, [dispatch, redditListContextData.subredditLists]);
 
   const scrollToMostRecentSubredditGotten = useCallback(() => {
     const foundSubredditIndex = sidebarContextData.subredditsToShow.findIndex(
@@ -163,7 +162,10 @@ const SideBar: React.FC = () => {
             value={sidebarContextData.listToFilterByUuid}
             onChange={(event) => {
               console.log(event.target.value);
-              sideBar.setListToFilterByUuid(event.target.value);
+              sideBar.setListToFilterByUuid(
+                event.target.value,
+                redditListContextData.subredditLists
+              );
             }}
           >
             <option value={SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED}>
@@ -197,7 +199,10 @@ const SideBar: React.FC = () => {
             type="text"
             className="search-in-list-input"
             onChange={(event) => {
-              sideBar.setSearchInput(event.target.value);
+              sideBar.setSearchInput(
+                event.target.value,
+                redditListContextData.subredditLists
+              );
             }}
           />
         </div>

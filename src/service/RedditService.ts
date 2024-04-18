@@ -31,12 +31,14 @@ import { UseSideBar } from "../hook/use-side-bar.ts";
 import { UsePostRows } from "../hook/use-post-rows.ts";
 import { WaitUtil } from "../util/WaitUtil.ts";
 import { UseRedditClient } from "../hook/use-reddit-client.ts";
+import { UseRedditList } from "../hook/use-reddit-list.ts";
 
 export default class RedditService {
   private declare appNotification: UseAppNotification;
   private declare sideBar: UseSideBar;
   private declare usePostRows: UsePostRows;
   private declare redditClient: UseRedditClient;
+  private declare redditLists: UseRedditList;
 
   loopingForPosts = false;
   loopingForPostsTimeout: NodeJS.Timeout | undefined = undefined;
@@ -59,6 +61,10 @@ export default class RedditService {
 
   setRedditClient(redditClient: UseRedditClient) {
     this.redditClient = redditClient;
+  }
+
+  setRedditLists(redditLists: UseRedditList) {
+    this.redditLists = redditLists;
   }
 
   async startLoopingForPosts() {
@@ -94,7 +100,7 @@ export default class RedditService {
             this.usePostRows.getPostRowsContextData(),
             state.appConfig,
             this.redditClient.getRedditClientContextData(),
-            state.subredditLists,
+            this.redditLists.getSubredditListsContextData(),
             this.lastPostRowWasSortOrderNew,
             this.subredditIndex,
             this.nsfwRedditListIndex,
@@ -176,7 +182,8 @@ export default class RedditService {
     ) {
       posts = await new RedditClient().getUserFrontPage(
         getPostsFromSubredditsState,
-        this.masterSubscribedSubredditList
+        this.masterSubscribedSubredditList,
+        this.redditLists.getSubredditListsContextData().subredditLists
       );
     } else {
       const [postsArr, fromSubredditsArr] = await this.getPostsBasedOnSettings(
@@ -453,7 +460,8 @@ export default class RedditService {
     console.log("about to get posts for subreddit uri ", url);
     let posts = await new RedditClient().getPostsForSubredditUri(
       url,
-      this.masterSubscribedSubredditList
+      this.masterSubscribedSubredditList,
+      this.redditLists.getSubredditListsContextData().subredditLists
     );
     posts = posts.map<Post>((value) => {
       value.randomSourceString = randomSourceString;
@@ -615,7 +623,8 @@ export default class RedditService {
     }
     if (updatedValues.subredditsToShowInSideBar != undefined) {
       this.sideBar.setSubredditsToShowInSideBar(
-        updatedValues.subredditsToShowInSideBar
+        updatedValues.subredditsToShowInSideBar,
+        this.redditLists.getSubredditListsContextData().subredditLists
       );
     }
     if (updatedValues.masterSubscribedSubredditList != undefined) {

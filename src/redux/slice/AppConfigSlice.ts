@@ -34,12 +34,12 @@ import {
 } from "../../service/ConfigService";
 import { ValidationUtil } from "../../util/ValidationUtil";
 import store from "../store";
-import { resetSubredditListsLoaded } from "./RedditListsSlice";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import { UsePostRows } from "../../hook/use-post-rows.ts";
 import { UseRedditClient } from "../../hook/use-reddit-client.ts";
 import RedditService from "../../service/RedditService.ts";
+import { UseRedditList } from "../../hook/use-reddit-list.ts";
 
 const defaultSubredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
 const defaultAutoScrollPostRowOption =
@@ -74,6 +74,7 @@ export const importAppConfig = createAsyncThunk(
     usePostRows: UsePostRows;
     redditClient: UseRedditClient;
     redditService: RedditService;
+    redditListsHook: UseRedditList;
   }) => {
     try {
       console.log("importing app config");
@@ -157,7 +158,6 @@ export const importAppConfig = createAsyncThunk(
       console.log("done importing");
       params.usePostRows.clearPostRows();
       store.dispatch(resetConfigLoaded());
-      store.dispatch(resetSubredditListsLoaded());
       params.redditClient.resetRedditClient(params.redditService);
     } catch (e) {
       console.log("exception", e);
@@ -167,11 +167,11 @@ export const importAppConfig = createAsyncThunk(
 
 export const exportAppConfig = createAsyncThunk(
   "appConfig/exportAppConfig",
-  async () => {
+  async (subredditLists: Array<SubredditLists>) => {
     const state = store.getState();
     const configObj: ImportExportConfig = {
       appConfig: state.appConfig as AppConfig,
-      subredditLists: state.subredditLists.subredditLists,
+      subredditLists: subredditLists,
     };
     const myFile = new File(
       [JSON.stringify(configObj)],

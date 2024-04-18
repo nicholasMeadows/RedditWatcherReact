@@ -1,15 +1,23 @@
 import { useContext } from "react";
 import { SideBarContext } from "../context/side-bar-context.ts";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
-import store from "../redux/store.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../RedditWatcherConstants.ts";
 
 export type UseSideBar = {
-  setSubredditsToShowInSideBar: (subreddits: Array<Subreddit>) => void;
-  setListToFilterByUuid: (listUuid: string) => void;
-  setSearchInput: (searchInput: string) => void;
-  subredditListsUpdated: () => void;
+  setSubredditsToShowInSideBar: (
+    subreddits: Array<Subreddit>,
+    subredditLists: Array<SubredditLists>
+  ) => void;
+  setListToFilterByUuid: (
+    listUuid: string,
+    subredditLists: Array<SubredditLists>
+  ) => void;
+  setSearchInput: (
+    searchInput: string,
+    subredditLists: Array<SubredditLists>
+  ) => void;
+  subredditListsUpdated: (subredditLists: Array<SubredditLists>) => void;
 
   decreaseTimeTillNextGetPostsSeconds: () => void;
   setTimeTillNextGetPostsSeconds: (timeTillNextGetPostsSeconds: number) => void;
@@ -38,16 +46,18 @@ export default function useSideBar(): UseSideBar {
     listToFilterByUuid: string,
     searchInput: string
   ): SideBarUpdateFieldsObj => {
-    let subredditsToShow = subredditsToShowInSideBar;
     if (searchInput != "") {
-      subredditsToShow = subredditsToShow.filter((subreddit) =>
-        subreddit.displayName.toLowerCase().includes(searchInput.toLowerCase())
+      subredditsToShowInSideBar = subredditsToShowInSideBar.filter(
+        (subreddit) =>
+          subreddit.displayName
+            .toLowerCase()
+            .includes(searchInput.toLowerCase())
       );
     }
 
     const subredditListsToShowInDropDown = new Array<SubredditLists>();
     for (const list of allSubredditLists) {
-      for (const subreddit of subredditsToShow) {
+      for (const subreddit of subredditsToShowInSideBar) {
         const found = list.subreddits.find(
           (subredditFromList) =>
             subredditFromList.subredditUuid == subreddit.subredditUuid
@@ -67,20 +77,22 @@ export default function useSideBar(): UseSideBar {
       listToFilterByUuidToSet = SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED;
     } else {
       listToFilterByUuidToSet = listToFilterByUuid;
-      subredditsToShow = subredditsToShow.filter((subreddit) => {
-        const index = foundList.subreddits.findIndex(
-          (subredditFromList) =>
-            subredditFromList.subredditUuid == subreddit.subredditUuid
-        );
-        return index >= 0;
-      });
+      subredditsToShowInSideBar = subredditsToShowInSideBar.filter(
+        (subreddit) => {
+          const index = foundList.subreddits.findIndex(
+            (subredditFromList) =>
+              subredditFromList.subredditUuid == subreddit.subredditUuid
+          );
+          return index >= 0;
+        }
+      );
     }
 
     return {
       subredditsToShowInSideBar: subredditsToShowInSideBar,
       listsToShowInDropDown: subredditListsToShowInDropDown,
       listToFilterByUuid: listToFilterByUuidToSet,
-      subredditsToShow: subredditsToShow,
+      subredditsToShow: subredditsToShowInSideBar,
       searchInput: searchInput,
     };
   };
@@ -95,121 +107,108 @@ export default function useSideBar(): UseSideBar {
       subredditsToShowInSideBar: updatedFields.subredditsToShowInSideBar,
     }));
   };
-
-  const setSubredditsToShowInSideBar = async (subreddits: Array<Subreddit>) => {
-    const state = store.getState();
-    const subredditLists = state.subredditLists.subredditLists;
-    const listToFilterByUuid = sidebarContextData.listToFilterByUuid;
-    const searchInput = sidebarContextData.searchInput;
-    const filtered = filterSubredditsToShow(
-      subredditLists,
-      subreddits,
-      listToFilterByUuid,
-      searchInput
-    );
-    applySideBarFields(filtered);
-  };
-
-  const setListToFilterByUuid = async (listUuid: string) => {
-    const state = store.getState();
-    const subredditLists = state.subredditLists.subredditLists;
-    const subredditsToShowInSideBar =
-      sidebarContextData.subredditsToShowInSideBar;
-    const searchInput = sidebarContextData.searchInput;
-    const filtered = filterSubredditsToShow(
-      subredditLists,
-      subredditsToShowInSideBar,
-      listUuid,
-      searchInput
-    );
-    applySideBarFields(filtered);
-  };
-  const setSearchInput = async (searchInput: string) => {
-    const state = store.getState();
-    const subredditLists = state.subredditLists.subredditLists;
-    const subredditsToShowInSideBar =
-      sidebarContextData.subredditsToShowInSideBar;
-    const listToFilterByUuid = sidebarContextData.listToFilterByUuid;
-    const filtered = filterSubredditsToShow(
-      subredditLists,
-      subredditsToShowInSideBar,
-      listToFilterByUuid,
-      searchInput
-    );
-    applySideBarFields(filtered);
-  };
-  const subredditListsUpdated = async () => {
-    const state = store.getState();
-    const subredditLists = state.subredditLists.subredditLists;
-    const subredditsToShowInSideBar =
-      sidebarContextData.subredditsToShowInSideBar;
-    const listToFilterByUuid = sidebarContextData.listToFilterByUuid;
-    const searchInput = sidebarContextData.searchInput;
-    const filtered = filterSubredditsToShow(
-      subredditLists,
-      subredditsToShowInSideBar,
-      listToFilterByUuid,
-      searchInput
-    );
-    applySideBarFields(filtered);
-  };
-
-  const decreaseTimeTillNextGetPostsSeconds = () => {
-    if (sidebarContextData.timeTillNextGetPostsSeconds > 0) {
-      setSidebarContextData((state) => {
-        return {
-          ...state,
-          timeTillNextGetPostsSeconds: state.timeTillNextGetPostsSeconds - 1,
-        };
-      });
-    }
-  };
-  const setTimeTillNextGetPostsSeconds = (
-    timeTillNextGetPostsSeconds: number
-  ) => {
-    if (timeTillNextGetPostsSeconds >= 0) {
-      setSidebarContextData((state) => {
-        return {
-          ...state,
-          timeTillNextGetPostsSeconds: timeTillNextGetPostsSeconds,
-        };
-      });
-    }
-  };
-
-  const setMouseOverSubredditList = (mouseOverSubredditList: boolean) => {
-    setSidebarContextData((state) => {
-      return { ...state, mouseOverSubredditList: mouseOverSubredditList };
-    });
-  };
-  const setOpenSidebarButtonTopPercent = (
-    openSidebarButtonTopPercent: number
-  ) => {
-    setSidebarContextData((state) => {
-      return {
-        ...state,
-        openSidebarButtonTopPercent: openSidebarButtonTopPercent,
-      };
-    });
-  };
-
-  const setMostRecentSubredditGotten = (
-    mostRecentSubredditGotten: Subreddit | undefined
-  ) => {
-    setSidebarContextData((state) => ({
-      ...state,
-      mostRecentSubredditGotten: mostRecentSubredditGotten,
-    }));
-  };
   return {
-    setSubredditsToShowInSideBar: setSubredditsToShowInSideBar,
-    setListToFilterByUuid: setListToFilterByUuid,
-    setSearchInput: setSearchInput,
-    subredditListsUpdated: subredditListsUpdated,
-    decreaseTimeTillNextGetPostsSeconds: decreaseTimeTillNextGetPostsSeconds,
-    setTimeTillNextGetPostsSeconds: setTimeTillNextGetPostsSeconds,
-    setMouseOverSubredditList: setMouseOverSubredditList,
-    setOpenSidebarButtonTopPercent: setOpenSidebarButtonTopPercent,
-    setMostRecentSubredditGotten: setMostRecentSubredditGotten,
+    setSubredditsToShowInSideBar: (
+      subreddits: Array<Subreddit>,
+      subredditLists: Array<SubredditLists>
+    ) => {
+      const listToFilterByUuid = sidebarContextData.listToFilterByUuid;
+      const searchInput = sidebarContextData.searchInput;
+      const filtered = filterSubredditsToShow(
+        subredditLists,
+        subreddits,
+        listToFilterByUuid,
+        searchInput
+      );
+      applySideBarFields(filtered);
+    },
+
+    setListToFilterByUuid: async (
+      listUuid: string,
+      subredditLists: Array<SubredditLists>
+    ) => {
+      const subredditsToShowInSideBar =
+        sidebarContextData.subredditsToShowInSideBar;
+      const searchInput = sidebarContextData.searchInput;
+      const filtered = filterSubredditsToShow(
+        subredditLists,
+        subredditsToShowInSideBar,
+        listUuid,
+        searchInput
+      );
+      applySideBarFields(filtered);
+    },
+    setSearchInput: (
+      searchInput: string,
+      subredditLists: Array<SubredditLists>
+    ) => {
+      const subredditsToShowInSideBar =
+        sidebarContextData.subredditsToShowInSideBar;
+      const listToFilterByUuid = sidebarContextData.listToFilterByUuid;
+      const filtered = filterSubredditsToShow(
+        subredditLists,
+        subredditsToShowInSideBar,
+        listToFilterByUuid,
+        searchInput
+      );
+      applySideBarFields(filtered);
+    },
+    subredditListsUpdated: (subredditLists: Array<SubredditLists>) => {
+      const subredditsToShowInSideBar =
+        sidebarContextData.subredditsToShowInSideBar;
+      const listToFilterByUuid = sidebarContextData.listToFilterByUuid;
+      const searchInput = sidebarContextData.searchInput;
+      const filtered = filterSubredditsToShow(
+        subredditLists,
+        subredditsToShowInSideBar,
+        listToFilterByUuid,
+        searchInput
+      );
+      applySideBarFields(filtered);
+    },
+
+    decreaseTimeTillNextGetPostsSeconds: () => {
+      if (sidebarContextData.timeTillNextGetPostsSeconds > 0) {
+        setSidebarContextData((state) => {
+          return {
+            ...state,
+            timeTillNextGetPostsSeconds: state.timeTillNextGetPostsSeconds - 1,
+          };
+        });
+      }
+    },
+    setTimeTillNextGetPostsSeconds: (timeTillNextGetPostsSeconds: number) => {
+      if (timeTillNextGetPostsSeconds >= 0) {
+        setSidebarContextData((state) => {
+          return {
+            ...state,
+            timeTillNextGetPostsSeconds: timeTillNextGetPostsSeconds,
+          };
+        });
+      }
+    },
+
+    setMouseOverSubredditList: (mouseOverSubredditList: boolean) => {
+      setSidebarContextData((state) => {
+        return { ...state, mouseOverSubredditList: mouseOverSubredditList };
+      });
+    },
+    setOpenSidebarButtonTopPercent: (openSidebarButtonTopPercent: number) => {
+      setSidebarContextData((state) => {
+        return {
+          ...state,
+          openSidebarButtonTopPercent: openSidebarButtonTopPercent,
+        };
+      });
+    },
+
+    setMostRecentSubredditGotten: (
+      mostRecentSubredditGotten: Subreddit | undefined
+    ) => {
+      setSidebarContextData((state) => ({
+        ...state,
+        mostRecentSubredditGotten: mostRecentSubredditGotten,
+      }));
+    },
   };
 }

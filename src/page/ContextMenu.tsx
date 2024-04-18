@@ -1,24 +1,17 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../redux/store";
 import { SubredditLists } from "../model/SubredditList/SubredditLists";
-import {
-  addSubredditToList,
-  removeSubredditFromList,
-  showDeleteListConfirmationBox,
-  showUpdateListBox,
-} from "../redux/slice/RedditListsSlice";
 import { useContextMenu } from "../hook/use-context-menu.ts";
 import { ContextMenuContext } from "../context/context-menu-context.ts";
 import useRedditClient from "../hook/use-reddit-client.ts";
+import { RedditListContext } from "../context/reddit-list-context.ts";
+import useRedditList from "../hook/use-reddit-list.ts";
 
 const ContextMenu: React.FC = () => {
-  const dispatch = useAppDispatch();
   const contextMenu = useContextMenu();
   const redditClient = useRedditClient();
+  const redditListsHook = useRedditList();
   const { contextMenuData } = useContext(ContextMenuContext);
-  const subredditLists = useAppSelector(
-    (state) => state.subredditLists.subredditLists
-  );
+  const { redditListContextData } = useContext(RedditListContext);
 
   const [contextMenuX, setContextMenuX] = useState(0);
   const [contextMenuY, setContextMenuY] = useState(0);
@@ -38,7 +31,7 @@ const ContextMenu: React.FC = () => {
   useEffect(() => {
     if (contextMenuData.subreddit !== undefined) {
       const subreddit = contextMenuData.subreddit;
-      const isIn = subredditLists.filter((list) => {
+      const isIn = redditListContextData.subredditLists.filter((list) => {
         return (
           list.subreddits.find(
             (listItem) =>
@@ -48,7 +41,7 @@ const ContextMenu: React.FC = () => {
         );
       });
 
-      const isNotIn = subredditLists.filter((list) => {
+      const isNotIn = redditListContextData.subredditLists.filter((list) => {
         return (
           list.subreddits.find(
             (listItem) =>
@@ -60,7 +53,7 @@ const ContextMenu: React.FC = () => {
       setSubredditListsThatSubredditIsIn(isIn);
       setSubredditListsThatSubredditIsNotIn(isNotIn);
     }
-  }, [subredditLists, contextMenuData.subreddit]);
+  }, [redditListContextData.subredditLists, contextMenuData.subreddit]);
 
   useEffect(() => {
     if (!contextMenuData.showContextMenu) {
@@ -230,14 +223,12 @@ const ContextMenu: React.FC = () => {
                 key={subredditList.subredditListUuid}
                 onClick={() => {
                   if (contextMenuData.subreddit != undefined) {
-                    dispatch(
-                      addSubredditToList({
-                        subredditList: subredditList,
-                        subredditListItem: {
-                          ...contextMenuData.subreddit,
-                          fromList: subredditList.listName,
-                        },
-                      })
+                    redditListsHook.addSubredditToList(
+                      {
+                        ...contextMenuData.subreddit,
+                        fromList: subredditList.listName,
+                      },
+                      subredditList
                     );
                   }
                 }}
@@ -296,14 +287,12 @@ const ContextMenu: React.FC = () => {
                 key={subredditList.subredditListUuid}
                 onClick={() => {
                   if (contextMenuData.subreddit != undefined) {
-                    dispatch(
-                      removeSubredditFromList({
-                        subredditList: subredditList,
-                        subredditListItem: {
-                          ...contextMenuData.subreddit,
-                          fromList: subredditList.listName,
-                        },
-                      })
+                    redditListsHook.removeSubredditFromList(
+                      {
+                        ...contextMenuData.subreddit,
+                        fromList: subredditList.listName,
+                      },
+                      subredditList
                     );
                   }
                 }}
@@ -325,10 +314,8 @@ const ContextMenu: React.FC = () => {
               contextMenuData.updateSubredditListInfo?.subredditList !=
               undefined
             ) {
-              dispatch(
-                showUpdateListBox(
-                  contextMenuData.updateSubredditListInfo?.subredditList
-                )
+              redditListsHook.showUpdateListBox(
+                contextMenuData.updateSubredditListInfo?.subredditList
               );
             }
             contextMenu.closeContextMenu();
@@ -345,10 +332,8 @@ const ContextMenu: React.FC = () => {
               contextMenuData.updateSubredditListInfo?.subredditList !=
               undefined
             ) {
-              dispatch(
-                showDeleteListConfirmationBox(
-                  contextMenuData.updateSubredditListInfo?.subredditList
-                )
+              redditListsHook.showDeleteListConfirmationBox(
+                contextMenuData.updateSubredditListInfo?.subredditList
               );
             }
             contextMenu.closeContextMenu();

@@ -41,6 +41,7 @@ import { RedditServiceContext } from "../context/reddit-service-context.ts";
 import useSideBar from "../hook/use-side-bar.ts";
 import usePostRows from "../hook/use-post-rows.ts";
 import useRedditClient from "../hook/use-reddit-client.ts";
+import useRedditList from "../hook/use-reddit-list.ts";
 
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -49,6 +50,7 @@ const RouterView: React.FC = () => {
   const sideBar = useSideBar();
   const postRows = usePostRows();
   const redditClient = useRedditClient();
+  const redditLists = useRedditList();
   const darkmode = useAppSelector((state) => state.appConfig.darkMode);
   const location = useLocation();
   const { setRootFontSize } = useContext(RootFontSizeContext);
@@ -58,7 +60,15 @@ const RouterView: React.FC = () => {
     redditService.setSideBar(sideBar);
     redditService.setUsePostRows(postRows);
     redditService.setRedditClient(redditClient);
-  }, [appNotification, postRows, redditClient, redditService, sideBar]);
+    redditService.setRedditLists(redditLists);
+  }, [
+    appNotification,
+    postRows,
+    redditClient,
+    redditLists,
+    redditService,
+    sideBar,
+  ]);
 
   const wheelEventHandler = useCallback(
     (event: WheelEvent) => {

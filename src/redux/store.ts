@@ -2,12 +2,10 @@ import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import thunk from "redux-thunk";
 import appConfigReducer from "./slice/AppConfigSlice";
-import subredditListsReducer from "./slice/RedditListsSlice";
 
 const store = configureStore({
   reducer: {
     appConfig: appConfigReducer,
-    subredditLists: subredditListsReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk),
 });
