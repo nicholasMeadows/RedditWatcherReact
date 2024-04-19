@@ -26,19 +26,23 @@ import { GetPostsForSubredditUrlConverter } from "../model/converter/GetPostsFor
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum.ts";
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult.ts";
 import { v4 as uuidV4 } from "uuid";
-import { UseAppNotification } from "../hook/use-app-notification.ts";
-import { UseSideBar } from "../hook/use-side-bar.ts";
-import { UsePostRows } from "../hook/use-post-rows.ts";
 import { WaitUtil } from "../util/WaitUtil.ts";
 import { UseRedditClient } from "../hook/use-reddit-client.ts";
-import { UseRedditList } from "../hook/use-reddit-list.ts";
+import { submitAppNotification } from "../redux/slice/AppNotificationSlice.ts";
+import {
+  setMostRecentSubredditGotten,
+  setSubredditsToShowInSideBar,
+  setTimeTillNextGetPostsSeconds,
+} from "../redux/slice/SideBarSlice.ts";
+import {
+  addPostsToFrontOfRow,
+  createPostRowAndInsertAtBeginning,
+  postRowRemoveAt,
+} from "../redux/slice/PostRowsSlice.ts";
+import { subredditQueueRemoveAt } from "../redux/slice/SubRedditQueueSlice.ts";
 
 export default class RedditService {
-  private declare appNotification: UseAppNotification;
-  private declare sideBar: UseSideBar;
-  private declare usePostRows: UsePostRows;
   private declare redditClient: UseRedditClient;
-  private declare redditLists: UseRedditList;
 
   loopingForPosts = false;
   loopingForPostsTimeout: NodeJS.Timeout | undefined = undefined;
@@ -47,24 +51,8 @@ export default class RedditService {
   nsfwRedditListIndex: number = 0;
   masterSubscribedSubredditList: Array<Subreddit> = [];
 
-  setAppNotification(appNotification: UseAppNotification) {
-    this.appNotification = appNotification;
-  }
-
-  setSideBar(sideBar: UseSideBar) {
-    this.sideBar = sideBar;
-  }
-
-  setUsePostRows(usePostRows: UsePostRows) {
-    this.usePostRows = usePostRows;
-  }
-
   setRedditClient(redditClient: UseRedditClient) {
     this.redditClient = redditClient;
-  }
-
-  setRedditLists(redditLists: UseRedditList) {
-    this.redditLists = redditLists;
   }
 
   async startLoopingForPosts() {
@@ -78,7 +66,7 @@ export default class RedditService {
     getPostsFunction();
 
     const startWaitingToGetPosts = () => {
-      this.sideBar.setTimeTillNextGetPostsSeconds(10);
+      store.dispatch(setTimeTillNextGetPostsSeconds(10));
       const timeout = setTimeout(async () => {
         await getPostsFunction();
         startWaitingToGetPosts();
@@ -97,10 +85,10 @@ export default class RedditService {
       getPostsFromSubredditsState = JSON.parse(
         JSON.stringify(
           stateConverter.convert(
-            this.usePostRows.getPostRowsContextData(),
+            state.postRows.postRows,
             state.appConfig,
-            this.redditClient.getRedditClientContextData(),
-            this.redditLists.getSubredditListsContextData(),
+            state.subredditQueue.subredditQueue,
+            state.redditLists.subredditLists,
             this.lastPostRowWasSortOrderNew,
             this.subredditIndex,
             this.nsfwRedditListIndex,
@@ -132,12 +120,12 @@ export default class RedditService {
           postsFromSubreddits = fromSubreddits;
         }
         await WaitUtil.WaitUntilGetPostsIsNotPaused(
-          () => this.usePostRows.getPostRowsContextData().getPostRowsPaused
+          () => store.getState().postRows.getPostRowsPaused
         );
 
-        if (this.usePostRows.getPostRowsContextData().postRows.length == 10) {
+        if (store.getState().postRows.postRows.length == 10) {
           getPostsFromSubredditsState.getPostsUpdatedValues.postRowRemoveAt =
-            this.usePostRows.getPostRowsContextData().postRows.length - 1;
+            store.getState().postRows.postRows.length - 1;
         }
 
         this.addPostRow(
@@ -146,11 +134,13 @@ export default class RedditService {
           getPostsFromSubredditsState
         );
       } catch (e) {
-        this.appNotification.submitAppNotification({
-          message: `Got exception while trying to get post. ${
-            (e as DOMException).message
-          }`,
-        });
+        store.dispatch(
+          submitAppNotification({
+            message: `Got exception while trying to get post. ${
+              (e as DOMException).message
+            }`,
+          })
+        );
         console.log("Caught exception while getPosts ", e);
       }
     } while (this.settingsChanged(getPostsFromSubredditsState));
@@ -183,7 +173,7 @@ export default class RedditService {
       posts = await new RedditClient().getUserFrontPage(
         getPostsFromSubredditsState,
         this.masterSubscribedSubredditList,
-        this.redditLists.getSubredditListsContextData().subredditLists
+        store.getState().redditLists.subredditLists
       );
     } else {
       const [postsArr, fromSubredditsArr] = await this.getPostsBasedOnSettings(
@@ -461,7 +451,7 @@ export default class RedditService {
     let posts = await new RedditClient().getPostsForSubredditUri(
       url,
       this.masterSubscribedSubredditList,
-      this.redditLists.getSubredditListsContextData().subredditLists
+      store.getState().redditLists.subredditLists
     );
     posts = posts.map<Post>((value) => {
       value.randomSourceString = randomSourceString;
@@ -500,7 +490,7 @@ export default class RedditService {
       if (fromSubreddits.length == 1) {
         msg = `Got 0 posts from ${fromSubreddits[0].displayNamePrefixed}. Trying again in a little bit.`;
       }
-      this.appNotification.submitAppNotification({ message: msg });
+      store.dispatch(submitAppNotification({ message: msg }));
       return;
     }
 
@@ -572,7 +562,7 @@ export default class RedditService {
       originalState.contentFiltering == appConfigState.contentFiltering &&
       subredditQueuesEqual(
         originalState.subredditQueue,
-        this.redditClient.getRedditClientContextData().subredditQueue
+        store.getState().subredditQueue.subredditQueue
       ) &&
       originalState.concatRedditUrlMaxLength ==
         appConfigState.concatRedditUrlMaxLength &&
@@ -609,22 +599,24 @@ export default class RedditService {
     const updatedValues = getPostsFromSubredditState.getPostsUpdatedValues;
 
     if (updatedValues.subredditQueueRemoveAt != undefined) {
-      this.redditClient.subredditQueueRemoveAt(
-        updatedValues.subredditQueueRemoveAt
+      store.dispatch(
+        subredditQueueRemoveAt(updatedValues.subredditQueueRemoveAt)
       );
     }
     if (updatedValues.mostRecentSubredditGotten != undefined) {
-      this.sideBar.setMostRecentSubredditGotten(
-        updatedValues.mostRecentSubredditGotten
+      store.dispatch(
+        setMostRecentSubredditGotten(updatedValues.mostRecentSubredditGotten)
       );
     }
     if (updatedValues.postRowRemoveAt != undefined) {
-      this.usePostRows.postRowRemoveAt(updatedValues.postRowRemoveAt);
+      store.dispatch(postRowRemoveAt(updatedValues.postRowRemoveAt));
     }
     if (updatedValues.subredditsToShowInSideBar != undefined) {
-      this.sideBar.setSubredditsToShowInSideBar(
-        updatedValues.subredditsToShowInSideBar,
-        this.redditLists.getSubredditListsContextData().subredditLists
+      store.dispatch(
+        setSubredditsToShowInSideBar({
+          subreddits: updatedValues.subredditsToShowInSideBar,
+          subredditLists: store.getState().redditLists.subredditLists,
+        })
       );
     }
     if (updatedValues.masterSubscribedSubredditList != undefined) {
@@ -643,15 +635,26 @@ export default class RedditService {
         updatedValues.lastPostRowWasSortOrderNew;
     }
     if (updatedValues.createPostRowAndInsertAtBeginning != undefined) {
-      this.usePostRows.createPostRowAndInsertAtBeginning(
-        updatedValues.createPostRowAndInsertAtBeginning
+      const state = store.getState();
+      const userFrontPagePostSortOrderOption =
+        state.appConfig.userFrontPagePostSortOrderOption;
+      const postsToShowInRow = state.appConfig.postsToShowInRow;
+
+      store.dispatch(
+        createPostRowAndInsertAtBeginning({
+          posts: updatedValues.createPostRowAndInsertAtBeginning,
+          userFrontPagePostSortOrderOption: userFrontPagePostSortOrderOption,
+          postsToShowInRow: postsToShowInRow,
+        })
       );
     }
     if (updatedValues.shiftPostsAndUiPosts != undefined) {
-      this.usePostRows.addPostsToFrontOfRow(
-        updatedValues.shiftPostsAndUiPosts.postRowUuid,
-        updatedValues.shiftPostsAndUiPosts.posts,
-        store.getState().appConfig.postsToShowInRow
+      store.dispatch(
+        addPostsToFrontOfRow({
+          postRowUuid: updatedValues.shiftPostsAndUiPosts.postRowUuid,
+          posts: updatedValues.shiftPostsAndUiPosts.posts,
+          postsToShowInRow: store.getState().appConfig.postsToShowInRow,
+        })
       );
     }
   }

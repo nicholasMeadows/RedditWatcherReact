@@ -12,9 +12,7 @@ import { PostRow } from "../PostRow.ts";
 import { Post } from "../Post/Post.ts";
 import RandomIterationSelectWeightOptionsEnum from "../config/enums/RandomIterationSelectWeightOptionsEnum.ts";
 import SelectedSubredditListSortOptionEnum from "../config/enums/SelectedSubredditListSortOptionEnum.ts";
-import { PostRowsContextData } from "../../context/post-rows-context.ts";
-import { RedditClientContextData } from "../../context/reddit-client-context.ts";
-import RedditListContextData from "../../context/reddit-list-context.ts";
+import { SubredditQueueItem } from "../Subreddit/SubredditQueueItem.ts";
 
 export type GetPostsFromSubredditState = {
   postRows: Array<PostRow>;
@@ -53,22 +51,22 @@ export type GetPostsUpdatedValues = {
 
 export class GetPostsFromSubredditStateConverter {
   convert(
-    postRowsState: PostRowsContextData,
+    postRows: Array<PostRow>,
     appConfigState: AppConfigState,
-    redditClientContextData: RedditClientContextData,
-    redditListContextData: RedditListContextData,
+    subredditQueue: SubredditQueueItem[],
+    subredditLists: SubredditLists[],
     lastPostRowWasSortOrderNew: boolean,
     subredditIndex: number,
     nsfwRedditListIndex: number,
     masterSubscribedSubredditList: Array<Subreddit>
   ): GetPostsFromSubredditState {
     return {
-      postRows: postRowsState.postRows,
+      postRows: postRows,
       subredditSortOrderOption: appConfigState.subredditSortOrderOption,
       userFrontPagePostSortOrderOption:
         appConfigState.userFrontPagePostSortOrderOption,
       contentFiltering: appConfigState.contentFiltering,
-      subredditQueue: redditClientContextData.subredditQueue,
+      subredditQueue: subredditQueue,
       concatRedditUrlMaxLength: appConfigState.concatRedditUrlMaxLength,
       postSortOrder: appConfigState.postSortOrderOption,
       topTimeFrame: appConfigState.topTimeFrameOption,
@@ -79,7 +77,7 @@ export class GetPostsFromSubredditStateConverter {
       nsfwSubredditIndex: nsfwRedditListIndex,
       masterSubredditList: masterSubscribedSubredditList,
       subredditIndex: subredditIndex,
-      subredditLists: redditListContextData.subredditLists,
+      subredditLists: subredditLists,
       lastPostRowWasSortOrderNew: lastPostRowWasSortOrderNew,
       randomIterationSelectWeightOption:
         appConfigState.randomIterationSelectWeightOption,

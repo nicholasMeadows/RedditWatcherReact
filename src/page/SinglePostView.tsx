@@ -2,7 +2,6 @@ import {
   FC,
   TouchEvent,
   useCallback,
-  useContext,
   useEffect,
   useRef,
   useState,
@@ -14,23 +13,49 @@ import {
 } from "../RedditWatcherConstants.ts";
 import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
 import PostMediaElement from "./PostRowsPage/PostMediaElement.tsx";
-import { useSinglePostPageGoToNextPrevPost } from "../hook/use-single-post-page-go-to-next-prev-post.ts";
-import { useSinglePostPageFindPost } from "../hook/use-single-post-page-find-post.ts";
-import { useContextMenu } from "../hook/use-context-menu.ts";
-import { SinglePostPageContext } from "../context/single-post-page-context.ts";
-import { PostRowsContext } from "../context/post-rows-context.ts";
+import { useAppDispatch, useAppSelector } from "../redux/store.ts";
+import { setPostContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
+import { Post } from "../model/Post/Post.ts";
+import { setSinglePostPageUuids } from "../redux/slice/SinglePostPageSlice.ts";
 
 const SinglePostView: FC = () => {
-  const { postRowsContextData } = useContext(PostRowsContext);
-  const contextMenu = useContextMenu();
-  const { postRowUuid } = useContext(SinglePostPageContext);
-  const post = useSinglePostPageFindPost(postRowsContextData.postRows);
-  const { goToNextPost, goToPreviousPost } =
-    useSinglePostPageGoToNextPrevPost();
+  const dispatch = useAppDispatch();
+  const singlePostPageState = useAppSelector((state) => state.singlePostPage);
+  const postRowsState = useAppSelector((state) => state.postRows);
+  const [post, setPost] = useState<Post | undefined>();
 
   const [imgScale, setImgScale] = useState(1);
   const [imgXPercent, setImgXPercentage] = useState(50);
   const [imgYPercent, setImgYPercentage] = useState(50);
+
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const minSwipeDistance = 50;
+
+  const postElementDivWrapperRef = useRef(null);
+
+  const [mouseDownOnImg, setMouseDownOnImg] = useState(false);
+
+  const [touch1X, setTouch1X] = useState(0);
+  const [touch1Y, setTouch1Y] = useState(0);
+  const [touch2X, setTouch2X] = useState(0);
+  const [touch2Y, setTouch2Y] = useState(0);
+
+  useEffect(() => {
+    const postRows = postRowsState.postRows;
+    const postRowUuid = singlePostPageState.postRowUuid;
+    const postRow = postRows.find(
+      (postRow) => postRow.postRowUuid === postRowUuid
+    );
+    if (postRow !== undefined) {
+      const postUuid = singlePostPageState.postUuid;
+      setPost(postRow.posts.find((post) => post.postUuid === postUuid));
+    }
+  }, [
+    postRowsState.postRows,
+    singlePostPageState.postRowUuid,
+    singlePostPageState.postUuid,
+  ]);
 
   const resetImgPositionAndScale = useCallback(() => {
     setImgXPercentage(50);
@@ -39,23 +64,83 @@ const SinglePostView: FC = () => {
   }, []);
 
   const goToNextPostClicked = useCallback(() => {
-    resetImgPositionAndScale();
-    goToNextPost(postRowsContextData.postRows);
-  }, [goToNextPost, postRowsContextData.postRows, resetImgPositionAndScale]);
+    if (singlePostPageState.postRowUuid === undefined) {
+      return;
+    }
 
-  const goToPrevPostClicked = useCallback(() => {
+    const postRow = postRowsState.postRows.find(
+      (postRow) => postRow.postRowUuid === singlePostPageState.postRowUuid
+    );
+    if (postRow === undefined) {
+      return;
+    }
+    const postIndex = postRow.posts.findIndex(
+      (post) => post.postUuid === singlePostPageState.postUuid
+    );
+    if (postIndex === -1) {
+      return;
+    }
+
+    let postUuidToSet: string;
+    if (postIndex < postRow.posts.length - 1) {
+      postUuidToSet = postRow.posts[postIndex + 1].postUuid;
+    } else {
+      postUuidToSet = postRow.posts[0].postUuid;
+    }
     resetImgPositionAndScale();
-    goToPreviousPost(postRowsContextData.postRows);
+    dispatch(
+      setSinglePostPageUuids({
+        postRowUuid: singlePostPageState.postRowUuid,
+        postUuid: postUuidToSet,
+      })
+    );
   }, [
-    goToPreviousPost,
-    postRowsContextData.postRows,
+    dispatch,
+    postRowsState.postRows,
     resetImgPositionAndScale,
+    singlePostPageState.postRowUuid,
+    singlePostPageState.postUuid,
   ]);
 
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  // the required distance between touchStart and touchEnd to be detected as a swipe
-  const minSwipeDistance = 50;
+  const goToPrevPostClicked = useCallback(() => {
+    const postRowUuid = singlePostPageState.postRowUuid;
+    if (postRowUuid === undefined) {
+      return;
+    }
+
+    const postRow = postRowsState.postRows.find(
+      (postRow) => postRow.postRowUuid === postRowUuid
+    );
+    if (postRow === undefined) {
+      return;
+    }
+    const postIndex = postRow.posts.findIndex(
+      (post) => post.postUuid === singlePostPageState.postUuid
+    );
+    if (postIndex === -1) {
+      return;
+    }
+    let postUuid: string;
+    if (postIndex == 0) {
+      postUuid = postRow.posts[postRow.posts.length - 1].postUuid;
+    } else {
+      postUuid = postRow.posts[postIndex - 1].postUuid;
+    }
+    resetImgPositionAndScale();
+    dispatch(
+      setSinglePostPageUuids({
+        postRowUuid: postRowUuid,
+        postUuid: postUuid,
+      })
+    );
+  }, [
+    dispatch,
+    postRowsState.postRows,
+    resetImgPositionAndScale,
+    singlePostPageState.postRowUuid,
+    singlePostPageState.postUuid,
+  ]);
+
   const onTouchStart = (e: TouchEvent<HTMLDivElement>) => {
     setTouchEnd(null); // otherwise the swipe is fired even with usual touch events
     setTouchStart(e.targetTouches[0].clientX);
@@ -95,15 +180,6 @@ const SinglePostView: FC = () => {
       document.body.removeEventListener("keyup", documentKeyUpEvent);
     };
   }, [goToNextPostClicked, goToPrevPostClicked]);
-
-  const postElementDivWrapperRef = useRef(null);
-
-  const [mouseDownOnImg, setMouseDownOnImg] = useState(false);
-
-  const [touch1X, setTouch1X] = useState(0);
-  const [touch1Y, setTouch1Y] = useState(0);
-  const [touch2X, setTouch2X] = useState(0);
-  const [touch2Y, setTouch2Y] = useState(0);
 
   const handleDragImage = useCallback(
     (
@@ -260,7 +336,7 @@ const SinglePostView: FC = () => {
             {post.subreddit.displayNamePrefixed}
           </h4>
 
-          {postRowUuid != undefined && (
+          {singlePostPageState.postRowUuid != undefined && (
             <div
               ref={postElementDivWrapperRef}
               onContextMenu={(event) => {
@@ -271,12 +347,14 @@ const SinglePostView: FC = () => {
                   x: event.clientX,
                   y: event.clientY,
                 };
-                contextMenu.setPostContextMenuEvent(postContextMenuEvent);
+                dispatch(
+                  setPostContextMenuEvent({ event: postContextMenuEvent })
+                );
               }}
               className="flex flex-column max-width-height-percentage single-post-view-post-element"
             >
               <PostMediaElement
-                postRowUuid={postRowUuid}
+                postRowUuid={singlePostPageState.postRowUuid}
                 post={post}
                 autoIncrementAttachments={false}
                 scale={imgScale}

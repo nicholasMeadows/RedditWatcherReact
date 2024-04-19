@@ -8,21 +8,14 @@ import {
 } from "../context/reddit-client-context.ts";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState.ts";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
-import { SubredditQueueItem } from "../model/Subreddit/SubredditQueueItem.ts";
-import { v4 as uuidV4 } from "uuid";
 import RedditService from "../service/RedditService.ts";
 
 export type UseRedditClient = {
-  subredditQueueRemoveAt: (removeAt: number) => void;
-  addSubredditToQueue: (subreddit: Subreddit) => void;
   resetRedditClient: (redditService: RedditService) => void;
   authenticateReddit: () => Promise<void>;
-  moveSubredditQueueItemBack: (subredditQueueItemUuid: string) => void;
-  removeSubredditQueueItem: (subredditQueueItemUuid: string) => void;
   setMasterSubscribedSubredditList: (
     masterSubscribedSubredditList: Array<Subreddit>
   ) => void;
-  moveSubredditQueueItemForward: (subredditQueueItemUuid: string) => void;
   getRedditClientContextData: () => RedditClientContextData;
 };
 export default function useRedditClient(): UseRedditClient {
@@ -77,77 +70,6 @@ export default function useRedditClient(): UseRedditClient {
       setRedditClientContextData((state) => ({
         ...state,
         masterSubscribedSubredditList: masterSubscribedSubredditList,
-      }));
-    },
-    subredditQueueRemoveAt: (removeAt: number) => {
-      redditClientContextData.subredditQueue.splice(removeAt, 1);
-      setRedditClientContextData((state) => ({
-        ...state,
-        subredditQueue: redditClientContextData.subredditQueue,
-      }));
-    },
-    addSubredditToQueue: (subreddit: Subreddit) => {
-      if (
-        subreddit.displayNamePrefixed.startsWith("u/") &&
-        !subreddit.displayName.startsWith("u_")
-      ) {
-        subreddit.displayName = "u_" + subreddit.displayName;
-      }
-
-      const queueItem: SubredditQueueItem = {
-        ...subreddit,
-        subredditQueueItemUuid: uuidV4(),
-      };
-      redditClientContextData.subredditQueue.push(queueItem);
-      setRedditClientContextData((state) => ({
-        ...state,
-        subredditQueue: redditClientContextData.subredditQueue,
-      }));
-    },
-    moveSubredditQueueItemForward: (subredditQueueItemUuid: string) => {
-      const foundIndex = redditClientContextData.subredditQueue.findIndex(
-        (item) => item.subredditQueueItemUuid == subredditQueueItemUuid
-      );
-      if (foundIndex > 0) {
-        redditClientContextData.subredditQueue[foundIndex] =
-          redditClientContextData.subredditQueue.splice(
-            foundIndex - 1,
-            1,
-            redditClientContextData.subredditQueue[foundIndex]
-          )[0];
-        setRedditClientContextData((state) => ({
-          ...state,
-          subredditQueue: redditClientContextData.subredditQueue,
-        }));
-      }
-    },
-    moveSubredditQueueItemBack: (subredditQueueItemUuid: string) => {
-      const foundIndex = redditClientContextData.subredditQueue.findIndex(
-        (item) => item.subredditQueueItemUuid == subredditQueueItemUuid
-      );
-      if (
-        foundIndex != -1 &&
-        foundIndex != redditClientContextData.subredditQueue.length - 1
-      ) {
-        redditClientContextData.subredditQueue[foundIndex] =
-          redditClientContextData.subredditQueue.splice(
-            foundIndex + 1,
-            1,
-            redditClientContextData.subredditQueue[foundIndex]
-          )[0];
-        setRedditClientContextData((state) => ({
-          ...state,
-          subredditQueue: redditClientContextData.subredditQueue,
-        }));
-      }
-    },
-    removeSubredditQueueItem: (subredditQueueItemUuid: string) => {
-      const updated = redditClientContextData.subredditQueue.filter(
-        (item) => item.subredditQueueItemUuid != subredditQueueItemUuid
-      );
-      setRedditClientContextData((state) => ({
-        ...state,
-        subredditQueue: updated,
       }));
     },
     resetRedditClient: (redditService: RedditService) => {
