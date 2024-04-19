@@ -23,7 +23,6 @@ import RouterView from "./page/RouterView";
 import store from "./redux/store";
 import { useRef, useState } from "react";
 import { RootFontSizeContext } from "./context/root-font-size-context.ts";
-import { SinglePostPageContext } from "./context/single-post-page-context.ts";
 import { RedditServiceContext } from "./context/reddit-service-context.ts";
 import RedditService from "./service/RedditService.ts";
 import { PostRow } from "./model/PostRow.ts";
@@ -43,12 +42,6 @@ import RedditListContextData, {
 
 const App: React.FC = () => {
   const [rootFontSize, setRootFontSize] = useState(0);
-  const [singlePostPagePostRowUuid, setSinglePostPagePostRowUuid] = useState<
-    string | undefined
-  >(undefined);
-  const [singlePostPagePostUuid, setSinglePostPagePostUuid] = useState<
-    string | undefined
-  >(undefined);
 
   const [postRowsContextData, setPostRowsContextData] =
     useState<PostRowsContextData>({
@@ -87,39 +80,30 @@ const App: React.FC = () => {
         <RootFontSizeContext.Provider
           value={{ fontSize: rootFontSize, setRootFontSize: setRootFontSize }}
         >
-          <SinglePostPageContext.Provider
-            value={{
-              postRowUuid: singlePostPagePostRowUuid,
-              postUuid: singlePostPagePostUuid,
-              setSinglePostPagePostRowUuid: setSinglePostPagePostRowUuid,
-              setSinglePostPagePostUuid: setSinglePostPagePostUuid,
-            }}
-          >
-            <RedditServiceContext.Provider value={redditServiceRef.current}>
-              <PostRowsContext.Provider
+          <RedditServiceContext.Provider value={redditServiceRef.current}>
+            <PostRowsContext.Provider
+              value={{
+                postRowsContextData: postRowsContextData,
+                setPostRowsContextData: setPostRowsContextData,
+              }}
+            >
+              <RedditClientContext.Provider
                 value={{
-                  postRowsContextData: postRowsContextData,
-                  setPostRowsContextData: setPostRowsContextData,
+                  redditClientContextData: redditClientContextData,
+                  setRedditClientContextData: setRedditClientContextData,
                 }}
               >
-                <RedditClientContext.Provider
+                <RedditListContext.Provider
                   value={{
-                    redditClientContextData: redditClientContextData,
-                    setRedditClientContextData: setRedditClientContextData,
+                    redditListContextData: redditListContextData,
+                    setRedditListContextData: setRedditListContextData,
                   }}
                 >
-                  <RedditListContext.Provider
-                    value={{
-                      redditListContextData: redditListContextData,
-                      setRedditListContextData: setRedditListContextData,
-                    }}
-                  >
-                    <RouterView />
-                  </RedditListContext.Provider>
-                </RedditClientContext.Provider>
-              </PostRowsContext.Provider>
-            </RedditServiceContext.Provider>
-          </SinglePostPageContext.Provider>
+                  <RouterView />
+                </RedditListContext.Provider>
+              </RedditClientContext.Provider>
+            </PostRowsContext.Provider>
+          </RedditServiceContext.Provider>
         </RootFontSizeContext.Provider>
       </HashRouter>
     </Provider>
