@@ -36,7 +36,6 @@ import {
 } from "../redux/slice/AppConfigSlice.ts";
 import { useContextMenu } from "../hook/use-context-menu.ts";
 import { RootFontSizeContext } from "../context/root-font-size-context.ts";
-import useAppNotifiction from "../hook/use-app-notification.ts";
 import { RedditServiceContext } from "../context/reddit-service-context.ts";
 import useSideBar from "../hook/use-side-bar.ts";
 import usePostRows from "../hook/use-post-rows.ts";
@@ -46,7 +45,6 @@ import useRedditList from "../hook/use-reddit-list.ts";
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
   const contextMenu = useContextMenu();
-  const appNotification = useAppNotifiction();
   const sideBar = useSideBar();
   const postRows = usePostRows();
   const redditClient = useRedditClient();
@@ -56,19 +54,11 @@ const RouterView: React.FC = () => {
   const { setRootFontSize } = useContext(RootFontSizeContext);
   const redditService = useContext(RedditServiceContext);
   useEffect(() => {
-    redditService.setAppNotification(appNotification);
     redditService.setSideBar(sideBar);
     redditService.setUsePostRows(postRows);
     redditService.setRedditClient(redditClient);
     redditService.setRedditLists(redditLists);
-  }, [
-    appNotification,
-    postRows,
-    redditClient,
-    redditLists,
-    redditService,
-    sideBar,
-  ]);
+  }, [postRows, redditClient, redditLists, redditService, sideBar]);
 
   const wheelEventHandler = useCallback(
     (event: WheelEvent) => {

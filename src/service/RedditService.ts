@@ -26,15 +26,14 @@ import { GetPostsForSubredditUrlConverter } from "../model/converter/GetPostsFor
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum.ts";
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult.ts";
 import { v4 as uuidV4 } from "uuid";
-import { UseAppNotification } from "../hook/use-app-notification.ts";
 import { UseSideBar } from "../hook/use-side-bar.ts";
 import { UsePostRows } from "../hook/use-post-rows.ts";
 import { WaitUtil } from "../util/WaitUtil.ts";
 import { UseRedditClient } from "../hook/use-reddit-client.ts";
 import { UseRedditList } from "../hook/use-reddit-list.ts";
+import { submitAppNotification } from "../redux/slice/AppNotificationSlice.ts";
 
 export default class RedditService {
-  private declare appNotification: UseAppNotification;
   private declare sideBar: UseSideBar;
   private declare usePostRows: UsePostRows;
   private declare redditClient: UseRedditClient;
@@ -46,10 +45,6 @@ export default class RedditService {
   subredditIndex: number = 0;
   nsfwRedditListIndex: number = 0;
   masterSubscribedSubredditList: Array<Subreddit> = [];
-
-  setAppNotification(appNotification: UseAppNotification) {
-    this.appNotification = appNotification;
-  }
 
   setSideBar(sideBar: UseSideBar) {
     this.sideBar = sideBar;
@@ -146,11 +141,13 @@ export default class RedditService {
           getPostsFromSubredditsState
         );
       } catch (e) {
-        this.appNotification.submitAppNotification({
-          message: `Got exception while trying to get post. ${
-            (e as DOMException).message
-          }`,
-        });
+        store.dispatch(
+          submitAppNotification({
+            message: `Got exception while trying to get post. ${
+              (e as DOMException).message
+            }`,
+          })
+        );
         console.log("Caught exception while getPosts ", e);
       }
     } while (this.settingsChanged(getPostsFromSubredditsState));
@@ -500,7 +497,7 @@ export default class RedditService {
       if (fromSubreddits.length == 1) {
         msg = `Got 0 posts from ${fromSubreddits[0].displayNamePrefixed}. Trying again in a little bit.`;
       }
-      this.appNotification.submitAppNotification({ message: msg });
+      store.dispatch(submitAppNotification({ message: msg }));
       return;
     }
 

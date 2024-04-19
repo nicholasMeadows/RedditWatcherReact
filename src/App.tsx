@@ -31,10 +31,6 @@ import { RootFontSizeContext } from "./context/root-font-size-context.ts";
 import { SinglePostPageContext } from "./context/single-post-page-context.ts";
 import { RedditServiceContext } from "./context/reddit-service-context.ts";
 import RedditService from "./service/RedditService.ts";
-import {
-  AppNotificationContext,
-  AppNotificationItem,
-} from "./context/app-notification-context.ts";
 import { SideBarContext, SideBarFields } from "./context/side-bar-context.ts";
 import { Subreddit } from "./model/Subreddit/Subreddit.ts";
 import { SubredditLists } from "./model/SubredditList/SubredditLists.ts";
@@ -64,9 +60,6 @@ const App: React.FC = () => {
   >(undefined);
   const [contextMenuData, setContextMenuData] =
     useState<ContextMenuContextData>(InitialContextMenuContextData);
-  const [appNotifications, setAppNotifications] = useState<
-    AppNotificationItem[]
-  >([]);
 
   const [sidebarContextData, setSidebarContextData] = useState<SideBarFields>({
     subredditsToShowInSideBar: new Array<Subreddit>(),
@@ -135,43 +128,35 @@ const App: React.FC = () => {
               }}
             >
               <RedditServiceContext.Provider value={redditServiceRef.current}>
-                <AppNotificationContext.Provider
+                <SideBarContext.Provider
                   value={{
-                    appNotifications: appNotifications,
-                    setAppNotifications: setAppNotifications,
+                    sidebarContextData: sidebarContextData,
+                    setSidebarContextData: setSidebarContextData,
                   }}
                 >
-                  <SideBarContext.Provider
+                  <PostRowsContext.Provider
                     value={{
-                      sidebarContextData: sidebarContextData,
-                      setSidebarContextData: setSidebarContextData,
+                      postRowsContextData: postRowsContextData,
+                      setPostRowsContextData: setPostRowsContextData,
                     }}
                   >
-                    <PostRowsContext.Provider
+                    <RedditClientContext.Provider
                       value={{
-                        postRowsContextData: postRowsContextData,
-                        setPostRowsContextData: setPostRowsContextData,
+                        redditClientContextData: redditClientContextData,
+                        setRedditClientContextData: setRedditClientContextData,
                       }}
                     >
-                      <RedditClientContext.Provider
+                      <RedditListContext.Provider
                         value={{
-                          redditClientContextData: redditClientContextData,
-                          setRedditClientContextData:
-                            setRedditClientContextData,
+                          redditListContextData: redditListContextData,
+                          setRedditListContextData: setRedditListContextData,
                         }}
                       >
-                        <RedditListContext.Provider
-                          value={{
-                            redditListContextData: redditListContextData,
-                            setRedditListContextData: setRedditListContextData,
-                          }}
-                        >
-                          <RouterView />
-                        </RedditListContext.Provider>
-                      </RedditClientContext.Provider>
-                    </PostRowsContext.Provider>
-                  </SideBarContext.Provider>
-                </AppNotificationContext.Provider>
+                        <RouterView />
+                      </RedditListContext.Provider>
+                    </RedditClientContext.Provider>
+                  </PostRowsContext.Provider>
+                </SideBarContext.Provider>
               </RedditServiceContext.Provider>
             </ContextMenuContext.Provider>
           </SinglePostPageContext.Provider>
