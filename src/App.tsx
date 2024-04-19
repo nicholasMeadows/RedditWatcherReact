@@ -26,10 +26,6 @@ import { RootFontSizeContext } from "./context/root-font-size-context.ts";
 import { SinglePostPageContext } from "./context/single-post-page-context.ts";
 import { RedditServiceContext } from "./context/reddit-service-context.ts";
 import RedditService from "./service/RedditService.ts";
-import { SideBarContext, SideBarFields } from "./context/side-bar-context.ts";
-import { Subreddit } from "./model/Subreddit/Subreddit.ts";
-import { SubredditLists } from "./model/SubredditList/SubredditLists.ts";
-import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "./RedditWatcherConstants.ts";
 import { PostRow } from "./model/PostRow.ts";
 import {
   PostRowsContext,
@@ -53,19 +49,6 @@ const App: React.FC = () => {
   const [singlePostPagePostUuid, setSinglePostPagePostUuid] = useState<
     string | undefined
   >(undefined);
-
-  const [sidebarContextData, setSidebarContextData] = useState<SideBarFields>({
-    subredditsToShowInSideBar: new Array<Subreddit>(),
-    subredditsToShow: new Array<Subreddit>(),
-    mostRecentSubredditGotten: undefined,
-    availableSubredditListsForFilter: new Array<SubredditLists>(),
-    listToFilterByUuid: SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED,
-    searchInput: "",
-    sideBarOpen: false,
-    openSidebarButtonTopPercent: 50,
-    mouseOverSubredditList: false,
-    timeTillNextGetPostsSeconds: 0,
-  });
 
   const [postRowsContextData, setPostRowsContextData] =
     useState<PostRowsContextData>({
@@ -113,35 +96,28 @@ const App: React.FC = () => {
             }}
           >
             <RedditServiceContext.Provider value={redditServiceRef.current}>
-              <SideBarContext.Provider
+              <PostRowsContext.Provider
                 value={{
-                  sidebarContextData: sidebarContextData,
-                  setSidebarContextData: setSidebarContextData,
+                  postRowsContextData: postRowsContextData,
+                  setPostRowsContextData: setPostRowsContextData,
                 }}
               >
-                <PostRowsContext.Provider
+                <RedditClientContext.Provider
                   value={{
-                    postRowsContextData: postRowsContextData,
-                    setPostRowsContextData: setPostRowsContextData,
+                    redditClientContextData: redditClientContextData,
+                    setRedditClientContextData: setRedditClientContextData,
                   }}
                 >
-                  <RedditClientContext.Provider
+                  <RedditListContext.Provider
                     value={{
-                      redditClientContextData: redditClientContextData,
-                      setRedditClientContextData: setRedditClientContextData,
+                      redditListContextData: redditListContextData,
+                      setRedditListContextData: setRedditListContextData,
                     }}
                   >
-                    <RedditListContext.Provider
-                      value={{
-                        redditListContextData: redditListContextData,
-                        setRedditListContextData: setRedditListContextData,
-                      }}
-                    >
-                      <RouterView />
-                    </RedditListContext.Provider>
-                  </RedditClientContext.Provider>
-                </PostRowsContext.Provider>
-              </SideBarContext.Provider>
+                    <RouterView />
+                  </RedditListContext.Provider>
+                </RedditClientContext.Provider>
+              </PostRowsContext.Provider>
             </RedditServiceContext.Provider>
           </SinglePostPageContext.Provider>
         </RootFontSizeContext.Provider>

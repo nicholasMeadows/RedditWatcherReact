@@ -36,7 +36,6 @@ import {
 } from "../redux/slice/AppConfigSlice.ts";
 import { RootFontSizeContext } from "../context/root-font-size-context.ts";
 import { RedditServiceContext } from "../context/reddit-service-context.ts";
-import useSideBar from "../hook/use-side-bar.ts";
 import usePostRows from "../hook/use-post-rows.ts";
 import useRedditClient from "../hook/use-reddit-client.ts";
 import useRedditList from "../hook/use-reddit-list.ts";
@@ -44,7 +43,6 @@ import { closeContextMenu } from "../redux/slice/ContextMenuSlice.ts";
 
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
-  const sideBar = useSideBar();
   const postRows = usePostRows();
   const redditClient = useRedditClient();
   const redditLists = useRedditList();
@@ -53,11 +51,10 @@ const RouterView: React.FC = () => {
   const { setRootFontSize } = useContext(RootFontSizeContext);
   const redditService = useContext(RedditServiceContext);
   useEffect(() => {
-    redditService.setSideBar(sideBar);
     redditService.setUsePostRows(postRows);
     redditService.setRedditClient(redditClient);
     redditService.setRedditLists(redditLists);
-  }, [postRows, redditClient, redditLists, redditService, sideBar]);
+  }, [postRows, redditClient, redditLists, redditService]);
 
   const wheelEventHandler = useCallback(
     (event: WheelEvent) => {

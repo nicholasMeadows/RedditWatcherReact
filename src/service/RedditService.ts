@@ -26,15 +26,18 @@ import { GetPostsForSubredditUrlConverter } from "../model/converter/GetPostsFor
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum.ts";
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult.ts";
 import { v4 as uuidV4 } from "uuid";
-import { UseSideBar } from "../hook/use-side-bar.ts";
 import { UsePostRows } from "../hook/use-post-rows.ts";
 import { WaitUtil } from "../util/WaitUtil.ts";
 import { UseRedditClient } from "../hook/use-reddit-client.ts";
 import { UseRedditList } from "../hook/use-reddit-list.ts";
 import { submitAppNotification } from "../redux/slice/AppNotificationSlice.ts";
+import {
+  setMostRecentSubredditGotten,
+  setSubredditsToShowInSideBar,
+  setTimeTillNextGetPostsSeconds,
+} from "../redux/slice/SideBarSlice.ts";
 
 export default class RedditService {
-  private declare sideBar: UseSideBar;
   private declare usePostRows: UsePostRows;
   private declare redditClient: UseRedditClient;
   private declare redditLists: UseRedditList;
@@ -45,10 +48,6 @@ export default class RedditService {
   subredditIndex: number = 0;
   nsfwRedditListIndex: number = 0;
   masterSubscribedSubredditList: Array<Subreddit> = [];
-
-  setSideBar(sideBar: UseSideBar) {
-    this.sideBar = sideBar;
-  }
 
   setUsePostRows(usePostRows: UsePostRows) {
     this.usePostRows = usePostRows;
@@ -73,7 +72,7 @@ export default class RedditService {
     getPostsFunction();
 
     const startWaitingToGetPosts = () => {
-      this.sideBar.setTimeTillNextGetPostsSeconds(10);
+      store.dispatch(setTimeTillNextGetPostsSeconds(10));
       const timeout = setTimeout(async () => {
         await getPostsFunction();
         startWaitingToGetPosts();
@@ -611,17 +610,20 @@ export default class RedditService {
       );
     }
     if (updatedValues.mostRecentSubredditGotten != undefined) {
-      this.sideBar.setMostRecentSubredditGotten(
-        updatedValues.mostRecentSubredditGotten
+      store.dispatch(
+        setMostRecentSubredditGotten(updatedValues.mostRecentSubredditGotten)
       );
     }
     if (updatedValues.postRowRemoveAt != undefined) {
       this.usePostRows.postRowRemoveAt(updatedValues.postRowRemoveAt);
     }
     if (updatedValues.subredditsToShowInSideBar != undefined) {
-      this.sideBar.setSubredditsToShowInSideBar(
-        updatedValues.subredditsToShowInSideBar,
-        this.redditLists.getSubredditListsContextData().subredditLists
+      store.dispatch(
+        setSubredditsToShowInSideBar({
+          subreddits: updatedValues.subredditsToShowInSideBar,
+          subredditLists:
+            this.redditLists.getSubredditListsContextData().subredditLists,
+        })
       );
     }
     if (updatedValues.masterSubscribedSubredditList != undefined) {

@@ -4,12 +4,14 @@ import thunk from "redux-thunk";
 import appConfigReducer from "./slice/AppConfigSlice";
 import appNotificationReducer from "./slice/AppNotificationSlice.ts";
 import contextMenuReducer from "./slice/ContextMenuSlice.ts";
+import sideBarReducer from "./slice/SideBarSlice.ts";
 
 const store = configureStore({
   reducer: {
     appConfig: appConfigReducer,
     appNotification: appNotificationReducer,
     contextMenu: contextMenuReducer,
+    sideBar: sideBarReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk),
 });
