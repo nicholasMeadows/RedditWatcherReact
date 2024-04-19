@@ -39,6 +39,7 @@ import {
   createPostRowAndInsertAtBeginning,
   postRowRemoveAt,
 } from "../redux/slice/PostRowsSlice.ts";
+import { subredditQueueRemoveAt } from "../redux/slice/SubRedditQueueSlice.ts";
 
 export default class RedditService {
   private declare redditClient: UseRedditClient;
@@ -86,7 +87,7 @@ export default class RedditService {
           stateConverter.convert(
             state.postRows.postRows,
             state.appConfig,
-            this.redditClient.getRedditClientContextData(),
+            state.subredditQueue.subredditQueue,
             state.redditLists.subredditLists,
             this.lastPostRowWasSortOrderNew,
             this.subredditIndex,
@@ -561,7 +562,7 @@ export default class RedditService {
       originalState.contentFiltering == appConfigState.contentFiltering &&
       subredditQueuesEqual(
         originalState.subredditQueue,
-        this.redditClient.getRedditClientContextData().subredditQueue
+        store.getState().subredditQueue.subredditQueue
       ) &&
       originalState.concatRedditUrlMaxLength ==
         appConfigState.concatRedditUrlMaxLength &&
@@ -598,8 +599,8 @@ export default class RedditService {
     const updatedValues = getPostsFromSubredditState.getPostsUpdatedValues;
 
     if (updatedValues.subredditQueueRemoveAt != undefined) {
-      this.redditClient.subredditQueueRemoveAt(
-        updatedValues.subredditQueueRemoveAt
+      store.dispatch(
+        subredditQueueRemoveAt(updatedValues.subredditQueueRemoveAt)
       );
     }
     if (updatedValues.mostRecentSubredditGotten != undefined) {

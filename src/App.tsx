@@ -26,7 +26,6 @@ import { RootFontSizeContext } from "./context/root-font-size-context.ts";
 import { RedditServiceContext } from "./context/reddit-service-context.ts";
 import RedditService from "./service/RedditService.ts";
 import { RedditAuthenticationStatus } from "./model/RedditAuthenticationState.ts";
-import { SubredditQueueItem } from "./model/Subreddit/SubredditQueueItem.ts";
 import {
   RedditClientContext,
   RedditClientContextData,
@@ -37,7 +36,6 @@ const App: React.FC = () => {
   const [redditClientContextData, setRedditClientContextData] =
     useState<RedditClientContextData>({
       redditAuthenticationStatus: RedditAuthenticationStatus.NOT_YET_AUTHED,
-      subredditQueue: new Array<SubredditQueueItem>(),
     });
   const redditServiceRef = useRef(new RedditService());
   return (

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { SubredditLists } from "../model/SubredditList/SubredditLists";
-import useRedditClient from "../hook/use-reddit-client.ts";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import { useCopy } from "../hook/use-copy.ts";
 import {
@@ -14,11 +13,11 @@ import {
   showDeleteListConfirmationBox,
   showUpdateListBox,
 } from "../redux/slice/RedditListSlice.ts";
+import { addSubredditToQueue } from "../redux/slice/SubRedditQueueSlice.ts";
 
 const ContextMenu: React.FC = () => {
   const dispatch = useAppDispatch();
   const copyHook = useCopy();
-  const redditClient = useRedditClient();
   const contextMenuState = useAppSelector((state) => state.contextMenu);
   const redditListState = useAppSelector((state) => state.redditLists);
   const [contextMenuX, setContextMenuX] = useState(0);
@@ -180,7 +179,7 @@ const ContextMenu: React.FC = () => {
           hidden={!contextMenuState.showButtonControls.showSkipToSubreddit}
           onClick={() => {
             if (contextMenuState.subreddit != undefined) {
-              redditClient.addSubredditToQueue(contextMenuState.subreddit);
+              dispatch(addSubredditToQueue(contextMenuState.subreddit));
             }
             dispatch(closeContextMenu());
           }}

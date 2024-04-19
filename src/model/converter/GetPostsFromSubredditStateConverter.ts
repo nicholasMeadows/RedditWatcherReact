@@ -12,7 +12,7 @@ import { PostRow } from "../PostRow.ts";
 import { Post } from "../Post/Post.ts";
 import RandomIterationSelectWeightOptionsEnum from "../config/enums/RandomIterationSelectWeightOptionsEnum.ts";
 import SelectedSubredditListSortOptionEnum from "../config/enums/SelectedSubredditListSortOptionEnum.ts";
-import { RedditClientContextData } from "../../context/reddit-client-context.ts";
+import { SubredditQueueItem } from "../Subreddit/SubredditQueueItem.ts";
 
 export type GetPostsFromSubredditState = {
   postRows: Array<PostRow>;
@@ -53,7 +53,7 @@ export class GetPostsFromSubredditStateConverter {
   convert(
     postRows: Array<PostRow>,
     appConfigState: AppConfigState,
-    redditClientContextData: RedditClientContextData,
+    subredditQueue: SubredditQueueItem[],
     subredditLists: SubredditLists[],
     lastPostRowWasSortOrderNew: boolean,
     subredditIndex: number,
@@ -66,7 +66,7 @@ export class GetPostsFromSubredditStateConverter {
       userFrontPagePostSortOrderOption:
         appConfigState.userFrontPagePostSortOrderOption,
       contentFiltering: appConfigState.contentFiltering,
-      subredditQueue: redditClientContextData.subredditQueue,
+      subredditQueue: subredditQueue,
       concatRedditUrlMaxLength: appConfigState.concatRedditUrlMaxLength,
       postSortOrder: appConfigState.postSortOrderOption,
       topTimeFrame: appConfigState.topTimeFrameOption,
