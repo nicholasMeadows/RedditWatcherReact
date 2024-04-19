@@ -34,17 +34,16 @@ import {
   setPostRowsToShowInView,
   setPostsToShowInRow,
 } from "../redux/slice/AppConfigSlice.ts";
-import { useContextMenu } from "../hook/use-context-menu.ts";
 import { RootFontSizeContext } from "../context/root-font-size-context.ts";
 import { RedditServiceContext } from "../context/reddit-service-context.ts";
 import useSideBar from "../hook/use-side-bar.ts";
 import usePostRows from "../hook/use-post-rows.ts";
 import useRedditClient from "../hook/use-reddit-client.ts";
 import useRedditList from "../hook/use-reddit-list.ts";
+import { closeContextMenu } from "../redux/slice/ContextMenuSlice.ts";
 
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
-  const contextMenu = useContextMenu();
   const sideBar = useSideBar();
   const postRows = usePostRows();
   const redditClient = useRedditClient();
@@ -93,13 +92,13 @@ const RouterView: React.FC = () => {
 
   useEffect(() => {
     const documentClickedEvent = () => {
-      contextMenu.closeContextMenu();
+      dispatch(closeContextMenu());
     };
     document.addEventListener("click", documentClickedEvent);
     return () => {
       document.removeEventListener("click", documentClickedEvent);
     };
-  }, [contextMenu]);
+  }, [dispatch]);
 
   useEffect(() => {
     postRows.setCurrentLocation(location.pathname);

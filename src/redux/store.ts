@@ -3,11 +3,13 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import thunk from "redux-thunk";
 import appConfigReducer from "./slice/AppConfigSlice";
 import appNotificationReducer from "./slice/AppNotificationSlice.ts";
+import contextMenuReducer from "./slice/ContextMenuSlice.ts";
 
 const store = configureStore({
   reducer: {
     appConfig: appConfigReducer,
     appNotification: appNotificationReducer,
+    contextMenu: contextMenuReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk),
 });

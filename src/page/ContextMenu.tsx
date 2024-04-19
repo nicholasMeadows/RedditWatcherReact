@@ -1,16 +1,22 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { SubredditLists } from "../model/SubredditList/SubredditLists";
-import { useContextMenu } from "../hook/use-context-menu.ts";
-import { ContextMenuContext } from "../context/context-menu-context.ts";
 import useRedditClient from "../hook/use-reddit-client.ts";
 import { RedditListContext } from "../context/reddit-list-context.ts";
 import useRedditList from "../hook/use-reddit-list.ts";
+import { useAppDispatch, useAppSelector } from "../redux/store.ts";
+import { useCopy } from "../hook/use-copy.ts";
+import {
+  closeContextMenu,
+  setExpandAddToList,
+  setExpandRemoveToList,
+} from "../redux/slice/ContextMenuSlice.ts";
 
 const ContextMenu: React.FC = () => {
-  const contextMenu = useContextMenu();
+  const dispatch = useAppDispatch();
+  const copyHook = useCopy();
   const redditClient = useRedditClient();
   const redditListsHook = useRedditList();
-  const { contextMenuData } = useContext(ContextMenuContext);
+  const contextMenuState = useAppSelector((state) => state.contextMenu);
   const { redditListContextData } = useContext(RedditListContext);
 
   const [contextMenuX, setContextMenuX] = useState(0);
@@ -29,8 +35,8 @@ const ContextMenu: React.FC = () => {
 
   const [contextMenuMaxHeight, setContextMenuMaxHeight] = useState(0);
   useEffect(() => {
-    if (contextMenuData.subreddit !== undefined) {
-      const subreddit = contextMenuData.subreddit;
+    if (contextMenuState.subreddit !== undefined) {
+      const subreddit = contextMenuState.subreddit;
       const isIn = redditListContextData.subredditLists.filter((list) => {
         return (
           list.subreddits.find(
@@ -53,10 +59,10 @@ const ContextMenu: React.FC = () => {
       setSubredditListsThatSubredditIsIn(isIn);
       setSubredditListsThatSubredditIsNotIn(isNotIn);
     }
-  }, [redditListContextData.subredditLists, contextMenuData.subreddit]);
+  }, [redditListContextData.subredditLists, contextMenuState.subreddit]);
 
   useEffect(() => {
-    if (!contextMenuData.showContextMenu) {
+    if (!contextMenuState.showContextMenu) {
       setSubredditListsThatSubredditIsIn([]);
       setSubredditListsThatSubredditIsNotIn([]);
       const addToListIconSpan = document.getElementById(
@@ -78,7 +84,7 @@ const ContextMenu: React.FC = () => {
         removeFromListIconSpan.classList.remove("active");
       }
     }
-  }, [contextMenuData.showContextMenu]);
+  }, [contextMenuState.showContextMenu]);
 
   useEffect(() => {
     const contextMenuRoot =
@@ -90,30 +96,30 @@ const ContextMenu: React.FC = () => {
     const menuWidth = contextMenuRoot.clientWidth;
     const menuHeight = contextMenuRoot.clientHeight;
 
-    let xToSet = contextMenuData.x;
-    let yToSet = contextMenuData.y;
+    let xToSet = contextMenuState.x;
+    let yToSet = contextMenuState.y;
 
-    if (contextMenuData.x + menuWidth > windowWidth) {
-      xToSet = contextMenuData.x - menuWidth;
+    if (contextMenuState.x + menuWidth > windowWidth) {
+      xToSet = contextMenuState.x - menuWidth;
     }
 
-    if (contextMenuData.y + menuHeight > windowHeight) {
+    if (contextMenuState.y + menuHeight > windowHeight) {
       yToSet = windowHeight - menuHeight;
     }
 
     setContextMenuX(xToSet);
     setContextMenuY(yToSet);
     setContextMenuMaxHeight(windowHeight - yToSet);
-  }, [contextMenuData.x, contextMenuData.y]);
+  }, [contextMenuState.x, contextMenuState.y]);
 
   return (
     <>
       <div
         className="context-menu"
         ref={contextMenuRootRef}
-        hidden={!contextMenuData.showContextMenu}
+        hidden={!contextMenuState.showContextMenu}
         style={{
-          visibility: contextMenuData.showContextMenu ? "visible" : "hidden",
+          visibility: contextMenuState.showContextMenu ? "visible" : "hidden",
           top: `${contextMenuY}px`,
           left: `${contextMenuX}px`,
           maxHeight: contextMenuMaxHeight,
@@ -125,19 +131,19 @@ const ContextMenu: React.FC = () => {
       >
         <div
           className="context-menu-button"
-          hidden={!contextMenuData.showButtonControls.showOpenImageInNewTab}
+          hidden={!contextMenuState.showButtonControls.showOpenImageInNewTab}
           onClick={() => {
-            window.open(contextMenuData.copyInfo?.url);
+            window.open(contextMenuState.copyInfo?.url);
           }}
         >
           <p className="context-menu-button-label">Open Image In New Tab</p>
         </div>
         <div
           className="context-menu-button"
-          hidden={!contextMenuData.showButtonControls.showOpenPost}
+          hidden={!contextMenuState.showButtonControls.showOpenPost}
           onClick={() => {
-            window.open(contextMenuData.openPostPermaLink);
-            contextMenu.closeContextMenu();
+            window.open(contextMenuState.openPostPermaLink);
+            dispatch(closeContextMenu());
           }}
         >
           <p className="context-menu-button-label">Open Post</p>
@@ -145,10 +151,10 @@ const ContextMenu: React.FC = () => {
 
         <div
           className="context-menu-button"
-          hidden={!contextMenuData.showButtonControls.showOpenSubreddit}
+          hidden={!contextMenuState.showButtonControls.showOpenSubreddit}
           onClick={() => {
-            window.open(contextMenuData.openSubredditLink);
-            contextMenu.closeContextMenu();
+            window.open(contextMenuState.openSubredditLink);
+            dispatch(closeContextMenu());
           }}
         >
           <p className="context-menu-button-label">Open Subreddit</p>
@@ -156,12 +162,12 @@ const ContextMenu: React.FC = () => {
 
         <div
           className="context-menu-button"
-          hidden={!contextMenuData.showButtonControls.showCopy}
+          hidden={!contextMenuState.showButtonControls.showCopy}
           onClick={() => {
-            if (contextMenuData.copyInfo != undefined) {
-              contextMenu.copy(contextMenuData.copyInfo);
+            if (contextMenuState.copyInfo != undefined) {
+              copyHook.copy(contextMenuState.copyInfo);
             }
-            contextMenu.closeContextMenu();
+            dispatch(closeContextMenu());
           }}
         >
           <p className="context-menu-button-label">Copy</p>
@@ -169,12 +175,12 @@ const ContextMenu: React.FC = () => {
 
         <div
           className="context-menu-button"
-          hidden={!contextMenuData.showButtonControls.showSkipToSubreddit}
+          hidden={!contextMenuState.showButtonControls.showSkipToSubreddit}
           onClick={() => {
-            if (contextMenuData.subreddit != undefined) {
-              redditClient.addSubredditToQueue(contextMenuData.subreddit);
+            if (contextMenuState.subreddit != undefined) {
+              redditClient.addSubredditToQueue(contextMenuState.subreddit);
             }
-            contextMenu.closeContextMenu();
+            dispatch(closeContextMenu());
           }}
         >
           <p className="context-menu-button-label">Skip to Subreddit</p>
@@ -184,20 +190,22 @@ const ContextMenu: React.FC = () => {
           className="context-menu-button"
           hidden={
             !(
-              contextMenuData.showButtonControls.showAddToList &&
+              contextMenuState.showButtonControls.showAddToList &&
               subredditListsThatSubredditIsNotIn.length > 0
             )
           }
         >
           <div
             className={`expandable-context-sub-menu ${
-              contextMenuData.showButtonControls.expandAddToList
+              contextMenuState.showButtonControls.expandAddToList
                 ? "expandable-context-sub-menu-active"
                 : ""
             }`}
             onClick={() => {
-              contextMenu.setExpandAddToList(
-                !contextMenuData.showButtonControls.expandAddToList
+              dispatch(
+                setExpandAddToList(
+                  !contextMenuState.showButtonControls.expandAddToList
+                )
               );
               const div =
                 addToListNamesDivRef.current as unknown as HTMLDivElement;
@@ -212,7 +220,7 @@ const ContextMenu: React.FC = () => {
 
           <div
             className={`context-menu-sub-menu ${
-              contextMenuData.showButtonControls.expandAddToList
+              contextMenuState.showButtonControls.expandAddToList
                 ? "context-menu-sub-menu-open"
                 : ""
             }`}
@@ -222,10 +230,10 @@ const ContextMenu: React.FC = () => {
               <div
                 key={subredditList.subredditListUuid}
                 onClick={() => {
-                  if (contextMenuData.subreddit != undefined) {
+                  if (contextMenuState.subreddit != undefined) {
                     redditListsHook.addSubredditToList(
                       {
-                        ...contextMenuData.subreddit,
+                        ...contextMenuState.subreddit,
                         fromList: subredditList.listName,
                       },
                       subredditList
@@ -246,20 +254,22 @@ const ContextMenu: React.FC = () => {
           className="context-menu-button"
           hidden={
             !(
-              contextMenuData.showButtonControls.showRemoveFromList &&
+              contextMenuState.showButtonControls.showRemoveFromList &&
               subredditListsThatSubredditIsIn.length > 0
             )
           }
         >
           <div
             className={`expandable-context-sub-menu ${
-              contextMenuData.showButtonControls.expandRemoveFromList
+              contextMenuState.showButtonControls.expandRemoveFromList
                 ? "expandable-context-sub-menu-active"
                 : ""
             }`}
             onClick={() => {
-              contextMenu.setExpandRemoveToList(
-                !contextMenuData.showButtonControls.expandRemoveFromList
+              dispatch(
+                setExpandRemoveToList(
+                  !contextMenuState.showButtonControls.expandRemoveFromList
+                )
               );
               const div =
                 removeFromListNamesDivRef.current as unknown as HTMLDivElement;
@@ -276,7 +286,7 @@ const ContextMenu: React.FC = () => {
 
           <div
             className={`context-menu-sub-menu ${
-              contextMenuData.showButtonControls.expandRemoveFromList
+              contextMenuState.showButtonControls.expandRemoveFromList
                 ? "context-menu-sub-menu-open"
                 : ""
             }`}
@@ -286,10 +296,10 @@ const ContextMenu: React.FC = () => {
               <div
                 key={subredditList.subredditListUuid}
                 onClick={() => {
-                  if (contextMenuData.subreddit != undefined) {
+                  if (contextMenuState.subreddit != undefined) {
                     redditListsHook.removeSubredditFromList(
                       {
-                        ...contextMenuData.subreddit,
+                        ...contextMenuState.subreddit,
                         fromList: subredditList.listName,
                       },
                       subredditList
@@ -308,17 +318,17 @@ const ContextMenu: React.FC = () => {
 
         <div
           className="context-menu-button"
-          hidden={!contextMenuData.showButtonControls.showUpdateListName}
+          hidden={!contextMenuState.showButtonControls.showUpdateListName}
           onClick={() => {
             if (
-              contextMenuData.updateSubredditListInfo?.subredditList !=
+              contextMenuState.updateSubredditListInfo?.subredditList !=
               undefined
             ) {
               redditListsHook.showUpdateListBox(
-                contextMenuData.updateSubredditListInfo?.subredditList
+                contextMenuState.updateSubredditListInfo?.subredditList
               );
             }
-            contextMenu.closeContextMenu();
+            dispatch(closeContextMenu());
           }}
         >
           <p className="context-menu-button-label">Update List Name</p>
@@ -326,17 +336,17 @@ const ContextMenu: React.FC = () => {
 
         <div
           className="context-menu-button"
-          hidden={!contextMenuData.showButtonControls.showDeleteList}
+          hidden={!contextMenuState.showButtonControls.showDeleteList}
           onClick={() => {
             if (
-              contextMenuData.updateSubredditListInfo?.subredditList !=
+              contextMenuState.updateSubredditListInfo?.subredditList !=
               undefined
             ) {
               redditListsHook.showDeleteListConfirmationBox(
-                contextMenuData.updateSubredditListInfo?.subredditList
+                contextMenuState.updateSubredditListInfo?.subredditList
               );
             }
-            contextMenu.closeContextMenu();
+            dispatch(closeContextMenu());
           }}
         >
           <p className="context-menu-button-label">Delete List</p>

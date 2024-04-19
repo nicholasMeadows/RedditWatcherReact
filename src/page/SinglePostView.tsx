@@ -16,13 +16,14 @@ import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
 import PostMediaElement from "./PostRowsPage/PostMediaElement.tsx";
 import { useSinglePostPageGoToNextPrevPost } from "../hook/use-single-post-page-go-to-next-prev-post.ts";
 import { useSinglePostPageFindPost } from "../hook/use-single-post-page-find-post.ts";
-import { useContextMenu } from "../hook/use-context-menu.ts";
 import { SinglePostPageContext } from "../context/single-post-page-context.ts";
 import { PostRowsContext } from "../context/post-rows-context.ts";
+import { useAppDispatch } from "../redux/store.ts";
+import { setPostContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 
 const SinglePostView: FC = () => {
+  const dispatch = useAppDispatch();
   const { postRowsContextData } = useContext(PostRowsContext);
-  const contextMenu = useContextMenu();
   const { postRowUuid } = useContext(SinglePostPageContext);
   const post = useSinglePostPageFindPost(postRowsContextData.postRows);
   const { goToNextPost, goToPreviousPost } =
@@ -271,7 +272,9 @@ const SinglePostView: FC = () => {
                   x: event.clientX,
                   y: event.clientY,
                 };
-                contextMenu.setPostContextMenuEvent(postContextMenuEvent);
+                dispatch(
+                  setPostContextMenuEvent({ event: postContextMenuEvent })
+                );
               }}
               className="flex flex-column max-width-height-percentage single-post-view-post-element"
             >

@@ -22,11 +22,6 @@ import { Provider } from "react-redux";
 import RouterView from "./page/RouterView";
 import store from "./redux/store";
 import { useRef, useState } from "react";
-import {
-  ContextMenuContext,
-  ContextMenuContextData,
-  InitialContextMenuContextData,
-} from "./context/context-menu-context.ts";
 import { RootFontSizeContext } from "./context/root-font-size-context.ts";
 import { SinglePostPageContext } from "./context/single-post-page-context.ts";
 import { RedditServiceContext } from "./context/reddit-service-context.ts";
@@ -58,8 +53,6 @@ const App: React.FC = () => {
   const [singlePostPagePostUuid, setSinglePostPagePostUuid] = useState<
     string | undefined
   >(undefined);
-  const [contextMenuData, setContextMenuData] =
-    useState<ContextMenuContextData>(InitialContextMenuContextData);
 
   const [sidebarContextData, setSidebarContextData] = useState<SideBarFields>({
     subredditsToShowInSideBar: new Array<Subreddit>(),
@@ -119,46 +112,37 @@ const App: React.FC = () => {
               setSinglePostPagePostUuid: setSinglePostPagePostUuid,
             }}
           >
-            <ContextMenuContext.Provider
-              value={{
-                contextMenuData: contextMenuData,
-                setContextMenuData: (data) => {
-                  setContextMenuData(data);
-                },
-              }}
-            >
-              <RedditServiceContext.Provider value={redditServiceRef.current}>
-                <SideBarContext.Provider
+            <RedditServiceContext.Provider value={redditServiceRef.current}>
+              <SideBarContext.Provider
+                value={{
+                  sidebarContextData: sidebarContextData,
+                  setSidebarContextData: setSidebarContextData,
+                }}
+              >
+                <PostRowsContext.Provider
                   value={{
-                    sidebarContextData: sidebarContextData,
-                    setSidebarContextData: setSidebarContextData,
+                    postRowsContextData: postRowsContextData,
+                    setPostRowsContextData: setPostRowsContextData,
                   }}
                 >
-                  <PostRowsContext.Provider
+                  <RedditClientContext.Provider
                     value={{
-                      postRowsContextData: postRowsContextData,
-                      setPostRowsContextData: setPostRowsContextData,
+                      redditClientContextData: redditClientContextData,
+                      setRedditClientContextData: setRedditClientContextData,
                     }}
                   >
-                    <RedditClientContext.Provider
+                    <RedditListContext.Provider
                       value={{
-                        redditClientContextData: redditClientContextData,
-                        setRedditClientContextData: setRedditClientContextData,
+                        redditListContextData: redditListContextData,
+                        setRedditListContextData: setRedditListContextData,
                       }}
                     >
-                      <RedditListContext.Provider
-                        value={{
-                          redditListContextData: redditListContextData,
-                          setRedditListContextData: setRedditListContextData,
-                        }}
-                      >
-                        <RouterView />
-                      </RedditListContext.Provider>
-                    </RedditClientContext.Provider>
-                  </PostRowsContext.Provider>
-                </SideBarContext.Provider>
-              </RedditServiceContext.Provider>
-            </ContextMenuContext.Provider>
+                      <RouterView />
+                    </RedditListContext.Provider>
+                  </RedditClientContext.Provider>
+                </PostRowsContext.Provider>
+              </SideBarContext.Provider>
+            </RedditServiceContext.Provider>
           </SinglePostPageContext.Provider>
         </RootFontSizeContext.Provider>
       </HashRouter>

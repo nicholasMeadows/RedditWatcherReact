@@ -10,15 +10,14 @@ import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../RedditWatcherCon
 import SideBarSubredditMenuEvent from "../model/Events/SideBarSubredditMenuEvent.ts";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import SearchRedditBar from "./ModifySubredditListsPagesAndElements/SearchRedditBar.tsx";
-import { useContextMenu } from "../hook/use-context-menu.ts";
 import useSideBar from "../hook/use-side-bar.ts";
 import { SideBarContext } from "../context/side-bar-context.ts";
 import { RedditListContext } from "../context/reddit-list-context.ts";
+import { setSideBarSubredditMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 
 const SideBar: React.FC = () => {
   const sideBarButtonMoved = useRef(false);
   const dispatch = useAppDispatch();
-  const contextMenu = useContextMenu();
   const sideBar = useSideBar();
   const { sidebarContextData } = useContext(SideBarContext);
   const { redditListContextData } = useContext(RedditListContext);
@@ -223,8 +222,10 @@ const SideBar: React.FC = () => {
                   x: event.clientX,
                   y: event.clientY,
                 };
-                contextMenu.setSideBarSubredditMenuEvent(
-                  subredditContextMenuEvent
+                dispatch(
+                  setSideBarSubredditMenuEvent({
+                    event: subredditContextMenuEvent,
+                  })
                 );
               }}
               key={subreddit.subredditUuid}
