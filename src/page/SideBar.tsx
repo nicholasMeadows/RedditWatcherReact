@@ -1,7 +1,6 @@
 import React, {
   MouseEvent,
   useCallback,
-  useContext,
   useEffect,
   useRef,
   useState,
@@ -10,7 +9,6 @@ import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../RedditWatcherCon
 import SideBarSubredditMenuEvent from "../model/Events/SideBarSubredditMenuEvent.ts";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import SearchRedditBar from "./ModifySubredditListsPagesAndElements/SearchRedditBar.tsx";
-import { RedditListContext } from "../context/reddit-list-context.ts";
 import { setSideBarSubredditMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import {
   decreaseTimeTillNextGetPostsSeconds,
@@ -25,7 +23,7 @@ const SideBar: React.FC = () => {
   const sideBarButtonMoved = useRef(false);
   const dispatch = useAppDispatch();
   const sideBarState = useAppSelector((state) => state.sideBar);
-  const { redditListContextData } = useContext(RedditListContext);
+  const redditListsState = useAppSelector((state) => state.redditLists);
   const [sideBarOpen, setSideBarOpen] = useState(false);
 
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
@@ -34,8 +32,8 @@ const SideBar: React.FC = () => {
   const openSideBarButtonDivRef = useRef(null);
   const subredditListDivRef = useRef(null);
   useEffect(() => {
-    dispatch(subredditListsUpdated(redditListContextData.subredditLists));
-  }, [dispatch, redditListContextData.subredditLists]);
+    dispatch(subredditListsUpdated(redditListsState.subredditLists));
+  }, [dispatch, redditListsState.subredditLists]);
 
   const scrollToMostRecentSubredditGotten = useCallback(() => {
     const foundSubredditIndex = sideBarState.subredditsToShow.findIndex(
@@ -166,7 +164,7 @@ const SideBar: React.FC = () => {
               dispatch(
                 setListToFilterByUuid({
                   listUuid: event.target.value,
-                  subredditLists: redditListContextData.subredditLists,
+                  subredditLists: redditListsState.subredditLists,
                 })
               );
             }}
@@ -205,7 +203,7 @@ const SideBar: React.FC = () => {
               dispatch(
                 setSearchInput({
                   searchInput: event.target.value,
-                  subredditLists: redditListContextData.subredditLists,
+                  subredditLists: redditListsState.subredditLists,
                 })
               );
             }}

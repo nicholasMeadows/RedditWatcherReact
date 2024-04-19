@@ -13,7 +13,6 @@ import { Post } from "../Post/Post.ts";
 import RandomIterationSelectWeightOptionsEnum from "../config/enums/RandomIterationSelectWeightOptionsEnum.ts";
 import SelectedSubredditListSortOptionEnum from "../config/enums/SelectedSubredditListSortOptionEnum.ts";
 import { RedditClientContextData } from "../../context/reddit-client-context.ts";
-import RedditListContextData from "../../context/reddit-list-context.ts";
 
 export type GetPostsFromSubredditState = {
   postRows: Array<PostRow>;
@@ -55,7 +54,7 @@ export class GetPostsFromSubredditStateConverter {
     postRows: Array<PostRow>,
     appConfigState: AppConfigState,
     redditClientContextData: RedditClientContextData,
-    redditListContextData: RedditListContextData,
+    subredditLists: SubredditLists[],
     lastPostRowWasSortOrderNew: boolean,
     subredditIndex: number,
     nsfwRedditListIndex: number,
@@ -78,7 +77,7 @@ export class GetPostsFromSubredditStateConverter {
       nsfwSubredditIndex: nsfwRedditListIndex,
       masterSubredditList: masterSubscribedSubredditList,
       subredditIndex: subredditIndex,
-      subredditLists: redditListContextData.subredditLists,
+      subredditLists: subredditLists,
       lastPostRowWasSortOrderNew: lastPostRowWasSortOrderNew,
       randomIterationSelectWeightOption:
         appConfigState.randomIterationSelectWeightOption,

@@ -1,19 +1,26 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT } from "../../RedditWatcherConstants";
 import { ModifySubredditListMode } from "../../model/ModifySubredditListMode";
-import { useAppSelector } from "../../redux/store";
+import { useAppDispatch, useAppSelector } from "../../redux/store";
 import ModifySubredditListAccordion from "./ModifySubredditListAccordion";
 import SearchRedditBar from "./SearchRedditBar";
 import SelectSubredditListMenuSortOptionEnum from "../../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
 import { SubredditLists } from "../../model/SubredditList/SubredditLists.ts";
 import SortOrderDirectionOptionsEnum from "../../model/config/enums/SortOrderDirectionOptionsEnum.ts";
-import { RedditListContext } from "../../context/reddit-list-context.ts";
-import useRedditList from "../../hook/use-reddit-list.ts";
+import {
+  createOrModifyList,
+  deleteList,
+  deselectAllLists,
+  resetModifyListBox,
+  selectAllLists,
+  selectRandomLists,
+  setCreateUpdateInputValue,
+  showCreateListBox,
+} from "../../redux/slice/RedditListSlice.ts";
 
 const ModifySubredditLists: React.FC = () => {
-  const redditListsHook = useRedditList();
-  const { redditListContextData } = useContext(RedditListContext);
-
+  const dispatch = useAppDispatch();
+  const redditListsState = useAppSelector((state) => state.redditLists);
   const selectSubredditListMenuSortOption = useAppSelector(
     (state) => state.appConfig.selectSubredditListMenuSortOption
   );
@@ -24,7 +31,7 @@ const ModifySubredditLists: React.FC = () => {
     Array<SubredditLists>
   >([]);
   useEffect(() => {
-    redditListsHook.resetModifyListBox();
+    dispatch(resetModifyListBox());
   }, []);
 
   useEffect(() => {
@@ -32,7 +39,7 @@ const ModifySubredditLists: React.FC = () => {
       selectSubredditListMenuSortOption ===
       SelectSubredditListMenuSortOptionEnum.Alphabetically
     ) {
-      const sorted = [...redditListContextData.subredditLists].sort(
+      const sorted = [...redditListsState.subredditLists].sort(
         (list1, list2) => {
           const name1 = list1.listName;
           const name2 = list2.listName;
@@ -57,7 +64,7 @@ const ModifySubredditLists: React.FC = () => {
       selectSubredditListMenuSortOption ==
       SelectSubredditListMenuSortOptionEnum.ListSize
     ) {
-      const sorted = [...redditListContextData.subredditLists].sort(
+      const sorted = [...redditListsState.subredditLists].sort(
         (list1, list2) => {
           const size1 = list1.subreddits.length;
           const size2 = list2.subreddits.length;
@@ -80,7 +87,7 @@ const ModifySubredditLists: React.FC = () => {
       setSortedSubredditLists(sorted);
     }
   }, [
-    redditListContextData.subredditLists,
+    redditListsState.subredditLists,
     selectSubredditListMenuSortOption,
     sortOrderDirection,
   ]);
@@ -90,58 +97,56 @@ const ModifySubredditLists: React.FC = () => {
   >(undefined);
   return (
     <>
-      {redditListContextData.showModifyListBox && (
+      {redditListsState.showModifyListBox && (
         <>
           <div className="create-update-list-grayed-out-background"></div>
           <div className="modify-list-box">
             <h4 className="modify-list-header">
-              {redditListContextData.modifyListBoxTitle}
+              {redditListsState.modifyListBoxTitle}
             </h4>
 
-            {(redditListContextData.modifyListMode ==
+            {(redditListsState.modifyListMode ==
               ModifySubredditListMode.CREATE ||
-              redditListContextData.modifyListMode ==
+              redditListsState.modifyListMode ==
                 ModifySubredditListMode.UPDATE) && (
               <>
                 <input
                   type="text"
                   className="search-input"
                   onChange={(event) =>
-                    redditListsHook.setCreateUpdateInputValue(
-                      (event.target as HTMLInputElement).value
+                    dispatch(
+                      setCreateUpdateInputValue(
+                        (event.target as HTMLInputElement).value
+                      )
                     )
                   }
-                  value={redditListContextData.createUpdateInputValue}
+                  value={redditListsState.createUpdateInputValue}
                 />
                 <p className="create-update-list-input-error">
-                  {redditListContextData.createUpdateInputValidationError}
+                  {redditListsState.createUpdateInputValidationError}
                 </p>
                 <div className="flex flex-row create-update-button-box">
                   <button
                     disabled={
-                      redditListContextData.createUpdateInputValue.length ==
-                        0 ||
-                      redditListContextData.createUpdateInputValidationError !=
-                        ""
+                      redditListsState.createUpdateInputValue.length == 0 ||
+                      redditListsState.createUpdateInputValidationError != ""
                     }
-                    onClick={() => redditListsHook.createOrModifyList()}
+                    onClick={() => dispatch(createOrModifyList())}
                   >
-                    {redditListContextData.createUpdateButtonText}
+                    {redditListsState.createUpdateButtonText}
                   </button>
-                  <button onClick={() => redditListsHook.resetModifyListBox()}>
+                  <button onClick={() => dispatch(resetModifyListBox())}>
                     Cancel
                   </button>
                 </div>
               </>
             )}
-            {redditListContextData.modifyListMode ==
+            {redditListsState.modifyListMode ==
               ModifySubredditListMode.DELETE && (
               <>
                 <div className="flex flex-row create-update-button-box">
-                  <button onClick={() => redditListsHook.deleteList()}>
-                    Yes
-                  </button>
-                  <button onClick={() => redditListsHook.resetModifyListBox()}>
+                  <button onClick={() => dispatch(deleteList())}>Yes</button>
+                  <button onClick={() => dispatch(resetModifyListBox())}>
                     Cancel
                   </button>
                 </div>
@@ -182,13 +187,13 @@ const ModifySubredditLists: React.FC = () => {
           <div className="modify-subreddit-list-button-box flex flex-column flex-grow">
             <button
               className="flex-grow"
-              onClick={() => redditListsHook.showCreateListBox()}
+              onClick={() => dispatch(showCreateListBox())}
             >
               Create new List
             </button>
             <button
               className="flex-grow"
-              onClick={() => redditListsHook.selectAllLists()}
+              onClick={() => dispatch(selectAllLists())}
             >
               Select All Lists
             </button>
@@ -196,13 +201,13 @@ const ModifySubredditLists: React.FC = () => {
           <div className="modify-subreddit-list-button-box flex flex-column flex-grow">
             <button
               className="flex-grow"
-              onClick={() => redditListsHook.deselectAllLists()}
+              onClick={() => dispatch(deselectAllLists())}
             >
               Deselect All Lists
             </button>
             <button
               className="flex-grow"
-              onClick={() => redditListsHook.selectRandomLists()}
+              onClick={() => dispatch(selectRandomLists())}
             >
               Select Random Lists
             </button>

@@ -37,7 +37,6 @@ import {
 import { RootFontSizeContext } from "../context/root-font-size-context.ts";
 import { RedditServiceContext } from "../context/reddit-service-context.ts";
 import useRedditClient from "../hook/use-reddit-client.ts";
-import useRedditList from "../hook/use-reddit-list.ts";
 import { closeContextMenu } from "../redux/slice/ContextMenuSlice.ts";
 import {
   setCurrentLocation,
@@ -48,15 +47,13 @@ import {
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
   const redditClient = useRedditClient();
-  const redditLists = useRedditList();
   const darkmode = useAppSelector((state) => state.appConfig.darkMode);
   const location = useLocation();
   const { setRootFontSize } = useContext(RootFontSizeContext);
   const redditService = useContext(RedditServiceContext);
   useEffect(() => {
     redditService.setRedditClient(redditClient);
-    redditService.setRedditLists(redditLists);
-  }, [redditClient, redditLists, redditService]);
+  }, [redditClient, redditService]);
 
   const wheelEventHandler = useCallback(
     (event: WheelEvent) => {

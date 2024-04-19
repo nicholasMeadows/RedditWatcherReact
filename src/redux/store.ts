@@ -7,6 +7,7 @@ import contextMenuReducer from "./slice/ContextMenuSlice.ts";
 import sideBarReducer from "./slice/SideBarSlice.ts";
 import singlePostPageSlice from "./slice/SinglePostPageSlice.ts";
 import postRowsSlice from "./slice/PostRowsSlice.ts";
+import redditListsSlice from "./slice/RedditListSlice.ts";
 
 const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ const store = configureStore({
     sideBar: sideBarReducer,
     singlePostPage: singlePostPageSlice,
     postRows: postRowsSlice,
+    redditLists: redditListsSlice,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk),
 });

@@ -31,9 +31,6 @@ import {
   RedditClientContext,
   RedditClientContextData,
 } from "./context/reddit-client-context.ts";
-import RedditListContextData, {
-  RedditListContext,
-} from "./context/reddit-list-context.ts";
 
 const App: React.FC = () => {
   const [rootFontSize, setRootFontSize] = useState(0);
@@ -43,18 +40,6 @@ const App: React.FC = () => {
       subredditQueue: new Array<SubredditQueueItem>(),
     });
   const redditServiceRef = useRef(new RedditService());
-
-  const [redditListContextData, setRedditListContextData] =
-    useState<RedditListContextData>({
-      subredditLists: [],
-      modifyListMode: undefined,
-      showModifyListBox: false,
-      modifyListBoxTitle: "",
-      createUpdateInputValue: "",
-      createUpdateInputValidationError: "",
-      createUpdateButtonText: "",
-      updatingListUuid: undefined,
-    });
   return (
     <Provider store={store}>
       <HashRouter>
@@ -68,14 +53,7 @@ const App: React.FC = () => {
                 setRedditClientContextData: setRedditClientContextData,
               }}
             >
-              <RedditListContext.Provider
-                value={{
-                  redditListContextData: redditListContextData,
-                  setRedditListContextData: setRedditListContextData,
-                }}
-              >
-                <RouterView />
-              </RedditListContext.Provider>
+              <RouterView />
             </RedditClientContext.Provider>
           </RedditServiceContext.Provider>
         </RootFontSizeContext.Provider>

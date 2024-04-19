@@ -38,7 +38,6 @@ import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScroll
 import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import { UseRedditClient } from "../../hook/use-reddit-client.ts";
 import RedditService from "../../service/RedditService.ts";
-import { UseRedditList } from "../../hook/use-reddit-list.ts";
 import { clearPostRows } from "./PostRowsSlice.ts";
 
 const defaultSubredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
@@ -73,7 +72,6 @@ export const importAppConfig = createAsyncThunk(
     file: File;
     redditClient: UseRedditClient;
     redditService: RedditService;
-    redditListsHook: UseRedditList;
   }) => {
     try {
       console.log("importing app config");
