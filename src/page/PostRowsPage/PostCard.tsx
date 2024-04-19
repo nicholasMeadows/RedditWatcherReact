@@ -8,10 +8,10 @@ import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/User
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { useContextMenu } from "../../hook/use-context-menu.ts";
 import { PostCardContext } from "../../context/post-card-context.ts";
-import { AutoScrollPostRowRateSecondsForSinglePostCardContext } from "../../context/auto-scroll-post-row-rate-seconds-for-single-post-card-context.ts";
 import { SinglePostPageContext } from "../../context/single-post-page-context.ts";
 import usePostRows from "../../hook/use-post-rows.ts";
 import { PostRowsContext } from "../../context/post-rows-context.ts";
+import { AutoScrollPostRowRateMsContext } from "./PostRowPage.tsx";
 
 const PostCard: FC = () => {
   const navigate = useNavigate();
@@ -31,9 +31,7 @@ const PostCard: FC = () => {
     (state) => state.appConfig.autoScrollPostRowOption
   );
 
-  const autoScrollPostRowRateMs = useContext(
-    AutoScrollPostRowRateSecondsForSinglePostCardContext
-  );
+  const autoScrollPostRowRateMs = useContext(AutoScrollPostRowRateMsContext);
 
   const { setSinglePostPagePostRowUuid, setSinglePostPagePostUuid } =
     useContext(SinglePostPageContext);

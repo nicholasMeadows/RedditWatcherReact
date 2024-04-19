@@ -8,8 +8,8 @@ import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/A
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { PostCardContext } from "../../context/post-card-context.ts";
-import { AutoScrollPostRowRateSecondsForSinglePostCardContext } from "../../context/auto-scroll-post-row-rate-seconds-for-single-post-card-context.ts";
 import usePostRows from "../../hook/use-post-rows.ts";
+import { AutoScrollPostRowRateMsContext } from "./PostRowPage.tsx";
 
 type Props = { postRow: PostRow };
 const PostRow: FC<Props> = ({ postRow }) => {
@@ -25,9 +25,7 @@ const PostRow: FC<Props> = ({ postRow }) => {
   const autoScrollPostRowDirectionOption = useAppSelector(
     (state) => state.appConfig.autoScrollPostRowDirectionOption
   );
-  const autoScrollPostRowRateMs = useContext(
-    AutoScrollPostRowRateSecondsForSinglePostCardContext
-  );
+  const autoScrollPostRowRateMs = useContext(AutoScrollPostRowRateMsContext);
 
   const postRowDivRef = useRef(null);
   const postRowContentDivRef = useRef(null);

@@ -1,10 +1,11 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import PostRow from "./PostRow.tsx";
 import SideBar from "../SideBar.tsx";
-import { AutoScrollPostRowRateSecondsForSinglePostCardContext } from "../../context/auto-scroll-post-row-rate-seconds-for-single-post-card-context.ts";
 import { PostRowsContext } from "../../context/post-rows-context.ts";
 import usePostRows from "../../hook/use-post-rows.ts";
+
+export const AutoScrollPostRowRateMsContext = createContext(1000);
 
 const PostRowPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -19,7 +20,6 @@ const PostRowPage: React.FC = () => {
     (state) => state.appConfig.autoScrollPostRowRateSecondsForSinglePostCard
   );
   const [autoScrollPostRowRateMs, setAutoScrollPostRowRateMs] = useState(1000);
-
   const postRowsDivRef = useRef(null);
   const [scrollBarWidth, setScrollBarWidth] = useState(0);
 
@@ -66,7 +66,7 @@ const PostRowPage: React.FC = () => {
           postRowsHook.setScrollY(scrollTop);
         }}
       >
-        <AutoScrollPostRowRateSecondsForSinglePostCardContext.Provider
+        <AutoScrollPostRowRateMsContext.Provider
           value={autoScrollPostRowRateMs}
         >
           {postRowsContextData.postRows.map((postRow) => (
@@ -80,7 +80,7 @@ const PostRowPage: React.FC = () => {
               <PostRow postRow={postRow} />
             </div>
           ))}
-        </AutoScrollPostRowRateSecondsForSinglePostCardContext.Provider>
+        </AutoScrollPostRowRateMsContext.Provider>
       </div>
 
       <div
