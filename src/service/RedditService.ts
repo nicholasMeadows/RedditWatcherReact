@@ -26,7 +26,6 @@ import { GetPostsForSubredditUrlConverter } from "../model/converter/GetPostsFor
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum.ts";
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult.ts";
 import { v4 as uuidV4 } from "uuid";
-import { UsePostRows } from "../hook/use-post-rows.ts";
 import { WaitUtil } from "../util/WaitUtil.ts";
 import { UseRedditClient } from "../hook/use-reddit-client.ts";
 import { UseRedditList } from "../hook/use-reddit-list.ts";
@@ -36,9 +35,13 @@ import {
   setSubredditsToShowInSideBar,
   setTimeTillNextGetPostsSeconds,
 } from "../redux/slice/SideBarSlice.ts";
+import {
+  addPostsToFrontOfRow,
+  createPostRowAndInsertAtBeginning,
+  postRowRemoveAt,
+} from "../redux/slice/PostRowsSlice.ts";
 
 export default class RedditService {
-  private declare usePostRows: UsePostRows;
   private declare redditClient: UseRedditClient;
   private declare redditLists: UseRedditList;
 
@@ -48,10 +51,6 @@ export default class RedditService {
   subredditIndex: number = 0;
   nsfwRedditListIndex: number = 0;
   masterSubscribedSubredditList: Array<Subreddit> = [];
-
-  setUsePostRows(usePostRows: UsePostRows) {
-    this.usePostRows = usePostRows;
-  }
 
   setRedditClient(redditClient: UseRedditClient) {
     this.redditClient = redditClient;
@@ -91,7 +90,7 @@ export default class RedditService {
       getPostsFromSubredditsState = JSON.parse(
         JSON.stringify(
           stateConverter.convert(
-            this.usePostRows.getPostRowsContextData(),
+            state.postRows.postRows,
             state.appConfig,
             this.redditClient.getRedditClientContextData(),
             this.redditLists.getSubredditListsContextData(),
@@ -126,12 +125,12 @@ export default class RedditService {
           postsFromSubreddits = fromSubreddits;
         }
         await WaitUtil.WaitUntilGetPostsIsNotPaused(
-          () => this.usePostRows.getPostRowsContextData().getPostRowsPaused
+          () => store.getState().postRows.getPostRowsPaused
         );
 
-        if (this.usePostRows.getPostRowsContextData().postRows.length == 10) {
+        if (store.getState().postRows.postRows.length == 10) {
           getPostsFromSubredditsState.getPostsUpdatedValues.postRowRemoveAt =
-            this.usePostRows.getPostRowsContextData().postRows.length - 1;
+            store.getState().postRows.postRows.length - 1;
         }
 
         this.addPostRow(
@@ -615,7 +614,7 @@ export default class RedditService {
       );
     }
     if (updatedValues.postRowRemoveAt != undefined) {
-      this.usePostRows.postRowRemoveAt(updatedValues.postRowRemoveAt);
+      store.dispatch(postRowRemoveAt(updatedValues.postRowRemoveAt));
     }
     if (updatedValues.subredditsToShowInSideBar != undefined) {
       store.dispatch(
@@ -642,15 +641,26 @@ export default class RedditService {
         updatedValues.lastPostRowWasSortOrderNew;
     }
     if (updatedValues.createPostRowAndInsertAtBeginning != undefined) {
-      this.usePostRows.createPostRowAndInsertAtBeginning(
-        updatedValues.createPostRowAndInsertAtBeginning
+      const state = store.getState();
+      const userFrontPagePostSortOrderOption =
+        state.appConfig.userFrontPagePostSortOrderOption;
+      const postsToShowInRow = state.appConfig.postsToShowInRow;
+
+      store.dispatch(
+        createPostRowAndInsertAtBeginning({
+          posts: updatedValues.createPostRowAndInsertAtBeginning,
+          userFrontPagePostSortOrderOption: userFrontPagePostSortOrderOption,
+          postsToShowInRow: postsToShowInRow,
+        })
       );
     }
     if (updatedValues.shiftPostsAndUiPosts != undefined) {
-      this.usePostRows.addPostsToFrontOfRow(
-        updatedValues.shiftPostsAndUiPosts.postRowUuid,
-        updatedValues.shiftPostsAndUiPosts.posts,
-        store.getState().appConfig.postsToShowInRow
+      store.dispatch(
+        addPostsToFrontOfRow({
+          postRowUuid: updatedValues.shiftPostsAndUiPosts.postRowUuid,
+          posts: updatedValues.shiftPostsAndUiPosts.posts,
+          postsToShowInRow: store.getState().appConfig.postsToShowInRow,
+        })
       );
     }
   }

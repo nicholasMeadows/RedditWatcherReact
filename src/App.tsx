@@ -25,11 +25,6 @@ import { useRef, useState } from "react";
 import { RootFontSizeContext } from "./context/root-font-size-context.ts";
 import { RedditServiceContext } from "./context/reddit-service-context.ts";
 import RedditService from "./service/RedditService.ts";
-import { PostRow } from "./model/PostRow.ts";
-import {
-  PostRowsContext,
-  PostRowsContextData,
-} from "./context/post-rows-context.ts";
 import { RedditAuthenticationStatus } from "./model/RedditAuthenticationState.ts";
 import { SubredditQueueItem } from "./model/Subreddit/SubredditQueueItem.ts";
 import {
@@ -42,20 +37,6 @@ import RedditListContextData, {
 
 const App: React.FC = () => {
   const [rootFontSize, setRootFontSize] = useState(0);
-
-  const [postRowsContextData, setPostRowsContextData] =
-    useState<PostRowsContextData>({
-      getPostRowsPaused: false,
-      getPostRowsPausedTimeout: undefined,
-      currentPath: "",
-      scrollY: 0,
-      clickedOnPlayPauseButton: false,
-      postRowsHasAtLeast1PostRow: false,
-      postRows: new Array<PostRow>(),
-      postCardWidthPercentage: 0,
-      postRowContentWidthPx: 0,
-    });
-
   const [redditClientContextData, setRedditClientContextData] =
     useState<RedditClientContextData>({
       redditAuthenticationStatus: RedditAuthenticationStatus.NOT_YET_AUTHED,
@@ -81,28 +62,21 @@ const App: React.FC = () => {
           value={{ fontSize: rootFontSize, setRootFontSize: setRootFontSize }}
         >
           <RedditServiceContext.Provider value={redditServiceRef.current}>
-            <PostRowsContext.Provider
+            <RedditClientContext.Provider
               value={{
-                postRowsContextData: postRowsContextData,
-                setPostRowsContextData: setPostRowsContextData,
+                redditClientContextData: redditClientContextData,
+                setRedditClientContextData: setRedditClientContextData,
               }}
             >
-              <RedditClientContext.Provider
+              <RedditListContext.Provider
                 value={{
-                  redditClientContextData: redditClientContextData,
-                  setRedditClientContextData: setRedditClientContextData,
+                  redditListContextData: redditListContextData,
+                  setRedditListContextData: setRedditListContextData,
                 }}
               >
-                <RedditListContext.Provider
-                  value={{
-                    redditListContextData: redditListContextData,
-                    setRedditListContextData: setRedditListContextData,
-                  }}
-                >
-                  <RouterView />
-                </RedditListContext.Provider>
-              </RedditClientContext.Provider>
-            </PostRowsContext.Provider>
+                <RouterView />
+              </RedditListContext.Provider>
+            </RedditClientContext.Provider>
           </RedditServiceContext.Provider>
         </RootFontSizeContext.Provider>
       </HashRouter>

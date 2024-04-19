@@ -1,16 +1,17 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import PostRow from "./PostRow.tsx";
 import SideBar from "../SideBar.tsx";
-import { PostRowsContext } from "../../context/post-rows-context.ts";
-import usePostRows from "../../hook/use-post-rows.ts";
+import {
+  setScrollY,
+  toggleClickedOnPlayPauseButton,
+} from "../../redux/slice/PostRowsSlice.ts";
 
 export const AutoScrollPostRowRateMsContext = createContext(1000);
 
 const PostRowPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const postRowsHook = usePostRows();
-  const { postRowsContextData } = useContext(PostRowsContext);
+  const postRowsState = useAppSelector((state) => state.postRows);
 
   const postRowsToShowInView = useAppSelector(
     (state) => state.appConfig.postRowsToShowInView
@@ -26,13 +27,13 @@ const PostRowPage: React.FC = () => {
   useEffect(() => {
     const scrollDiv = postRowsDivRef.current as unknown as HTMLDivElement;
     setScrollBarWidth(scrollDiv.offsetWidth - scrollDiv.clientWidth);
-  }, [postRowsDivRef, postRowsContextData.postRows]);
+  }, [postRowsDivRef, postRowsState.postRows]);
 
   useEffect(() => {
     const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
       const key = keyboardEvent.key;
       if (key == " ") {
-        postRowsHook.toggleClickedOnPlayPauseButton();
+        dispatch(toggleClickedOnPlayPauseButton());
       }
     };
 
@@ -63,13 +64,13 @@ const PostRowPage: React.FC = () => {
         onScroll={(event) => {
           const target = event.target as HTMLElement;
           const scrollTop = target.scrollTop;
-          postRowsHook.setScrollY(scrollTop);
+          dispatch(setScrollY(scrollTop));
         }}
       >
         <AutoScrollPostRowRateMsContext.Provider
           value={autoScrollPostRowRateMs}
         >
-          {postRowsContextData.postRows.map((postRow) => (
+          {postRowsState.postRows.map((postRow) => (
             <div
               key={"post-row-" + postRow.postRowUuid}
               style={{
@@ -85,11 +86,11 @@ const PostRowPage: React.FC = () => {
 
       <div
         className={"play-pause-button-div"}
-        onClick={() => postRowsHook.toggleClickedOnPlayPauseButton()}
+        onClick={() => dispatch(toggleClickedOnPlayPauseButton())}
       >
         <img
           src={`assets/${
-            postRowsContextData.getPostRowsPaused ? "pause" : "play"
+            postRowsState.getPostRowsPaused ? "pause" : "play"
           }_black.png`}
           className={"play-pause-button-img"}
         />

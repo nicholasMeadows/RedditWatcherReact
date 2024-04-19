@@ -36,10 +36,10 @@ import { ValidationUtil } from "../../util/ValidationUtil";
 import store from "../store";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
-import { UsePostRows } from "../../hook/use-post-rows.ts";
 import { UseRedditClient } from "../../hook/use-reddit-client.ts";
 import RedditService from "../../service/RedditService.ts";
 import { UseRedditList } from "../../hook/use-reddit-list.ts";
+import { clearPostRows } from "./PostRowsSlice.ts";
 
 const defaultSubredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
 const defaultAutoScrollPostRowOption =
@@ -71,7 +71,6 @@ export const importAppConfig = createAsyncThunk(
   "appConfig/importAppConfig",
   async (params: {
     file: File;
-    usePostRows: UsePostRows;
     redditClient: UseRedditClient;
     redditService: RedditService;
     redditListsHook: UseRedditList;
@@ -156,7 +155,7 @@ export const importAppConfig = createAsyncThunk(
       }
 
       console.log("done importing");
-      params.usePostRows.clearPostRows();
+      store.dispatch(clearPostRows());
       store.dispatch(resetConfigLoaded());
       params.redditClient.resetRedditClient(params.redditService);
     } catch (e) {

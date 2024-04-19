@@ -36,14 +36,17 @@ import {
 } from "../redux/slice/AppConfigSlice.ts";
 import { RootFontSizeContext } from "../context/root-font-size-context.ts";
 import { RedditServiceContext } from "../context/reddit-service-context.ts";
-import usePostRows from "../hook/use-post-rows.ts";
 import useRedditClient from "../hook/use-reddit-client.ts";
 import useRedditList from "../hook/use-reddit-list.ts";
 import { closeContextMenu } from "../redux/slice/ContextMenuSlice.ts";
+import {
+  setCurrentLocation,
+  setPostCardWidthPercentage,
+  setPostRowContentWidthPx,
+} from "../redux/slice/PostRowsSlice.ts";
 
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
-  const postRows = usePostRows();
   const redditClient = useRedditClient();
   const redditLists = useRedditList();
   const darkmode = useAppSelector((state) => state.appConfig.darkMode);
@@ -51,10 +54,9 @@ const RouterView: React.FC = () => {
   const { setRootFontSize } = useContext(RootFontSizeContext);
   const redditService = useContext(RedditServiceContext);
   useEffect(() => {
-    redditService.setUsePostRows(postRows);
     redditService.setRedditClient(redditClient);
     redditService.setRedditLists(redditLists);
-  }, [postRows, redditClient, redditLists, redditService]);
+  }, [redditClient, redditLists, redditService]);
 
   const wheelEventHandler = useCallback(
     (event: WheelEvent) => {
@@ -98,7 +100,7 @@ const RouterView: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    postRows.setCurrentLocation(location.pathname);
+    dispatch(setCurrentLocation(location.pathname));
   }, [dispatch, location]);
 
   useEffect(() => {
@@ -157,15 +159,17 @@ const RouterView: React.FC = () => {
             ? baseFontSize * POST_ROW_SCROLL_BTN_WIDTH_EM * 2
             : 0;
         const postRowContentWidthPx = div.clientWidth - scrollButtonWidths;
-        postRows.setPostRowContentWidthPx(postRowContentWidthPx);
+        dispatch(setPostRowContentWidthPx(postRowContentWidthPx));
 
         const postCardWidthPx = postRowContentWidthPx / postsToShowInRow;
         const postCardWidthPercentage =
           (postCardWidthPx / postRowContentWidthPx) * 100;
 
-        postRows.setPostCardWidthPercentage(
-          postCardWidthPercentage,
-          postsToShowInRow
+        dispatch(
+          setPostCardWidthPercentage({
+            postsToShowInRow: postsToShowInRow,
+            postCardWidthPercentage: postCardWidthPercentage,
+          })
         );
       }
     });

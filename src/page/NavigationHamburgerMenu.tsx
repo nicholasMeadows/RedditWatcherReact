@@ -18,7 +18,6 @@ import {
   toggleDarkMode,
 } from "../redux/slice/AppConfigSlice";
 import { useAppDispatch, useAppSelector } from "../redux/store";
-import usePostRows from "../hook/use-post-rows.ts";
 import useRedditClient from "../hook/use-reddit-client.ts";
 import { RedditClientContext } from "../context/reddit-client-context.ts";
 import { RedditServiceContext } from "../context/reddit-service-context.ts";
@@ -31,7 +30,6 @@ const NavigationHamburgerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const postRows = usePostRows();
   const redditClient = useRedditClient();
   const redditListHook = useRedditList();
   const { redditClientContextData } = useContext(RedditClientContext);
@@ -261,7 +259,6 @@ const NavigationHamburgerMenu: React.FC = () => {
                     dispatch(
                       importAppConfig({
                         file: input.files[0],
-                        usePostRows: postRows,
                         redditClient: redditClient,
                         redditService: redditService,
                         redditListsHook: redditListHook,

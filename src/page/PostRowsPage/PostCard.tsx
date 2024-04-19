@@ -7,16 +7,14 @@ import { useNavigate } from "react-router-dom";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { PostCardContext } from "../../context/post-card-context.ts";
-import usePostRows from "../../hook/use-post-rows.ts";
-import { PostRowsContext } from "../../context/post-rows-context.ts";
 import { AutoScrollPostRowRateMsContext } from "./PostRowPage.tsx";
 import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice.ts";
 import { setSinglePostPageUuids } from "../../redux/slice/SinglePostPageSlice.ts";
+import { mouseLeavePostRow } from "../../redux/slice/PostRowsSlice.ts";
 
 const PostCard: FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const postRowsHook = usePostRows();
   const {
     uiPost,
     postRowUuid,
@@ -25,8 +23,7 @@ const PostCard: FC = () => {
     totalMovementX,
   } = useContext(PostCardContext);
 
-  const { postRowsContextData } = useContext(PostRowsContext);
-
+  const postRowsState = useAppSelector((state) => state.postRows);
   const autoScrollPostRowOption = useAppSelector(
     (state) => state.appConfig.autoScrollPostRowOption
   );
@@ -37,8 +34,8 @@ const PostCard: FC = () => {
     <div
       className={`post-card-outer`}
       style={{
-        minWidth: `${postRowsContextData.postCardWidthPercentage}%`,
-        maxWidth: `${postRowsContextData.postCardWidthPercentage}%`,
+        minWidth: `${postRowsState.postCardWidthPercentage}%`,
+        maxWidth: `${postRowsState.postCardWidthPercentage}%`,
         left: `${uiPost.leftPercentage}%`,
         transition: `${
           mouseOverPostRow ||
@@ -77,7 +74,7 @@ const PostCard: FC = () => {
             })
           );
           navigate(`${SINGPLE_POST_ROUTE}`);
-          postRowsHook.mouseLeavePostRow(postRowUuid);
+          dispatch(mouseLeavePostRow(postRowUuid));
         }}
       >
         <div className="postCardHeader">

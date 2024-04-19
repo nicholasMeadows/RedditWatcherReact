@@ -10,12 +10,11 @@ import {
   REDDIT_SIGN_IN_ROUTE,
 } from "../RedditWatcherConstants.ts";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../redux/store.ts";
+import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState.ts";
 import { setAppConfig } from "../redux/slice/AppConfigSlice.ts";
 import { v4 as uuidV4 } from "uuid";
 import RedditService from "../service/RedditService.ts";
-import { PostRowsContext } from "../context/post-rows-context.ts";
 import { RedditClientContext } from "../context/reddit-client-context.ts";
 import { UseRedditClient } from "./use-reddit-client.ts";
 import { UseRedditList } from "./use-reddit-list.ts";
@@ -34,7 +33,7 @@ export default function useInitializeApp(
   const { redditClientContextData } = useContext(RedditClientContext);
 
   const [initializeAppPageText, setInitializeAppPageText] = useState("");
-  const { postRowsContextData } = useContext(PostRowsContext);
+  const postRowsState = useAppSelector((state) => state.postRows);
 
   useEffect(() => {
     const init = async () => {
@@ -92,7 +91,7 @@ export default function useInitializeApp(
           RedditAuthenticationStatus.AUTHENTICATION_DENIED
         ) {
           navigate(REDDIT_SIGN_IN_ROUTE);
-        } else if (postRowsContextData.postRows.length == 0) {
+        } else if (postRowsState.postRows.length == 0) {
           setInitializeAppPageText("Getting Posts...");
           if (!redditService.loopingForPosts) {
             redditService.startLoopingForPosts();
@@ -107,7 +106,7 @@ export default function useInitializeApp(
     config,
     dispatch,
     navigate,
-    postRowsContextData.postRows.length,
+    postRowsState.postRows.length,
     redditClientContextData.redditAuthenticationStatus,
     redditService,
     subredditLists,

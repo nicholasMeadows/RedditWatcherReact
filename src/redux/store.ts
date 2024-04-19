@@ -6,6 +6,7 @@ import appNotificationReducer from "./slice/AppNotificationSlice.ts";
 import contextMenuReducer from "./slice/ContextMenuSlice.ts";
 import sideBarReducer from "./slice/SideBarSlice.ts";
 import singlePostPageSlice from "./slice/SinglePostPageSlice.ts";
+import postRowsSlice from "./slice/PostRowsSlice.ts";
 
 const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ const store = configureStore({
     contextMenu: contextMenuReducer,
     sideBar: sideBarReducer,
     singlePostPage: singlePostPageSlice,
+    postRows: postRowsSlice,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk),
 });

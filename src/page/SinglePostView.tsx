@@ -2,7 +2,6 @@ import {
   FC,
   TouchEvent,
   useCallback,
-  useContext,
   useEffect,
   useRef,
   useState,
@@ -14,7 +13,6 @@ import {
 } from "../RedditWatcherConstants.ts";
 import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
 import PostMediaElement from "./PostRowsPage/PostMediaElement.tsx";
-import { PostRowsContext } from "../context/post-rows-context.ts";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import { setPostContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import { Post } from "../model/Post/Post.ts";
@@ -23,8 +21,8 @@ import { setSinglePostPageUuids } from "../redux/slice/SinglePostPageSlice.ts";
 const SinglePostView: FC = () => {
   const dispatch = useAppDispatch();
   const singlePostPageState = useAppSelector((state) => state.singlePostPage);
+  const postRowsState = useAppSelector((state) => state.postRows);
   const [post, setPost] = useState<Post | undefined>();
-  const { postRowsContextData } = useContext(PostRowsContext);
 
   const [imgScale, setImgScale] = useState(1);
   const [imgXPercent, setImgXPercentage] = useState(50);
@@ -44,7 +42,7 @@ const SinglePostView: FC = () => {
   const [touch2Y, setTouch2Y] = useState(0);
 
   useEffect(() => {
-    const postRows = postRowsContextData.postRows;
+    const postRows = postRowsState.postRows;
     const postRowUuid = singlePostPageState.postRowUuid;
     const postRow = postRows.find(
       (postRow) => postRow.postRowUuid === postRowUuid
@@ -54,7 +52,7 @@ const SinglePostView: FC = () => {
       setPost(postRow.posts.find((post) => post.postUuid === postUuid));
     }
   }, [
-    postRowsContextData.postRows,
+    postRowsState.postRows,
     singlePostPageState.postRowUuid,
     singlePostPageState.postUuid,
   ]);
@@ -70,7 +68,7 @@ const SinglePostView: FC = () => {
       return;
     }
 
-    const postRow = postRowsContextData.postRows.find(
+    const postRow = postRowsState.postRows.find(
       (postRow) => postRow.postRowUuid === singlePostPageState.postRowUuid
     );
     if (postRow === undefined) {
@@ -98,7 +96,7 @@ const SinglePostView: FC = () => {
     );
   }, [
     dispatch,
-    postRowsContextData.postRows,
+    postRowsState.postRows,
     resetImgPositionAndScale,
     singlePostPageState.postRowUuid,
     singlePostPageState.postUuid,
@@ -110,7 +108,7 @@ const SinglePostView: FC = () => {
       return;
     }
 
-    const postRow = postRowsContextData.postRows.find(
+    const postRow = postRowsState.postRows.find(
       (postRow) => postRow.postRowUuid === postRowUuid
     );
     if (postRow === undefined) {
@@ -137,7 +135,7 @@ const SinglePostView: FC = () => {
     );
   }, [
     dispatch,
-    postRowsContextData.postRows,
+    postRowsState.postRows,
     resetImgPositionAndScale,
     singlePostPageState.postRowUuid,
     singlePostPageState.postUuid,

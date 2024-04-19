@@ -8,13 +8,18 @@ import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/A
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { PostCardContext } from "../../context/post-card-context.ts";
-import usePostRows from "../../hook/use-post-rows.ts";
 import { AutoScrollPostRowRateMsContext } from "./PostRowPage.tsx";
+import {
+  mouseEnterPostRow,
+  mouseLeavePostRow,
+  moveUiPosts,
+  postRowScrollLeftPressed,
+  postRowScrollRightPressed,
+} from "../../redux/slice/PostRowsSlice.ts";
 
 type Props = { postRow: PostRow };
 const PostRow: FC<Props> = ({ postRow }) => {
   const dispatch = useAppDispatch();
-  const postRowsHook = usePostRows();
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
   const postsToShowInRow = useAppSelector(
     (state) => state.appConfig.postsToShowInRow
@@ -58,7 +63,12 @@ const PostRow: FC<Props> = ({ postRow }) => {
       }
       const movement = clientX - lastMovementX.current;
       totalMovementX.current += Math.abs(movement);
-      postRowsHook.moveUiPosts(postRow.postRowUuid, movement);
+      dispatch(
+        moveUiPosts({
+          postRowUuid: postRow.postRowUuid,
+          movementPx: movement,
+        })
+      );
       lastMovementX.current = clientX;
     },
     [dispatch, postRow.postRowUuid, postRow.posts.length, postsToShowInRow]
@@ -88,17 +98,21 @@ const PostRow: FC<Props> = ({ postRow }) => {
           autoScrollPostRowDirectionOption ==
           AutoScrollPostRowDirectionOptionEnum.Left
         ) {
-          postRowsHook.postRowScrollLeftPressed(
-            postRow.postRowUuid,
-            snapToPost
+          dispatch(
+            postRowScrollLeftPressed({
+              postRowUuid: postRow.postRowUuid,
+              snapToPostCard: snapToPost,
+            })
           );
         } else if (
           autoScrollPostRowDirectionOption ==
           AutoScrollPostRowDirectionOptionEnum.Right
         ) {
-          postRowsHook.postRowScrollRightPressed(
-            postRow.postRowUuid,
-            snapToPost
+          dispatch(
+            postRowScrollRightPressed({
+              postRowUuid: postRow.postRowUuid,
+              snapToPostCard: snapToPost,
+            })
           );
         }
       };
@@ -158,9 +172,12 @@ const PostRow: FC<Props> = ({ postRow }) => {
     const currentFirstVisibleUiPostLeftPx =
       firstVisibleUiPostDiv.getBoundingClientRect().left -
       postRowContentDivBoundingRect.left;
-    postRowsHook.moveUiPosts(
-      postRow.postRowUuid,
-      currentFirstVisibleUiPostLeftPx - firstVisibleUiPostTargetPx
+    dispatch(
+      moveUiPosts({
+        postRowUuid: postRow.postRowUuid,
+        movementPx:
+          currentFirstVisibleUiPostLeftPx - firstVisibleUiPostTargetPx,
+      })
     );
   }, [dispatch, postRow.postRowUuid, postRow.uiPosts]);
 
@@ -169,7 +186,7 @@ const PostRow: FC<Props> = ({ postRow }) => {
     div.tabIndex = 1;
     div.focus();
 
-    postRowsHook.mouseEnterPostRow(postRow.postRowUuid);
+    dispatch(mouseEnterPostRow(postRow.postRowUuid));
     if (createAutoScrollIntervalDelay.current != undefined) {
       clearTimeout(createAutoScrollIntervalDelay.current);
       createAutoScrollIntervalDelay.current = undefined;
@@ -186,7 +203,7 @@ const PostRow: FC<Props> = ({ postRow }) => {
       const div = postRowDivRef.current as unknown as HTMLDivElement;
       div.tabIndex = -1;
 
-      postRowsHook.mouseLeavePostRow(postRow.postRowUuid);
+      dispatch(mouseLeavePostRow(postRow.postRowUuid));
       createAutoScrollInterval(snapToPost);
     },
     [createAutoScrollInterval, dispatch, postRow.postRowUuid]
@@ -219,7 +236,9 @@ const PostRow: FC<Props> = ({ postRow }) => {
         hidden={hideScrollButtonDivs()}
         className="postRowScrollButton leftPostRowScrollButton"
         onClick={() =>
-          postRowsHook.postRowScrollLeftPressed(postRow.postRowUuid)
+          dispatch(
+            postRowScrollLeftPressed({ postRowUuid: postRow.postRowUuid })
+          )
         }
       >
         <img
@@ -276,7 +295,9 @@ const PostRow: FC<Props> = ({ postRow }) => {
         hidden={hideScrollButtonDivs()}
         className="postRowScrollButton rightPostRowScrollButton"
         onClick={() =>
-          postRowsHook.postRowScrollRightPressed(postRow.postRowUuid)
+          dispatch(
+            postRowScrollRightPressed({ postRowUuid: postRow.postRowUuid })
+          )
         }
       >
         <img
