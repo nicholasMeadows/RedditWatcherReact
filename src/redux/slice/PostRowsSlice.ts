@@ -50,75 +50,6 @@ const calcUiPostLeft = (
   return postCardWidthPercentage * uiPostIndex;
 };
 
-const handleMoveUiPosts = (
-  // state: PostRowsState,
-  postCardWidthPercentage: number,
-  postRowContentWidthPx: number,
-  postRow: PostRow,
-  movementPx: number
-) => {
-  postRow.uiPosts = postRow.uiPosts.filter((post) => {
-    if (
-      post.leftPercentage + postCardWidthPercentage >
-        -postCardWidthPercentage &&
-      post.leftPercentage < 100 + postCardWidthPercentage
-    ) {
-      return post;
-    }
-  });
-
-  const movementPercentage = (movementPx / postRowContentWidthPx) * 100;
-  postRow.uiPosts.forEach(
-    (uiPost) => (uiPost.leftPercentage += movementPercentage)
-  );
-
-  if (movementPx < 0) {
-    const lastUiPost = postRow.uiPosts[postRow.uiPosts.length - 1];
-    if (lastUiPost.leftPercentage < 100) {
-      const lastUiPostIndex = postRow.posts.findIndex(
-        (post) => post.postUuid == lastUiPost.postUuid
-      );
-      if (lastUiPostIndex == -1) {
-        return;
-      }
-      let indexToPush: number;
-      if (lastUiPostIndex == postRow.posts.length - 1) {
-        indexToPush = 0;
-      } else {
-        indexToPush = lastUiPostIndex + 1;
-      }
-      const postToPush = postRow.posts[indexToPush];
-      postRow.uiPosts.push({
-        ...postToPush,
-        uiUuid: postToPush.postUuid + " " + uuidV4(),
-        leftPercentage: lastUiPost.leftPercentage + postCardWidthPercentage,
-      });
-    }
-  } else if (movementPx > 0) {
-    const firstUiPost = postRow.uiPosts[0];
-    if (firstUiPost.leftPercentage + postCardWidthPercentage >= 0) {
-      const firstUiPostIndex = postRow.posts.findIndex(
-        (post) => post.postUuid == firstUiPost.postUuid
-      );
-      if (firstUiPostIndex == -1) {
-        return;
-      }
-      let postToUnShift: Post;
-      if (firstUiPostIndex == 0) {
-        postToUnShift = postRow.posts[postRow.posts.length - 1];
-      } else {
-        postToUnShift = postRow.posts[firstUiPostIndex - 1];
-      }
-
-      postRow.uiPosts.unshift({
-        ...postToUnShift,
-        uiUuid: postToUnShift.postUuid + " " + uuidV4(),
-        leftPercentage: firstUiPost.leftPercentage - postCardWidthPercentage,
-      });
-    }
-  }
-};
-
 const createPostRow = (
   posts: Array<Post>,
   postsToShowInRow: number,
@@ -203,9 +134,9 @@ export const postRowsSlice = createSlice({
     },
     toggleClickedOnPlayPauseButton: (state) => {
       clearGetPostRowPausedTimeout(state);
-      (state.getPostRowsPausedTimeout = createGetPostRowPausedTimeout()),
-        (state.getPostRowsPaused = true),
-        (state.clickedOnPlayPauseButton = !state.clickedOnPlayPauseButton);
+      state.getPostRowsPausedTimeout = createGetPostRowPausedTimeout();
+      state.getPostRowsPaused = true;
+      state.clickedOnPlayPauseButton = !state.clickedOnPlayPauseButton;
     },
     mouseLeavePostRow: (state, action: { type: string; payload: string }) => {
       clearGetPostRowPausedTimeout(state);
@@ -490,111 +421,19 @@ export const postRowsSlice = createSlice({
       clearGetPostRowPausedTimeout(state);
       state.getPostRowsPaused = true;
     },
-    moveUiPosts: (
+    setUiPosts: (
       state,
       action: {
         type: string;
-        payload: { postRowUuid: string; movementPx: number };
+        payload: { postRowUuid: string; uiPosts: UiPost[] };
       }
     ) => {
-      const postRows = state.postRows;
-      const postRowUuid = action.payload.postRowUuid;
-      const postRow = postRows.find((row) => row.postRowUuid == postRowUuid);
-      if (postRow == undefined) {
-        return;
-      }
-      handleMoveUiPosts(
-        state.postCardWidthPercentage,
-        state.postRowContentWidthPx,
-        postRow,
-        action.payload.movementPx
+      const postRow = state.postRows.find(
+        (postRow) => postRow.postRowUuid === action.payload.postRowUuid
       );
-    },
-    postRowScrollRightPressed: (
-      state,
-      action: {
-        type: string;
-        payload: {
-          postRowUuid: string;
-          snapToPostCard?: boolean | undefined;
-        };
+      if (postRow !== undefined) {
+        postRow.uiPosts = action.payload.uiPosts;
       }
-    ) => {
-      const postRows = state.postRows;
-      const postRowUuid = action.payload.postRowUuid;
-      const postRow = postRows.find((row) => row.postRowUuid == postRowUuid);
-      if (postRow == undefined) {
-        return;
-      }
-      const firstVisibleUiPost = postRow.uiPosts.find(
-        (uiPost) => uiPost.leftPercentage + state.postCardWidthPercentage > 0
-      );
-      if (firstVisibleUiPost == undefined) {
-        return;
-      }
-
-      if (action.payload.snapToPostCard == undefined) {
-        action.payload.snapToPostCard = true;
-      }
-
-      let movementPercentage = state.postCardWidthPercentage;
-      if (
-        action.payload.snapToPostCard &&
-        firstVisibleUiPost.leftPercentage < 0
-      ) {
-        movementPercentage = firstVisibleUiPost.leftPercentage;
-      }
-      handleMoveUiPosts(
-        state.postCardWidthPercentage,
-        state.postRowContentWidthPx,
-        postRow,
-        Math.abs(movementPercentage * 0.01 * state.postRowContentWidthPx)
-      );
-    },
-    postRowScrollLeftPressed: (
-      state,
-      action: {
-        type: string;
-        payload: {
-          postRowUuid: string;
-          snapToPostCard?: boolean | undefined;
-        };
-      }
-    ) => {
-      const postRows = state.postRows;
-      const postRowUuid = action.payload.postRowUuid;
-      const postRow = postRows.find((row) => row.postRowUuid == postRowUuid);
-      if (postRow == undefined) {
-        return;
-      }
-
-      const lastVisibleUiPost = postRow.uiPosts.find(
-        (uiPost) => uiPost.leftPercentage + state.postCardWidthPercentage >= 100
-      );
-      if (lastVisibleUiPost == undefined) {
-        return;
-      }
-      const lastVisibleUiPostRight =
-        lastVisibleUiPost.leftPercentage + state.postCardWidthPercentage;
-
-      if (action.payload.snapToPostCard == undefined) {
-        action.payload.snapToPostCard = true;
-      }
-
-      let movementPercentage: number = state.postCardWidthPercentage * -1;
-      if (action.payload.snapToPostCard && lastVisibleUiPostRight != 100) {
-        movementPercentage =
-          100 -
-          state.postCardWidthPercentage -
-          lastVisibleUiPost.leftPercentage;
-      }
-
-      handleMoveUiPosts(
-        state.postCardWidthPercentage,
-        state.postRowContentWidthPx,
-        postRow,
-        movementPercentage * 0.01 * state.postRowContentWidthPx
-      );
     },
   },
 });
@@ -614,8 +453,6 @@ export const {
   setPostCardWidthPercentage,
   setPostRowContentWidthPx,
   mouseEnterPostRow,
-  moveUiPosts,
-  postRowScrollRightPressed,
-  postRowScrollLeftPressed,
+  setUiPosts,
 } = postRowsSlice.actions;
 export default postRowsSlice.reducer;
