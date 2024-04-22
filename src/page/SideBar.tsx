@@ -1,6 +1,7 @@
 import React, {
   MouseEvent,
   useCallback,
+  useContext,
   useEffect,
   useRef,
   useState,
@@ -11,15 +12,18 @@ import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import SearchRedditBar from "./ModifySubredditListsPagesAndElements/SearchRedditBar.tsx";
 import { setSideBarSubredditMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import {
-  decreaseTimeTillNextGetPostsSeconds,
   setListToFilterByUuid,
   setMouseOverSubredditList,
   setOpenSidebarButtonTopPercent,
   setSearchInput,
   subredditListsUpdated,
 } from "../redux/slice/SideBarSlice.ts";
+import { SecondsTillGettingNextPostContext } from "./RouterView.tsx";
 
 const SideBar: React.FC = () => {
+  const secondsTillGettingNextPostContext = useContext(
+    SecondsTillGettingNextPostContext
+  );
   const sideBarButtonMoved = useRef(false);
   const dispatch = useAppDispatch();
   const sideBarState = useAppSelector((state) => state.sideBar);
@@ -105,15 +109,6 @@ const SideBar: React.FC = () => {
     }
     sideBarButtonMoved.current = false;
   };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      dispatch(decreaseTimeTillNextGetPostsSeconds());
-    }, 1000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, [dispatch]);
 
   return (
     <div className="side-bar">
@@ -249,7 +244,7 @@ const SideBar: React.FC = () => {
 
         <div className={"next-post-countdown-timer-text-box"}>
           <p className={"next-post-countdown-timer-text"}>
-            {`Getting next posts in ${sideBarState.timeTillNextGetPostsSeconds} seconds`}
+            {`Getting next posts in ${secondsTillGettingNextPostContext.secondsTillGettingNextPosts} seconds`}
           </p>
         </div>
       </div>

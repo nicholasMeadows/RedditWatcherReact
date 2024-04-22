@@ -13,7 +13,6 @@ export type SideBarState = {
   sideBarOpen: boolean;
   openSidebarButtonTopPercent: number;
   mouseOverSubredditList: boolean;
-  timeTillNextGetPostsSeconds: number;
 };
 
 const initialState: SideBarState = {
@@ -26,7 +25,6 @@ const initialState: SideBarState = {
   sideBarOpen: false,
   openSidebarButtonTopPercent: 50,
   mouseOverSubredditList: false,
-  timeTillNextGetPostsSeconds: 0,
 };
 type SideBarUpdateFieldsObj = {
   subredditsToShowInSideBar: Array<Subreddit>;
@@ -185,21 +183,6 @@ export const sideBarSlice = createSlice({
       );
       applySideBarFields(state, filtered);
     },
-    decreaseTimeTillNextGetPostsSeconds: (state) => {
-      if (state.timeTillNextGetPostsSeconds > 0) {
-        state.timeTillNextGetPostsSeconds =
-          state.timeTillNextGetPostsSeconds - 1;
-      }
-    },
-    setTimeTillNextGetPostsSeconds: (
-      state,
-      action: { type: string; payload: number }
-    ) => {
-      const timeTillNextGetPostsSeconds = action.payload;
-      if (timeTillNextGetPostsSeconds >= 0) {
-        state.timeTillNextGetPostsSeconds = timeTillNextGetPostsSeconds;
-      }
-    },
     setMouseOverSubredditList: (
       state,
       action: { type: string; payload: boolean }
@@ -226,8 +209,6 @@ export const {
   setListToFilterByUuid,
   setSearchInput,
   subredditListsUpdated,
-  decreaseTimeTillNextGetPostsSeconds,
-  setTimeTillNextGetPostsSeconds,
   setMouseOverSubredditList,
   setOpenSidebarButtonTopPercent,
   setMostRecentSubredditGotten,

@@ -32,7 +32,6 @@ import { submitAppNotification } from "../redux/slice/AppNotificationSlice.ts";
 import {
   setMostRecentSubredditGotten,
   setSubredditsToShowInSideBar,
-  setTimeTillNextGetPostsSeconds,
 } from "../redux/slice/SideBarSlice.ts";
 import {
   addPostsToFrontOfRow,
@@ -40,9 +39,12 @@ import {
   postRowRemoveAt,
 } from "../redux/slice/PostRowsSlice.ts";
 import { subredditQueueRemoveAt } from "../redux/slice/SubRedditQueueSlice.ts";
+import { SecondsTillGettingNextPostContextData } from "../page/RouterView.tsx";
 
 export default class RedditService {
   private declare redditClient: UseRedditClient;
+
+  private declare secondsTillGettingNextPostContextData: SecondsTillGettingNextPostContextData;
 
   loopingForPosts = false;
   loopingForPostsTimeout: NodeJS.Timeout | undefined = undefined;
@@ -55,6 +57,12 @@ export default class RedditService {
     this.redditClient = redditClient;
   }
 
+  setSecondsTillGettingNextPostContextData(
+    data: SecondsTillGettingNextPostContextData
+  ) {
+    this.secondsTillGettingNextPostContextData = data;
+  }
+
   async startLoopingForPosts() {
     console.log("starting to loop for posts");
     this.loopingForPosts = true;
@@ -64,9 +72,11 @@ export default class RedditService {
       return this.getPostsOrchestrationStart();
     };
     getPostsFunction();
-
+    this.setIntervalForSecondsTillGettingNextPosts();
     const startWaitingToGetPosts = () => {
-      store.dispatch(setTimeTillNextGetPostsSeconds(10));
+      this.secondsTillGettingNextPostContextData.setSecondsTillGettingNextPosts(
+        10
+      );
       const timeout = setTimeout(async () => {
         await getPostsFunction();
         startWaitingToGetPosts();
@@ -74,6 +84,18 @@ export default class RedditService {
       this.loopingForPostsTimeout = timeout;
     };
     startWaitingToGetPosts();
+  }
+
+  setIntervalForSecondsTillGettingNextPosts() {
+    setInterval(() => {
+      const secondsTillGettingNextPosts =
+        this.secondsTillGettingNextPostContextData.secondsTillGettingNextPosts;
+      if (secondsTillGettingNextPosts > 0) {
+        this.secondsTillGettingNextPostContextData.setSecondsTillGettingNextPosts(
+          secondsTillGettingNextPosts - 1
+        );
+      }
+    }, 1000);
   }
 
   async getPostsOrchestrationStart() {
