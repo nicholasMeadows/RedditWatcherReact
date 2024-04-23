@@ -1,6 +1,7 @@
 import { AppNotification } from "../../model/AppNotification.ts";
 import { createSlice } from "@reduxjs/toolkit";
 import { v4 as uuidV4 } from "uuid";
+import store from "../store.ts";
 
 export type AppNotificationItem = {
   appNotification: AppNotification;
@@ -49,11 +50,11 @@ export const appNotificationSlice = createSlice({
 
       const notificationUuuid = uuidV4();
       const hideTimeout = setTimeout(() => {
-        hideNotification(state, notificationUuuid);
+        store.dispatch(hideAppNotification(notificationUuuid));
       }, appNotification.displayTimeMS - 600);
 
       const removeTimeout = setTimeout(() => {
-        removeNotification(state, notificationUuuid);
+        store.dispatch(removeAppNotification(notificationUuuid));
       }, appNotification.displayTimeMS);
 
       const appNotificationItem: AppNotificationItem = {
@@ -74,12 +75,29 @@ export const appNotificationSlice = createSlice({
       clearTimeout(appNotification.removeTimeout);
       hideNotification(state, appNotification.appNotificationUuid);
       setTimeout(() => {
-        removeNotification(state, appNotification.appNotificationUuid);
+        store.dispatch(
+          removeAppNotification(appNotification.appNotificationUuid)
+        );
       }, 600);
+    },
+    hideAppNotification: (state, action: { type: string; payload: string }) => {
+      const notificationUuuid = action.payload;
+      hideNotification(state, notificationUuuid);
+    },
+    removeAppNotification: (
+      state,
+      action: { type: string; payload: string }
+    ) => {
+      const notificationUuuid = action.payload;
+      removeNotification(state, notificationUuuid);
     },
   },
 });
 
-export const { submitAppNotification, dismissAppNotification } =
-  appNotificationSlice.actions;
+export const {
+  submitAppNotification,
+  dismissAppNotification,
+  hideAppNotification,
+  removeAppNotification,
+} = appNotificationSlice.actions;
 export default appNotificationSlice.reducer;
