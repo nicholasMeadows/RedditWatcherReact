@@ -286,7 +286,9 @@ export default function useMovePostRow(
 
       dispatch(mouseLeavePostRow(postRow.postRowUuid));
 
-      createAutoScrollInterval(snapToPost);
+      if (autoScrollIntervalRef.current == undefined) {
+        createAutoScrollInterval(snapToPost);
+      }
     },
     [createAutoScrollInterval, dispatch, postRow.postRowUuid, postRowDivRef]
   );
