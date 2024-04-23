@@ -9,7 +9,7 @@ import { v4 as uuidV4 } from "uuid";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import store from "../store.ts";
 
-type PostRowsState = {
+export type PostRowsState = {
   getPostRowsPaused: boolean;
   currentPath: string;
   scrollY: number;

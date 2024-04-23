@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-type SinglePostPageContextData = {
+export type SinglePostPageContextData = {
   postRowUuid: string | undefined;
   postUuid: string | undefined;
 };
