@@ -1,4 +1,7 @@
-const { contextBridge, ipcRenderer } = require("electron/renderer");
+require("./rt/electron-rt");
+//////////////////////////////
+// User Defined Preload scripts below
+import { contextBridge, ipcRenderer } from "electron/renderer";
 
 contextBridge.exposeInMainWorld("electronAPI", {
   checkForOrCreateConfigFolder: () =>

@@ -15,13 +15,14 @@
     "preview": "vite preview",
     "build-android": "npm run build && npx cap sync android && npx cap open android",
     "generate-icons": "npx @capacitor/assets generate --iconBackgroundColor \"#ff5700\" --iconBackgroundColorDark \"#ff5700\" --splashBackgroundColor \"#ff5700\" --splashBackgroundColorDark \"#ff5700\" --assetPath ./public",
-    "electron": "npm run build && set APP_DEV=true && electron-forge start",
-    "build-electron": "npm run build && electron-forge package && electron-forge make && electron-forge publish",
-    "electron-package": "npm run build && electron-forge package",
-    "electron-make": "npm run build && electron-forge make",
-    "electron-publish": "npm run build && electron-forge publish"
+    "electron:sync": "npm run build && npx cap sync @capacitor-community/electron                                                                          ",
+    "electron": "npm run electron:sync && cd electron && npm run electron-forge:start",
+    "electron:make": "npm run electron:sync && cd electron && npm run electron-forge:make",
+    "electron:package": "npm run electron:sync && cd electron && npm run electron-forge:package",
+    "electron:publish": "npm run electron:sync && cd electron && npm run electron-forge:publish"
   },
   "dependencies": {
+    "@capacitor-community/electron": "^5.0.1",
     "@capacitor-community/keep-awake": "^4.0.0",
     "@capacitor/android": "^5.5.1",
     "@capacitor/app": "^5.0.6",
@@ -34,9 +35,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^8.1.3",
-    "uuid": "^9.0.1",
-    "@electron-forge/maker-rpm": "^7.3.0",
-    "electron-squirrel-startup": "^1.0.0"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.1",
@@ -58,11 +57,6 @@
     "rollup-plugin-node-polyfills": "^0.2.1",
     "sass": "^1.69.5",
     "typescript": "^5.2.2",
-    "vite": "^5.0.5",
-    "@electron-forge/cli": "^7.3.0",
-    "@electron-forge/maker-deb": "^7.3.0",
-    "@electron-forge/maker-squirrel": "^7.3.0",
-    "@electron-forge/maker-zip": "^7.3.0",
-    "electron": "^29.1.0"
+    "vite": "^5.0.5"
   }
 }
