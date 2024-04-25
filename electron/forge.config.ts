@@ -1,6 +1,7 @@
 import * as path from "node:path";
-import packageJson from "../package.json";
+import { config } from "dotenv";
 
+config({ path: "../.env" });
 module.exports = {
   packagerConfig: {
     asar: true,
@@ -11,12 +12,23 @@ module.exports = {
       name: "@electron-forge/maker-squirrel",
       config: {
         loadingGif: path.join(__dirname, "app", "icon.gif"),
-        version: packageJson.version,
-        setupExe: packageJson.name + "-" + packageJson.version + ".exe",
       },
     },
     {
       name: "@electron-forge/maker-zip",
+    },
+  ],
+  publishers: [
+    {
+      name: "@electron-forge/publisher-github",
+      config: {
+        repository: {
+          owner: "nicholasMeadows",
+          name: "RedditWatcherReact",
+        },
+        prerelease: false,
+        draft: false,
+      },
     },
   ],
 };

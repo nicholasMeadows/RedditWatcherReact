@@ -18,7 +18,9 @@ import { ElectronCapacitorApp, setupReloadWatcher } from "./setup";
 import electronSquirrelStartup from "electron-squirrel-startup";
 import path from "node:path";
 import * as fs from "fs";
+import { updateElectronApp } from "update-electron-app";
 
+updateElectronApp();
 if (electronSquirrelStartup) process.exit();
 // Graceful handling of unhandled errors.
 unhandled();
@@ -70,7 +72,6 @@ if (electronIsDev) {
   // Initialize our app, build windows, and load content.
   await myCapacitorApp.init();
   // Check for updates if we are in a packaged app.
-  // autoUpdater.checkForUpdatesAndNotify();
 })();
 
 // Handle when all of our windows are close (platforms have their own expectations).

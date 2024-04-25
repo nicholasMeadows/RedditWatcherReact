@@ -1,7 +1,7 @@
 {
   "name": "reddit-watcher",
   "private": true,
-  "version": "1.7.2",
+  "version": "1.8.1",
   "type": "module",
   "main": "electron-entry.cjs",
   "author": "Nicholas",
@@ -15,11 +15,11 @@
     "preview": "vite preview",
     "build-android": "npm run build && npx cap sync android && npx cap open android",
     "generate-icons": "npx @capacitor/assets generate --iconBackgroundColor \"#ff5700\" --iconBackgroundColorDark \"#ff5700\" --splashBackgroundColor \"#ff5700\" --splashBackgroundColorDark \"#ff5700\" --assetPath ./public",
-    "electron:sync": "npm run build && npx cap sync @capacitor-community/electron                                                                          ",
+    "electron:sync": "npm run build && npx cap sync @capacitor-community/electron",
     "electron": "npm run electron:sync && cd electron && npm run electron-forge:start",
-    "electron:make": "npm run electron:sync && cd electron && npm run electron-forge:make",
-    "electron:package": "npm run electron:sync && cd electron && npm run electron-forge:package",
-    "electron:publish": "npm run electron:sync && cd electron && npm run electron-forge:publish"
+    "electron:make": "npm run electron:sync && node .\\build-helper-scripts\\copy-package-version-for-electron.cjs && cd electron && npm run electron-forge:make && cd .. && node .\\build-helper-scripts\\reset-package-version-for-electron.cjs",
+    "electron:package": "npm run electron:sync && node .\\build-helper-scripts\\copy-package-version-for-electron.cjs && cd electron && npm run electron-forge:package && cd .. && node .\\build-helper-scripts\\reset-package-version-for-electron.cjs",
+    "electron:publish": "npm run electron:sync && node .\\build-helper-scripts\\copy-package-version-for-electron.cjs && cd electron && npm run electron-forge:publish && cd .. && node .\\build-helper-scripts\\reset-package-version-for-electron.cjs"
   },
   "dependencies": {
     "@capacitor-community/electron": "^5.0.1",
@@ -49,6 +49,7 @@
     "@vitejs/plugin-react-swc": "^3.5.0",
     "buffer": "^6.0.3",
     "copyfiles": "^2.4.1",
+    "dotenv": "^16.4.5",
     "eslint": "^8.53.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.4",
