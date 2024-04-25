@@ -78,6 +78,12 @@ const SinglePostView: FC = () => {
                 onWheel={singlePostPageZoom.postMediaElementOnWheel}
                 onTouchStart={singlePostPageZoom.postMediaElementOnTouchStart}
                 onTouchMove={singlePostPageZoom.postMediaElementOnTouchMove}
+                carouselLeftButtonClick={
+                  singlePostPageZoom.resetImgPositionAndScale
+                }
+                carouselRightButtonClick={
+                  singlePostPageZoom.resetImgPositionAndScale
+                }
               />
             </div>
           )}

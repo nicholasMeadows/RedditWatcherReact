@@ -30,6 +30,8 @@ type Props = {
   onWheel?: WheelEventHandler;
   onTouchStart?: TouchEventHandler;
   onTouchMove?: TouchEventHandler;
+  carouselLeftButtonClick?: () => void;
+  carouselRightButtonClick?: () => void;
 };
 const PostMediaElement: React.FC<Props> = ({
   postRowUuid,
@@ -45,6 +47,8 @@ const PostMediaElement: React.FC<Props> = ({
   onWheel,
   onTouchStart,
   onTouchMove,
+  carouselRightButtonClick,
+  carouselLeftButtonClick,
 }) => {
   const dispatch = useAppDispatch();
   const [carouselArrowLightDarkPart, setCarouselArrowLightDarkPart] =
@@ -161,6 +165,9 @@ const PostMediaElement: React.FC<Props> = ({
         onClick={(event) => {
           event.stopPropagation();
           event.preventDefault();
+          if (carouselLeftButtonClick !== undefined) {
+            carouselLeftButtonClick();
+          }
           dispatch(
             decrementPostAttachment({
               postRowUuid: postRowUuid,
@@ -178,6 +185,9 @@ const PostMediaElement: React.FC<Props> = ({
         onClick={(event) => {
           event.stopPropagation();
           event.preventDefault();
+          if (carouselRightButtonClick !== undefined) {
+            carouselRightButtonClick();
+          }
           dispatch(
             incrementPostAttachment({
               postRowUuid: postRowUuid,

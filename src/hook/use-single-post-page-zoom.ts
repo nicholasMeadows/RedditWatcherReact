@@ -409,5 +409,6 @@ export default function useSinglePostPageZoom(
     },
     goToPrevPostClicked: goToPrevPostClicked,
     goToNextPostClicked: goToNextPostClicked,
+    resetImgPositionAndScale: resetImgPositionAndScale,
   };
 }

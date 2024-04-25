@@ -248,6 +248,10 @@ export default function useMovePostRow(
           postRowScrollRightPressed(postRow.postRowUuid, snapToPost);
         }
       };
+      if (autoScrollIntervalRef.current !== undefined) {
+        clearInterval(autoScrollIntervalRef.current);
+        autoScrollIntervalRef.current = undefined;
+      }
       dispatchMostRowScroll();
       autoScrollIntervalRef.current = setInterval(() => {
         dispatchMostRowScroll();
@@ -286,9 +290,7 @@ export default function useMovePostRow(
 
       dispatch(mouseLeavePostRow(postRow.postRowUuid));
 
-      if (autoScrollIntervalRef.current == undefined) {
-        createAutoScrollInterval(snapToPost);
-      }
+      createAutoScrollInterval(snapToPost);
     },
     [createAutoScrollInterval, dispatch, postRow.postRowUuid, postRowDivRef]
   );
