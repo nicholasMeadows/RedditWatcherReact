@@ -2,13 +2,13 @@ import { PostRow } from "../../model/PostRow.ts";
 import { useAppSelector } from "../../redux/store.ts";
 import getPlatform from "../../util/PlatformUtil.ts";
 import { Platform } from "../../model/Platform.ts";
-import { FC, useCallback, useRef } from "react";
+import { FC, memo, useCallback, useRef } from "react";
 import PostCard from "./PostCard.tsx";
 import { PostCardContext } from "../../context/post-card-context.ts";
 import useMovePostRow from "../../hook/use-move-post-row.ts";
 
 type Props = { postRow: PostRow };
-const PostRow: FC<Props> = ({ postRow }) => {
+const PostRow: FC<Props> = memo(({ postRow }) => {
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
 
   const postsToShowInRow = useAppSelector(
@@ -92,6 +92,6 @@ const PostRow: FC<Props> = ({ postRow }) => {
       </div>
     </div>
   );
-};
+});
 
 export default PostRow;

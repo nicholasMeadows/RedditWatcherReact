@@ -1,4 +1,4 @@
-import { FC, useContext } from "react";
+import { FC, memo, useContext } from "react";
 import PostMediaElement from "./PostMediaElement.tsx";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent.ts";
 import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants.ts";
@@ -12,7 +12,7 @@ import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice.ts";
 import { setSinglePostPageUuids } from "../../redux/slice/SinglePostPageSlice.ts";
 import { mouseLeavePostRow } from "../../redux/slice/PostRowsSlice.ts";
 
-const PostCard: FC = () => {
+const PostCard: FC = memo(() => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const {
@@ -104,5 +104,5 @@ const PostCard: FC = () => {
       </div>
     </div>
   );
-};
+});
 export default PostCard;
