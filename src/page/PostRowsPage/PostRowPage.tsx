@@ -1,13 +1,11 @@
-import { createContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
-import PostRow from "./PostRow.tsx";
 import SideBar from "../SideBar.tsx";
 import {
   setScrollY,
   toggleClickedOnPlayPauseButton,
 } from "../../redux/slice/PostRowsSlice.ts";
-
-export const AutoScrollPostRowRateMsContext = createContext(1000);
+import PostRow from "./PostRow.tsx";
 
 const PostRowPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -17,10 +15,6 @@ const PostRowPage: React.FC = () => {
     (state) => state.appConfig.postRowsToShowInView
   );
 
-  const autoScrollPostRowRateSecondsForSinglePostCard = useAppSelector(
-    (state) => state.appConfig.autoScrollPostRowRateSecondsForSinglePostCard
-  );
-  const [autoScrollPostRowRateMs, setAutoScrollPostRowRateMs] = useState(1000);
   const postRowsDivRef = useRef(null);
   const [scrollBarWidth, setScrollBarWidth] = useState(0);
 
@@ -43,11 +37,6 @@ const PostRowPage: React.FC = () => {
     };
   }, [dispatch]);
 
-  useEffect(() => {
-    setAutoScrollPostRowRateMs(
-      1000 * autoScrollPostRowRateSecondsForSinglePostCard
-    );
-  }, [autoScrollPostRowRateSecondsForSinglePostCard]);
   return (
     <div className="post-row-page">
       <div
@@ -67,21 +56,17 @@ const PostRowPage: React.FC = () => {
           dispatch(setScrollY(scrollTop));
         }}
       >
-        <AutoScrollPostRowRateMsContext.Provider
-          value={autoScrollPostRowRateMs}
-        >
-          {postRowsState.postRows.map((postRow) => (
-            <div
-              key={"post-row-" + postRow.postRowUuid}
-              style={{
-                height: `calc(100%/${postRowsToShowInView})`,
-                maxHeight: `calc(100%/${postRowsToShowInView})`,
-              }}
-            >
-              <PostRow postRow={postRow} />
-            </div>
-          ))}
-        </AutoScrollPostRowRateMsContext.Provider>
+        {postRowsState.postRows.map((postRow) => (
+          <div
+            key={"post-row-" + postRow.postRowUuid}
+            style={{
+              height: `calc(100%/${postRowsToShowInView})`,
+              maxHeight: `calc(100%/${postRowsToShowInView})`,
+            }}
+          >
+            <PostRow postRow={postRow} />
+          </div>
+        ))}
       </div>
 
       <div

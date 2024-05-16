@@ -1,5 +1,4 @@
 import { FC, memo, useContext } from "react";
-import PostMediaElement from "./PostMediaElement.tsx";
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent.ts";
 import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants.ts";
 import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
@@ -7,10 +6,10 @@ import { useNavigate } from "react-router-dom";
 import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { PostCardContext } from "../../context/post-card-context.ts";
-import { AutoScrollPostRowRateMsContext } from "./PostRowPage.tsx";
 import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice.ts";
 import { setSinglePostPageUuids } from "../../redux/slice/SinglePostPageSlice.ts";
 import { mouseLeavePostRow } from "../../redux/slice/PostRowsSlice.ts";
+import PostMediaElement from "./PostMediaElement.tsx";
 
 const PostCard: FC = memo(() => {
   const dispatch = useAppDispatch();
@@ -28,8 +27,9 @@ const PostCard: FC = memo(() => {
     (state) => state.appConfig.autoScrollPostRowOption
   );
 
-  const autoScrollPostRowRateMs = useContext(AutoScrollPostRowRateMsContext);
-
+  const autoScrollPostRowRateSecondsForSinglePostCard = useAppSelector(
+    (state) => state.appConfig.autoScrollPostRowRateSecondsForSinglePostCard
+  );
   return (
     <div
       className={`post-card-outer`}
@@ -44,7 +44,9 @@ const PostCard: FC = memo(() => {
           autoScrollPostRowOption ==
             AutoScrollPostRowOptionEnum.ScrollByPostWidth
             ? "none"
-            : `left ${autoScrollPostRowRateMs}ms linear`
+            : `left ${
+                autoScrollPostRowRateSecondsForSinglePostCard * 1000
+              }ms linear`
         }`,
       }}
     >

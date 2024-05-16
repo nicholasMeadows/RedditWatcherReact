@@ -1,10 +1,4 @@
-import {
-  MutableRefObject,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-} from "react";
+import { MutableRefObject, useCallback, useEffect, useRef } from "react";
 import {
   mouseEnterPostRow,
   mouseLeavePostRow,
@@ -15,7 +9,6 @@ import { PostRow } from "../model/PostRow.ts";
 import { v4 as uuidV4 } from "uuid";
 import { Post } from "../model/Post/Post.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
-import { AutoScrollPostRowRateMsContext } from "../page/PostRowsPage/PostRowPage.tsx";
 import { AutoScrollPostRowOptionEnum } from "../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 
@@ -26,6 +19,9 @@ export default function useMovePostRow(
   postsToShowInRow: number
 ) {
   const dispatch = useAppDispatch();
+  const autoScrollPostRowRateSecondsForSinglePostCard = useAppSelector(
+    (state) => state.appConfig.autoScrollPostRowRateSecondsForSinglePostCard
+  );
   const totalMovementX = useRef(0);
   const mouseOrTouchOnPostCard = useRef(false);
   const lastMovementX = useRef(0);
@@ -45,7 +41,6 @@ export default function useMovePostRow(
   const autoScrollPostRowOption = useAppSelector(
     (state) => state.appConfig.autoScrollPostRowOption
   );
-  const autoScrollPostRowRateMs = useContext(AutoScrollPostRowRateMsContext);
 
   const handleMoveUiPosts = useCallback(
     (postRow: PostRow, movementPx: number) => {
@@ -255,12 +250,12 @@ export default function useMovePostRow(
       dispatchMostRowScroll();
       autoScrollIntervalRef.current = setInterval(() => {
         dispatchMostRowScroll();
-      }, autoScrollPostRowRateMs);
+      }, autoScrollPostRowRateSecondsForSinglePostCard * 1000);
     },
     [
       autoScrollPostRowDirectionOption,
       autoScrollPostRowOption,
-      autoScrollPostRowRateMs,
+      autoScrollPostRowRateSecondsForSinglePostCard,
       postRow.postRowUuid,
       postRow.posts.length,
       postRow.userFrontPagePostSortOrderOptionAtRowCreation,

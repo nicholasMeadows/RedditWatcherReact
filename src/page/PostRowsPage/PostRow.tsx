@@ -3,9 +3,9 @@ import { useAppSelector } from "../../redux/store.ts";
 import getPlatform from "../../util/PlatformUtil.ts";
 import { Platform } from "../../model/Platform.ts";
 import { FC, memo, useCallback, useRef } from "react";
-import PostCard from "./PostCard.tsx";
-import { PostCardContext } from "../../context/post-card-context.ts";
 import useMovePostRow from "../../hook/use-move-post-row.ts";
+import { PostCardContext } from "../../context/post-card-context.ts";
+import PostCard from "./PostCard.tsx";
 
 type Props = { postRow: PostRow };
 const PostRow: FC<Props> = memo(({ postRow }) => {
