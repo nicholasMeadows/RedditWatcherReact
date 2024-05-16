@@ -1,14 +1,7 @@
 import store, { useAppDispatch, useAppSelector } from "../redux/store";
 
 import { KeepAwake } from "@capacitor-community/keep-awake";
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useContext, useEffect, useRef } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import {
   APP_INITIALIZATION_ROUTE,
@@ -42,8 +35,6 @@ import {
   setPostsToShowInRow,
 } from "../redux/slice/AppConfigSlice.ts";
 import { RootFontSizeContext } from "../context/root-font-size-context.ts";
-import { RedditServiceContext } from "../context/reddit-service-context.ts";
-import useRedditClient from "../hook/use-reddit-client.ts";
 import { closeContextMenu } from "../redux/slice/ContextMenuSlice.ts";
 import {
   setCurrentLocation,
@@ -55,36 +46,11 @@ export type SecondsTillGettingNextPostContextData = {
   secondsTillGettingNextPosts: number;
   setSecondsTillGettingNextPosts: (seconds: number) => void;
 };
-const initialSecondsTillGettingNextPostContextData: SecondsTillGettingNextPostContextData =
-  {
-    secondsTillGettingNextPosts: 10,
-    setSecondsTillGettingNextPosts: () => {},
-  };
-export const SecondsTillGettingNextPostContext =
-  createContext<SecondsTillGettingNextPostContextData>(
-    initialSecondsTillGettingNextPostContextData
-  );
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
-  const redditClient = useRedditClient();
   const darkmode = useAppSelector((state) => state.appConfig.darkMode);
   const location = useLocation();
   const { setRootFontSize } = useContext(RootFontSizeContext);
-  const redditService = useContext(RedditServiceContext);
-
-  const [secondsTillGettingNextPosts, setSecondsTillGettingNextPosts] =
-    useState<number>(
-      initialSecondsTillGettingNextPostContextData.secondsTillGettingNextPosts
-    );
-
-  useEffect(() => {
-    redditService.setRedditClient(redditClient);
-    redditService.setSecondsTillGettingNextPostContextData({
-      secondsTillGettingNextPosts: secondsTillGettingNextPosts,
-      setSecondsTillGettingNextPosts: setSecondsTillGettingNextPosts,
-    });
-  }, [redditClient, redditService, secondsTillGettingNextPosts]);
-
   const wheelEventHandler = useCallback(
     (event: WheelEvent) => {
       const ctrlKeyPressed = event.ctrlKey;
@@ -208,57 +174,48 @@ const RouterView: React.FC = () => {
 
   return (
     <div className="root-app" ref={rootDivRef}>
-      <SecondsTillGettingNextPostContext.Provider
-        value={{
-          secondsTillGettingNextPosts: secondsTillGettingNextPosts,
-          setSecondsTillGettingNextPosts: setSecondsTillGettingNextPosts,
+      <NavigationHamburgerMenu />
+      <AppNotification />
+      <ContextMenu />
+      <div
+        style={{
+          marginTop: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
+          height: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+          maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
         }}
+        className="app-body"
       >
-        <NavigationHamburgerMenu />
-        <AppNotification />
-        <ContextMenu />
-        <div
-          style={{
-            marginTop: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
-            height: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
-            maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
-          }}
-          className="app-body"
-        >
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Navigate to={APP_INITIALIZATION_ROUTE} replace={true} />
-              }
-            />
-            <Route
-              index
-              path={APP_INITIALIZATION_ROUTE}
-              element={<AppInitialization />}
-            />
-            <Route path={REDDIT_SIGN_IN_ROUTE} element={<RedditSignIn />} />
-            <Route path={POST_ROW_ROUTE} element={<PostRowPage />} />
-            <Route
-              path={REDDIT_SOURCE_SETTINGS_ROUTE}
-              element={<RedditSourceSettings />}
-            />
-            <Route
-              path={APPLICATION_SETTINGS_ROUTE}
-              element={<ApplicationSettings />}
-            />
-            <Route path={SINGPLE_POST_ROUTE} element={<SinglePostView />} />
-            <Route
-              path={MODIFY_SUBREDDIT_LISTS_ROUTE}
-              element={<ModifySubredditLists />}
-            />
-            <Route
-              path={MODIFY_SUBREDDIT_QUEUE_ROUTE}
-              element={<ModifySubredditQueue />}
-            />
-          </Routes>
-        </div>
-      </SecondsTillGettingNextPostContext.Provider>
+        <Routes>
+          <Route
+            path="/"
+            element={<Navigate to={APP_INITIALIZATION_ROUTE} replace={true} />}
+          />
+          <Route
+            index
+            path={APP_INITIALIZATION_ROUTE}
+            element={<AppInitialization />}
+          />
+          <Route path={REDDIT_SIGN_IN_ROUTE} element={<RedditSignIn />} />
+          <Route path={POST_ROW_ROUTE} element={<PostRowPage />} />
+          <Route
+            path={REDDIT_SOURCE_SETTINGS_ROUTE}
+            element={<RedditSourceSettings />}
+          />
+          <Route
+            path={APPLICATION_SETTINGS_ROUTE}
+            element={<ApplicationSettings />}
+          />
+          <Route path={SINGPLE_POST_ROUTE} element={<SinglePostView />} />
+          <Route
+            path={MODIFY_SUBREDDIT_LISTS_ROUTE}
+            element={<ModifySubredditLists />}
+          />
+          <Route
+            path={MODIFY_SUBREDDIT_QUEUE_ROUTE}
+            element={<ModifySubredditQueue />}
+          />
+        </Routes>
+      </div>
     </div>
   );
 };

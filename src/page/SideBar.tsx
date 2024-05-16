@@ -1,7 +1,6 @@
 import React, {
   MouseEvent,
   useCallback,
-  useContext,
   useEffect,
   useRef,
   useState,
@@ -18,14 +17,13 @@ import {
   setSearchInput,
   subredditListsUpdated,
 } from "../redux/slice/SideBarSlice.ts";
-import { SecondsTillGettingNextPostContext } from "./RouterView.tsx";
 
 const SideBar: React.FC = () => {
-  const secondsTillGettingNextPostContext = useContext(
-    SecondsTillGettingNextPostContext
-  );
   const sideBarButtonMoved = useRef(false);
   const dispatch = useAppDispatch();
+  const secondsTillGettingNextPosts = useAppSelector(
+    (state) => state.sideBar.secondsTillGettingNextPosts
+  );
   const sideBarState = useAppSelector((state) => state.sideBar);
   const redditListsState = useAppSelector((state) => state.redditLists);
   const [sideBarOpen, setSideBarOpen] = useState(false);
@@ -244,7 +242,7 @@ const SideBar: React.FC = () => {
 
         <div className={"next-post-countdown-timer-text-box"}>
           <p className={"next-post-countdown-timer-text"}>
-            {`Getting next posts in ${secondsTillGettingNextPostContext.secondsTillGettingNextPosts} seconds`}
+            {`Getting next posts in ${secondsTillGettingNextPosts} seconds`}
           </p>
         </div>
       </div>

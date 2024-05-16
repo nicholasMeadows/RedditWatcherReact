@@ -18,18 +18,17 @@ import {
   toggleDarkMode,
 } from "../redux/slice/AppConfigSlice";
 import { useAppDispatch, useAppSelector } from "../redux/store";
-import useRedditClient from "../hook/use-reddit-client.ts";
 import { RedditClientContext } from "../context/reddit-client-context.ts";
-import { RedditServiceContext } from "../context/reddit-service-context.ts";
 import packageJson from "../../package.json";
 import { closeContextMenu } from "../redux/slice/ContextMenuSlice.ts";
+import { RedditServiceContext } from "../context/reddit-service-context.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const redditClient = useRedditClient();
-  const { redditClientContextData } = useContext(RedditClientContext);
+  const { redditClientContextData, setRedditClientContextData } =
+    useContext(RedditClientContext);
   const redditService = useContext(RedditServiceContext);
   const redditListsState = useAppSelector((state) => state.redditLists);
   const [pageName, setPageName] = useState("");
@@ -256,10 +255,16 @@ const NavigationHamburgerMenu: React.FC = () => {
                     dispatch(
                       importAppConfig({
                         file: input.files[0],
-                        redditClient: redditClient,
                         redditService: redditService,
                       })
                     );
+                    setRedditClientContextData((prevState) => {
+                      return {
+                        ...prevState,
+                        redditAuthenticationStatus:
+                          RedditAuthenticationStatus.NOT_YET_AUTHED,
+                      };
+                    });
                   }
                 }}
               />

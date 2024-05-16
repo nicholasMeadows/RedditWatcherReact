@@ -2,6 +2,17 @@ import { createSlice } from "@reduxjs/toolkit";
 import { Subreddit } from "../../model/Subreddit/Subreddit.ts";
 import { SubredditLists } from "../../model/SubredditList/SubredditLists.ts";
 import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../../RedditWatcherConstants.ts";
+import store from "../store.ts";
+
+const decreaseSecondsTillGettingNextPosts = () => {
+  const secondsTillGettingNextPosts =
+    store.getState().sideBar.secondsTillGettingNextPosts;
+  if (secondsTillGettingNextPosts > 0) {
+    store.dispatch(
+      setSecondsTillGettingNextPosts(secondsTillGettingNextPosts - 1)
+    );
+  }
+};
 
 export type SideBarState = {
   subredditsToShowInSideBar: Array<Subreddit>;
@@ -13,6 +24,8 @@ export type SideBarState = {
   sideBarOpen: boolean;
   openSidebarButtonTopPercent: number;
   mouseOverSubredditList: boolean;
+  secondsTillGettingNextPosts: number;
+  decreaseSecondsTillNextPostsSecondsInterval: NodeJS.Timeout;
 };
 
 const initialState: SideBarState = {
@@ -25,6 +38,11 @@ const initialState: SideBarState = {
   sideBarOpen: false,
   openSidebarButtonTopPercent: 50,
   mouseOverSubredditList: false,
+  secondsTillGettingNextPosts: 0,
+  decreaseSecondsTillNextPostsSecondsInterval: setInterval(
+    decreaseSecondsTillGettingNextPosts,
+    1000
+  ),
 };
 type SideBarUpdateFieldsObj = {
   subredditsToShowInSideBar: Array<Subreddit>;
@@ -201,6 +219,12 @@ export const sideBarSlice = createSlice({
     ) => {
       state.mostRecentSubredditGotten = action.payload;
     },
+    setSecondsTillGettingNextPosts: (
+      state,
+      action: { type: string; payload: number }
+    ) => {
+      state.secondsTillGettingNextPosts = action.payload;
+    },
   },
 });
 
@@ -212,5 +236,6 @@ export const {
   setMouseOverSubredditList,
   setOpenSidebarButtonTopPercent,
   setMostRecentSubredditGotten,
+  setSecondsTillGettingNextPosts,
 } = sideBarSlice.actions;
 export default sideBarSlice.reducer;

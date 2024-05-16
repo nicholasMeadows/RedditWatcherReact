@@ -27,10 +27,10 @@ import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOp
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult.ts";
 import { v4 as uuidV4 } from "uuid";
 import { WaitUtil } from "../util/WaitUtil.ts";
-import { UseRedditClient } from "../hook/use-reddit-client.ts";
 import { submitAppNotification } from "../redux/slice/AppNotificationSlice.ts";
 import {
   setMostRecentSubredditGotten,
+  setSecondsTillGettingNextPosts,
   setSubredditsToShowInSideBar,
 } from "../redux/slice/SideBarSlice.ts";
 import {
@@ -39,13 +39,8 @@ import {
   postRowRemoveAt,
 } from "../redux/slice/PostRowsSlice.ts";
 import { subredditQueueRemoveAt } from "../redux/slice/SubRedditQueueSlice.ts";
-import { SecondsTillGettingNextPostContextData } from "../page/RouterView.tsx";
 
 export default class RedditService {
-  private declare redditClient: UseRedditClient;
-
-  private declare secondsTillGettingNextPostContextData: SecondsTillGettingNextPostContextData;
-
   loopingForPosts = false;
   loopingForPostsTimeout: NodeJS.Timeout | undefined = undefined;
   lastPostRowWasSortOrderNew: boolean = false;
@@ -53,14 +48,10 @@ export default class RedditService {
   nsfwRedditListIndex: number = 0;
   masterSubscribedSubredditList: Array<Subreddit> = [];
 
-  setRedditClient(redditClient: UseRedditClient) {
-    this.redditClient = redditClient;
-  }
-
-  setSecondsTillGettingNextPostContextData(
-    data: SecondsTillGettingNextPostContextData
-  ) {
-    this.secondsTillGettingNextPostContextData = data;
+  resetService() {
+    clearTimeout(this.loopingForPostsTimeout);
+    this.loopingForPosts = false;
+    this.loopingForPostsTimeout = undefined;
   }
 
   async startLoopingForPosts() {
@@ -72,11 +63,8 @@ export default class RedditService {
       return this.getPostsOrchestrationStart();
     };
     getPostsFunction();
-    this.setIntervalForSecondsTillGettingNextPosts();
     const startWaitingToGetPosts = () => {
-      this.secondsTillGettingNextPostContextData.setSecondsTillGettingNextPosts(
-        10
-      );
+      store.dispatch(setSecondsTillGettingNextPosts(10));
       const timeout = setTimeout(async () => {
         await getPostsFunction();
         startWaitingToGetPosts();
@@ -84,18 +72,6 @@ export default class RedditService {
       this.loopingForPostsTimeout = timeout;
     };
     startWaitingToGetPosts();
-  }
-
-  setIntervalForSecondsTillGettingNextPosts() {
-    setInterval(() => {
-      const secondsTillGettingNextPosts =
-        this.secondsTillGettingNextPostContextData.secondsTillGettingNextPosts;
-      if (secondsTillGettingNextPosts > 0) {
-        this.secondsTillGettingNextPostContextData.setSecondsTillGettingNextPosts(
-          secondsTillGettingNextPosts - 1
-        );
-      }
-    }, 1000);
   }
 
   async getPostsOrchestrationStart() {
@@ -193,7 +169,9 @@ export default class RedditService {
       )
     ) {
       posts = await new RedditClient().getUserFrontPage(
-        getPostsFromSubredditsState,
+        getPostsFromSubredditsState.userFrontPagePostSortOrderOption,
+        getPostsFromSubredditsState.topTimeFrame,
+        getPostsFromSubredditsState.redditApiItemLimit,
         this.masterSubscribedSubredditList,
         store.getState().redditLists.subredditLists
       );
@@ -641,11 +619,6 @@ export default class RedditService {
         })
       );
     }
-    if (updatedValues.masterSubscribedSubredditList != undefined) {
-      this.redditClient.setMasterSubscribedSubredditList(
-        updatedValues.masterSubscribedSubredditList
-      );
-    }
     if (updatedValues.subredditIndex != undefined) {
       this.subredditIndex = updatedValues.subredditIndex;
     }
@@ -683,7 +656,6 @@ export default class RedditService {
 
   private async loadSubscribedSubreddits(async: boolean = true) {
     let results = await new RedditClient().getSubscribedSubReddits(undefined);
-    this.redditClient.setMasterSubscribedSubredditList(results.subreddits);
     const asyncLoopForRemainingSubreddits = async () => {
       const remainingSubreddits = new Array<Subreddit>();
 

@@ -1,25 +1,24 @@
 import { CapacitorHttp, HttpResponse } from "@capacitor/core";
 import { Buffer } from "buffer";
-import { v4 as uuidV4 } from "uuid";
-import { Post } from "../model/Post/Post";
-import ChildDataObj from "../model/RedditApiResponse/ChildDataObj";
-import RedditApiResponse from "../model/RedditApiResponse/RedditApiResponse";
-import { T2 } from "../model/RedditApiResponse/Types/T2/T2";
-import { T3 } from "../model/RedditApiResponse/Types/T3/T3";
-import { T5 } from "../model/RedditApiResponse/Types/T5";
-import { Subreddit } from "../model/Subreddit/Subreddit";
-import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult";
-import { SubredditAccountSearchSeperateArrs } from "../model/SubredditAccountSearchSeperateArrs";
-import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
-import { convertPost } from "../model/converter/PostConverter";
+import { SubredditAccountSearchSeperateArrs } from "../model/SubredditAccountSearchSeperateArrs.ts";
+import RedditApiResponse from "../model/RedditApiResponse/RedditApiResponse.ts";
+import { T2 } from "../model/RedditApiResponse/Types/T2/T2.ts";
+import { T5 } from "../model/RedditApiResponse/Types/T5.ts";
+import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult.ts";
 import {
   convertAccount,
   convertSubreddit,
-} from "../model/converter/SubredditAccountSearchResultConverter";
-// import store from "../redux/store";
-import { GetPostsFromSubredditState } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
+} from "../model/converter/SubredditAccountSearchResultConverter.ts";
+import ChildDataObj from "../model/RedditApiResponse/ChildDataObj.ts";
 import store from "../redux/store.ts";
+import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
+import { T3 } from "../model/RedditApiResponse/Types/T3/T3.ts";
+import { Post } from "../model/Post/Post.ts";
+import { convertPost } from "../model/converter/PostConverter.ts";
+import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEnum.ts";
+import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
+import { v4 as uuidV4 } from "uuid";
 
 const REDDIT_BASE_URL = "https://www.reddit.com";
 const REDDIT_OAUTH_BASE_URL = "https://oauth.reddit.com";
@@ -41,63 +40,65 @@ const RATE_LIMIT_RESETS_AT_SESSION_STORAGE_KEY =
 const RATE_LIMIT_USED_SESSION_STORAGE_KEY = "REDDIT_WATCHER_RATE_LIMIT_USED";
 
 export default class RedditClient {
-  authenticate(
+  async authenticate(
     username: string,
     password: string,
     clientId: string,
     clientSecret: string
-  ): Promise<{ accessToken: string; expiration: number }> {
-    return new Promise((resolve, reject) => {
-      sessionStorage.removeItem(ACCESS_TOKEN_SESSION_STORAGE_KEY);
-      username = username.trim();
-      password = password.trim();
-      clientId = clientId.trim();
-      clientSecret = clientSecret.trim();
-      const url =
-        REDDIT_BASE_URL +
-        REDDIT_AUTH_ENDPOINT.replace("{username}", username).replace(
-          "{password}",
-          password
-        );
-
-      const encodedAuth = Buffer.from(`${clientId}:${clientSecret}`).toString(
-        "base64"
+  ) {
+    sessionStorage.removeItem(ACCESS_TOKEN_SESSION_STORAGE_KEY);
+    sessionStorage.removeItem(ACCESS_TOKEN_EXPIRATION_SESSION_STORAGE_KEY);
+    username = username.trim();
+    password = password.trim();
+    clientId = clientId.trim();
+    clientSecret = clientSecret.trim();
+    const url =
+      REDDIT_BASE_URL +
+      REDDIT_AUTH_ENDPOINT.replace("{username}", username).replace(
+        "{password}",
+        password
       );
 
-      CapacitorHttp.post({
+    const encodedAuth = Buffer.from(`${clientId}:${clientSecret}`).toString(
+      "base64"
+    );
+
+    let httpResponse: HttpResponse;
+    try {
+      httpResponse = await CapacitorHttp.post({
         url: url,
         headers: {
           Authorization: `Basic ${encodedAuth}`,
         },
-      })
-        .then((response) => {
-          if (response.status >= 200 && response.status < 300) {
-            const authResponse = response.data;
-            if (authResponse == null || authResponse["access_token"] == null) {
-              reject(
-                "Reddit returned ok response but did not contain a access token."
-              );
-              return;
-            }
+      });
+    } catch (error) {
+      throw new Error(`Authentication request failed with reason ${error}`);
+    }
 
-            const accessToken = authResponse["access_token"];
-            const tokenClaim = accessToken?.split(".")[1];
-            const decodedClaim = Buffer.from(tokenClaim, "base64").toString(
-              "ascii"
-            );
-            const jwtClaim = JSON.parse(decodedClaim);
-            const expiration = jwtClaim["exp"];
-            resolve({ accessToken: accessToken, expiration: expiration });
-          } else {
-            reject(
-              `Reddit client responded with bad status code: ${response.status}, with status reason: ${response.data}`
-            );
-          }
-        })
-        .catch((reason) => {
-          reject(`Authentication request failed with readon ${reason}`);
-        });
-    });
+    const responseStatusCode = httpResponse.status;
+    if (responseStatusCode < 200 || responseStatusCode >= 300) {
+      throw new Error(
+        `Reddit client responded with bad status code: ${responseStatusCode}, with status reason: ${httpResponse.data}`
+      );
+    }
+
+    const authResponse = httpResponse.data;
+    if (authResponse == null || authResponse["access_token"] == null) {
+      throw new Error(
+        "Reddit returned ok response but did not contain a access token."
+      );
+    }
+
+    const accessToken = authResponse["access_token"];
+    const tokenClaim = accessToken?.split(".")[1];
+    const decodedClaim = Buffer.from(tokenClaim, "base64").toString("ascii");
+    const jwtClaim = JSON.parse(decodedClaim);
+    const expiration = jwtClaim["exp"];
+    sessionStorage.setItem(ACCESS_TOKEN_SESSION_STORAGE_KEY, accessToken);
+    sessionStorage.setItem(
+      ACCESS_TOKEN_EXPIRATION_SESSION_STORAGE_KEY,
+      expiration
+    );
   }
 
   async getSubscribedSubReddits(
@@ -157,7 +158,9 @@ export default class RedditClient {
   }
 
   async getUserFrontPage(
-    getPostsFromSubredditsState: GetPostsFromSubredditState,
+    userFrontPagePostSortOrderOption: UserFrontPagePostSortOrderOptionsEnum,
+    topTimeFrame: TopTimeFrameOptionsEnum,
+    redditApiItemLimit: number,
     masterSubscribedSubredditList: Array<Subreddit>,
     redditLists: Array<SubredditLists>
   ): Promise<Array<Post>> {
@@ -166,9 +169,9 @@ export default class RedditClient {
     this.checkRateLimits();
 
     let uri = REDDIT_OAUTH_BASE_URL + "/";
-    switch (getPostsFromSubredditsState.userFrontPagePostSortOrderOption) {
+    switch (userFrontPagePostSortOrderOption) {
       case UserFrontPagePostSortOrderOptionsEnum.Top:
-        uri = "/top?t=" + getPostsFromSubredditsState.topTimeFrame;
+        uri = "/top?t=" + topTimeFrame;
         break;
       case UserFrontPagePostSortOrderOptionsEnum.New:
         uri = "/new";
@@ -181,7 +184,7 @@ export default class RedditClient {
         break;
     }
 
-    uri += "?limit=" + getPostsFromSubredditsState.redditApiItemLimit;
+    uri += "?limit=" + redditApiItemLimit;
     const url = REDDIT_OAUTH_BASE_URL + uri;
     console.log("Getting User front page @ URL: ", url);
     const response = await fetch(url, {
@@ -387,21 +390,7 @@ export default class RedditClient {
         clientId != undefined &&
         clientSecret != undefined
       ) {
-        const authInfo = await this.authenticate(
-          username,
-          password,
-          clientId,
-          clientSecret
-        );
-        sessionStorage.setItem(
-          ACCESS_TOKEN_SESSION_STORAGE_KEY,
-          authInfo.accessToken
-        );
-        sessionStorage.setItem(
-          ACCESS_TOKEN_EXPIRATION_SESSION_STORAGE_KEY,
-          authInfo.expiration.toString()
-        );
-        return authInfo;
+        await this.authenticate(username, password, clientId, clientSecret);
       }
     }
     return {
