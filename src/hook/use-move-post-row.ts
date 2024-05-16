@@ -268,7 +268,7 @@ export default function useMovePostRow(
   const handlePostRowMouseEnter = useCallback(() => {
     const div = postRowDivRef.current as unknown as HTMLDivElement;
     div.tabIndex = 1;
-    div.focus();
+    div.focus({ preventScroll: true });
 
     dispatch(mouseEnterPostRow(postRow.postRowUuid));
     if (autoScrollIntervalRef.current != undefined) {
