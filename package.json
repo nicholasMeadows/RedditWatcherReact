@@ -9,7 +9,7 @@
   "productName": "Reddit Watcher",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node .\\build-helper-scripts\\remove-build-folders.cjs",
+    "prebuild": "node ./build-helper-scripts/remove-build-folders.cjs",
     "build": "tsc && vite build --base ./",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
