@@ -130,3 +130,5 @@ dist
 
 electron/www
 electron/Reddit Watcher-win32-x64
+
+android/keystore.properties
