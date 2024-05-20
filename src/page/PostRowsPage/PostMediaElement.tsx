@@ -17,6 +17,7 @@ import {
   jumpToPostAttachment,
 } from "../../redux/slice/PostRowsSlice.ts";
 import { PostImageQualityEnum } from "../../model/config/enums/PostImageQualityEnum.ts";
+import { AttachmentResolution } from "../../model/Post/AttachmentResolution.ts";
 
 type Props = {
   postRowUuid: string;
@@ -158,34 +159,37 @@ const PostMediaElement: React.FC<Props> = memo(
       let url = attachment.url;
       const attachmentResolutions = attachment.attachmentResolutions;
       if (attachmentResolutions.length > 0) {
-        const sortedResolutions = [...attachmentResolutions].sort(
-          (res1, res2) => {
+        let attachmentResolution: AttachmentResolution;
+        if (
+          postImageQuality === PostImageQualityEnum.High ||
+          postImageQuality === PostImageQualityEnum.Low
+        ) {
+          attachmentResolution = attachmentResolutions.reduce(
+            (previous, current) => {
+              const previousPxCount = previous.width * previous.height;
+              const currentPxCount = current.width * current.height;
+              if (postImageQuality === PostImageQualityEnum.High) {
+                return previousPxCount < currentPxCount ? current : previous;
+              } else {
+                return previousPxCount > currentPxCount ? current : previous;
+              }
+            }
+          );
+        } else {
+          const sorted = attachmentResolutions.sort((res1, res2) => {
             const pxCount1 = res1.width * res1.height;
             const pxCount2 = res2.width * res2.height;
-            if (pxCount1 < pxCount1) {
+            if (pxCount1 > pxCount2) {
               return 1;
-            } else if (pxCount1 > pxCount2) {
+            } else if (pxCount1 < pxCount2) {
               return -1;
             }
             return 0;
-          }
-        );
-        let resolutionIndex: number = 0;
-        switch (postImageQuality) {
-          case PostImageQualityEnum.Low:
-            resolutionIndex = 0;
-            break;
-          case PostImageQualityEnum.Medium:
-            {
-              resolutionIndex = Math.floor(sortedResolutions.length / 2);
-            }
-            break;
-          case PostImageQualityEnum.High:
-            resolutionIndex = sortedResolutions.length - 1;
-            break;
+          });
+          attachmentResolution = sorted[Math.floor((sorted.length - 1) / 2)];
         }
         const textAreaElement = document.createElement("textarea");
-        textAreaElement.innerHTML = sortedResolutions[resolutionIndex].url;
+        textAreaElement.innerHTML = attachmentResolution.url;
         url = decodeURI(textAreaElement.value);
       }
       setImageUrl(url);
