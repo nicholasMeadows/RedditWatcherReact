@@ -13,6 +13,7 @@ export interface Post {
   permaLink: string;
   currentAttachmentIndex: number;
   subreddit: Subreddit;
+  thumbnail: string;
 }
 
 export interface UiPost extends Post {

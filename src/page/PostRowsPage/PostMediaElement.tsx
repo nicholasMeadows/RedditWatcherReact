@@ -16,6 +16,7 @@ import {
   incrementPostAttachment,
   jumpToPostAttachment,
 } from "../../redux/slice/PostRowsSlice.ts";
+import { PostImageQualityEnum } from "../../model/config/enums/PostImageQualityEnum.ts";
 
 type Props = {
   postRowUuid: string;
@@ -33,6 +34,7 @@ type Props = {
   onTouchMove?: TouchEventHandler;
   carouselLeftButtonClick?: () => void;
   carouselRightButtonClick?: () => void;
+  postImageQuality: PostImageQualityEnum;
 };
 const PostMediaElement: React.FC<Props> = memo(
   ({
@@ -51,6 +53,7 @@ const PostMediaElement: React.FC<Props> = memo(
     onTouchMove,
     carouselRightButtonClick,
     carouselLeftButtonClick,
+    postImageQuality,
   }) => {
     const dispatch = useAppDispatch();
     const [carouselArrowLightDarkPart, setCarouselArrowLightDarkPart] =
@@ -59,7 +62,7 @@ const PostMediaElement: React.FC<Props> = memo(
     const autoIncrementPostAttachmentInterval = useRef<
       NodeJS.Timeout | undefined
     >();
-
+    const [imageUrl, setImageUrl] = useState("");
     const setupAutoIncrementPostAttachmentInterval = useCallback(() => {
       if (post.attachments.length > 1 && autoIncrementAttachments) {
         autoIncrementPostAttachmentInterval.current = setInterval(() => {
@@ -83,7 +86,11 @@ const PostMediaElement: React.FC<Props> = memo(
     }, [setupAutoIncrementPostAttachmentInterval]);
 
     useEffect(() => {
-      if (post == undefined || post.attachments.length <= 1) {
+      if (
+        post == undefined ||
+        post.attachments.length <= 1 ||
+        imageUrl == undefined
+      ) {
         return;
       }
       const attachment = post.attachments[post.currentAttachmentIndex];
@@ -143,8 +150,51 @@ const PostMediaElement: React.FC<Props> = memo(
           setCarouselArrowLightDarkPart("light");
         }
       };
-      imgEl.src = attachment.url;
-    }, [post]);
+      imgEl.src = imageUrl;
+    }, [post, imageUrl]);
+
+    useEffect(() => {
+      const attachment = post.attachments[post.currentAttachmentIndex];
+      let url = attachment.url;
+      const attachmentResolutions = attachment.attachmentResolutions;
+      if (attachmentResolutions.length > 0) {
+        const sortedResolutions = [...attachmentResolutions].sort(
+          (res1, res2) => {
+            const pxCount1 = res1.width * res1.height;
+            const pxCount2 = res2.width * res2.height;
+            if (pxCount1 < pxCount1) {
+              return 1;
+            } else if (pxCount1 > pxCount2) {
+              return -1;
+            }
+            return 0;
+          }
+        );
+        let resolutionIndex: number = 0;
+        switch (postImageQuality) {
+          case PostImageQualityEnum.Low:
+            resolutionIndex = 0;
+            break;
+          case PostImageQualityEnum.Medium:
+            {
+              resolutionIndex = Math.floor(sortedResolutions.length / 2);
+            }
+            break;
+          case PostImageQualityEnum.High:
+            resolutionIndex = sortedResolutions.length - 1;
+            break;
+        }
+        const textAreaElement = document.createElement("textarea");
+        textAreaElement.innerHTML = sortedResolutions[resolutionIndex].url;
+        url = decodeURI(textAreaElement.value);
+      }
+      setImageUrl(url);
+    }, [
+      post.attachments,
+      post.currentAttachmentIndex,
+      post.thumbnail,
+      postImageQuality,
+    ]);
 
     return (
       <div
@@ -205,7 +255,7 @@ const PostMediaElement: React.FC<Props> = memo(
             <img
               alt={""}
               draggable={false}
-              src={post.attachments[post.currentAttachmentIndex].url}
+              src={imageUrl}
               className="post-element-img-element"
               onMouseOut={onMouseOut}
               onMouseDown={onMouseDown}

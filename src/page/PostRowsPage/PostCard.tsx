@@ -10,6 +10,7 @@ import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice.ts";
 import { setSinglePostPageUuids } from "../../redux/slice/SinglePostPageSlice.ts";
 import { mouseLeavePostRow } from "../../redux/slice/PostRowsSlice.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
+import { PostImageQualityEnum } from "../../model/config/enums/PostImageQualityEnum.ts";
 
 const PostCard: FC = memo(() => {
   const dispatch = useAppDispatch();
@@ -101,7 +102,11 @@ const PostCard: FC = memo(() => {
           <p className="postCardHeaderText">{uiPost.randomSourceString}</p>
         </div>
         <div className="post-card-content">
-          <PostMediaElement postRowUuid={postRowUuid} post={uiPost} />
+          <PostMediaElement
+            postRowUuid={postRowUuid}
+            post={uiPost}
+            postImageQuality={PostImageQualityEnum.Low}
+          />
         </div>
       </div>
     </div>

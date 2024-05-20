@@ -4,6 +4,7 @@ import { Post } from "../Post/Post";
 import { T3 } from "../RedditApiResponse/Types/T3/T3";
 import { Subreddit } from "../Subreddit/Subreddit";
 import { SubredditLists } from "../SubredditList/SubredditLists.ts";
+import { AttachmentResolution } from "../Post/AttachmentResolution.ts";
 
 const DOMAIN_REDGIFS = "redgifs.com";
 const DOMAIN_IMGUR1 = "i.imgur.com";
@@ -72,6 +73,7 @@ export function convertPost(
     permaLink: post.permalink,
     randomSourceString: "",
     currentAttachmentIndex: 0,
+    thumbnail: post.thumbnail,
   };
 }
 
@@ -127,6 +129,20 @@ function createAttachments(post: T3): Array<Attachment> {
       const attachments = new Array<Attachment>();
       let attachment: Attachment | undefined;
 
+      const attachmentResolutions = new Array<AttachmentResolution>();
+      const previewImages = post.preview.images;
+      if (previewImages !== undefined && previewImages.length > 0) {
+        const previewImage = previewImages[0];
+        const mappedResolutions: Array<AttachmentResolution> =
+          previewImage.resolutions.map((resolution) => {
+            return {
+              url: resolution.url,
+              width: resolution.width,
+              height: resolution.height,
+            };
+          });
+        attachmentResolutions.push(...mappedResolutions);
+      }
       const baseUrl = postUrl.split("?")[0];
       if (
         baseUrl.endsWith(".jpg") ||
@@ -137,6 +153,7 @@ function createAttachments(post: T3): Array<Attachment> {
           mediaType: "IMAGE",
           url: postUrl,
           status: "VALID",
+          attachmentResolutions: attachmentResolutions,
         };
         attachments.push(attachment);
       } else if (baseUrl.endsWith(".gif")) {
@@ -144,6 +161,7 @@ function createAttachments(post: T3): Array<Attachment> {
           mediaType: "GIF",
           url: postUrl,
           status: "VALID",
+          attachmentResolutions: attachmentResolutions,
         };
         attachments.push(attachment);
       } else if (domain == DOMAIN_GIPHY) {
@@ -151,6 +169,7 @@ function createAttachments(post: T3): Array<Attachment> {
           mediaType: "IFRAME",
           url: postUrl,
           status: "VALID",
+          attachmentResolutions: attachmentResolutions,
         };
         attachments.push(attachment);
       } else if (
@@ -161,6 +180,7 @@ function createAttachments(post: T3): Array<Attachment> {
           mediaType: "VIDEO-MP4",
           url: postUrl.substring(0, postUrl.length - 5) + ".mp4",
           status: "VALID",
+          attachmentResolutions: attachmentResolutions,
         };
         attachments.push(attachment);
       }
@@ -201,6 +221,7 @@ function convertMediaMetadata(post: T3): Array<Attachment> {
       if (mediaMetadataObj != undefined) {
         const mediaType = mediaMetadataObj.m;
         const mediaMetadataItem = mediaMetadataObj.s;
+        const mediaMetadataResolutions = mediaMetadataObj.p;
 
         let url: string | undefined = undefined;
         if (mediaType != null && mediaMetadataItem != null) {
@@ -211,11 +232,26 @@ function convertMediaMetadata(post: T3): Array<Attachment> {
           }
         }
 
+        const attachmentResolutions = new Array<AttachmentResolution>();
+        if (mediaMetadataResolutions !== undefined) {
+          const resoltions = mediaMetadataResolutions.map(
+            (mediaMetadataResolution) => {
+              return {
+                url: mediaMetadataResolution.u,
+                width: mediaMetadataResolution.x,
+                height: mediaMetadataResolution.y,
+              };
+            }
+          );
+          attachmentResolutions.push(...resoltions);
+        }
+
         if (url != null) {
           const attachment: Attachment = {
             status: mediaMetadataObj.status,
             url: url,
             mediaType: mediaType,
+            attachmentResolutions: attachmentResolutions,
           };
           attachments.push(attachment);
         }

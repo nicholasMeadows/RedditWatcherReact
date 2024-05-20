@@ -1,4 +1,5 @@
 import MediaMetadata from "./MediaMetadata";
+import { Preview } from "./Preview.ts";
 
 export interface T3 {
   subreddit: string;
@@ -12,4 +13,6 @@ export interface T3 {
   permalink: string;
   media_metadata: { [key: string]: MediaMetadata } | undefined;
   crosspost_parent_list: Array<T3> | undefined;
+  preview: Preview;
+  thumbnail: string;
 }

@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import { setPostContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import { Post } from "../model/Post/Post.ts";
 import useSinglePostPageZoom from "../hook/use-single-post-page-zoom.ts";
+import { PostImageQualityEnum } from "../model/config/enums/PostImageQualityEnum.ts";
 
 const SinglePostView: FC = () => {
   const dispatch = useAppDispatch();
@@ -84,6 +85,7 @@ const SinglePostView: FC = () => {
                 carouselRightButtonClick={
                   singlePostPageZoom.resetImgPositionAndScale
                 }
+                postImageQuality={PostImageQualityEnum.High}
               />
             </div>
           )}
