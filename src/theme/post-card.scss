@@ -1,0 +1,28 @@
+.post-card-outer {
+  position: relative;
+  height: 100%;
+  background-color: gray;
+  margin-left: calc(1em * var(--post-card-left-margin-em));
+  margin-right: calc(1em * var(--post-card-right-margin-em));
+  display: flex;
+  flex-direction: column;
+  border-radius: 1em;
+}
+
+.postCardHeader {
+  flex-shrink: 1;
+  flex-grow: 0;
+  max-width: 100%;
+  word-wrap: anywhere;
+}
+
+.postCardHeaderText {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.post-card-content {
+  flex-grow: 1;
+  min-height: 0;
+}

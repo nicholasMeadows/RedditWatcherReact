@@ -15,8 +15,3 @@ export interface Post {
   subreddit: Subreddit;
   thumbnail: string;
 }
-
-export interface UiPost extends Post {
-  uiUuid: string;
-  leftPercentage: number;
-}

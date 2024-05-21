@@ -1,0 +1,25 @@
+.post-row-page {
+  height: 100%;
+  width: 100vw;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.play-pause-button-div {
+  background: gray;
+  border-color: black;
+  border-style: solid;
+  border-width: 0.2em;
+  position: absolute;
+  left: 1.5em;
+  bottom: 1.5em;
+  z-index: 5;
+}
+
+.play-pause-button-img {
+  position: relative;
+  width: 4em;
+  height: auto;
+  object-fit: contain;
+  margin: 0.5em;
+}

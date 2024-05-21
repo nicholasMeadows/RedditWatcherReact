@@ -1,7 +1,7 @@
 {
   "name": "reddit-watcher",
   "private": true,
-  "version": "1.10.2",
+  "version": "2.0.0",
   "type": "module",
   "main": "electron-entry.cjs",
   "author": "Nicholas",
@@ -16,7 +16,7 @@
     "build-android": "npm run build && npx cap sync android && npx cap open android",
     "generate-icons": "npx @capacitor/assets generate --iconBackgroundColor \"#ff5700\" --iconBackgroundColorDark \"#ff5700\" --splashBackgroundColor \"#ff5700\" --splashBackgroundColorDark \"#ff5700\" --assetPath ./public",
     "electron:sync": "npm run build && npx cap sync @capacitor-community/electron",
-    "electron": "npm run electron:sync && cd electron && npm run electron-forge:start",
+    "electron": "npm run build &&npm run electron:sync && cd electron && npm run electron-forge:start",
     "electron:make": "npm run electron:sync && node .\\build-helper-scripts\\copy-package-version-for-electron.cjs && cd electron && npm run electron-forge:make && cd .. && node .\\build-helper-scripts\\reset-package-version-for-electron.cjs",
     "electron:package": "npm run electron:sync && node .\\build-helper-scripts\\copy-package-version-for-electron.cjs && cd electron && npm run electron-forge:package && cd .. && node .\\build-helper-scripts\\reset-package-version-for-electron.cjs",
     "electron:publish": "npm run electron:sync && node .\\build-helper-scripts\\copy-package-version-for-electron.cjs && cd electron && npm run electron-forge:publish && cd .. && node .\\build-helper-scripts\\reset-package-version-for-electron.cjs"

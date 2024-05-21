@@ -6,6 +6,7 @@ import {
   toggleClickedOnPlayPauseButton,
 } from "../../redux/slice/PostRowsSlice.ts";
 import PostRow from "./PostRow.tsx";
+import "../../theme/post-row-page.scss";
 
 const PostRowPage: React.FC = () => {
   const dispatch = useAppDispatch();

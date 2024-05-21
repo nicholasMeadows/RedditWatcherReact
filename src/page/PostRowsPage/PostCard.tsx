@@ -1,113 +1,91 @@
-import { FC, memo, useContext } from "react";
-import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent.ts";
-import { SINGPLE_POST_ROUTE } from "../../RedditWatcherConstants.ts";
+import { FC, memo, useContext, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
-import { useNavigate } from "react-router-dom";
-import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
-import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { PostCardContext } from "../../context/post-card-context.ts";
-import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice.ts";
+import "../../theme/post-card.scss";
 import { setSinglePostPageUuids } from "../../redux/slice/SinglePostPageSlice.ts";
 import { mouseLeavePostRow } from "../../redux/slice/PostRowsSlice.ts";
+import {
+  POST_CARD_LEFT_MARGIN_EM,
+  SINGPLE_POST_ROUTE,
+} from "../../RedditWatcherConstants.ts";
+import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent.ts";
+import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
 import { PostImageQualityEnum } from "../../model/config/enums/PostImageQualityEnum.ts";
+import { useNavigate } from "react-router-dom";
 
 const PostCard: FC = memo(() => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const {
-    uiPost,
-    postRowUuid,
-    userFrontPagePostSortOrderOptionAtRowCreation,
-    mouseOverPostRow,
-    totalMovementX,
-  } = useContext(PostCardContext);
+  const { postRowUuid, post } = useContext(PostCardContext);
 
   const postRowsState = useAppSelector((state) => state.postRows);
-  const autoScrollPostRowOption = useAppSelector(
-    (state) => state.appConfig.autoScrollPostRowOption
-  );
-
-  const autoScrollPostRowRateSecondsForSinglePostCard = useAppSelector(
-    (state) => state.appConfig.autoScrollPostRowRateSecondsForSinglePostCard
-  );
+  const initialMouseDownOrTouchX = useRef(0);
   return (
     <div
       className={`post-card-outer`}
       style={{
-        minWidth: `${postRowsState.postCardWidthPercentage}%`,
-        maxWidth: `${postRowsState.postCardWidthPercentage}%`,
-        left: `${uiPost.leftPercentage}%`,
-        transition: `${
-          mouseOverPostRow ||
-          userFrontPagePostSortOrderOptionAtRowCreation ==
-            UserFrontPagePostSortOrderOptionsEnum.New ||
-          autoScrollPostRowOption ==
-            AutoScrollPostRowOptionEnum.ScrollByPostWidth
-            ? "none"
-            : `left ${
-                autoScrollPostRowRateSecondsForSinglePostCard * 1000
-              }ms linear`
-        }`,
+        minWidth: `calc(${postRowsState.postCardWidthPercentage}% - ((1em * ${POST_CARD_LEFT_MARGIN_EM})*2) )`,
+        maxWidth: `calc(${postRowsState.postCardWidthPercentage}% - ((1em * ${POST_CARD_LEFT_MARGIN_EM})*2) )`,
+      }}
+      onMouseDown={(event) => {
+        initialMouseDownOrTouchX.current = event.clientX;
+      }}
+      onContextMenu={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const postContextMenuEvent: PostContextMenuEvent = {
+          post: post,
+          x: event.clientX,
+          y: event.clientY,
+        };
+        dispatch(setPostContextMenuEvent({ event: postContextMenuEvent }));
+      }}
+      onClickCapture={(event) => {
+        if (Math.abs(initialMouseDownOrTouchX.current - event.clientX) >= 50) {
+          event.stopPropagation();
+          event.preventDefault();
+        }
+        initialMouseDownOrTouchX.current = 0;
+      }}
+      onClick={() => {
+        dispatch(
+          setSinglePostPageUuids({
+            postRowUuid: postRowUuid,
+            postUuid: post.postUuid,
+          })
+        );
+        navigate(`${SINGPLE_POST_ROUTE}`);
+        dispatch(mouseLeavePostRow(postRowUuid));
       }}
     >
-      <div
-        className={"post-card-inner"}
-        onContextMenu={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          const postContextMenuEvent: PostContextMenuEvent = {
-            post: uiPost,
-            x: event.clientX,
-            y: event.clientY,
-          };
-          dispatch(setPostContextMenuEvent({ event: postContextMenuEvent }));
-        }}
-        onClickCapture={(event) => {
-          if (totalMovementX.current >= 50) {
-            event.stopPropagation();
-            event.preventDefault();
-          }
-        }}
-        onClick={() => {
-          dispatch(
-            setSinglePostPageUuids({
-              postRowUuid: postRowUuid,
-              postUuid: uiPost.postUuid,
-            })
-          );
-          navigate(`${SINGPLE_POST_ROUTE}`);
-          dispatch(mouseLeavePostRow(postRowUuid));
-        }}
-      >
-        <div className="postCardHeader">
-          <p className="postCardHeaderText">{`${uiPost.subreddit.displayName}${
-            uiPost.attachments.length > 1 ? " (Gallery)" : ""
-          }`}</p>
-          {uiPost.subreddit.fromList.length > 0 && (
-            <p className="postCardHeaderText">{`From List: ${uiPost.subreddit.fromList}`}</p>
-          )}
-          <p className="postCardHeaderText">
-            {new Date(uiPost.created * 1000).toLocaleDateString("en-us", {
-              month: "long",
-              day: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </p>
-          {!uiPost.subreddit.displayName.startsWith("u_") && (
-            <p className="postCardHeaderText">{`Subscribers: ${uiPost.subreddit.subscribers.toLocaleString()}`}</p>
-          )}
-          <p className="postCardHeaderText">{uiPost.randomSourceString}</p>
-        </div>
-        <div className="post-card-content">
-          <PostMediaElement
-            postRowUuid={postRowUuid}
-            post={uiPost}
-            postImageQuality={PostImageQualityEnum.Low}
-          />
-        </div>
+      <div className="postCardHeader">
+        <p className="postCardHeaderText">{`${post.subreddit.displayName}${
+          post.attachments.length > 1 ? " (Gallery)" : ""
+        }`}</p>
+        {post.subreddit.fromList.length > 0 && (
+          <p className="postCardHeaderText">{`From List: ${post.subreddit.fromList}`}</p>
+        )}
+        <p className="postCardHeaderText">
+          {new Date(post.created * 1000).toLocaleDateString("en-us", {
+            month: "long",
+            day: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+        {!post.subreddit.displayName.startsWith("u_") && (
+          <p className="postCardHeaderText">{`Subscribers: ${post.subreddit.subscribers.toLocaleString()}`}</p>
+        )}
+        <p className="postCardHeaderText">{post.randomSourceString}</p>
+      </div>
+      <div className="post-card-content">
+        <PostMediaElement
+          postRowUuid={postRowUuid}
+          post={post}
+          postImageQuality={PostImageQualityEnum.Low}
+        />
       </div>
     </div>
   );

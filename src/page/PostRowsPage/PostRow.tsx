@@ -1,42 +1,46 @@
 import { PostRow } from "../../model/PostRow.ts";
-import { useAppSelector } from "../../redux/store.ts";
+import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import getPlatform from "../../util/PlatformUtil.ts";
 import { Platform } from "../../model/Platform.ts";
-import { FC, memo, useCallback, useRef } from "react";
-import useMovePostRow from "../../hook/use-move-post-row.ts";
+import { FC, memo, useCallback, useEffect, useRef, useState } from "react";
+import "../../theme/post-row.scss";
 import { PostCardContext } from "../../context/post-card-context.ts";
 import PostCard from "./PostCard.tsx";
+import { Post } from "../../model/Post/Post.ts";
+import useMovePostRow from "../../hook/use-move-post-row.ts";
+import {
+  mouseEnterPostRow,
+  mouseLeavePostRow,
+} from "../../redux/slice/PostRowsSlice.ts";
 
 type Props = { postRow: PostRow };
 const PostRow: FC<Props> = memo(({ postRow }) => {
+  const dispatch = useAppDispatch();
   const darkMode = useAppSelector((state) => state.appConfig.darkMode);
-
   const postsToShowInRow = useAppSelector(
     (state) => state.appConfig.postsToShowInRow
   );
 
-  const postRowDivRef = useRef(null);
-  const postRowContentDivRef = useRef(null);
+  const postRowContentDivRef = useRef<HTMLDivElement>(null);
 
-  const movePostRow = useMovePostRow(
-    postRowDivRef,
-    postRowContentDivRef,
-    postRow,
-    postsToShowInRow
-  );
+  const [postsToShow, setPostsToShow] = useState<Array<Post>>(postRow.posts);
+  useEffect(() => {
+    const postRowContentDiv = postRowContentDivRef.current;
+    if (postRowContentDiv !== null) {
+      postRowContentDiv.scroll({ left: 1 });
+    }
+  }, []);
 
   const hideScrollButtonDivs = useCallback(() => {
     return getPlatform() == Platform.Android || getPlatform() == Platform.Ios;
   }, []);
 
+  useMovePostRow(postRow, postRowContentDivRef, postsToShow, setPostsToShow);
   return (
-    <div className="postRow" ref={postRowDivRef}>
+    <div className="postRow">
       <div
         hidden={hideScrollButtonDivs()}
         className="postRowScrollButton leftPostRowScrollButton"
-        onClick={() =>
-          movePostRow.postRowScrollLeftPressed(postRow.postRowUuid)
-        }
       >
         <img
           alt={""}
@@ -48,22 +52,26 @@ const PostRow: FC<Props> = memo(({ postRow }) => {
           className="postRowScrollImg"
           style={{
             visibility:
-              postRow.posts.length > postsToShowInRow ? "visible" : "hidden",
+              postsToShow.length > postsToShowInRow ? "visible" : "hidden",
           }}
         />
       </div>
-      <div className="postRowContent" ref={postRowContentDivRef}>
-        {postRow.uiPosts.map((uiPost) => (
+      <div
+        className="postRowContent"
+        ref={postRowContentDivRef}
+        onMouseEnter={() => dispatch(mouseEnterPostRow(postRow.postRowUuid))}
+        onMouseLeave={() => dispatch(mouseLeavePostRow(postRow.postRowUuid))}
+      >
+        {postsToShow.map((post) => (
           <PostCardContext.Provider
             value={{
-              uiPost: uiPost,
               postRowUuid: postRow.postRowUuid,
+              post: post,
               userFrontPagePostSortOrderOptionAtRowCreation:
                 postRow.userFrontPagePostSortOrderOptionAtRowCreation,
               mouseOverPostRow: postRow.mouseOverPostRow,
-              totalMovementX: movePostRow.totalMovementX,
             }}
-            key={uiPost.uiUuid}
+            key={post.postUuid}
           >
             <PostCard />
           </PostCardContext.Provider>
@@ -72,9 +80,6 @@ const PostRow: FC<Props> = memo(({ postRow }) => {
       <div
         hidden={hideScrollButtonDivs()}
         className="postRowScrollButton rightPostRowScrollButton"
-        onClick={() =>
-          movePostRow.postRowScrollRightPressed(postRow.postRowUuid)
-        }
       >
         <img
           alt={""}
@@ -86,7 +91,7 @@ const PostRow: FC<Props> = memo(({ postRow }) => {
           className="postRowScrollImg"
           style={{
             visibility:
-              postRow.posts.length > postsToShowInRow ? "visible" : "hidden",
+              postsToShow.length > postsToShowInRow ? "visible" : "hidden",
           }}
         />
       </div>
