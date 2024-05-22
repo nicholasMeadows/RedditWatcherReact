@@ -56,6 +56,7 @@ const createPostRow = (
     postRowContentWidthAtCreation: postRowContentWidth,
     userFrontPagePostSortOrderOptionAtRowCreation: userFrontPageSortOption,
     mouseOverPostRow: false,
+    lastAutoScrollPostRowState: undefined,
   };
   return postRow;
 };
@@ -267,6 +268,28 @@ export const postRowsSlice = createSlice({
       clearGetPostRowPausedTimeout(state);
       state.getPostRowsPaused = true;
     },
+    setLastAutoScrollPostRowState: (
+      state,
+      action: {
+        type: string;
+        payload: {
+          postRowUuid: string;
+          postsToShow: Array<Post>;
+          scrollLeft: number;
+        };
+      }
+    ) => {
+      const postRowUuid = action.payload.postRowUuid;
+      const postRow = state.postRows.find(
+        (postRow) => postRow.postRowUuid === postRowUuid
+      );
+      if (postRow !== undefined) {
+        postRow.lastAutoScrollPostRowState = {
+          postsToShow: action.payload.postsToShow,
+          scrollLeft: action.payload.scrollLeft,
+        };
+      }
+    },
   },
 });
 export const {
@@ -285,5 +308,6 @@ export const {
   setPostCardWidthPercentage,
   setPostRowContentWidthPx,
   mouseEnterPostRow,
+  setLastAutoScrollPostRowState,
 } = postRowsSlice.actions;
 export default postRowsSlice.reducer;
