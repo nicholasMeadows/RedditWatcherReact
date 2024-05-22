@@ -116,10 +116,6 @@ export default function useMovePostRow(
       (autoScrollPostRowRateSecondsForSinglePostCard * 1000) / steps;
 
     autoScrollInterval.current = setInterval(() => {
-      console.log(
-        "autoScrollPostRowDirectionOption",
-        autoScrollPostRowDirectionOption
-      );
       if (
         autoScrollPostRowDirectionOption ===
         AutoScrollPostRowDirectionOptionEnum.Left
