@@ -56,6 +56,7 @@ const createPostRow = (
     postRowContentWidthAtCreation: postRowContentWidth,
     userFrontPagePostSortOrderOptionAtRowCreation: userFrontPageSortOption,
     mouseOverPostRow: false,
+    lastAutoScrollPostRowState: undefined,
   };
   return postRow;
 };
@@ -133,65 +134,11 @@ export const postRowsSlice = createSlice({
     postRowRemoveAt: (state, action: { type: string; payload: number }) => {
       state.postRows.splice(action.payload, 1);
     },
-    incrementPostAttachment: (
+    setPostAttachmentIndex: (
       state,
       action: {
         type: string;
-        payload: { postRowUuid: string; postUuid: string };
-      }
-    ) => {
-      const postRowUuid = action.payload.postRowUuid;
-      const postRow = state.postRows.find(
-        (row) => row.postRowUuid == postRowUuid
-      );
-      if (postRow == undefined) {
-        return;
-      }
-      const postUuid = action.payload.postUuid;
-      const post = postRow.posts.find((post) => post.postUuid == postUuid);
-      if (post != undefined) {
-        const currentAttachmentIndex = post.currentAttachmentIndex;
-        if (currentAttachmentIndex == post.attachments.length - 1) {
-          post.currentAttachmentIndex = 0;
-        } else {
-          post.currentAttachmentIndex += 1;
-        }
-      }
-    },
-    decrementPostAttachment: (
-      state,
-      action: {
-        type: string;
-        payload: { postRowUuid: string; postUuid: string };
-      }
-    ) => {
-      const postRowUuid = action.payload.postRowUuid;
-      const postRow = state.postRows.find(
-        (row) => row.postRowUuid == postRowUuid
-      );
-      if (postRow == undefined) {
-        return;
-      }
-      const postUuid = action.payload.postUuid;
-      const post = postRow.posts.find((post) => post.postUuid == postUuid);
-      if (post != undefined) {
-        const currentAttachmentIndex = post.currentAttachmentIndex;
-        if (currentAttachmentIndex == 0) {
-          post.currentAttachmentIndex = post.attachments.length - 1;
-        } else {
-          post.currentAttachmentIndex -= 1;
-        }
-      }
-    },
-    jumpToPostAttachment: (
-      state,
-      action: {
-        type: string;
-        payload: {
-          postRowUuid: string;
-          postUuid: string;
-          attachmentIndex: number;
-        };
+        payload: { postRowUuid: string; postUuid: string; index: number };
       }
     ) => {
       const postRowUuid = action.payload.postRowUuid;
@@ -206,7 +153,7 @@ export const postRowsSlice = createSlice({
       if (post == undefined) {
         return;
       }
-      post.currentAttachmentIndex = action.payload.attachmentIndex;
+      post.currentAttachmentIndex = action.payload.index;
     },
     clearPostRows: (state) => {
       state.postRows = [];
@@ -267,6 +214,28 @@ export const postRowsSlice = createSlice({
       clearGetPostRowPausedTimeout(state);
       state.getPostRowsPaused = true;
     },
+    setLastAutoScrollPostRowState: (
+      state,
+      action: {
+        type: string;
+        payload: {
+          postRowUuid: string;
+          postsToShow: Array<Post>;
+          scrollLeft: number;
+        };
+      }
+    ) => {
+      const postRowUuid = action.payload.postRowUuid;
+      const postRow = state.postRows.find(
+        (postRow) => postRow.postRowUuid === postRowUuid
+      );
+      if (postRow !== undefined) {
+        postRow.lastAutoScrollPostRowState = {
+          postsToShow: action.payload.postsToShow,
+          scrollLeft: action.payload.scrollLeft,
+        };
+      }
+    },
   },
 });
 export const {
@@ -277,13 +246,12 @@ export const {
   createPostRowAndInsertAtBeginning,
   checkGetPostRowPausedConditions,
   postRowRemoveAt,
-  incrementPostAttachment,
-  decrementPostAttachment,
-  jumpToPostAttachment,
+  setPostAttachmentIndex,
   clearPostRows,
   addPostsToFrontOfRow,
   setPostCardWidthPercentage,
   setPostRowContentWidthPx,
   mouseEnterPostRow,
+  setLastAutoScrollPostRowState,
 } = postRowsSlice.actions;
 export default postRowsSlice.reducer;

@@ -2,7 +2,7 @@ import { PostRow } from "../../model/PostRow.ts";
 import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import getPlatform from "../../util/PlatformUtil.ts";
 import { Platform } from "../../model/Platform.ts";
-import { FC, memo, useCallback, useEffect, useRef, useState } from "react";
+import { FC, memo, useCallback, useRef, useState } from "react";
 import "../../theme/post-row.scss";
 import { PostCardContext } from "../../context/post-card-context.ts";
 import PostCard from "./PostCard.tsx";
@@ -12,6 +12,7 @@ import {
   mouseEnterPostRow,
   mouseLeavePostRow,
 } from "../../redux/slice/PostRowsSlice.ts";
+import useInitializePostRow from "../../hook/use-initialize-post-row.ts";
 
 type Props = { postRow: PostRow };
 const PostRow: FC<Props> = memo(({ postRow }) => {
@@ -23,17 +24,18 @@ const PostRow: FC<Props> = memo(({ postRow }) => {
 
   const postRowContentDivRef = useRef<HTMLDivElement>(null);
 
-  const [postsToShow, setPostsToShow] = useState<Array<Post>>(postRow.posts);
-  useEffect(() => {
-    const postRowContentDiv = postRowContentDivRef.current;
-    if (postRowContentDiv !== null) {
-      postRowContentDiv.scroll({ left: 1 });
-    }
-  }, []);
+  const [postsToShow, setPostsToShow] = useState<Array<Post>>([]);
 
   const hideScrollButtonDivs = useCallback(() => {
     return getPlatform() == Platform.Android || getPlatform() == Platform.Ios;
   }, []);
+
+  useInitializePostRow(
+    postRow,
+    postRowContentDivRef,
+    postsToShow,
+    setPostsToShow
+  );
 
   useMovePostRow(postRow, postRowContentDivRef, postsToShow, setPostsToShow);
   return (

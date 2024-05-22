@@ -162,6 +162,7 @@ export default function useMovePostRow(
       clearAutoScrollInterval();
     };
     const mouseLeave = () => {
+      mouseDownOrTouchOnPostRow.current = false;
       clearAutoScrollInterval();
       createAutoScrollInterval();
     };
@@ -186,7 +187,6 @@ export default function useMovePostRow(
         mouseDownOrTouchOnPostRow.current = false;
         lastMouseDownOrTouchX.current = 0;
         clearAutoScrollInterval();
-        createAutoScrollInterval();
       } else if (event instanceof TouchEvent) {
         const touches = event.touches;
         if (touches.length === 0) {
