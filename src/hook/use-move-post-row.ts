@@ -162,6 +162,7 @@ export default function useMovePostRow(
       clearAutoScrollInterval();
     };
     const mouseLeave = () => {
+      mouseDownOrTouchOnPostRow.current = false;
       clearAutoScrollInterval();
       createAutoScrollInterval();
     };
