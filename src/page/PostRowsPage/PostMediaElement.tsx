@@ -11,13 +11,9 @@ import React, {
 import { Post } from "../../model/Post/Post.ts";
 import { useAppDispatch } from "../../redux/store.ts";
 import { v4 as uuidV4 } from "uuid";
-import {
-  decrementPostAttachment,
-  incrementPostAttachment,
-  jumpToPostAttachment,
-} from "../../redux/slice/PostRowsSlice.ts";
 import { PostImageQualityEnum } from "../../model/config/enums/PostImageQualityEnum.ts";
 import { AttachmentResolution } from "../../model/Post/AttachmentResolution.ts";
+import { setPostAttachmentIndex } from "../../redux/slice/PostRowsSlice.ts";
 
 type Props = {
   postRowUuid: string;
@@ -64,18 +60,86 @@ const PostMediaElement: React.FC<Props> = memo(
       NodeJS.Timeout | undefined
     >();
     const [imageUrl, setImageUrl] = useState("");
+    const [currentAttachmentIndex, setCurrentAttachmentIndex] = useState(
+      post.currentAttachmentIndex
+    );
+
+    const incrementPostAttachment = useCallback(() => {
+      const attachments = post.attachments;
+      let attachmentIndex: number;
+      if (currentAttachmentIndex < attachments.length - 1) {
+        attachmentIndex = currentAttachmentIndex + 1;
+      } else {
+        attachmentIndex = 0;
+      }
+      setCurrentAttachmentIndex(attachmentIndex);
+      dispatch(
+        setPostAttachmentIndex({
+          postRowUuid: postRowUuid,
+          postUuid: post.postUuid,
+          index: attachmentIndex,
+        })
+      );
+    }, [
+      currentAttachmentIndex,
+      dispatch,
+      post.attachments,
+      post.postUuid,
+      postRowUuid,
+    ]);
+
+    const decrementPostAttachment = useCallback(() => {
+      const attachments = post.attachments;
+      let attachmentIndex: number;
+      if (currentAttachmentIndex <= 0) {
+        attachmentIndex = attachments.length - 1;
+      } else {
+        attachmentIndex = currentAttachmentIndex - 1;
+      }
+      setCurrentAttachmentIndex(attachmentIndex);
+      dispatch(
+        setPostAttachmentIndex({
+          postRowUuid: postRowUuid,
+          postUuid: post.postUuid,
+          index: attachmentIndex,
+        })
+      );
+    }, [
+      currentAttachmentIndex,
+      dispatch,
+      post.attachments,
+      post.postUuid,
+      postRowUuid,
+    ]);
+
+    const jumpToPostAttachment = useCallback(
+      (index: number) => {
+        const attachments = post.attachments;
+        if (index >= 0 && index < attachments.length) {
+          setCurrentAttachmentIndex(index);
+          dispatch(
+            setPostAttachmentIndex({
+              postRowUuid: postRowUuid,
+              postUuid: post.postUuid,
+              index: index,
+            })
+          );
+        }
+      },
+      [post.attachments]
+    );
+
     const setupAutoIncrementPostAttachmentInterval = useCallback(() => {
       if (post.attachments.length > 1 && autoIncrementAttachments) {
         autoIncrementPostAttachmentInterval.current = setInterval(() => {
-          dispatch(
-            incrementPostAttachment({
-              postUuid: post.postUuid,
-              postRowUuid: postRowUuid,
-            })
-          );
+          incrementPostAttachment();
         }, 5000);
       }
-    }, [autoIncrementAttachments, dispatch, post, postRowUuid]);
+    }, [
+      autoIncrementAttachments,
+      incrementPostAttachment,
+      post.attachments.length,
+    ]);
 
     useEffect(() => {
       setupAutoIncrementPostAttachmentInterval();
@@ -94,7 +158,7 @@ const PostMediaElement: React.FC<Props> = memo(
       ) {
         return;
       }
-      const attachment = post.attachments[post.currentAttachmentIndex];
+      const attachment = post.attachments[currentAttachmentIndex];
       if (attachment.mediaType != "IMAGE") {
         return;
       }
@@ -155,7 +219,7 @@ const PostMediaElement: React.FC<Props> = memo(
     }, [post, imageUrl]);
 
     useEffect(() => {
-      const attachment = post.attachments[post.currentAttachmentIndex];
+      const attachment = post.attachments[currentAttachmentIndex];
       let url = attachment.url;
       const attachmentResolutions = attachment.attachmentResolutions;
       if (attachmentResolutions.length > 0) {
@@ -195,7 +259,7 @@ const PostMediaElement: React.FC<Props> = memo(
       setImageUrl(url);
     }, [
       post.attachments,
-      post.currentAttachmentIndex,
+      currentAttachmentIndex,
       post.thumbnail,
       postImageQuality,
     ]);
@@ -224,12 +288,7 @@ const PostMediaElement: React.FC<Props> = memo(
             if (carouselLeftButtonClick !== undefined) {
               carouselLeftButtonClick();
             }
-            dispatch(
-              decrementPostAttachment({
-                postRowUuid: postRowUuid,
-                postUuid: post.postUuid,
-              })
-            );
+            decrementPostAttachment();
           }}
         />
         <img
@@ -244,17 +303,12 @@ const PostMediaElement: React.FC<Props> = memo(
             if (carouselRightButtonClick !== undefined) {
               carouselRightButtonClick();
             }
-            dispatch(
-              incrementPostAttachment({
-                postRowUuid: postRowUuid,
-                postUuid: post.postUuid,
-              })
-            );
+            incrementPostAttachment();
           }}
         />
 
-        {(post.attachments[post.currentAttachmentIndex].mediaType == "IMAGE" ||
-          post.attachments[post.currentAttachmentIndex].mediaType == "GIF") && (
+        {(post.attachments[currentAttachmentIndex].mediaType == "IMAGE" ||
+          post.attachments[currentAttachmentIndex].mediaType == "GIF") && (
           <div className="post-element-media-element">
             <img
               alt={""}
@@ -277,20 +331,18 @@ const PostMediaElement: React.FC<Props> = memo(
           </div>
         )}
 
-        {post.attachments[post.currentAttachmentIndex].mediaType ==
-          "VIDEO-MP4" && (
+        {post.attachments[currentAttachmentIndex].mediaType == "VIDEO-MP4" && (
           <video className="post-element-media-element">
             {" "}
             <source
-              src={post.attachments[post.currentAttachmentIndex].url}
+              src={post.attachments[currentAttachmentIndex].url}
               type="video/mp4"
             />{" "}
           </video>
         )}
-        {post.attachments[post.currentAttachmentIndex].mediaType ==
-          "IFRAME" && (
+        {post.attachments[currentAttachmentIndex].mediaType == "IFRAME" && (
           <iframe
-            src={post.attachments[post.currentAttachmentIndex].url}
+            src={post.attachments[currentAttachmentIndex].url}
             className="post-element-media-element"
           />
         )}
@@ -302,18 +354,12 @@ const PostMediaElement: React.FC<Props> = memo(
                 <div
                   key={uuidV4()}
                   className={`attachment-indicator ${
-                    post.attachments[post.currentAttachmentIndex] == attachment
+                    post.attachments[currentAttachmentIndex] == attachment
                       ? "attachment-indicator-active"
                       : ""
                   }`}
                   onClick={() => {
-                    dispatch(
-                      jumpToPostAttachment({
-                        postRowUuid: postRowUuid,
-                        postUuid: post.postUuid,
-                        attachmentIndex: index,
-                      })
-                    );
+                    jumpToPostAttachment(index);
                   }}
                 ></div>
               );
