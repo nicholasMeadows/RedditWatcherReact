@@ -656,16 +656,14 @@ export default class RedditService {
 
   private async loadSubscribedSubreddits(async: boolean = true) {
     let results = await new RedditClient().getSubscribedSubReddits(undefined);
+    this.masterSubscribedSubredditList.push(...results.subreddits);
     const asyncLoopForRemainingSubreddits = async () => {
-      const remainingSubreddits = new Array<Subreddit>();
-
       while (results.after != undefined) {
         results = await new RedditClient().getSubscribedSubReddits(
           results.after
         );
-        remainingSubreddits.push(...results.subreddits);
+        this.masterSubscribedSubredditList.push(...results.subreddits);
       }
-      this.masterSubscribedSubredditList.push(...remainingSubreddits);
     };
     if (async) {
       asyncLoopForRemainingSubreddits();
