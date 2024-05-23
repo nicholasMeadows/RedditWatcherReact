@@ -2,22 +2,21 @@ import React, {
   memo,
   MouseEventHandler,
   TouchEventHandler,
-  useCallback,
   useEffect,
-  useRef,
   useState,
   WheelEventHandler,
 } from "react";
 import { Post } from "../../model/Post/Post.ts";
-import { useAppDispatch } from "../../redux/store.ts";
 import { v4 as uuidV4 } from "uuid";
 import { PostImageQualityEnum } from "../../model/config/enums/PostImageQualityEnum.ts";
 import { AttachmentResolution } from "../../model/Post/AttachmentResolution.ts";
-import { setPostAttachmentIndex } from "../../redux/slice/PostRowsSlice.ts";
 
 type Props = {
-  postRowUuid: string;
   post: Post;
+  currentAttachmentIndex: number;
+  decrementPostAttachment: () => void;
+  incrementPostAttachment: () => void;
+  jumpToPostAttachment: (index: number) => void;
   autoIncrementAttachments?: boolean;
   scale?: number;
   imgXPercent?: number;
@@ -35,9 +34,11 @@ type Props = {
 };
 const PostMediaElement: React.FC<Props> = memo(
   ({
-    postRowUuid,
     post,
-    autoIncrementAttachments = true,
+    currentAttachmentIndex,
+    decrementPostAttachment,
+    incrementPostAttachment,
+    jumpToPostAttachment,
     scale = 1,
     imgXPercent = 50,
     imgYPercent = 50,
@@ -52,103 +53,9 @@ const PostMediaElement: React.FC<Props> = memo(
     carouselLeftButtonClick,
     postImageQuality,
   }) => {
-    const dispatch = useAppDispatch();
     const [carouselArrowLightDarkPart, setCarouselArrowLightDarkPart] =
       useState("light");
-
-    const autoIncrementPostAttachmentInterval = useRef<
-      NodeJS.Timeout | undefined
-    >();
     const [imageUrl, setImageUrl] = useState("");
-    const [currentAttachmentIndex, setCurrentAttachmentIndex] = useState(
-      post.currentAttachmentIndex
-    );
-
-    const incrementPostAttachment = useCallback(() => {
-      const attachments = post.attachments;
-      let attachmentIndex: number;
-      if (currentAttachmentIndex < attachments.length - 1) {
-        attachmentIndex = currentAttachmentIndex + 1;
-      } else {
-        attachmentIndex = 0;
-      }
-      setCurrentAttachmentIndex(attachmentIndex);
-      dispatch(
-        setPostAttachmentIndex({
-          postRowUuid: postRowUuid,
-          postUuid: post.postUuid,
-          index: attachmentIndex,
-        })
-      );
-    }, [
-      currentAttachmentIndex,
-      dispatch,
-      post.attachments,
-      post.postUuid,
-      postRowUuid,
-    ]);
-
-    const decrementPostAttachment = useCallback(() => {
-      const attachments = post.attachments;
-      let attachmentIndex: number;
-      if (currentAttachmentIndex <= 0) {
-        attachmentIndex = attachments.length - 1;
-      } else {
-        attachmentIndex = currentAttachmentIndex - 1;
-      }
-      setCurrentAttachmentIndex(attachmentIndex);
-      dispatch(
-        setPostAttachmentIndex({
-          postRowUuid: postRowUuid,
-          postUuid: post.postUuid,
-          index: attachmentIndex,
-        })
-      );
-    }, [
-      currentAttachmentIndex,
-      dispatch,
-      post.attachments,
-      post.postUuid,
-      postRowUuid,
-    ]);
-
-    const jumpToPostAttachment = useCallback(
-      (index: number) => {
-        const attachments = post.attachments;
-        if (index >= 0 && index < attachments.length) {
-          setCurrentAttachmentIndex(index);
-          dispatch(
-            setPostAttachmentIndex({
-              postRowUuid: postRowUuid,
-              postUuid: post.postUuid,
-              index: index,
-            })
-          );
-        }
-      },
-      [post.attachments]
-    );
-
-    const setupAutoIncrementPostAttachmentInterval = useCallback(() => {
-      if (post.attachments.length > 1 && autoIncrementAttachments) {
-        autoIncrementPostAttachmentInterval.current = setInterval(() => {
-          incrementPostAttachment();
-        }, 5000);
-      }
-    }, [
-      autoIncrementAttachments,
-      incrementPostAttachment,
-      post.attachments.length,
-    ]);
-
-    useEffect(() => {
-      setupAutoIncrementPostAttachmentInterval();
-      return () => {
-        if (autoIncrementPostAttachmentInterval.current != undefined) {
-          clearInterval(autoIncrementPostAttachmentInterval.current);
-        }
-      };
-    }, [setupAutoIncrementPostAttachmentInterval]);
 
     useEffect(() => {
       if (
@@ -216,7 +123,7 @@ const PostMediaElement: React.FC<Props> = memo(
         }
       };
       imgEl.src = imageUrl;
-    }, [post, imageUrl]);
+    }, [post, imageUrl, currentAttachmentIndex]);
 
     useEffect(() => {
       const attachment = post.attachments[currentAttachmentIndex];
@@ -265,17 +172,7 @@ const PostMediaElement: React.FC<Props> = memo(
     ]);
 
     return (
-      <div
-        className="post-element"
-        onMouseEnter={() => {
-          if (autoIncrementPostAttachmentInterval.current != undefined) {
-            clearInterval(autoIncrementPostAttachmentInterval.current);
-          }
-        }}
-        onMouseLeave={() => {
-          setupAutoIncrementPostAttachmentInterval();
-        }}
-      >
+      <div className="post-element">
         <img
           alt={""}
           hidden={post.attachments.length == 1}

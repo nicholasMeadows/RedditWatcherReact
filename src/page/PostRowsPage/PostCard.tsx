@@ -13,6 +13,7 @@ import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
 import { PostImageQualityEnum } from "../../model/config/enums/PostImageQualityEnum.ts";
 import { useNavigate } from "react-router-dom";
+import useIncrementAttachment from "../../hook/use-iincrement-attachment.ts";
 
 const PostCard: FC = memo(() => {
   const dispatch = useAppDispatch();
@@ -21,6 +22,12 @@ const PostCard: FC = memo(() => {
 
   const postRowsState = useAppSelector((state) => state.postRows);
   const initialMouseDownOrTouchX = useRef(0);
+
+  const incrementAttachmentHook = useIncrementAttachment(
+    postRowUuid,
+    post,
+    true
+  );
   return (
     <div
       className={`post-card-outer`}
@@ -58,6 +65,12 @@ const PostCard: FC = memo(() => {
         navigate(`${SINGPLE_POST_ROUTE}`);
         dispatch(mouseLeavePostRow(postRowUuid));
       }}
+      onMouseEnter={() => {
+        incrementAttachmentHook.clearAutoIncrementPostAttachmentInterval();
+      }}
+      onMouseLeave={() => {
+        incrementAttachmentHook.setupAutoIncrementPostAttachmentInterval();
+      }}
     >
       <div className="postCardHeader">
         <p className="postCardHeaderText">{`${post.subreddit.displayName}${
@@ -82,8 +95,17 @@ const PostCard: FC = memo(() => {
       </div>
       <div className="post-card-content">
         <PostMediaElement
-          postRowUuid={postRowUuid}
           post={post}
+          incrementPostAttachment={
+            incrementAttachmentHook.incrementPostAttachment
+          }
+          decrementPostAttachment={
+            incrementAttachmentHook.decrementPostAttachment
+          }
+          jumpToPostAttachment={incrementAttachmentHook.jumpToPostAttachment}
+          currentAttachmentIndex={
+            incrementAttachmentHook.currentAttachmentIndex
+          }
           postImageQuality={PostImageQualityEnum.Low}
         />
       </div>
