@@ -270,10 +270,6 @@ export default class RedditService {
 
     if (SubredditSortOrderOptionsEnum.Random === subredditSortOrderOption) {
       //Get a random subreddit from subscribed reddits. Ignore iteration method
-      console.log(
-        "getSubredditsToGetPostsFor masterSubscribedSubredditList",
-        masterSubscribedSubredditList
-      );
       sourceSubredditArray.push(...masterSubscribedSubredditList);
       const randomIndex = Math.floor(
         Math.random() * masterSubscribedSubredditList.length
@@ -438,7 +434,6 @@ export default class RedditService {
     subreddits: Array<Subreddit>,
     getPostsFromSubredditsState: GetPostsFromSubredditState
   ): Promise<Array<Post>> {
-    console.log("getPostsForSubreddit", subreddits);
     const urlConverter = new GetPostsForSubredditUrlConverter();
     const [url, randomSourceString] = urlConverter.convert(
       subreddits,

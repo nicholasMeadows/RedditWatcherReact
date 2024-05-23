@@ -3,6 +3,7 @@ import React, {
   MouseEventHandler,
   TouchEventHandler,
   useEffect,
+  useRef,
   useState,
   WheelEventHandler,
 } from "react";
@@ -30,7 +31,7 @@ type Props = {
   onTouchMove?: TouchEventHandler;
   carouselLeftButtonClick?: () => void;
   carouselRightButtonClick?: () => void;
-  postImageQuality: PostImageQualityEnum;
+  postImageQuality?: PostImageQualityEnum;
 };
 const PostMediaElement: React.FC<Props> = memo(
   ({
@@ -125,39 +126,48 @@ const PostMediaElement: React.FC<Props> = memo(
       imgEl.src = imageUrl;
     }, [post, imageUrl, currentAttachmentIndex]);
 
+    const postElementRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
       const attachment = post.attachments[currentAttachmentIndex];
       let url = attachment.url;
       const attachmentResolutions = attachment.attachmentResolutions;
-      if (attachmentResolutions.length > 0) {
-        let attachmentResolution: AttachmentResolution;
-        if (
-          postImageQuality === PostImageQualityEnum.High ||
-          postImageQuality === PostImageQualityEnum.Low
-        ) {
-          attachmentResolution = attachmentResolutions.reduce(
-            (previous, current) => {
-              const previousPxCount = previous.width * previous.height;
-              const currentPxCount = current.width * current.height;
-              if (postImageQuality === PostImageQualityEnum.High) {
-                return previousPxCount < currentPxCount ? current : previous;
-              } else {
-                return previousPxCount > currentPxCount ? current : previous;
-              }
-            }
-          );
+      if (attachmentResolutions.length > 0 && postElementRef.current !== null) {
+        const postElement = postElementRef.current;
+        const postElementPxCount =
+          postElement.clientWidth * postElement.clientHeight;
+        const sortedResolutions = [...attachmentResolutions];
+        sortedResolutions.sort((res1, res2) => {
+          const pxCount1 = res1.width * res1.height;
+          const pxCount2 = res2.width * res2.height;
+          if (pxCount1 > pxCount2) {
+            return 1;
+          } else if (pxCount1 < pxCount2) {
+            return -1;
+          }
+          return 0;
+        });
+        let attachmentResolution: AttachmentResolution | undefined = undefined;
+        if (postImageQuality == PostImageQualityEnum.High) {
+          attachmentResolution =
+            sortedResolutions[sortedResolutions.length - 1];
+        } else if (postImageQuality === PostImageQualityEnum.Medium) {
+          attachmentResolution =
+            sortedResolutions[Math.floor(sortedResolutions.length - 1)];
+        } else if (postImageQuality === PostImageQualityEnum.Low) {
+          attachmentResolution = sortedResolutions[0];
         } else {
-          const sorted = attachmentResolutions.sort((res1, res2) => {
-            const pxCount1 = res1.width * res1.height;
-            const pxCount2 = res2.width * res2.height;
-            if (pxCount1 > pxCount2) {
-              return 1;
-            } else if (pxCount1 < pxCount2) {
-              return -1;
+          for (const resolution of sortedResolutions) {
+            const pxCount = resolution.width * resolution.height;
+            if (pxCount >= postElementPxCount) {
+              attachmentResolution = resolution;
+              break;
             }
-            return 0;
-          });
-          attachmentResolution = sorted[Math.floor((sorted.length - 1) / 2)];
+          }
+        }
+
+        if (attachmentResolution === undefined) {
+          attachmentResolution =
+            sortedResolutions[sortedResolutions.length - 1];
         }
         const textAreaElement = document.createElement("textarea");
         textAreaElement.innerHTML = attachmentResolution.url;
@@ -172,7 +182,7 @@ const PostMediaElement: React.FC<Props> = memo(
     ]);
 
     return (
-      <div className="post-element">
+      <div className="post-element" ref={postElementRef}>
         <img
           alt={""}
           hidden={post.attachments.length == 1}

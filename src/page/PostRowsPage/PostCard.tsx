@@ -11,7 +11,6 @@ import {
 import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent.ts";
 import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
-import { PostImageQualityEnum } from "../../model/config/enums/PostImageQualityEnum.ts";
 import { useNavigate } from "react-router-dom";
 import useIncrementAttachment from "../../hook/use-iincrement-attachment.ts";
 
@@ -106,7 +105,6 @@ const PostCard: FC = memo(() => {
           currentAttachmentIndex={
             incrementAttachmentHook.currentAttachmentIndex
           }
-          postImageQuality={PostImageQualityEnum.Low}
         />
       </div>
     </div>
