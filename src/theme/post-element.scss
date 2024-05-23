@@ -56,15 +56,16 @@
   width: 100%;
   justify-content: center;
   gap: 0.5em;
+  z-index: 3;
 }
 
 .attachment-indicator {
-  background-color: rgba(159, 159, 159, 0.37);
+  background-color: rgb(182, 182, 182);
   height: 0.8em;
   width: 0.8em;
   border-radius: 0.8em;
 }
 
 .attachment-indicator-active {
-  background-color: rgb(159, 159, 159);
+  background-color: rgb(122, 122, 122);
 }

@@ -6,6 +6,7 @@ import { setPostContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import { Post } from "../model/Post/Post.ts";
 import useSinglePostPageZoom from "../hook/use-single-post-page-zoom.ts";
 import { PostImageQualityEnum } from "../model/config/enums/PostImageQualityEnum.ts";
+import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
 
 const SinglePostView: FC = () => {
   const dispatch = useAppDispatch();
@@ -35,6 +36,11 @@ const SinglePostView: FC = () => {
     singlePostPageState.postUuid,
   ]);
 
+  const incrementAttachmentHook = useIncrementAttachment(
+    singlePostPageState.postRowUuid,
+    post,
+    false
+  );
   return (
     <>
       {post != undefined && (
@@ -66,8 +72,19 @@ const SinglePostView: FC = () => {
               className="flex flex-column max-width-height-percentage single-post-view-post-element"
             >
               <PostMediaElement
-                postRowUuid={singlePostPageState.postRowUuid}
                 post={post}
+                currentAttachmentIndex={
+                  incrementAttachmentHook.currentAttachmentIndex
+                }
+                incrementPostAttachment={
+                  incrementAttachmentHook.incrementPostAttachment
+                }
+                decrementPostAttachment={
+                  incrementAttachmentHook.decrementPostAttachment
+                }
+                jumpToPostAttachment={
+                  incrementAttachmentHook.jumpToPostAttachment
+                }
                 autoIncrementAttachments={false}
                 scale={singlePostPageZoom.imgScale}
                 imgXPercent={singlePostPageZoom.imgXPercent}
