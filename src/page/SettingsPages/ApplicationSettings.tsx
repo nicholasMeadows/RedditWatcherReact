@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
 import {
+  clearAutoScrollPostRowRateSecondsForSinglePostCardValidationError,
+  clearConcatRedditUrlMaxLengthValidationError,
+  clearPostRowsToShowInViewValidationError,
+  clearPostsToShowInRowValidationError,
   setAutoScrollPostRowDirectionOption,
   setAutoScrollPostRowOption,
   setAutoScrollPostRowRateSecondsForSinglePostCard,
@@ -11,10 +14,6 @@ import {
   setSelectSubredditIterationMethodOption,
   setSelectSubredditListMenuSortOption,
   setSortOrderDirectionOption,
-  validateAutoScrollPostRowRateSecondsForSinglePostCard,
-  validateConcateRedditUrlLength,
-  validatePostRowsToShowInView,
-  validatePostsToShowInRow,
 } from "../../redux/slice/AppConfigSlice.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
@@ -42,11 +41,6 @@ const ApplicationSettings: React.FC = () => {
         state.appConfig
           .autoScrollPostRowRateSecondsForSinglePostCardValidationError
     );
-  const [
-    localAutoScrollPostRowRateSecondsForSinglePostCard,
-    setLocalAutoScrollPostRowRateSecondsForSinglePostCard,
-  ] = useState(autoScrollPostRowRateSecondsForSinglePostCard);
-
   const randomIterationSelectWeightOption = useAppSelector(
     (state) => state.appConfig.randomIterationSelectWeightOption
   );
@@ -59,44 +53,25 @@ const ApplicationSettings: React.FC = () => {
   const selectSubredditIterationMethodOption = useAppSelector(
     (state) => state.appConfig.selectSubredditIterationMethodOption
   );
-  const stateConcatRedditUrlMaxLength = useAppSelector(
+  const concatRedditUrlMaxLength = useAppSelector(
     (state) => state.appConfig.concatRedditUrlMaxLength
   );
-  const [localConcatRedditUrlMaxLength, setLocalConcatRedditUrlMaxLength] =
-    useState(stateConcatRedditUrlMaxLength);
-
   const concatRedditUrlMaxLengthValidationError = useAppSelector(
     (state) => state.appConfig.concatRedditUrlMaxLengthValidationError
   );
 
-  const statePostsToShowInRow = useAppSelector(
+  const postsToShowInRow = useAppSelector(
     (state) => state.appConfig.postsToShowInRow
-  );
-  const [localPostsToShowInRow, setLocalPostsToShowInRow] = useState(
-    statePostsToShowInRow
   );
   const postsToShowInRowValidationError = useAppSelector(
     (state) => state.appConfig.postsToShowInRowValidationError
   );
-  const statePostRowsToShowInView = useAppSelector(
+  const postRowsToShowInView = useAppSelector(
     (state) => state.appConfig.postRowsToShowInView
-  );
-  const [localPostRowsToShowInView, setLocalPostRowsToShowInView] = useState(
-    statePostRowsToShowInView
   );
   const postRowsToShowInViewValidationError = useAppSelector(
     (state) => state.appConfig.postRowsToShowInViewValidationError
   );
-  useEffect(() => {
-    setLocalConcatRedditUrlMaxLength(stateConcatRedditUrlMaxLength);
-  }, [stateConcatRedditUrlMaxLength]);
-
-  useEffect(() => {
-    setLocalPostsToShowInRow(statePostsToShowInRow);
-  }, [statePostsToShowInRow]);
-  useEffect(() => {
-    setLocalPostRowsToShowInView(statePostRowsToShowInView);
-  }, [statePostRowsToShowInView]);
 
   return (
     <div className="reddit-watcher-settings">
@@ -230,20 +205,18 @@ const ApplicationSettings: React.FC = () => {
           Auto Scroll Post Rows Rate (Seconds to move single post card)
         </label>
         <input
-          value={localAutoScrollPostRowRateSecondsForSinglePostCard}
+          value={autoScrollPostRowRateSecondsForSinglePostCard}
           className="input"
           type="number"
           onChange={(event) => {
             const inputValue = parseFloat(event.target.value);
             dispatch(
-              validateAutoScrollPostRowRateSecondsForSinglePostCard(inputValue)
-            );
-            setLocalAutoScrollPostRowRateSecondsForSinglePostCard(inputValue);
-          }}
-          onBlur={(event) => {
-            const inputValue = parseFloat(event.target.value);
-            dispatch(
               setAutoScrollPostRowRateSecondsForSinglePostCard(inputValue)
+            );
+          }}
+          onBlur={() => {
+            dispatch(
+              clearAutoScrollPostRowRateSecondsForSinglePostCardValidationError()
             );
           }}
         />
@@ -256,17 +229,15 @@ const ApplicationSettings: React.FC = () => {
       <div className="settings-item flex-column">
         <label className="select-label">Reddit URL Max Length</label>
         <input
-          value={localConcatRedditUrlMaxLength}
+          value={concatRedditUrlMaxLength}
           className="input"
           type="number"
           onChange={(event) => {
             const inputValue = parseInt(event.target.value);
-            dispatch(validateConcateRedditUrlLength(inputValue));
-            setLocalConcatRedditUrlMaxLength(inputValue);
-          }}
-          onBlur={(event) => {
-            const inputValue = parseInt(event.target.value);
             dispatch(setConcatRedditUrlMaxLength(inputValue));
+          }}
+          onBlur={() => {
+            dispatch(clearConcatRedditUrlMaxLengthValidationError());
           }}
         />
         <p className="settings-item-error">
@@ -278,17 +249,15 @@ const ApplicationSettings: React.FC = () => {
       <div className="settings-item flex-column">
         <label className="select-label">Posts to Show In Row</label>
         <input
-          value={localPostsToShowInRow}
+          value={postsToShowInRow}
           className="input"
           type="number"
           onChange={(event) => {
             const inputValue = parseFloat(event.target.value);
-            dispatch(validatePostsToShowInRow(inputValue));
-            setLocalPostsToShowInRow(inputValue);
-          }}
-          onBlur={(event) => {
-            const inputValue = parseFloat(event.target.value);
             dispatch(setPostsToShowInRow(inputValue));
+          }}
+          onBlur={() => {
+            dispatch(clearPostsToShowInRowValidationError());
           }}
         />
         <p className="settings-item-error">{postsToShowInRowValidationError}</p>
@@ -297,17 +266,15 @@ const ApplicationSettings: React.FC = () => {
       <div className="settings-item flex-column">
         <label className="select-label">Post Rows to Show In View</label>
         <input
-          value={localPostRowsToShowInView}
+          value={postRowsToShowInView}
           className="input"
           type="number"
           onChange={(event) => {
             const inputValue = parseFloat(event.target.value);
-            dispatch(validatePostRowsToShowInView(inputValue));
-            setLocalPostRowsToShowInView(inputValue);
-          }}
-          onBlur={(event) => {
-            const inputValue = parseFloat(event.target.value);
             dispatch(setPostRowsToShowInView(inputValue));
+          }}
+          onBlur={() => {
+            dispatch(clearPostRowsToShowInViewValidationError());
           }}
         />
         <p className="settings-item-error">

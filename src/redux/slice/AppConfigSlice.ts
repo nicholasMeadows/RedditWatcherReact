@@ -327,17 +327,40 @@ export const appConfigSlice = createSlice({
       saveConfig(state);
     },
     setAutoScrollPostRowRateSecondsForSinglePostCard: (state, action) => {
-      state.autoScrollPostRowRateSecondsForSinglePostCard = action.payload;
+      const autoScrollPostRowRateSecondsForSinglePostCard = action.payload;
+      const validationError =
+        validateAutoScrollPostRowRateSecondsForSinglePostCardField(
+          autoScrollPostRowRateSecondsForSinglePostCard
+        );
+      if (validationError !== undefined) {
+        state.autoScrollPostRowRateSecondsForSinglePostCardValidationError =
+          validationError;
+        if (
+          autoScrollPostRowRateSecondsForSinglePostCard <
+          MIN_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD
+        ) {
+          state.autoScrollPostRowRateSecondsForSinglePostCard =
+            MIN_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD;
+        } else if (
+          autoScrollPostRowRateSecondsForSinglePostCard >
+          MAX_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD
+        ) {
+          state.autoScrollPostRowRateSecondsForSinglePostCard =
+            MAX_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD;
+        }
+      } else {
+        state.autoScrollPostRowRateSecondsForSinglePostCardValidationError =
+          undefined;
+        state.autoScrollPostRowRateSecondsForSinglePostCard =
+          autoScrollPostRowRateSecondsForSinglePostCard;
+      }
       saveConfig(state);
     },
-    validateAutoScrollPostRowRateSecondsForSinglePostCard: (
-      state,
-      action: { type: string; payload: number }
+    clearAutoScrollPostRowRateSecondsForSinglePostCardValidationError: (
+      state
     ) => {
       state.autoScrollPostRowRateSecondsForSinglePostCardValidationError =
-        validateAutoScrollPostRowRateSecondsForSinglePostCardField(
-          action.payload
-        );
+        undefined;
     },
     setSelectedSubredditListSortOption: (state, action) => {
       state.selectedSubredditListSortOption = action.payload;
@@ -371,13 +394,6 @@ export const appConfigSlice = createSlice({
       state.selectSubredditIterationMethodOption = action.payload;
       saveConfig(state);
     },
-    validateConcateRedditUrlLength: (
-      state,
-      action: { type: string; payload: number }
-    ) => {
-      state.concatRedditUrlMaxLengthValidationError =
-        validateConcatRedditUrlLengthField(action.payload);
-    },
     setConcatRedditUrlMaxLength: (
       state,
       action: { type: string; payload: number }
@@ -386,17 +402,21 @@ export const appConfigSlice = createSlice({
       const validationError = validateConcatRedditUrlLengthField(
         concatRedditUrlMaxLength
       );
-      if (validationError == undefined) {
-        state.concatRedditUrlMaxLength = concatRedditUrlMaxLength;
-      } else {
+      if (validationError !== undefined) {
+        state.concatRedditUrlMaxLengthValidationError = validationError;
         if (concatRedditUrlMaxLength < MIN_CONCAT_REDDIT_URL_LENGTH) {
           state.concatRedditUrlMaxLength = MIN_CONCAT_REDDIT_URL_LENGTH;
         } else if (concatRedditUrlMaxLength > Max_CONCAT_REDDIT_URL_LENGTH) {
           state.concatRedditUrlMaxLength = Max_CONCAT_REDDIT_URL_LENGTH;
         }
+      } else {
+        state.concatRedditUrlMaxLength = concatRedditUrlMaxLength;
+        state.concatRedditUrlMaxLengthValidationError = undefined;
       }
-      state.concatRedditUrlMaxLengthValidationError = validationError;
       saveConfig(state);
+    },
+    clearConcatRedditUrlMaxLengthValidationError: (state) => {
+      state.concatRedditUrlMaxLengthValidationError = undefined;
     },
     setContentFiltering: (state, action) => {
       state.contentFiltering = action.payload;
@@ -429,35 +449,24 @@ export const appConfigSlice = createSlice({
       state.redditApiItemLimitValidationError = validationError;
       saveConfig(state);
     },
-    validatePostsToShowInRow: (
-      state,
-      action: { type: string; payload: number }
-    ) => {
-      state.postsToShowInRowValidationError = validatePostsToShowInRowField(
-        action.payload
-      );
-    },
     setPostsToShowInRow: (state, action: { type: string; payload: number }) => {
       const postsToShowInRow = action.payload;
       const validationError = validatePostsToShowInRowField(postsToShowInRow);
-      if (validationError == undefined) {
-        state.postsToShowInRow = postsToShowInRow;
-      } else {
+      if (validationError !== undefined) {
+        state.postsToShowInRowValidationError = validationError;
         if (postsToShowInRow < MIN_POSTS_TO_SHOW_IN_ROW) {
           state.postsToShowInRow = MIN_POSTS_TO_SHOW_IN_ROW;
         } else if (postsToShowInRow > MAX_POSTS_TO_SHOW_IN_ROW) {
           state.postsToShowInRow = MAX_POSTS_TO_SHOW_IN_ROW;
         }
+      } else {
+        state.postsToShowInRowValidationError = undefined;
+        state.postsToShowInRow = postsToShowInRow;
       }
-      state.postsToShowInRowValidationError = validationError;
       saveConfig(state);
     },
-    validatePostRowsToShowInView: (
-      state,
-      action: { type: string; payload: number }
-    ) => {
-      state.postRowsToShowInViewValidationError =
-        validatePostRowsToShowInViewField(action.payload);
+    clearPostsToShowInRowValidationError: (state) => {
+      state.postsToShowInRowValidationError = undefined;
     },
     setPostRowsToShowInView: (
       state,
@@ -466,17 +475,21 @@ export const appConfigSlice = createSlice({
       const postRowsToShowInView = action.payload;
       const validationError =
         validatePostRowsToShowInViewField(postRowsToShowInView);
-      if (validationError == undefined) {
-        state.postRowsToShowInView = postRowsToShowInView;
-      } else {
+      if (validationError !== undefined) {
+        state.postRowsToShowInViewValidationError = validationError;
         if (postRowsToShowInView < MIN_POST_ROWS_TO_SHOW_IN_VIEW) {
           state.postRowsToShowInView = MIN_POST_ROWS_TO_SHOW_IN_VIEW;
         } else if (postRowsToShowInView > MAX_POST_ROWS_TO_SHOW_IN_VIEW) {
           state.postRowsToShowInView = MAX_POST_ROWS_TO_SHOW_IN_VIEW;
         }
+      } else {
+        state.postRowsToShowInViewValidationError = undefined;
+        state.postRowsToShowInView = postRowsToShowInView;
       }
-      state.postRowsToShowInViewValidationError = validationError;
       saveConfig(state);
+    },
+    clearPostRowsToShowInViewValidationError: (state) => {
+      state.postRowsToShowInViewValidationError = undefined;
     },
     toggleDarkMode: (state) => {
       state.darkMode = !state.darkMode;
@@ -523,7 +536,7 @@ export const {
   setAutoScrollPostRowOption,
   setAutoScrollPostRowDirectionOption,
   setAutoScrollPostRowRateSecondsForSinglePostCard,
-  validateAutoScrollPostRowRateSecondsForSinglePostCard,
+  clearAutoScrollPostRowRateSecondsForSinglePostCardValidationError,
   setSelectedSubredditListSortOption,
   setRandomIterationSelectWeightOption,
   setSelectSubredditListMenuSortOption,
@@ -532,14 +545,14 @@ export const {
   setUserFrontPagePostSortOrderOption,
   setTopTimeFrameOption,
   setSelectSubredditIterationMethodOption,
-  validateConcateRedditUrlLength,
   setConcatRedditUrlMaxLength,
+  clearConcatRedditUrlMaxLengthValidationError,
   setContentFiltering,
   validateRedditApiItemLimit,
   setRedditApiItemLimit,
-  validatePostsToShowInRow,
   setPostsToShowInRow,
-  validatePostRowsToShowInView,
+  clearPostsToShowInRowValidationError,
+  clearPostRowsToShowInViewValidationError,
   setPostRowsToShowInView,
   toggleDarkMode,
   resetConfigLoaded,
