@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
+import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import {
   clearAutoScrollPostRowRateSecondsForSinglePostCardValidationError,
   clearConcatRedditUrlMaxLengthValidationError,
@@ -14,13 +14,13 @@ import {
   setSelectSubredditIterationMethodOption,
   setSelectSubredditListMenuSortOption,
   setSortOrderDirectionOption,
-} from "../../redux/slice/AppConfigSlice.ts";
-import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
-import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
-import RandomIterationSelectWeightOptionsEnum from "../../model/config/enums/RandomIterationSelectWeightOptionsEnum.ts";
-import SelectSubredditListMenuSortOptionEnum from "../../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
-import SortOrderDirectionOptionsEnum from "../../model/config/enums/SortOrderDirectionOptionsEnum.ts";
-import SelectSubredditIterationMethodOptionsEnum from "../../model/config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
+} from "../redux/slice/AppConfigSlice.ts";
+import { AutoScrollPostRowOptionEnum } from "../model/config/enums/AutoScrollPostRowOptionEnum.ts";
+import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
+import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum.ts";
+import SelectSubredditListMenuSortOptionEnum from "../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
+import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum.ts";
+import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
 
 const ApplicationSettings: React.FC = () => {
   const dispatch = useAppDispatch();

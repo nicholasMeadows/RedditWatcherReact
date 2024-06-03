@@ -8,7 +8,7 @@ import React, {
 import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../RedditWatcherConstants.ts";
 import SideBarSubredditMenuEvent from "../model/Events/SideBarSubredditMenuEvent.ts";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
-import SearchRedditBar from "./ModifySubredditListsPagesAndElements/SearchRedditBar.tsx";
+import SearchRedditBar from "./SearchRedditBar.tsx";
 import { setSideBarSubredditMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import {
   setListToFilterByUuid,
@@ -17,6 +17,8 @@ import {
   setSearchInput,
   subredditListsUpdated,
 } from "../redux/slice/SideBarSlice.ts";
+import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
+import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
 
 const SideBar: React.FC = () => {
   const sideBarButtonMoved = useRef(false);
@@ -108,6 +110,8 @@ const SideBar: React.FC = () => {
     sideBarButtonMoved.current = false;
   };
 
+  const searchRedditBarContextData = useSearchRedditBar();
+
   return (
     <div className="side-bar">
       <div ref={openSideBarButtonColumnDivRef} className="open-close-column">
@@ -143,7 +147,9 @@ const SideBar: React.FC = () => {
         } `}
       >
         <div className="side-bar-search-bar">
-          <SearchRedditBar darkmodeOverride={false} />
+          <SearchRedditBarContext.Provider value={searchRedditBarContextData}>
+            <SearchRedditBar />
+          </SearchRedditBarContext.Provider>
         </div>
 
         <hr className="hr" />

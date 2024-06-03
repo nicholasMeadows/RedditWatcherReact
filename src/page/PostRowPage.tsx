@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
-import SideBar from "../SideBar.tsx";
+import { useAppDispatch, useAppSelector } from "../redux/store.ts";
+import SideBar from "../components/SideBar.tsx";
 import {
   setScrollY,
   toggleClickedOnPlayPauseButton,
-} from "../../redux/slice/PostRowsSlice.ts";
-import PostRow from "./PostRow.tsx";
-import "../../theme/post-row-page.scss";
+} from "../redux/slice/PostRowsSlice.ts";
+import PostRow from "../components/PostRow.tsx";
+import "../theme/post-row-page.scss";
 
 const PostRowPage: React.FC = () => {
   const dispatch = useAppDispatch();

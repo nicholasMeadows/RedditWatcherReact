@@ -1,19 +1,18 @@
-import { useEffect, useRef, useState } from "react";
-import { RedditSearchItemContextMenuEvent } from "../../model/Events/RedditSearchItemContextMenuEvent";
-import { useAppDispatch, useAppSelector } from "../../redux/store";
-import { setRedditSearchItemContextMenuEvent } from "../../redux/slice/ContextMenuSlice.ts";
-import useSearchReddit from "../../hook/use-search-reddit.ts";
+import { useContext, useEffect, useRef, useState } from "react";
+import { RedditSearchItemContextMenuEvent } from "../model/Events/RedditSearchItemContextMenuEvent";
+import { useAppDispatch, useAppSelector } from "../redux/store";
+import { setRedditSearchItemContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
+import useSearchReddit from "../hook/use-search-reddit.ts";
+import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 
-type Props = {
-  darkmodeOverride?: boolean;
-};
-const SearchRedditBar: React.FC<Props> = ({ darkmodeOverride }) => {
+const SearchRedditBar: React.FC = () => {
   const dispatch = useAppDispatch();
   const darkmode = useAppSelector((state) => state.appConfig.darkMode);
+  const { searchResultsOpen, setSearchResultsOpen, darkmodeOverride } =
+    useContext(SearchRedditBarContext);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { searchResults, clearSearchResults, subOrUnSubFromSubreddit } =
     useSearchReddit(searchInputRef);
-  const [searchResultsOpen, setSearchResultsOpen] = useState<boolean>(false);
   const [
     expandCollapseSearchResultsImgSrc,
     setExpandCollapseSearchResultsImgSrc,

@@ -1,18 +1,18 @@
 import { FC, memo, useContext, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
-import { PostCardContext } from "../../context/post-card-context.ts";
-import "../../theme/post-card.scss";
-import { setSinglePostPageUuids } from "../../redux/slice/SinglePostPageSlice.ts";
-import { mouseLeavePostRow } from "../../redux/slice/PostRowsSlice.ts";
+import { useAppDispatch, useAppSelector } from "../redux/store.ts";
+import { PostCardContext } from "../context/post-card-context.ts";
+import "../theme/post-card.scss";
+import { setSinglePostPageUuids } from "../redux/slice/SinglePostPageSlice.ts";
+import { mouseLeavePostRow } from "../redux/slice/PostRowsSlice.ts";
 import {
   POST_CARD_LEFT_MARGIN_EM,
   SINGPLE_POST_ROUTE,
-} from "../../RedditWatcherConstants.ts";
-import PostContextMenuEvent from "../../model/Events/PostContextMenuEvent.ts";
-import { setPostContextMenuEvent } from "../../redux/slice/ContextMenuSlice.ts";
+} from "../RedditWatcherConstants.ts";
+import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
+import { setPostContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
 import { useNavigate } from "react-router-dom";
-import useIncrementAttachment from "../../hook/use-iincrement-attachment.ts";
+import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
 
 const PostCard: FC = memo(() => {
   const dispatch = useAppDispatch();

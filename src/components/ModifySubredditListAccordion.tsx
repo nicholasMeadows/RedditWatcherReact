@@ -1,13 +1,13 @@
 import { MouseEvent, useRef } from "react";
-import SubredditListContextMenuEvent from "../../model/Events/SubredditListContextMenuEvent";
-import SubredditListItemContextMenuEvent from "../../model/Events/SubredditListItemContextMenuEvent";
-import { SubredditLists } from "../../model/SubredditList/SubredditLists";
-import { useAppDispatch } from "../../redux/store.ts";
+import SubredditListContextMenuEvent from "../model/Events/SubredditListContextMenuEvent";
+import SubredditListItemContextMenuEvent from "../model/Events/SubredditListItemContextMenuEvent";
+import { SubredditLists } from "../model/SubredditList/SubredditLists";
+import { useAppDispatch } from "../redux/store.ts";
 import {
   setSubredditListContextMenuEvent,
   setSubredditListItemContextMenuEvent,
-} from "../../redux/slice/ContextMenuSlice.ts";
-import { toggleSubredditListSelected } from "../../redux/slice/RedditListSlice.ts";
+} from "../redux/slice/ContextMenuSlice.ts";
+import { toggleSubredditListSelected } from "../redux/slice/RedditListSlice.ts";
 
 type Props = {
   subredditList: SubredditLists;

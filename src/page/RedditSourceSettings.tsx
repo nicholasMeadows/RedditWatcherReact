@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
+import { useAppDispatch, useAppSelector } from "./../redux/store.ts";
 import { useEffect, useState } from "react";
 import {
   setContentFiltering,
@@ -9,14 +9,14 @@ import {
   setTopTimeFrameOption,
   setUserFrontPagePostSortOrderOption,
   validateRedditApiItemLimit,
-} from "../../redux/slice/AppConfigSlice.ts";
-import PostSortOrderOptionsEnum from "../../model/config/enums/PostSortOrderOptionsEnum.ts";
-import TopTimeFrameOptionsEnum from "../../model/config/enums/TopTimeFrameOptionsEnum.ts";
-import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
-import SubredditSortOrderOptionsEnum from "../../model/config/enums/SubredditSortOrderOptionsEnum.ts";
-import { checkPlatformForSubredditSortOrderOption } from "../../util/PlatformUtil.ts";
-import ContentFilteringOptionEnum from "../../model/config/enums/ContentFilteringOptionEnum.ts";
-import SelectedSubredditListSortOptionEnum from "../../model/config/enums/SelectedSubredditListSortOptionEnum.ts";
+} from "./../redux/slice/AppConfigSlice.ts";
+import PostSortOrderOptionsEnum from "./../model/config/enums/PostSortOrderOptionsEnum.ts";
+import TopTimeFrameOptionsEnum from "./../model/config/enums/TopTimeFrameOptionsEnum.ts";
+import UserFrontPagePostSortOrderOptionsEnum from "./../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
+import SubredditSortOrderOptionsEnum from "./../model/config/enums/SubredditSortOrderOptionsEnum.ts";
+import { checkPlatformForSubredditSortOrderOption } from "./../util/PlatformUtil.ts";
+import ContentFilteringOptionEnum from "./../model/config/enums/ContentFilteringOptionEnum.ts";
+import SelectedSubredditListSortOptionEnum from "./../model/config/enums/SelectedSubredditListSortOptionEnum.ts";
 
 const RedditSourceSettings: React.FC = () => {
   const dispatch = useAppDispatch();

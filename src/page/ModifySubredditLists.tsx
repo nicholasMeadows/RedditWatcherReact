@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT } from "../../RedditWatcherConstants";
-import { ModifySubredditListMode } from "../../model/ModifySubredditListMode";
-import { useAppDispatch, useAppSelector } from "../../redux/store";
-import ModifySubredditListAccordion from "./ModifySubredditListAccordion";
-import SearchRedditBar from "./SearchRedditBar";
-import SelectSubredditListMenuSortOptionEnum from "../../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
-import { SubredditLists } from "../../model/SubredditList/SubredditLists.ts";
-import SortOrderDirectionOptionsEnum from "../../model/config/enums/SortOrderDirectionOptionsEnum.ts";
+import { NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT } from "../RedditWatcherConstants";
+import { ModifySubredditListMode } from "../model/ModifySubredditListMode";
+import { useAppDispatch, useAppSelector } from "../redux/store";
+import ModifySubredditListAccordion from "../components/ModifySubredditListAccordion";
+import SearchRedditBar from "../components/SearchRedditBar";
+import SelectSubredditListMenuSortOptionEnum from "../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
+import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
+import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum.ts";
 import {
   createOrModifyList,
   deleteList,
@@ -16,7 +16,9 @@ import {
   selectRandomLists,
   setCreateUpdateInputValue,
   showCreateListBox,
-} from "../../redux/slice/RedditListSlice.ts";
+} from "../redux/slice/RedditListSlice.ts";
+import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
+import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
 
 const ModifySubredditLists: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -95,6 +97,8 @@ const ModifySubredditLists: React.FC = () => {
   const [subredditListUuidClicked, setSubredditListUuidClicked] = useState<
     string | undefined
   >(undefined);
+
+  const searchRedditBarContextData = useSearchRedditBar();
   return (
     <>
       {redditListsState.showModifyListBox && (
@@ -163,7 +167,9 @@ const ModifySubredditLists: React.FC = () => {
           position: "relative",
         }}
       >
-        <SearchRedditBar />
+        <SearchRedditBarContext.Provider value={searchRedditBarContextData}>
+          <SearchRedditBar />
+        </SearchRedditBarContext.Provider>
         <div className="subredditListsExpander">
           {sortedSubredditLists.map((subredditList) => (
             <ModifySubredditListAccordion

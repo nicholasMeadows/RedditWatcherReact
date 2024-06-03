@@ -18,16 +18,16 @@ import {
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
 import AppInitialization from "./AppInitialization";
-import AppNotification from "./AppNotification";
-import ContextMenu from "./ContextMenu";
-import ModifySubredditLists from "./ModifySubredditListsPagesAndElements/ModifySubredditLists";
+import AppNotification from "../components/AppNotification";
+import ContextMenu from "../components/ContextMenu";
+import ModifySubredditLists from "./ModifySubredditLists";
 import ModifySubredditQueue from "./ModifySubredditQueue";
-import NavigationHamburgerMenu from "./NavigationHamburgerMenu.tsx";
-import PostRowPage from "./PostRowsPage/PostRowPage.tsx";
+import NavigationHamburgerMenu from "../components/NavigationHamburgerMenu.tsx";
+import PostRowPage from "./PostRowPage.tsx";
 import SinglePostView from "./SinglePostView.tsx";
-import RedditSourceSettings from "./SettingsPages/RedditSourceSettings.tsx";
-import RedditSignIn from "./SettingsPages/RedditSignIn.tsx";
-import ApplicationSettings from "./SettingsPages/ApplicationSettings.tsx";
+import RedditSourceSettings from "./RedditSourceSettings.tsx";
+import RedditSignIn from "./RedditSignIn.tsx";
+import ApplicationSettings from "./ApplicationSettings.tsx";
 import getPlatform from "../util/PlatformUtil.ts";
 import { Platform } from "../model/Platform.ts";
 import {

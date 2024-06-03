@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
-import PostMediaElement from "./PostRowsPage/PostMediaElement.tsx";
+import PostMediaElement from "../components/PostMediaElement.tsx";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import { setPostContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import { Post } from "../model/Post/Post.ts";

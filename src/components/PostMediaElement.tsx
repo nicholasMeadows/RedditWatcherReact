@@ -7,10 +7,10 @@ import React, {
   useState,
   WheelEventHandler,
 } from "react";
-import { Post } from "../../model/Post/Post.ts";
+import { Post } from "../model/Post/Post.ts";
 import { v4 as uuidV4 } from "uuid";
-import { PostImageQualityEnum } from "../../model/config/enums/PostImageQualityEnum.ts";
-import { AttachmentResolution } from "../../model/Post/AttachmentResolution.ts";
+import { PostImageQualityEnum } from "../model/config/enums/PostImageQualityEnum.ts";
+import { AttachmentResolution } from "../model/Post/AttachmentResolution.ts";
 
 type Props = {
   post: Post;

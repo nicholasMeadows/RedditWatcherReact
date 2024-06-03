@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { APP_INITIALIZATION_ROUTE } from "../../RedditWatcherConstants";
+import { APP_INITIALIZATION_ROUTE } from "./../RedditWatcherConstants";
 import {
   setClientId,
   setClientSecret,
   setPassword,
   setUsername,
-} from "../../redux/slice/AppConfigSlice";
-import { useAppDispatch, useAppSelector } from "../../redux/store";
+} from "./../redux/slice/AppConfigSlice";
+import { useAppDispatch, useAppSelector } from "./../redux/store";
 
 const RedditSignIn: React.FC = () => {
   const dispatch = useAppDispatch();

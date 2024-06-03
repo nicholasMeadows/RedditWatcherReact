@@ -1,18 +1,18 @@
-import { PostRow } from "../../model/PostRow.ts";
-import { useAppDispatch, useAppSelector } from "../../redux/store.ts";
-import getPlatform from "../../util/PlatformUtil.ts";
-import { Platform } from "../../model/Platform.ts";
 import { FC, memo, useCallback, useRef, useState } from "react";
-import "../../theme/post-row.scss";
-import { PostCardContext } from "../../context/post-card-context.ts";
-import PostCard from "./PostCard.tsx";
-import { Post } from "../../model/Post/Post.ts";
-import useMovePostRow from "../../hook/use-move-post-row.ts";
+import { useAppDispatch, useAppSelector } from "../redux/store.ts";
+import { Post } from "../model/Post/Post.ts";
+import getPlatform from "../util/PlatformUtil.ts";
+import { Platform } from "../model/Platform.ts";
+import useInitializePostRow from "../hook/use-initialize-post-row.ts";
+import useMovePostRow from "../hook/use-move-post-row.ts";
 import {
   mouseEnterPostRow,
   mouseLeavePostRow,
-} from "../../redux/slice/PostRowsSlice.ts";
-import useInitializePostRow from "../../hook/use-initialize-post-row.ts";
+} from "../redux/slice/PostRowsSlice.ts";
+import { PostCardContext } from "../context/post-card-context.ts";
+import PostCard from "./PostCard.tsx";
+import { PostRow } from "../model/PostRow.ts";
+import "../theme/post-row.scss";
 
 type Props = { postRow: PostRow };
 const PostRow: FC<Props> = memo(({ postRow }) => {
