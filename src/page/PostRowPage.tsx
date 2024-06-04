@@ -17,6 +17,10 @@ const PostRowPage: React.FC = () => {
   );
 
   const postRowsDivRef = useRef(null);
+  const postRowPageRef = useRef<HTMLDivElement>(null);
+
+  const redditSearchBarFocused = useRef(false);
+
   const [scrollBarWidth, setScrollBarWidth] = useState(0);
 
   useEffect(() => {
@@ -25,28 +29,35 @@ const PostRowPage: React.FC = () => {
   }, [postRowsDivRef, postRowsState.postRows]);
 
   useEffect(() => {
+    const postRowPage = postRowPageRef.current;
+    if (postRowPage === null) {
+      return;
+    }
     const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
       const key = keyboardEvent.key;
-      if (key == " ") {
+      if (key == " " && !redditSearchBarFocused.current) {
         dispatch(toggleClickedOnPlayPauseButton());
       }
     };
 
-    document.body.addEventListener("keyup", documentKeyUpEvent);
+    postRowPage.addEventListener("keyup", documentKeyUpEvent);
     return () => {
-      document.body.removeEventListener("keyup", documentKeyUpEvent);
+      postRowPage.removeEventListener("keyup", documentKeyUpEvent);
     };
   }, [dispatch]);
 
   return (
-    <div className="post-row-page">
+    <div className="post-row-page" ref={postRowPageRef}>
       <div
         className="post-rows-side-bar-div"
         style={{
           right: `${scrollBarWidth}px`,
         }}
       >
-        <SideBar />
+        <SideBar
+          onRedditSearchBarFocus={() => (redditSearchBarFocused.current = true)}
+          onRedditSearchBarBlur={() => (redditSearchBarFocused.current = false)}
+        />
       </div>
       <div
         className="post-rows-div"

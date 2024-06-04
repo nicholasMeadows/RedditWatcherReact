@@ -20,7 +20,14 @@ import {
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
 
-const SideBar: React.FC = () => {
+type SideBarProps = {
+  onRedditSearchBarFocus: () => void;
+  onRedditSearchBarBlur: () => void;
+};
+const SideBar: React.FC<SideBarProps> = ({
+  onRedditSearchBarFocus,
+  onRedditSearchBarBlur,
+}) => {
   const sideBarButtonMoved = useRef(false);
   const dispatch = useAppDispatch();
   const secondsTillGettingNextPosts = useAppSelector(
@@ -147,7 +154,13 @@ const SideBar: React.FC = () => {
         } `}
       >
         <div className="side-bar-search-bar">
-          <SearchRedditBarContext.Provider value={searchRedditBarContextData}>
+          <SearchRedditBarContext.Provider
+            value={{
+              ...searchRedditBarContextData,
+              onFocus: onRedditSearchBarFocus,
+              onBlur: onRedditSearchBarBlur,
+            }}
+          >
             <SearchRedditBar />
           </SearchRedditBarContext.Provider>
         </div>

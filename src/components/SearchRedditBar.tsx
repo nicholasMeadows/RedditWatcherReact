@@ -8,8 +8,13 @@ import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 const SearchRedditBar: React.FC = () => {
   const dispatch = useAppDispatch();
   const darkmode = useAppSelector((state) => state.appConfig.darkMode);
-  const { searchResultsOpen, setSearchResultsOpen, darkmodeOverride } =
-    useContext(SearchRedditBarContext);
+  const {
+    searchResultsOpen,
+    setSearchResultsOpen,
+    darkmodeOverride,
+    onFocus,
+    onBlur,
+  } = useContext(SearchRedditBarContext);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { searchResults, clearSearchResults, subOrUnSubFromSubreddit } =
     useSearchReddit(searchInputRef);
@@ -36,7 +41,7 @@ const SearchRedditBar: React.FC = () => {
   }, [darkmode, darkmodeOverride]);
 
   return (
-    <div className="reddit-search-bar">
+    <div className="reddit-search-bar" onFocus={onFocus} onBlur={onBlur}>
       <div className="reddit-search-input-wrapper">
         <input
           ref={searchInputRef}
