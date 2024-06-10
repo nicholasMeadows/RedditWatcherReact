@@ -30,15 +30,10 @@ const SEARCH_REDDIT_ENDPOINT = "/search.json?q={search}&type=user,sr";
 const SUBSCRIBE_UNSUBSCRIBE_ENDPOINT =
   "/api/subscribe?action={action}&sr_name={srName}";
 
-const ACCESS_TOKEN_SESSION_STORAGE_KEY = "REDDIT_WATCHER_REDDIT_ACCESS_TOKEN";
-const ACCESS_TOKEN_EXPIRATION_SESSION_STORAGE_KEY =
-  "REDDIT_WATCHER_REDDIT_ACCESS_TOKEN_EXPIRATION";
-const RATE_LIMIT_REMAINING_SESSION_STORAGE_KEY =
-  "REDDIT_WATCHER_RATE_LIMIT_REMAINING";
-const RATE_LIMIT_RESETS_AT_SESSION_STORAGE_KEY =
-  "REDDIT_WATCHER_RATE_LIMIT_RESETS_AT";
-const RATE_LIMIT_USED_SESSION_STORAGE_KEY = "REDDIT_WATCHER_RATE_LIMIT_USED";
-
+let accessToken: string | undefined = undefined;
+let accessTokenExpiration: number | undefined = undefined;
+let rateLimitRemaining: number | undefined = undefined;
+let rateLimitResetsAt: number | undefined = undefined;
 export default class RedditClient {
   async authenticate(
     username: string,
@@ -46,8 +41,8 @@ export default class RedditClient {
     clientId: string,
     clientSecret: string
   ) {
-    sessionStorage.removeItem(ACCESS_TOKEN_SESSION_STORAGE_KEY);
-    sessionStorage.removeItem(ACCESS_TOKEN_EXPIRATION_SESSION_STORAGE_KEY);
+    accessToken = undefined;
+    accessTokenExpiration = undefined;
     username = username.trim();
     password = password.trim();
     clientId = clientId.trim();
@@ -89,16 +84,14 @@ export default class RedditClient {
       );
     }
 
-    const accessToken = authResponse["access_token"];
-    const tokenClaim = accessToken?.split(".")[1];
+    accessToken = authResponse["access_token"];
+    if (accessToken === undefined) {
+      throw new Error("Reddit response did not contain access token.");
+    }
+    const tokenClaim = accessToken.split(".")[1];
     const decodedClaim = Buffer.from(tokenClaim, "base64").toString("ascii");
     const jwtClaim = JSON.parse(decodedClaim);
-    const expiration = jwtClaim["exp"];
-    sessionStorage.setItem(ACCESS_TOKEN_SESSION_STORAGE_KEY, accessToken);
-    sessionStorage.setItem(
-      ACCESS_TOKEN_EXPIRATION_SESSION_STORAGE_KEY,
-      expiration
-    );
+    accessTokenExpiration = jwtClaim["exp"];
   }
 
   async getSubscribedSubReddits(
@@ -373,9 +366,8 @@ export default class RedditClient {
     accessToken: string;
     expiration: number;
   }> {
-    const expiration = parseInt(
-      sessionStorage.getItem(ACCESS_TOKEN_EXPIRATION_SESSION_STORAGE_KEY) || "0"
-    );
+    const expiration =
+      accessTokenExpiration === undefined ? 0 : accessTokenExpiration;
     const state = store.getState();
     const secondsSinceEpoch = Date.now() / 1000;
 
@@ -394,31 +386,15 @@ export default class RedditClient {
       }
     }
     return {
-      accessToken:
-        sessionStorage.getItem(ACCESS_TOKEN_SESSION_STORAGE_KEY) || "",
+      accessToken: accessToken === undefined ? "" : accessToken,
       expiration:
-        parseInt(
-          sessionStorage.getItem(ACCESS_TOKEN_EXPIRATION_SESSION_STORAGE_KEY) ||
-            "0"
-        ) || 0,
+        accessTokenExpiration === undefined ? 0 : accessTokenExpiration,
     };
   }
 
   private checkRateLimits() {
-    const rateLimitResetsAtEpoch = parseInt(
-      sessionStorage.getItem(RATE_LIMIT_RESETS_AT_SESSION_STORAGE_KEY) || "0"
-    );
-    const rateLimitRemaining = parseInt(
-      sessionStorage.getItem(RATE_LIMIT_REMAINING_SESSION_STORAGE_KEY) || "0"
-    );
-    if (
-      rateLimitRemaining != undefined &&
-      rateLimitResetsAtEpoch != undefined
-    ) {
-      if (
-        Date.now() / 1000 < rateLimitResetsAtEpoch &&
-        rateLimitRemaining == 0
-      ) {
+    if (rateLimitRemaining != undefined && rateLimitResetsAt != undefined) {
+      if (Date.now() / 1000 < rateLimitResetsAt && rateLimitRemaining == 0) {
         throw new RangeError("Reddit rate limit remaining is 0");
       }
     }
@@ -426,32 +402,17 @@ export default class RedditClient {
 
   private updateRateLimitVariables(response: HttpResponse) {
     const rateLimitRemainingHeader = "x-ratelimit-remaining";
-    const rateLimitUsedHeader = "x-ratelimit-used";
     const rateLimitResetHeader = "x-ratelimit-reset";
 
     const headers = response.headers;
-    const rateLimitRemaining = headers[rateLimitRemainingHeader];
-    const rateLimitUsed = headers[rateLimitUsedHeader];
-    const rateLimitReset = headers[rateLimitResetHeader];
+    const rateLimitRemainingHeaderVal = headers[rateLimitRemainingHeader];
+    const rateLimitResetHeaderVal = headers[rateLimitResetHeader];
 
-    if (rateLimitRemaining != undefined) {
-      sessionStorage.setItem(
-        RATE_LIMIT_REMAINING_SESSION_STORAGE_KEY,
-        rateLimitRemaining
-      );
+    if (rateLimitRemainingHeaderVal != undefined) {
+      rateLimitRemaining = parseInt(rateLimitRemainingHeaderVal);
     }
-    if (rateLimitUsed != undefined) {
-      sessionStorage.setItem(
-        RATE_LIMIT_USED_SESSION_STORAGE_KEY,
-        rateLimitUsed
-      );
-    }
-    if (rateLimitReset != undefined) {
-      const rateResetsAt = Date.now() / 1000 + rateLimitReset;
-      sessionStorage.setItem(
-        RATE_LIMIT_RESETS_AT_SESSION_STORAGE_KEY,
-        rateResetsAt
-      );
+    if (rateLimitResetHeaderVal != undefined) {
+      rateLimitResetsAt = Date.now() / 1000 + parseInt(rateLimitResetHeaderVal);
     }
   }
 }

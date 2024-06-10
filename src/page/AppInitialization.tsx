@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import {
   loadConfig,
   loadSubredditListsFromFile,
@@ -34,31 +34,31 @@ const AppInitialization: React.FC = () => {
   const [text, setText] = useState("");
   const { redditClientContextData, setRedditClientContextData } =
     useContext(RedditClientContext);
-  useEffect(() => {
-    const loadConfigAsync = async () => {
-      const loadedConfig = await loadConfig();
-      dispatch(setAppConfig(loadedConfig));
-      setConfig(loadedConfig);
-    };
-    const loadSubredditListsAsync = async () => {
-      let subredditListsLocal: SubredditLists[] = [];
-      try {
-        subredditListsLocal = await loadSubredditListsFromFile();
-      } catch (e) {
-        console.log("Error thrown while loading subreddit lists", e);
-      }
 
-      subredditListsLocal.forEach((list) => {
-        list.subredditListUuid = uuidV4();
-        list.subreddits.map(
-          (subreddit) => (subreddit.subredditUuid = uuidV4())
-        );
-      });
-      store.dispatch(setSubredditLists(subredditListsLocal));
-      setSubredditListsState(subredditListsLocal);
-    };
+  const loadConfigAsync = useCallback(async () => {
+    const loadedConfig = await loadConfig();
+    dispatch(setAppConfig(loadedConfig));
+    setConfig(loadedConfig);
+  }, [dispatch]);
 
-    const authReddit = async (appConfig: AppConfig) => {
+  const loadSubredditListsAsync = useCallback(async () => {
+    let subredditListsLocal: SubredditLists[] = [];
+    try {
+      subredditListsLocal = await loadSubredditListsFromFile();
+    } catch (e) {
+      console.log("Error thrown while loading subreddit lists", e);
+    }
+
+    subredditListsLocal.forEach((list) => {
+      list.subredditListUuid = uuidV4();
+      list.subreddits.map((subreddit) => (subreddit.subredditUuid = uuidV4()));
+    });
+    store.dispatch(setSubredditLists(subredditListsLocal));
+    setSubredditListsState(subredditListsLocal);
+  }, []);
+
+  const authReddit = useCallback(
+    async (appConfig: AppConfig) => {
       const redditCredentials = appConfig.redditCredentials;
       if (redditCredentials === undefined) {
         navigate(REDDIT_SIGN_IN_ROUTE);
@@ -106,7 +106,6 @@ const AppInitialization: React.FC = () => {
               clientSecret
             );
             saveConfig(appConfig);
-
             setRedditClientContextData((state) => ({
               ...state,
               redditAuthenticationStatus:
@@ -136,8 +135,17 @@ const AppInitialization: React.FC = () => {
       } else {
         navigate(POST_ROW_ROUTE);
       }
-    };
+    },
+    [
+      navigate,
+      postRowsState.postRows.length,
+      redditClientContextData.redditAuthenticationStatus,
+      redditService,
+      setRedditClientContextData,
+    ]
+  );
 
+  useEffect(() => {
     if (config === undefined) {
       loadConfigAsync();
     } else if (subredditLists === undefined) {
@@ -146,8 +154,11 @@ const AppInitialization: React.FC = () => {
       authReddit(config);
     }
   }, [
+    authReddit,
     config,
     dispatch,
+    loadConfigAsync,
+    loadSubredditListsAsync,
     navigate,
     postRowsState.postRows.length,
     redditClientContextData.redditAuthenticationStatus,
