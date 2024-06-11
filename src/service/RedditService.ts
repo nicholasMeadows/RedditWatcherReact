@@ -27,7 +27,6 @@ import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOp
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult.ts";
 import { v4 as uuidV4 } from "uuid";
 import { WaitUtil } from "../util/WaitUtil.ts";
-import { submitAppNotification } from "../redux/slice/AppNotificationSlice.ts";
 import {
   setMostRecentSubredditGotten,
   setSecondsTillGettingNextPosts,
@@ -39,6 +38,11 @@ import {
   postRowRemoveAt,
 } from "../redux/slice/PostRowsSlice.ts";
 import { subredditQueueRemoveAt } from "../redux/slice/SubRedditQueueSlice.ts";
+import { Dispatch } from "react";
+import {
+  AppNotificationsAction,
+  AppNotificationsActionType,
+} from "../reducer/app-notifications-reducer.ts";
 
 export default class RedditService {
   loopingForPosts = false;
@@ -54,13 +58,15 @@ export default class RedditService {
     this.loopingForPostsTimeout = undefined;
   }
 
-  async startLoopingForPosts() {
+  async startLoopingForPosts(
+    appNotificationsDispatch: Dispatch<AppNotificationsAction>
+  ) {
     console.log("starting to loop for posts");
     this.loopingForPosts = true;
     await this.loadSubscribedSubreddits();
 
     const getPostsFunction = async () => {
-      return this.getPostsOrchestrationStart();
+      return this.getPostsOrchestrationStart(appNotificationsDispatch);
     };
     getPostsFunction();
     const startWaitingToGetPosts = () => {
@@ -74,7 +80,9 @@ export default class RedditService {
     startWaitingToGetPosts();
   }
 
-  async getPostsOrchestrationStart() {
+  async getPostsOrchestrationStart(
+    appNotificationsDispatch: Dispatch<AppNotificationsAction>
+  ) {
     let getPostsFromSubredditsState: GetPostsFromSubredditState;
 
     do {
@@ -129,16 +137,19 @@ export default class RedditService {
         this.addPostRow(
           postsGotten,
           postsFromSubreddits,
-          getPostsFromSubredditsState
+          getPostsFromSubredditsState,
+          appNotificationsDispatch
         );
       } catch (e) {
-        store.dispatch(
-          submitAppNotification({
+        appNotificationsDispatch({
+          type: AppNotificationsActionType.SUBMIT_APP_NOTIFICATION,
+          payload: {
+            notificationUuid: uuidV4(),
             message: `Got exception while trying to get post. ${
               (e as DOMException).message
             }`,
-          })
-        );
+          },
+        });
         console.log("Caught exception while getPosts ", e);
       }
     } while (this.settingsChanged(getPostsFromSubredditsState));
@@ -472,7 +483,8 @@ export default class RedditService {
   private addPostRow(
     posts: Array<Post>,
     fromSubreddits: Array<Subreddit>,
-    getPostsFromSubredditsState: GetPostsFromSubredditState
+    getPostsFromSubredditsState: GetPostsFromSubredditState,
+    appNotificationsDispatch: Dispatch<AppNotificationsAction>
   ) {
     const userFrontPageOption =
       getPostsFromSubredditsState.userFrontPagePostSortOrderOption;
@@ -485,7 +497,13 @@ export default class RedditService {
       if (fromSubreddits.length == 1) {
         msg = `Got 0 posts from ${fromSubreddits[0].displayNamePrefixed}. Trying again in a little bit.`;
       }
-      store.dispatch(submitAppNotification({ message: msg }));
+      appNotificationsDispatch({
+        type: AppNotificationsActionType.SUBMIT_APP_NOTIFICATION,
+        payload: {
+          notificationUuid: uuidV4(),
+          message: msg,
+        },
+      });
       return;
     }
 
