@@ -1,30 +1,92 @@
-import { useAppDispatch, useAppSelector } from "../redux/store.ts";
-import { dismissAppNotification } from "../redux/slice/AppNotificationSlice.ts";
+import { FC, useCallback, useContext, useEffect, useRef } from "react";
+import { AppNotification } from "../model/AppNotification.ts";
+import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
+import { AppNotificationsActionType } from "../reducer/app-notifications-reducer.ts";
 
-const AppNotification: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const appNotifications = useAppSelector(
-    (state) => state.appNotification.appNotifications
-  );
+const NOTIFICATION_FADE_TIME_SECONDS = 1;
+type Props = {
+  appNotification: AppNotification;
+};
+const AppNotification: FC<Props> = ({ appNotification }) => {
+  const appNotificationsDispatch = useContext(AppNotificationsDispatchContext);
+  const hideNotificationTimeoutRef = useRef<NodeJS.Timeout>();
+  const deleteNotificationTimeoutRef = useRef<NodeJS.Timeout>();
+
+  const clearHideNotificationTimeout = useCallback(() => {
+    if (hideNotificationTimeoutRef.current !== undefined) {
+      clearTimeout(hideNotificationTimeoutRef.current);
+      hideNotificationTimeoutRef.current = undefined;
+    }
+  }, []);
+
+  const clearDeleteNotificationTimeout = useCallback(() => {
+    if (deleteNotificationTimeoutRef.current !== undefined) {
+      clearTimeout(deleteNotificationTimeoutRef.current);
+      deleteNotificationTimeoutRef.current = undefined;
+    }
+  }, []);
+
+  const hideNotification = useCallback(() => {
+    appNotificationsDispatch({
+      type: AppNotificationsActionType.HIDE_APP_NOTIFICATION,
+      payload: appNotification,
+    });
+  }, [appNotification, appNotificationsDispatch]);
+
+  const deleteNotification = useCallback(() => {
+    appNotificationsDispatch({
+      type: AppNotificationsActionType.DELETE_APP_NOTIFICATION,
+      payload: appNotification,
+    });
+  }, [appNotification, appNotificationsDispatch]);
+
+  useEffect(() => {
+    clearHideNotificationTimeout();
+    clearDeleteNotificationTimeout();
+    if (appNotification.displayTimeMS === undefined) {
+      deleteNotification();
+      return;
+    }
+
+    hideNotificationTimeoutRef.current = setTimeout(() => {
+      hideNotification();
+    }, appNotification.displayTimeMS);
+
+    deleteNotificationTimeoutRef.current = setTimeout(() => {
+      deleteNotification();
+    }, appNotification.displayTimeMS + NOTIFICATION_FADE_TIME_SECONDS * 1000);
+    return () => {
+      clearHideNotificationTimeout();
+      clearDeleteNotificationTimeout();
+    };
+  }, [
+    appNotification,
+    appNotification.displayTimeMS,
+    appNotificationsDispatch,
+    clearDeleteNotificationTimeout,
+    clearHideNotificationTimeout,
+    deleteNotification,
+    hideNotification,
+  ]);
+
   return (
-    <div className="app-notification-root">
-      {appNotifications.map((appNotificationItem) => {
-        return (
-          <div
-            key={appNotificationItem.appNotificationUuid}
-            className={`notification-box ${
-              appNotificationItem.showNotification ? "show-notification" : ""
-            }`}
-            onClick={() => {
-              dispatch(dismissAppNotification(appNotificationItem));
-            }}
-          >
-            <p className="notification-text">
-              {appNotificationItem.appNotification.message}
-            </p>
-          </div>
-        );
-      })}
+    <div
+      className={`notification-box ${
+        appNotification.showNotification ? "show-notification" : ""
+      }`}
+      style={{
+        transition: `opacity ${NOTIFICATION_FADE_TIME_SECONDS}s ease-out`,
+      }}
+      onClick={() => {
+        clearHideNotificationTimeout();
+        clearDeleteNotificationTimeout();
+        hideNotification();
+        setTimeout(() => {
+          deleteNotification();
+        }, NOTIFICATION_FADE_TIME_SECONDS * 1000);
+      }}
+    >
+      <p className="notification-text">{appNotification.message}</p>
     </div>
   );
 };

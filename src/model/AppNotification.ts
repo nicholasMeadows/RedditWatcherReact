@@ -1,4 +1,6 @@
 export interface AppNotification {
-    displayTimeMS?: number;
-    message: string;
+  displayTimeMS?: number;
+  showNotification?: boolean;
+  notificationUuid: string;
+  message: string;
 }

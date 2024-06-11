@@ -19,9 +19,11 @@ import { useNavigate } from "react-router-dom";
 import RedditClient from "../client/RedditClient.ts";
 import { RedditClientContext } from "../context/reddit-client-context.ts";
 import { RedditServiceContext } from "../context/reddit-service-context.ts";
+import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
 
 const AppInitialization: React.FC = () => {
   const redditService = useContext(RedditServiceContext);
+  const appNotificationsDispatch = useContext(AppNotificationsDispatchContext);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -130,7 +132,7 @@ const AppInitialization: React.FC = () => {
       } else if (postRowsState.postRows.length == 0) {
         setText("Getting Posts...");
         if (!redditService.loopingForPosts) {
-          redditService.startLoopingForPosts();
+          redditService.startLoopingForPosts(appNotificationsDispatch);
         }
       } else {
         navigate(POST_ROW_ROUTE);

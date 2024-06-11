@@ -2,6 +2,7 @@ import { HashRouter } from "react-router-dom";
 
 /* Theme variables */
 import "./theme/app-initialization.scss";
+import "./theme/app-notifications.scss";
 import "./theme/app-notification.scss";
 import "./theme/context-menu.scss";
 import "./theme/global.scss";
