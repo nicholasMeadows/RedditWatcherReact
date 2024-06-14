@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import SideBar from "../components/SideBar.tsx";
 import {
@@ -7,6 +7,8 @@ import {
 } from "../redux/slice/PostRowsSlice.ts";
 import PostRow from "../components/PostRow.tsx";
 import "../theme/post-row-page.scss";
+import useRedditService from "../hook/use-reddit-service.ts";
+import { setSecondsTillGettingNextPosts } from "../redux/slice/SideBarSlice.ts";
 
 const PostRowPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -45,6 +47,28 @@ const PostRowPage: React.FC = () => {
       postRowPage.removeEventListener("keyup", documentKeyUpEvent);
     };
   }, [dispatch]);
+
+  const { getPostRow } = useRedditService();
+  const getPostRowIntervalRef = useRef<NodeJS.Timeout>();
+  const clearGetPostRowInterval = useCallback(() => {
+    if (getPostRowIntervalRef.current !== undefined) {
+      clearInterval(getPostRowIntervalRef.current);
+      getPostRowIntervalRef.current = undefined;
+    }
+  }, []);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      clearGetPostRowInterval();
+      getPostRowIntervalRef.current = setInterval(() => {
+        getPostRow();
+        dispatch(setSecondsTillGettingNextPosts(10));
+      }, 10000);
+    }, 250);
+    return () => {
+      clearTimeout(timeout);
+      clearGetPostRowInterval();
+    };
+  }, [clearGetPostRowInterval, dispatch, getPostRow]);
 
   return (
     <div className="post-row-page" ref={postRowPageRef}>

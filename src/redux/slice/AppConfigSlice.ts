@@ -37,7 +37,6 @@ import store from "../store";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import { clearPostRows } from "./PostRowsSlice.ts";
-import RedditService from "../../service/RedditService.ts";
 
 const defaultSubredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
 const defaultAutoScrollPostRowOption =
@@ -67,7 +66,7 @@ const defaultDarkMode = false;
 
 export const importAppConfig = createAsyncThunk(
   "appConfig/importAppConfig",
-  async (params: { file: File; redditService: RedditService }) => {
+  async (params: { file: File }) => {
     try {
       console.log("importing app config");
       const text = await params.file.text();
@@ -150,7 +149,6 @@ export const importAppConfig = createAsyncThunk(
       console.log("done importing");
       store.dispatch(clearPostRows());
       store.dispatch(resetConfigLoaded());
-      params.redditService.resetService();
     } catch (e) {
       console.log("exception", e);
     }

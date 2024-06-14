@@ -21,7 +21,6 @@ import { useAppDispatch, useAppSelector } from "../redux/store";
 import { RedditClientContext } from "../context/reddit-client-context.ts";
 import packageJson from "../../package.json";
 import { closeContextMenu } from "../redux/slice/ContextMenuSlice.ts";
-import { RedditServiceContext } from "../context/reddit-service-context.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -29,7 +28,6 @@ const NavigationHamburgerMenu: React.FC = () => {
   const location = useLocation();
   const { redditClientContextData, setRedditClientContextData } =
     useContext(RedditClientContext);
-  const redditService = useContext(RedditServiceContext);
   const redditListsState = useAppSelector((state) => state.redditLists);
   const [pageName, setPageName] = useState("");
   const [showBackButton, setShowBackButton] = useState(false);
@@ -255,7 +253,6 @@ const NavigationHamburgerMenu: React.FC = () => {
                     dispatch(
                       importAppConfig({
                         file: input.files[0],
-                        redditService: redditService,
                       })
                     );
                     setRedditClientContextData((prevState) => {

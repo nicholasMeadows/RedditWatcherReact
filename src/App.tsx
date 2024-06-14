@@ -21,10 +21,8 @@ import "./theme/variables.css";
 import { Provider } from "react-redux";
 import RouterView from "./page/RouterView";
 import store from "./redux/store";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { RootFontSizeContext } from "./context/root-font-size-context.ts";
-import { RedditServiceContext } from "./context/reddit-service-context.ts";
-import RedditService from "./service/RedditService.ts";
 import { RedditAuthenticationStatus } from "./model/RedditAuthenticationState.ts";
 import {
   RedditClientContext,
@@ -37,23 +35,20 @@ const App: React.FC = () => {
     useState<RedditClientContextData>({
       redditAuthenticationStatus: RedditAuthenticationStatus.NOT_YET_AUTHED,
     });
-  const redditServiceRef = useRef(new RedditService());
   return (
     <Provider store={store}>
       <HashRouter>
         <RootFontSizeContext.Provider
           value={{ fontSize: rootFontSize, setRootFontSize: setRootFontSize }}
         >
-          <RedditServiceContext.Provider value={redditServiceRef.current}>
-            <RedditClientContext.Provider
-              value={{
-                redditClientContextData: redditClientContextData,
-                setRedditClientContextData: setRedditClientContextData,
-              }}
-            >
-              <RouterView />
-            </RedditClientContext.Provider>
-          </RedditServiceContext.Provider>
+          <RedditClientContext.Provider
+            value={{
+              redditClientContextData: redditClientContextData,
+              setRedditClientContextData: setRedditClientContextData,
+            }}
+          >
+            <RouterView />
+          </RedditClientContext.Provider>
         </RootFontSizeContext.Provider>
       </HashRouter>
     </Provider>

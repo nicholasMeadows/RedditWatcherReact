@@ -18,12 +18,12 @@ import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState.t
 import { useNavigate } from "react-router-dom";
 import RedditClient from "../client/RedditClient.ts";
 import { RedditClientContext } from "../context/reddit-client-context.ts";
-import { RedditServiceContext } from "../context/reddit-service-context.ts";
-import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
+import RedditServiceContext from "../context/reddit-service-context.ts";
+import RedditService from "../service/RedditService.ts";
+import useRedditService from "../hook/use-reddit-service.ts";
+import { setSecondsTillGettingNextPosts } from "../redux/slice/SideBarSlice.ts";
 
 const AppInitialization: React.FC = () => {
-  const redditService = useContext(RedditServiceContext);
-  const appNotificationsDispatch = useContext(AppNotificationsDispatchContext);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -59,6 +59,21 @@ const AppInitialization: React.FC = () => {
     setSubredditListsState(subredditListsLocal);
   }, []);
 
+  const redditServiceContextState = useContext(RedditServiceContext);
+
+  const loadSubscribedSubreddits = useCallback(async () => {
+    if (
+      redditServiceContextState.masterSubscribedSubredditList.current.length ===
+      0
+    ) {
+      const redditService = new RedditService();
+      await redditService.loadSubscribedSubreddits(
+        redditServiceContextState.masterSubscribedSubredditList
+      );
+    }
+  }, [redditServiceContextState.masterSubscribedSubredditList]);
+
+  const { getPostRow } = useRedditService();
   const authReddit = useCallback(
     async (appConfig: AppConfig) => {
       const redditCredentials = appConfig.redditCredentials;
@@ -129,20 +144,28 @@ const AppInitialization: React.FC = () => {
         RedditAuthenticationStatus.AUTHENTICATION_DENIED
       ) {
         navigate(REDDIT_SIGN_IN_ROUTE);
-      } else if (postRowsState.postRows.length == 0) {
+      } else if (
+        postRowsState.postRows.length == 0 &&
+        redditServiceContextState.masterSubscribedSubredditList.current
+          .length === 0
+      ) {
+        setText("Loading Subscribed Subreddits...");
+        await loadSubscribedSubreddits();
         setText("Getting Posts...");
-        if (!redditService.loopingForPosts) {
-          redditService.startLoopingForPosts(appNotificationsDispatch);
-        }
+        getPostRow();
+        dispatch(setSecondsTillGettingNextPosts(10));
       } else {
         navigate(POST_ROW_ROUTE);
       }
     },
     [
+      dispatch,
+      getPostRow,
+      loadSubscribedSubreddits,
       navigate,
       postRowsState.postRows.length,
       redditClientContextData.redditAuthenticationStatus,
-      redditService,
+      redditServiceContextState.masterSubscribedSubredditList,
       setRedditClientContextData,
     ]
   );
@@ -164,7 +187,6 @@ const AppInitialization: React.FC = () => {
     navigate,
     postRowsState.postRows.length,
     redditClientContextData.redditAuthenticationStatus,
-    redditService,
     setRedditClientContextData,
     subredditLists,
   ]);
