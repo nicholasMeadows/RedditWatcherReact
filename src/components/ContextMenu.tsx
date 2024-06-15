@@ -3,11 +3,6 @@ import { SubredditLists } from "../model/SubredditList/SubredditLists";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import { useCopy } from "../hook/use-copy.ts";
 import {
-  closeContextMenu,
-  setExpandAddToList,
-  setExpandRemoveToList,
-} from "../redux/slice/ContextMenuSlice.ts";
-import {
   addSubredditToList,
   removeSubredditFromList,
   showDeleteListConfirmationBox,
@@ -15,12 +10,18 @@ import {
 } from "../redux/slice/RedditListSlice.ts";
 import { SubredditQueueDispatchContext } from "../context/sub-reddit-queue-context.ts";
 import { SubredditQueueActionType } from "../reducer/sub-reddit-queue-reducer.ts";
+import {
+  ContextMenuDispatchContext,
+  ContextMenuStateContext,
+} from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
 const ContextMenu: React.FC = () => {
   const dispatch = useAppDispatch();
   const copyHook = useCopy();
   const subredditQueueDispatch = useContext(SubredditQueueDispatchContext);
-  const contextMenuState = useAppSelector((state) => state.contextMenu);
+  const contextMenuState = useContext(ContextMenuStateContext);
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const redditListState = useAppSelector((state) => state.redditLists);
   const [contextMenuX, setContextMenuX] = useState(0);
   const [contextMenuY, setContextMenuY] = useState(0);
@@ -146,7 +147,9 @@ const ContextMenu: React.FC = () => {
           hidden={!contextMenuState.showButtonControls.showOpenPost}
           onClick={() => {
             window.open(contextMenuState.openPostPermaLink);
-            dispatch(closeContextMenu());
+            contextMenuDispatch({
+              type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
+            });
           }}
         >
           <p className="context-menu-button-label">Open Post</p>
@@ -157,7 +160,9 @@ const ContextMenu: React.FC = () => {
           hidden={!contextMenuState.showButtonControls.showOpenSubreddit}
           onClick={() => {
             window.open(contextMenuState.openSubredditLink);
-            dispatch(closeContextMenu());
+            contextMenuDispatch({
+              type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
+            });
           }}
         >
           <p className="context-menu-button-label">Open Subreddit</p>
@@ -170,7 +175,9 @@ const ContextMenu: React.FC = () => {
             if (contextMenuState.copyInfo != undefined) {
               copyHook.copy(contextMenuState.copyInfo);
             }
-            dispatch(closeContextMenu());
+            contextMenuDispatch({
+              type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
+            });
           }}
         >
           <p className="context-menu-button-label">Copy</p>
@@ -186,7 +193,9 @@ const ContextMenu: React.FC = () => {
                 payload: contextMenuState.subreddit,
               });
             }
-            dispatch(closeContextMenu());
+            contextMenuDispatch({
+              type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
+            });
           }}
         >
           <p className="context-menu-button-label">Skip to Subreddit</p>
@@ -208,11 +217,10 @@ const ContextMenu: React.FC = () => {
                 : ""
             }`}
             onClick={() => {
-              dispatch(
-                setExpandAddToList(
-                  !contextMenuState.showButtonControls.expandAddToList
-                )
-              );
+              contextMenuDispatch({
+                type: ContextMenuActionType.SET_EXPAND_ADD_TO_LIST,
+                payload: !contextMenuState.showButtonControls.expandAddToList,
+              });
               const div =
                 addToListNamesDivRef.current as unknown as HTMLDivElement;
               div.style.setProperty(
@@ -274,11 +282,12 @@ const ContextMenu: React.FC = () => {
                 : ""
             }`}
             onClick={() => {
-              dispatch(
-                setExpandRemoveToList(
-                  !contextMenuState.showButtonControls.expandRemoveFromList
-                )
-              );
+              contextMenuDispatch({
+                type: ContextMenuActionType.SET_EXPAND_REMOVE_TO_LIST,
+                payload:
+                  !contextMenuState.showButtonControls.expandRemoveFromList,
+              });
+
               const div =
                 removeFromListNamesDivRef.current as unknown as HTMLDivElement;
               div.style.setProperty(
@@ -340,7 +349,9 @@ const ContextMenu: React.FC = () => {
                 )
               );
             }
-            dispatch(closeContextMenu());
+            contextMenuDispatch({
+              type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
+            });
           }}
         >
           <p className="context-menu-button-label">Update List Name</p>
@@ -360,7 +371,9 @@ const ContextMenu: React.FC = () => {
                 )
               );
             }
-            dispatch(closeContextMenu());
+            contextMenuDispatch({
+              type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
+            });
           }}
         >
           <p className="context-menu-button-label">Delete List</p>

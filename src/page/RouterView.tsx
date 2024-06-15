@@ -30,7 +30,6 @@ import ApplicationSettings from "./ApplicationSettings.tsx";
 import getPlatform from "../util/PlatformUtil.ts";
 import { Platform } from "../model/Platform.ts";
 import { RootFontSizeContext } from "../context/root-font-size-context.ts";
-import { closeContextMenu } from "../redux/slice/ContextMenuSlice.ts";
 import {
   setCurrentLocation,
   setPostCardWidthPercentage,
@@ -48,6 +47,8 @@ import {
   AppConfigStateContext,
 } from "../context/app-config-context.ts";
 import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
 export type SecondsTillGettingNextPostContextData = {
   secondsTillGettingNextPosts: number;
@@ -65,6 +66,7 @@ const RouterView: React.FC = () => {
   const currentPostsToShowInRow = useContext(
     AppConfigStateContext
   ).postsToShowInRow;
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const wheelEventHandler = useCallback(
     (event: WheelEvent) => {
       const ctrlKeyPressed = event.ctrlKey;
@@ -107,7 +109,7 @@ const RouterView: React.FC = () => {
 
   useEffect(() => {
     const documentClickedEvent = () => {
-      dispatch(closeContextMenu());
+      contextMenuDispatch({ type: ContextMenuActionType.CLOSE_CONTEXT_MENU });
     };
     document.addEventListener("click", documentClickedEvent);
     return () => {

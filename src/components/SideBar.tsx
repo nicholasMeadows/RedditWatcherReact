@@ -10,7 +10,6 @@ import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../RedditWatcherCon
 import SideBarSubredditMenuEvent from "../model/Events/SideBarSubredditMenuEvent.ts";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import SearchRedditBar from "./SearchRedditBar.tsx";
-import { setSideBarSubredditMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import {
   setListToFilterByUuid,
   setMouseOverSubredditList,
@@ -21,6 +20,8 @@ import {
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
 type SideBarProps = {
   onRedditSearchBarFocus: () => void;
@@ -32,6 +33,7 @@ const SideBar: React.FC<SideBarProps> = ({
 }) => {
   const sideBarButtonMoved = useRef(false);
   const dispatch = useAppDispatch();
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const secondsTillGettingNextPosts = useAppSelector(
     (state) => state.sideBar.secondsTillGettingNextPosts
   );
@@ -240,11 +242,12 @@ const SideBar: React.FC<SideBarProps> = ({
                   x: event.clientX,
                   y: event.clientY,
                 };
-                dispatch(
-                  setSideBarSubredditMenuEvent({
+                contextMenuDispatch({
+                  type: ContextMenuActionType.SET_SIDE_BAR_SUB_REDDIT_MENU_EVENT,
+                  payload: {
                     event: subredditContextMenuEvent,
-                  })
-                );
+                  },
+                });
               }}
               key={subreddit.subredditUuid}
               className={`subreddit-list-item ${

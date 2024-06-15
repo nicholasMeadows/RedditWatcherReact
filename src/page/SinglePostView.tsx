@@ -1,17 +1,18 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useContext, useEffect, useRef, useState } from "react";
 import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
 import PostMediaElement from "../components/PostMediaElement.tsx";
-import { useAppDispatch, useAppSelector } from "../redux/store.ts";
-import { setPostContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
+import { useAppSelector } from "../redux/store.ts";
 import { Post } from "../model/Post/Post.ts";
 import useSinglePostPageZoom from "../hook/use-single-post-page-zoom.ts";
 import { PostImageQualityEnum } from "../model/config/enums/PostImageQualityEnum.ts";
 import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
 const SinglePostView: FC = () => {
-  const dispatch = useAppDispatch();
   const singlePostPageState = useAppSelector((state) => state.singlePostPage);
   const postRowsState = useAppSelector((state) => state.postRows);
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const [post, setPost] = useState<Post | undefined>();
   const postElementDivWrapperRef = useRef(null);
   const singlePostPageZoom = useSinglePostPageZoom(
@@ -65,9 +66,10 @@ const SinglePostView: FC = () => {
                   x: event.clientX,
                   y: event.clientY,
                 };
-                dispatch(
-                  setPostContextMenuEvent({ event: postContextMenuEvent })
-                );
+                contextMenuDispatch({
+                  type: ContextMenuActionType.SET_POST_CONTEXT_MENU_EVENT,
+                  payload: { event: postContextMenuEvent },
+                });
               }}
               className="flex flex-column max-width-height-percentage single-post-view-post-element"
             >

@@ -9,16 +9,17 @@ import {
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants.ts";
 import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
-import { setPostContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
 import { useNavigate } from "react-router-dom";
 import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
 const PostCard: FC = memo(() => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { postRowUuid, post } = useContext(PostCardContext);
-
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const postRowsState = useAppSelector((state) => state.postRows);
   const initialMouseDownOrTouchX = useRef(0);
 
@@ -45,7 +46,10 @@ const PostCard: FC = memo(() => {
           x: event.clientX,
           y: event.clientY,
         };
-        dispatch(setPostContextMenuEvent({ event: postContextMenuEvent }));
+        contextMenuDispatch({
+          type: ContextMenuActionType.SET_POST_CONTEXT_MENU_EVENT,
+          payload: { event: postContextMenuEvent },
+        });
       }}
       onClickCapture={(event) => {
         if (Math.abs(initialMouseDownOrTouchX.current - event.clientX) >= 50) {

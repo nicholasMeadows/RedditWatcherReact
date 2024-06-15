@@ -15,7 +15,6 @@ import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
 import store, { useAppDispatch, useAppSelector } from "../redux/store";
 import { RedditClientContext } from "../context/reddit-client-context.ts";
 import packageJson from "../../package.json";
-import { closeContextMenu } from "../redux/slice/ContextMenuSlice.ts";
 import {
   AppConfigDispatchContext,
   AppConfigStateContext,
@@ -31,6 +30,8 @@ import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import { clearPostRows } from "../redux/slice/PostRowsSlice.ts";
 import ImportExportConfig from "../model/ImportExportConfig.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -38,6 +39,7 @@ const NavigationHamburgerMenu: React.FC = () => {
   const appConfigState = useContext(AppConfigStateContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const { redditClientContextData, setRedditClientContextData } =
     useContext(RedditClientContext);
   const redditListsState = useAppSelector((state) => state.redditLists);
@@ -98,7 +100,7 @@ const NavigationHamburgerMenu: React.FC = () => {
 
     setPageName(pageName);
     setShowBackButton(showBackButton);
-    dispatch(closeContextMenu());
+    contextMenuDispatch({ type: ContextMenuActionType.CLOSE_CONTEXT_MENU });
   }, [dispatch, location, redditClientContextData.redditAuthenticationStatus]);
   const navigateTo = (pathName: string) => {
     setPopoutDrawerOpen(false);
