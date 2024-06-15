@@ -8,9 +8,10 @@ import { PostImageQualityEnum } from "../model/config/enums/PostImageQualityEnum
 import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
 import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
+import { SinglePostPageContext } from "../context/single-post-page-context.ts";
 
 const SinglePostView: FC = () => {
-  const singlePostPageState = useAppSelector((state) => state.singlePostPage);
+  const singlePostPageState = useContext(SinglePostPageContext);
   const postRowsState = useAppSelector((state) => state.postRows);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const [post, setPost] = useState<Post | undefined>();

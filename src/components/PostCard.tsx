@@ -2,7 +2,6 @@ import { FC, memo, useContext, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import { PostCardContext } from "../context/post-card-context.ts";
 import "../theme/post-card.scss";
-import { setSinglePostPageUuids } from "../redux/slice/SinglePostPageSlice.ts";
 import { mouseLeavePostRow } from "../redux/slice/PostRowsSlice.ts";
 import {
   POST_CARD_LEFT_MARGIN_EM,
@@ -14,10 +13,13 @@ import { useNavigate } from "react-router-dom";
 import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
 import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
+import { SinglePostPageDispatchContext } from "../context/single-post-page-context.ts";
+import { SinglePostPageActionType } from "../reducer/single-post-page-reducer.ts";
 
 const PostCard: FC = memo(() => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const singlePostPageDispatch = useContext(SinglePostPageDispatchContext);
   const { postRowUuid, post } = useContext(PostCardContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const postRowsState = useAppSelector((state) => state.postRows);
@@ -59,12 +61,13 @@ const PostCard: FC = memo(() => {
         initialMouseDownOrTouchX.current = 0;
       }}
       onClick={() => {
-        dispatch(
-          setSinglePostPageUuids({
+        singlePostPageDispatch({
+          type: SinglePostPageActionType.SET_SINGLE_POST_PAGE_UUIDS,
+          payload: {
             postRowUuid: postRowUuid,
             postUuid: post.postUuid,
-          })
-        );
+          },
+        });
         navigate(`${SINGPLE_POST_ROUTE}`);
         dispatch(mouseLeavePostRow(postRowUuid));
       }}

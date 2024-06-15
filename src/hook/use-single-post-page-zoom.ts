@@ -3,6 +3,7 @@ import {
   MutableRefObject,
   TouchEvent,
   useCallback,
+  useContext,
   useEffect,
   useState,
   WheelEvent,
@@ -12,18 +13,20 @@ import {
   SINGLE_POST_PAGE_MIN_SCALE,
   SINGLE_POST_PAGE_SCALE_STEP,
 } from "../RedditWatcherConstants.ts";
-import {
-  setSinglePostPageUuids,
-  SinglePostPageContextData,
-} from "../redux/slice/SinglePostPageSlice.ts";
 import { useAppDispatch } from "../redux/store.ts";
 import { PostRowsState } from "../redux/slice/PostRowsSlice.ts";
+import {
+  SinglePostPageActionType,
+  SinglePostPageState,
+} from "../reducer/single-post-page-reducer.ts";
+import { SinglePostPageDispatchContext } from "../context/single-post-page-context.ts";
 
 export default function useSinglePostPageZoom(
   postElementDivWrapperRef: MutableRefObject<HTMLDivElement | null>,
-  singlePostPageState: SinglePostPageContextData,
+  singlePostPageState: SinglePostPageState,
   postRowsState: PostRowsState
 ) {
+  const singlePostPageDispatch = useContext(SinglePostPageDispatchContext);
   const dispatch = useAppDispatch();
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -71,12 +74,13 @@ export default function useSinglePostPageZoom(
       postUuidToSet = postRow.posts[0].postUuid;
     }
     resetImgPositionAndScale();
-    dispatch(
-      setSinglePostPageUuids({
+    singlePostPageDispatch({
+      type: SinglePostPageActionType.SET_SINGLE_POST_PAGE_UUIDS,
+      payload: {
         postRowUuid: singlePostPageState.postRowUuid,
         postUuid: postUuidToSet,
-      })
-    );
+      },
+    });
   }, [
     dispatch,
     postRowsState.postRows,
@@ -110,12 +114,13 @@ export default function useSinglePostPageZoom(
       postUuid = postRow.posts[postIndex - 1].postUuid;
     }
     resetImgPositionAndScale();
-    dispatch(
-      setSinglePostPageUuids({
+    singlePostPageDispatch({
+      type: SinglePostPageActionType.SET_SINGLE_POST_PAGE_UUIDS,
+      payload: {
         postRowUuid: postRowUuid,
         postUuid: postUuid,
-      })
-    );
+      },
+    });
   }, [
     dispatch,
     postRowsState.postRows,
