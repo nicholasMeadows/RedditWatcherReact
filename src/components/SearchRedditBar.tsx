@@ -1,13 +1,14 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { RedditSearchItemContextMenuEvent } from "../model/Events/RedditSearchItemContextMenuEvent";
-import { useAppDispatch, useAppSelector } from "../redux/store";
+import { useAppDispatch } from "../redux/store";
 import { setRedditSearchItemContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import useSearchReddit from "../hook/use-search-reddit.ts";
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
 
 const SearchRedditBar: React.FC = () => {
   const dispatch = useAppDispatch();
-  const darkmode = useAppSelector((state) => state.appConfig.darkMode);
+  const darkmode = useContext(AppConfigStateContext).darkMode;
   const {
     searchResultsOpen,
     setSearchResultsOpen,

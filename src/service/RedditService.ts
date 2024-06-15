@@ -43,19 +43,31 @@ import {
   SubredditQueueAction,
   SubredditQueueActionType,
 } from "../reducer/sub-reddit-queue-reducer.ts";
+import { RedditCredentials } from "../model/config/RedditCredentials.ts";
 
 export default class RedditService {
+  declare redditClient: RedditClient;
+
+  constructor(redditCredentials: RedditCredentials) {
+    this.redditClient = new RedditClient(redditCredentials);
+  }
+
   async loadSubscribedSubreddits(
     masterSubscribedSubredditListRef: MutableRefObject<Array<Subreddit>>,
+    redditApiItemLimit: number,
     async: boolean = true
   ) {
     let subscribedSubreddits = new Array<Subreddit>();
-    let results = await new RedditClient().getSubscribedSubReddits(undefined);
+    let results = await this.redditClient.getSubscribedSubReddits(
+      redditApiItemLimit,
+      undefined
+    );
     subscribedSubreddits.push(...results.subreddits);
     masterSubscribedSubredditListRef.current = subscribedSubreddits;
     const asyncLoopForRemainingSubreddits = async () => {
       while (results.after != undefined) {
-        results = await new RedditClient().getSubscribedSubReddits(
+        results = await this.redditClient.getSubscribedSubReddits(
+          redditApiItemLimit,
           results.after
         );
         subscribedSubreddits = [...subscribedSubreddits, ...results.subreddits];
@@ -112,7 +124,7 @@ export default class RedditService {
         getPostsFromSubredditsState.userFrontPagePostSortOrderOption
       )
     ) {
-      postsFromSubreddit = await new RedditClient().getUserFrontPage(
+      postsFromSubreddit = await this.redditClient.getUserFrontPage(
         getPostsFromSubredditsState.userFrontPagePostSortOrderOption,
         getPostsFromSubredditsState.topTimeFrame,
         getPostsFromSubredditsState.redditApiItemLimit,
@@ -156,7 +168,7 @@ export default class RedditService {
       getPostsFromSubredditsState.redditApiItemLimit
     );
     console.log("about to get posts for subreddit uri ", url);
-    let posts = await new RedditClient().getPostsForSubredditUri(
+    let posts = await this.redditClient.getPostsForSubredditUri(
       url,
       getPostsFromSubredditsState.masterSubredditList,
       store.getState().redditLists.subredditLists
@@ -500,7 +512,9 @@ export default class RedditService {
     subredditIndexRef: MutableRefObject<number>,
     nsfwRedditListIndex: MutableRefObject<number>,
     lastPostRowWasSortOrderNewRef: MutableRefObject<boolean>,
-    subredditQueueDispatch: Dispatch<SubredditQueueAction>
+    subredditQueueDispatch: Dispatch<SubredditQueueAction>,
+    currentUserFrontPagePostSortOrderOption: UserFrontPagePostSortOrderOptionsEnum,
+    currentPostsToShowInRow: number
   ) {
     if (updatedValues.subredditQueueItemToRemove != undefined) {
       subredditQueueDispatch({
@@ -535,16 +549,12 @@ export default class RedditService {
         updatedValues.lastPostRowWasSortOrderNew;
     }
     if (updatedValues.createPostRowAndInsertAtBeginning != undefined) {
-      const state = store.getState();
-      const userFrontPagePostSortOrderOption =
-        state.appConfig.userFrontPagePostSortOrderOption;
-      const postsToShowInRow = state.appConfig.postsToShowInRow;
-
       store.dispatch(
         createPostRowAndInsertAtBeginning({
           posts: updatedValues.createPostRowAndInsertAtBeginning,
-          userFrontPagePostSortOrderOption: userFrontPagePostSortOrderOption,
-          postsToShowInRow: postsToShowInRow,
+          userFrontPagePostSortOrderOption:
+            currentUserFrontPagePostSortOrderOption,
+          postsToShowInRow: currentPostsToShowInRow,
         })
       );
     }
@@ -553,7 +563,7 @@ export default class RedditService {
         addPostsToFrontOfRow({
           postRowUuid: updatedValues.shiftPostsAndUiPosts.postRowUuid,
           posts: updatedValues.shiftPostsAndUiPosts.posts,
-          postsToShowInRow: store.getState().appConfig.postsToShowInRow,
+          postsToShowInRow: currentPostsToShowInRow,
         })
       );
     }

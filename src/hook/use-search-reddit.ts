@@ -1,24 +1,24 @@
-import { RefObject, useEffect, useState } from "react";
+import { RefObject, useContext, useEffect, useState } from "react";
 import getPlatform from "../util/PlatformUtil.ts";
 import { Platform } from "../model/Platform.ts";
 import { SubredditAccountSearchResult } from "../model/SubredditAccountSearchResult.ts";
 import RedditClient from "../client/RedditClient.ts";
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum.ts";
-import { useAppSelector } from "../redux/store.ts";
 import { v4 as uuidV4 } from "uuid";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
 
 export default function useSearchReddit(inputRef: RefObject<HTMLInputElement>) {
-  const contentFiltering = useAppSelector(
-    (state) => state.appConfig.contentFiltering
-  );
+  const contentFiltering = useContext(AppConfigStateContext).contentFiltering;
   const [searchRedditResults, setSearchRedditResults] = useState<
     SubredditAccountSearchResult[]
   >([]);
 
+  const redditCredentials = useContext(AppConfigStateContext).redditCredentials;
   const searchReddit = async (input: string) => {
     try {
-      let { users, subreddits } =
-        await new RedditClient().callSearchRedditForSubRedditAndUser(input);
+      let { users, subreddits } = await new RedditClient(
+        redditCredentials
+      ).callSearchRedditForSubRedditAndUser(input);
 
       if (contentFiltering == ContentFilteringOptionEnum.SFW) {
         users = users.filter((result) => !result.over18);
@@ -95,7 +95,7 @@ export default function useSearchReddit(inputRef: RefObject<HTMLInputElement>) {
     const name = subredditSearchResult.isUser
       ? subredditSearchResult.displayNamePrefixed
       : subredditSearchResult.displayName;
-    const redditClient = new RedditClient();
+    const redditClient = new RedditClient(redditCredentials);
     if (subredditSearchResult.isSubscribed) {
       await redditClient.callUnsubscribe(name);
     } else {

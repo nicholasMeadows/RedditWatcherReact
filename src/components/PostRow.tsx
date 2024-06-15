@@ -1,5 +1,5 @@
-import { FC, memo, useCallback, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../redux/store.ts";
+import { FC, memo, useCallback, useContext, useRef, useState } from "react";
+import { useAppDispatch } from "../redux/store.ts";
 import { Post } from "../model/Post/Post.ts";
 import getPlatform from "../util/PlatformUtil.ts";
 import { Platform } from "../model/Platform.ts";
@@ -13,14 +13,13 @@ import { PostCardContext } from "../context/post-card-context.ts";
 import PostCard from "./PostCard.tsx";
 import { PostRow } from "../model/PostRow.ts";
 import "../theme/post-row.scss";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
 
 type Props = { postRow: PostRow };
 const PostRow: FC<Props> = memo(({ postRow }) => {
   const dispatch = useAppDispatch();
-  const darkMode = useAppSelector((state) => state.appConfig.darkMode);
-  const postsToShowInRow = useAppSelector(
-    (state) => state.appConfig.postsToShowInRow
-  );
+  const darkMode = useContext(AppConfigStateContext).darkMode;
+  const postsToShowInRow = useContext(AppConfigStateContext).postsToShowInRow;
 
   const postRowContentDivRef = useRef<HTMLDivElement>(null);
 

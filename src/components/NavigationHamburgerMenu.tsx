@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   APP_INITIALIZATION_ROUTE,
@@ -12,18 +12,30 @@ import {
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
-import {
-  exportAppConfig,
-  importAppConfig,
-  toggleDarkMode,
-} from "../redux/slice/AppConfigSlice";
-import { useAppDispatch, useAppSelector } from "../redux/store";
+import store, { useAppDispatch, useAppSelector } from "../redux/store";
 import { RedditClientContext } from "../context/reddit-client-context.ts";
 import packageJson from "../../package.json";
 import { closeContextMenu } from "../redux/slice/ContextMenuSlice.ts";
+import {
+  AppConfigDispatchContext,
+  AppConfigStateContext,
+} from "../context/app-config-context.ts";
+import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
+import {
+  exportConfigDownload,
+  fillInMissingFieldsInConfigObj,
+  saveConfig,
+  saveSubredditLists,
+} from "../service/ConfigService.ts";
+import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
+import { Subreddit } from "../model/Subreddit/Subreddit.ts";
+import { clearPostRows } from "../redux/slice/PostRowsSlice.ts";
+import ImportExportConfig from "../model/ImportExportConfig.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
+  const appConfigDispatch = useContext(AppConfigDispatchContext);
+  const appConfigState = useContext(AppConfigStateContext);
   const navigate = useNavigate();
   const location = useLocation();
   const { redditClientContextData, setRedditClientContextData } =
@@ -31,13 +43,13 @@ const NavigationHamburgerMenu: React.FC = () => {
   const redditListsState = useAppSelector((state) => state.redditLists);
   const [pageName, setPageName] = useState("");
   const [showBackButton, setShowBackButton] = useState(false);
-  const darkMode = useAppSelector((state) => state.appConfig.darkMode);
+  const darkMode = useContext(AppConfigStateContext).darkMode;
 
   const [popoutDrawerOpen, setPopoutDrawerOpen] = useState(false);
   const fileSelectorRef = useRef(null);
 
   const [importClicked, setImportClicked] = useState(false);
-  const configLoaded = useAppSelector((state) => state.appConfig.configLoaded);
+  const configLoaded = useContext(AppConfigStateContext).configLoaded;
   useEffect(() => {
     if (!configLoaded && importClicked) {
       setImportClicked(false);
@@ -97,6 +109,111 @@ const NavigationHamburgerMenu: React.FC = () => {
     }
   };
 
+  const importAppConfig = useCallback(
+    async (file: File) => {
+      try {
+        console.log("importing app config");
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        if (parsed["appConfig"] != undefined) {
+          console.log(
+            "appConfig was not undefined. Setting up app config",
+            parsed["appConfig"]
+          );
+          const config = fillInMissingFieldsInConfigObj(parsed["appConfig"]);
+          await saveConfig(config);
+        }
+
+        if (parsed["subredditLists"] != undefined) {
+          const subredditListsToSave = new Array<SubredditLists>();
+          let failedParsing = false;
+          const subredditLists = parsed["subredditLists"];
+          if (Array.isArray(subredditLists)) {
+            for (const list of subredditLists) {
+              if (
+                Object.hasOwn(list, "subredditListUuid") &&
+                Object.hasOwn(list, "listName") &&
+                Object.hasOwn(list, "subreddits") &&
+                Object.hasOwn(list, "selected")
+              ) {
+                const parsedSubreddits = new Array<Subreddit>();
+                if (Array.isArray(list["subreddits"])) {
+                  const subreddits = list["subreddits"];
+                  for (const subreddit of subreddits) {
+                    if (
+                      Object.hasOwn(subreddit, "displayName") &&
+                      Object.hasOwn(subreddit, "displayNamePrefixed") &&
+                      Object.hasOwn(subreddit, "subscribers") &&
+                      Object.hasOwn(subreddit, "over18") &&
+                      Object.hasOwn(subreddit, "isSubscribed") &&
+                      Object.hasOwn(subreddit, "fromList") &&
+                      Object.hasOwn(subreddit, "subredditUuid")
+                    ) {
+                      parsedSubreddits.push({
+                        displayName: subreddit["displayName"],
+                        displayNamePrefixed: subreddit["displayNamePrefixed"],
+                        subscribers: subreddit["subscribers"],
+                        over18: subreddit["over18"],
+                        isSubscribed: subreddit["isSubscribed"],
+                        fromList: subreddit["fromList"],
+                        subredditUuid: subreddit["subredditUuid"],
+                        isUser: subreddit["isUser"],
+                      });
+                    } else {
+                      failedParsing = true;
+                      break;
+                    }
+                  }
+                }
+                if (failedParsing) {
+                  break;
+                } else {
+                  const subredditList: SubredditLists = {
+                    subredditListUuid: "",
+                    listName: list["listName"],
+                    subreddits: parsedSubreddits,
+                    selected: list["selected"],
+                  };
+                  subredditListsToSave.push(subredditList);
+                }
+              } else {
+                failedParsing = false;
+                break;
+              }
+            }
+          } else {
+            failedParsing = true;
+          }
+
+          if (!failedParsing) {
+            await saveSubredditLists(subredditListsToSave);
+          }
+        }
+
+        console.log("done importing");
+        store.dispatch(clearPostRows());
+        appConfigDispatch({ type: AppConfigActionType.RESET_CONFIG_LOADED });
+      } catch (e) {
+        console.log("exception", e);
+      }
+    },
+    [appConfigDispatch]
+  );
+
+  const exportAppConfig = useCallback(
+    async (subredditLists: Array<SubredditLists>) => {
+      const configObj: ImportExportConfig = {
+        appConfig: appConfigState,
+        subredditLists: subredditLists,
+      };
+      const myFile = new File(
+        [JSON.stringify(configObj)],
+        "reddit-watcher-config.json"
+      );
+      exportConfigDownload(myFile);
+    },
+    [appConfigState]
+  );
   return (
     <>
       <div
@@ -222,7 +339,11 @@ const NavigationHamburgerMenu: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={darkMode}
-                    onChange={() => dispatch(toggleDarkMode())}
+                    onChange={() => {
+                      appConfigDispatch({
+                        type: AppConfigActionType.TOGGLE_DARK_MODE,
+                      });
+                    }}
                   />
                   <span className="slider round"></span>
                 </label>
@@ -250,11 +371,7 @@ const NavigationHamburgerMenu: React.FC = () => {
                   const input = event.target as HTMLInputElement;
                   if (input.files != undefined) {
                     setImportClicked(true);
-                    dispatch(
-                      importAppConfig({
-                        file: input.files[0],
-                      })
-                    );
+                    importAppConfig(input.files[0]);
                     setRedditClientContextData((prevState) => {
                       return {
                         ...prevState,
@@ -270,9 +387,7 @@ const NavigationHamburgerMenu: React.FC = () => {
             <hr />
             <div
               className="drawer-popout-item"
-              onClick={() =>
-                dispatch(exportAppConfig(redditListsState.subredditLists))
-              }
+              onClick={() => exportAppConfig(redditListsState.subredditLists)}
             >
               <p className="drawer-popout-item-text">Export Config</p>
             </div>

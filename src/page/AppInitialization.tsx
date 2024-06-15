@@ -4,7 +4,6 @@ import {
   loadSubredditListsFromFile,
   saveConfig,
 } from "../service/ConfigService.ts";
-import { setAppConfig } from "../redux/slice/AppConfigSlice.ts";
 import { AppConfig } from "../model/config/AppConfig.ts";
 import store, { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
@@ -22,9 +21,15 @@ import RedditServiceContext from "../context/reddit-service-context.ts";
 import RedditService from "../service/RedditService.ts";
 import useRedditService from "../hook/use-reddit-service.ts";
 import { setSecondsTillGettingNextPosts } from "../redux/slice/SideBarSlice.ts";
+import {
+  AppConfigDispatchContext,
+  AppConfigStateContext,
+} from "../context/app-config-context.ts";
+import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
 
 const AppInitialization: React.FC = () => {
   const dispatch = useAppDispatch();
+  const appConfigDispatch = useContext(AppConfigDispatchContext);
   const navigate = useNavigate();
 
   const [config, setConfig] = useState<AppConfig | undefined>(undefined);
@@ -39,9 +44,12 @@ const AppInitialization: React.FC = () => {
 
   const loadConfigAsync = useCallback(async () => {
     const loadedConfig = await loadConfig();
-    dispatch(setAppConfig(loadedConfig));
+    appConfigDispatch({
+      type: AppConfigActionType.SET_APP_CONFIG,
+      payload: loadedConfig,
+    });
     setConfig(loadedConfig);
-  }, [dispatch]);
+  }, [appConfigDispatch]);
 
   const loadSubredditListsAsync = useCallback(async () => {
     let subredditListsLocal: SubredditLists[] = [];
@@ -61,14 +69,20 @@ const AppInitialization: React.FC = () => {
 
   const redditServiceContextState = useContext(RedditServiceContext);
 
+  const redditApiItemLimit = useContext(
+    AppConfigStateContext
+  ).redditApiItemLimit;
+  const redditCredentials = useContext(AppConfigStateContext).redditCredentials;
+
   const loadSubscribedSubreddits = useCallback(async () => {
     if (
       redditServiceContextState.masterSubscribedSubredditList.current.length ===
       0
     ) {
-      const redditService = new RedditService();
+      const redditService = new RedditService(redditCredentials);
       await redditService.loadSubscribedSubreddits(
-        redditServiceContextState.masterSubscribedSubredditList
+        redditServiceContextState.masterSubscribedSubredditList,
+        redditApiItemLimit
       );
     }
   }, [redditServiceContextState.masterSubscribedSubredditList]);
@@ -104,24 +118,14 @@ const AppInitialization: React.FC = () => {
         console.log("Authenticating Reddit");
         setText("Logging In...");
 
-        const username = redditCredentials.username;
-        const password = redditCredentials.password;
-        const clientId = redditCredentials.clientId;
-        const clientSecret = redditCredentials.clientSecret;
-
         try {
           if (
-            username != undefined &&
-            password != undefined &&
-            clientId != undefined &&
-            clientSecret != undefined
+            redditCredentials.username != undefined &&
+            redditCredentials.password != undefined &&
+            redditCredentials.clientId != undefined &&
+            redditCredentials.clientSecret != undefined
           ) {
-            await new RedditClient().authenticate(
-              username,
-              password,
-              clientId,
-              clientSecret
-            );
+            await new RedditClient(redditCredentials).authenticate();
             saveConfig(appConfig);
             setRedditClientContextData((state) => ({
               ...state,

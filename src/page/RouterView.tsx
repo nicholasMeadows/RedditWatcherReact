@@ -1,4 +1,4 @@
-import store, { useAppDispatch, useAppSelector } from "../redux/store";
+import { useAppDispatch } from "../redux/store";
 
 import { KeepAwake } from "@capacitor-community/keep-awake";
 import { useCallback, useContext, useEffect, useRef } from "react";
@@ -29,10 +29,6 @@ import RedditSignIn from "./RedditSignIn.tsx";
 import ApplicationSettings from "./ApplicationSettings.tsx";
 import getPlatform from "../util/PlatformUtil.ts";
 import { Platform } from "../model/Platform.ts";
-import {
-  setPostRowsToShowInView,
-  setPostsToShowInRow,
-} from "../redux/slice/AppConfigSlice.ts";
 import { RootFontSizeContext } from "../context/root-font-size-context.ts";
 import { closeContextMenu } from "../redux/slice/ContextMenuSlice.ts";
 import {
@@ -47,6 +43,11 @@ import RedditServiceContext, {
 } from "../context/reddit-service-context.ts";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import SubredditQueueContextProvider from "../context/provider/sub-reddit-queue-context-provider.tsx";
+import {
+  AppConfigDispatchContext,
+  AppConfigStateContext,
+} from "../context/app-config-context.ts";
+import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
 
 export type SecondsTillGettingNextPostContextData = {
   secondsTillGettingNextPosts: number;
@@ -54,25 +55,41 @@ export type SecondsTillGettingNextPostContextData = {
 };
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
-  const darkmode = useAppSelector((state) => state.appConfig.darkMode);
   const location = useLocation();
   const { setRootFontSize } = useContext(RootFontSizeContext);
+  const appConfigDispatch = useContext(AppConfigDispatchContext);
+  const darkmode = useContext(AppConfigStateContext).darkMode;
+  const currentPostRowsToShowInView = useContext(
+    AppConfigStateContext
+  ).postRowsToShowInView;
+  const currentPostsToShowInRow = useContext(
+    AppConfigStateContext
+  ).postsToShowInRow;
   const wheelEventHandler = useCallback(
     (event: WheelEvent) => {
       const ctrlKeyPressed = event.ctrlKey;
       if (ctrlKeyPressed) {
         event.preventDefault();
-        const appConfigState = store.getState().appConfig;
-        const currentPostRowsToShowInView = appConfigState.postRowsToShowInView;
-        const currentPostsToShowInRow = appConfigState.postsToShowInRow;
 
         const deltaY = event.deltaY;
         if (deltaY > 0) {
-          dispatch(setPostsToShowInRow(currentPostsToShowInRow + 0.1));
-          dispatch(setPostRowsToShowInView(currentPostRowsToShowInView + 0.1));
+          appConfigDispatch({
+            type: AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW,
+            payload: currentPostsToShowInRow + 0.1,
+          });
+          appConfigDispatch({
+            type: AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW,
+            payload: currentPostRowsToShowInView + 0.1,
+          });
         } else if (deltaY < 0) {
-          dispatch(setPostsToShowInRow(currentPostsToShowInRow - 0.1));
-          dispatch(setPostRowsToShowInView(currentPostRowsToShowInView - 0.1));
+          appConfigDispatch({
+            type: AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW,
+            payload: currentPostsToShowInRow - 0.1,
+          });
+          appConfigDispatch({
+            type: AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW,
+            payload: currentPostRowsToShowInView - 0.1,
+          });
         }
       }
     },
@@ -142,9 +159,6 @@ const RouterView: React.FC = () => {
     );
   }, [darkmode]);
 
-  const postsToShowInRow = useAppSelector(
-    (state) => state.appConfig.postsToShowInRow
-  );
   const rootDivRef = useRef(null);
   useEffect(() => {
     const contentResizeObserver = new ResizeObserver(() => {
@@ -160,13 +174,13 @@ const RouterView: React.FC = () => {
         const postRowContentWidthPx = div.clientWidth - scrollButtonWidths;
         dispatch(setPostRowContentWidthPx(postRowContentWidthPx));
 
-        const postCardWidthPx = postRowContentWidthPx / postsToShowInRow;
+        const postCardWidthPx = postRowContentWidthPx / currentPostsToShowInRow;
         const postCardWidthPercentage =
           (postCardWidthPx / postRowContentWidthPx) * 100;
 
         dispatch(
           setPostCardWidthPercentage({
-            postsToShowInRow: postsToShowInRow,
+            postsToShowInRow: currentPostsToShowInRow,
             postCardWidthPercentage: postCardWidthPercentage,
           })
         );
@@ -176,7 +190,7 @@ const RouterView: React.FC = () => {
     if (div != undefined) {
       contentResizeObserver.observe(div);
     }
-  }, [dispatch, postsToShowInRow]);
+  }, [currentPostsToShowInRow, dispatch, setRootFontSize]);
 
   const redditServiceContextState: RedditServiceContextState = {
     lastPostRowWasSortOrderNew: useRef(false),

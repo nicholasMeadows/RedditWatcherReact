@@ -1,9 +1,16 @@
-import { MutableRefObject, useCallback, useEffect, useRef } from "react";
+import {
+  MutableRefObject,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+} from "react";
 import { v4 as uuidV4 } from "uuid";
 import { useAppSelector } from "../redux/store.ts";
 import { Post } from "../model/Post/Post.ts";
 import { PostRow } from "../model/PostRow.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
 
 export default function useMovePostRow(
   postRow: PostRow,
@@ -11,15 +18,15 @@ export default function useMovePostRow(
   postsToShow: Array<Post>,
   setPostsToShow: (updatedPostsToShow: Array<Post>) => void
 ) {
-  const autoScrollPostRowRateSecondsForSinglePostCard = useAppSelector(
-    (state) => state.appConfig.autoScrollPostRowRateSecondsForSinglePostCard
-  );
+  const autoScrollPostRowRateSecondsForSinglePostCard = useContext(
+    AppConfigStateContext
+  ).autoScrollPostRowRateSecondsForSinglePostCard;
   const postCardWidthPercentage = useAppSelector(
     (state) => state.postRows.postCardWidthPercentage
   );
-  const autoScrollPostRowDirectionOption = useAppSelector(
-    (state) => state.appConfig.autoScrollPostRowDirectionOption
-  );
+  const autoScrollPostRowDirectionOption = useContext(
+    AppConfigStateContext
+  ).autoScrollPostRowDirectionOption;
   const lastMouseDownOrTouchX = useRef(0);
   const mouseDownOrTouchOnPostRow = useRef(false);
 

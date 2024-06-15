@@ -1,44 +1,32 @@
 import { useNavigate } from "react-router-dom";
 import { APP_INITIALIZATION_ROUTE } from "./../RedditWatcherConstants";
+import { useContext } from "react";
 import {
-  setClientId,
-  setClientSecret,
-  setPassword,
-  setUsername,
-} from "./../redux/slice/AppConfigSlice";
-import { useAppDispatch, useAppSelector } from "./../redux/store";
+  AppConfigDispatchContext,
+  AppConfigStateContext,
+} from "../context/app-config-context.ts";
+import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
 
 const RedditSignIn: React.FC = () => {
-  const dispatch = useAppDispatch();
+  const appConfigDispatch = useContext(AppConfigDispatchContext);
   const navigate = useNavigate();
 
-  const username = useAppSelector(
-    (state) => state.appConfig.redditCredentials.username
-  );
-  const usernameValidationError = useAppSelector(
-    (state) => state.appConfig.redditCredentials.usernameValidationError
-  );
+  const username = useContext(AppConfigStateContext).redditCredentials.username;
+  const usernameValidationError = useContext(AppConfigStateContext)
+    .redditCredentials.usernameValidationError;
 
-  const password = useAppSelector(
-    (state) => state.appConfig.redditCredentials.password
-  );
-  const passwordValidationError = useAppSelector(
-    (state) => state.appConfig.redditCredentials.passwordValidationError
-  );
+  const password = useContext(AppConfigStateContext).redditCredentials.password;
+  const passwordValidationError = useContext(AppConfigStateContext)
+    .redditCredentials.passwordValidationError;
 
-  const clientId = useAppSelector(
-    (state) => state.appConfig.redditCredentials.clientId
-  );
-  const clientIdValidationError = useAppSelector(
-    (state) => state.appConfig.redditCredentials.clientIdValidationError
-  );
+  const clientId = useContext(AppConfigStateContext).redditCredentials.clientId;
+  const clientIdValidationError = useContext(AppConfigStateContext)
+    .redditCredentials.clientIdValidationError;
 
-  const clientSecret = useAppSelector(
-    (state) => state.appConfig.redditCredentials.clientSecret
-  );
-  const clientSecretValidationError = useAppSelector(
-    (state) => state.appConfig.redditCredentials.clientSecretValidationError
-  );
+  const clientSecret = useContext(AppConfigStateContext).redditCredentials
+    .clientSecret;
+  const clientSecretValidationError = useContext(AppConfigStateContext)
+    .redditCredentials.clientSecretValidationError;
 
   return (
     <div className="sign-in-page">
@@ -47,26 +35,46 @@ const RedditSignIn: React.FC = () => {
           className="sign-in-input"
           placeholder="Username"
           value={username}
-          onChange={(event) => dispatch(setUsername(event.target.value))}
+          onChange={(event) =>
+            appConfigDispatch({
+              type: AppConfigActionType.SET_USERNAME,
+              payload: event.target.value,
+            })
+          }
         ></input>
         <input
           className="sign-in-input"
           placeholder="Password"
           type="password"
           value={password}
-          onChange={(event) => dispatch(setPassword(event.target.value))}
+          onChange={(event) =>
+            appConfigDispatch({
+              type: AppConfigActionType.SET_PASSWORD,
+              payload: event.target.value,
+            })
+          }
         ></input>
         <input
           className="sign-in-input"
           placeholder="Client ID"
           value={clientId}
-          onChange={(event) => dispatch(setClientId(event.target.value))}
+          onChange={(event) =>
+            appConfigDispatch({
+              type: AppConfigActionType.SET_CLIENT_ID,
+              payload: event.target.value,
+            })
+          }
         ></input>
         <input
           className="sign-in-input"
           placeholder="Client Secret"
           value={clientSecret}
-          onChange={(event) => dispatch(setClientSecret(event.target.value))}
+          onChange={(event) =>
+            appConfigDispatch({
+              type: AppConfigActionType.SET_CLIENT_SECRET,
+              payload: event.target.value,
+            })
+          }
         ></input>
         <button
           disabled={

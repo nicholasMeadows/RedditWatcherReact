@@ -28,6 +28,7 @@ import {
   RedditClientContext,
   RedditClientContextData,
 } from "./context/reddit-client-context.ts";
+import AppConfigContextProvider from "./context/provider/app-config-context-provider.tsx";
 
 const App: React.FC = () => {
   const [rootFontSize, setRootFontSize] = useState(0);
@@ -38,18 +39,20 @@ const App: React.FC = () => {
   return (
     <Provider store={store}>
       <HashRouter>
-        <RootFontSizeContext.Provider
-          value={{ fontSize: rootFontSize, setRootFontSize: setRootFontSize }}
-        >
-          <RedditClientContext.Provider
-            value={{
-              redditClientContextData: redditClientContextData,
-              setRedditClientContextData: setRedditClientContextData,
-            }}
+        <AppConfigContextProvider>
+          <RootFontSizeContext.Provider
+            value={{ fontSize: rootFontSize, setRootFontSize: setRootFontSize }}
           >
-            <RouterView />
-          </RedditClientContext.Provider>
-        </RootFontSizeContext.Provider>
+            <RedditClientContext.Provider
+              value={{
+                redditClientContextData: redditClientContextData,
+                setRedditClientContextData: setRedditClientContextData,
+              }}
+            >
+              <RouterView />
+            </RedditClientContext.Provider>
+          </RootFontSizeContext.Provider>
+        </AppConfigContextProvider>
       </HashRouter>
     </Provider>
   );

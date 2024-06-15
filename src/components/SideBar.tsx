@@ -1,6 +1,7 @@
 import React, {
   MouseEvent,
   useCallback,
+  useContext,
   useEffect,
   useRef,
   useState,
@@ -19,6 +20,7 @@ import {
 } from "../redux/slice/SideBarSlice.ts";
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
 
 type SideBarProps = {
   onRedditSearchBarFocus: () => void;
@@ -37,7 +39,7 @@ const SideBar: React.FC<SideBarProps> = ({
   const redditListsState = useAppSelector((state) => state.redditLists);
   const [sideBarOpen, setSideBarOpen] = useState(false);
 
-  const darkMode = useAppSelector((state) => state.appConfig.darkMode);
+  const darkMode = useContext(AppConfigStateContext).darkMode;
 
   const openSideBarButtonColumnDivRef = useRef(null);
   const openSideBarButtonDivRef = useRef(null);

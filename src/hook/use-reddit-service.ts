@@ -17,6 +17,7 @@ import {
   SubredditQueueDispatchContext,
   SubredditQueueStateContext,
 } from "../context/sub-reddit-queue-context.ts";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
 
 export default function useRedditService() {
   const postRowsRef = useRef<Array<PostRow>>([]);
@@ -30,46 +31,43 @@ export default function useRedditService() {
   const subredditLists = useAppSelector(
     (state) => state.redditLists.subredditLists
   );
-  const subredditSortOrderOption = useAppSelector(
-    (state) => state.appConfig.subredditSortOrderOption
-  );
-  const userFrontPagePostSortOrderOption = useAppSelector(
-    (state) => state.appConfig.userFrontPagePostSortOrderOption
-  );
-  const contentFiltering = useAppSelector(
-    (state) => state.appConfig.contentFiltering
-  );
+  const subredditSortOrderOption = useContext(
+    AppConfigStateContext
+  ).subredditSortOrderOption;
+  const userFrontPagePostSortOrderOption = useContext(
+    AppConfigStateContext
+  ).userFrontPagePostSortOrderOption;
+  const contentFiltering = useContext(AppConfigStateContext).contentFiltering;
   const subredditQueue = useContext(SubredditQueueStateContext).subredditQueue;
-  const concatRedditUrlMaxLength = useAppSelector(
-    (state) => state.appConfig.concatRedditUrlMaxLength
-  );
-  const postSortOrder = useAppSelector(
-    (state) => state.appConfig.postSortOrderOption
-  );
-  const topTimeFrame = useAppSelector(
-    (state) => state.appConfig.topTimeFrameOption
-  );
-  const redditApiItemLimit = useAppSelector(
-    (state) => state.appConfig.redditApiItemLimit
-  );
-  const selectSubredditIterationMethodOption = useAppSelector(
-    (state) => state.appConfig.selectSubredditIterationMethodOption
-  );
-  const sortOrderDirection = useAppSelector(
-    (state) => state.appConfig.sortOrderDirectionOption
-  );
+  const concatRedditUrlMaxLength = useContext(
+    AppConfigStateContext
+  ).concatRedditUrlMaxLength;
+  const postSortOrder = useContext(AppConfigStateContext).postSortOrderOption;
+  const topTimeFrame = useContext(AppConfigStateContext).topTimeFrameOption;
+  const redditApiItemLimit = useContext(
+    AppConfigStateContext
+  ).redditApiItemLimit;
+  const selectSubredditIterationMethodOption = useContext(
+    AppConfigStateContext
+  ).selectSubredditIterationMethodOption;
+  const sortOrderDirection = useContext(
+    AppConfigStateContext
+  ).sortOrderDirectionOption;
 
-  const randomIterationSelectWeightOption = useAppSelector(
-    (state) => state.appConfig.randomIterationSelectWeightOption
-  );
-  const selectedSubredditListSortOption = useAppSelector(
-    (state) => state.appConfig.selectedSubredditListSortOption
-  );
+  const randomIterationSelectWeightOption = useContext(
+    AppConfigStateContext
+  ).randomIterationSelectWeightOption;
+  const selectedSubredditListSortOption = useContext(
+    AppConfigStateContext
+  ).selectedSubredditListSortOption;
   const redditServiceContextState = useContext(RedditServiceContext);
 
   const appNotificationsDispatch = useContext(AppNotificationsDispatchContext);
+  const redditCredentials = useContext(AppConfigStateContext).redditCredentials;
+  const postsToShowInRow = useContext(AppConfigStateContext).postsToShowInRow;
+
   const getPostRow = useCallback(async () => {
-    const redditService = new RedditService();
+    const redditService = new RedditService(redditCredentials);
     const getPostsFromSubredditState: GetPostsFromSubredditState = JSON.parse(
       JSON.stringify({
         postRows: postRowsRef.current,
@@ -155,15 +153,19 @@ export default function useRedditService() {
       redditServiceContextState.subredditIndex,
       redditServiceContextState.nsfwRedditListIndex,
       redditServiceContextState.lastPostRowWasSortOrderNew,
-      subredditQueueDispatch
+      subredditQueueDispatch,
+      userFrontPagePostSortOrderOption,
+      postsToShowInRow
     );
   }, [
     appNotificationsDispatch,
     concatRedditUrlMaxLength,
     contentFiltering,
     postSortOrder,
+    postsToShowInRow,
     randomIterationSelectWeightOption,
     redditApiItemLimit,
+    redditCredentials,
     redditServiceContextState.lastPostRowWasSortOrderNew,
     redditServiceContextState.masterSubscribedSubredditList,
     redditServiceContextState.nsfwRedditListIndex,

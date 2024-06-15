@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT } from "../RedditWatcherConstants";
 import { ModifySubredditListMode } from "../model/ModifySubredditListMode";
 import { useAppDispatch, useAppSelector } from "../redux/store";
@@ -19,16 +19,17 @@ import {
 } from "../redux/slice/RedditListSlice.ts";
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
 
 const ModifySubredditLists: React.FC = () => {
   const dispatch = useAppDispatch();
   const redditListsState = useAppSelector((state) => state.redditLists);
-  const selectSubredditListMenuSortOption = useAppSelector(
-    (state) => state.appConfig.selectSubredditListMenuSortOption
-  );
-  const sortOrderDirection = useAppSelector(
-    (state) => state.appConfig.sortOrderDirectionOption
-  );
+  const selectSubredditListMenuSortOption = useContext(
+    AppConfigStateContext
+  ).selectSubredditListMenuSortOption;
+  const sortOrderDirection = useContext(
+    AppConfigStateContext
+  ).sortOrderDirectionOption;
   const [sortedSubredditLists, setSortedSubredditLists] = useState<
     Array<SubredditLists>
   >([]);

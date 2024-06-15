@@ -1,77 +1,59 @@
-import { useAppDispatch, useAppSelector } from "../redux/store.ts";
-import {
-  clearAutoScrollPostRowRateSecondsForSinglePostCardValidationError,
-  clearConcatRedditUrlMaxLengthValidationError,
-  clearPostRowsToShowInViewValidationError,
-  clearPostsToShowInRowValidationError,
-  setAutoScrollPostRowDirectionOption,
-  setAutoScrollPostRowOption,
-  setAutoScrollPostRowRateSecondsForSinglePostCard,
-  setConcatRedditUrlMaxLength,
-  setPostRowsToShowInView,
-  setPostsToShowInRow,
-  setRandomIterationSelectWeightOption,
-  setSelectSubredditIterationMethodOption,
-  setSelectSubredditListMenuSortOption,
-  setSortOrderDirectionOption,
-} from "../redux/slice/AppConfigSlice.ts";
 import { AutoScrollPostRowOptionEnum } from "../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum.ts";
 import SelectSubredditListMenuSortOptionEnum from "../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum.ts";
 import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
+import { useContext } from "react";
+import {
+  AppConfigDispatchContext,
+  AppConfigStateContext,
+} from "../context/app-config-context.ts";
+import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
 
 const ApplicationSettings: React.FC = () => {
-  const dispatch = useAppDispatch();
-
-  const autoScrollPostRowOption = useAppSelector(
-    (state) => state.appConfig.autoScrollPostRowOption
-  );
-  const autoScrollPostRowOptionDirection = useAppSelector(
-    (state) => state.appConfig.autoScrollPostRowDirectionOption
-  );
-
-  const autoScrollPostRowRateSecondsForSinglePostCard = useAppSelector(
-    (state) => state.appConfig.autoScrollPostRowRateSecondsForSinglePostCard
-  );
+  const appConfigDispatch = useContext(AppConfigDispatchContext);
+  const autoScrollPostRowOption = useContext(
+    AppConfigStateContext
+  ).autoScrollPostRowOption;
+  const autoScrollPostRowOptionDirection = useContext(
+    AppConfigStateContext
+  ).autoScrollPostRowDirectionOption;
+  const autoScrollPostRowRateSecondsForSinglePostCard = useContext(
+    AppConfigStateContext
+  ).autoScrollPostRowRateSecondsForSinglePostCard;
   const autoScrollPostRowRateSecondsForSinglePostCardValidationError =
-    useAppSelector(
-      (state) =>
-        state.appConfig
-          .autoScrollPostRowRateSecondsForSinglePostCardValidationError
-    );
-  const randomIterationSelectWeightOption = useAppSelector(
-    (state) => state.appConfig.randomIterationSelectWeightOption
-  );
-  const selectSubredditListMenuSortOption = useAppSelector(
-    (state) => state.appConfig.selectSubredditListMenuSortOption
-  );
-  const sortOrderDirectionOption = useAppSelector(
-    (state) => state.appConfig.sortOrderDirectionOption
-  );
-  const selectSubredditIterationMethodOption = useAppSelector(
-    (state) => state.appConfig.selectSubredditIterationMethodOption
-  );
-  const concatRedditUrlMaxLength = useAppSelector(
-    (state) => state.appConfig.concatRedditUrlMaxLength
-  );
-  const concatRedditUrlMaxLengthValidationError = useAppSelector(
-    (state) => state.appConfig.concatRedditUrlMaxLengthValidationError
-  );
-
-  const postsToShowInRow = useAppSelector(
-    (state) => state.appConfig.postsToShowInRow
-  );
-  const postsToShowInRowValidationError = useAppSelector(
-    (state) => state.appConfig.postsToShowInRowValidationError
-  );
-  const postRowsToShowInView = useAppSelector(
-    (state) => state.appConfig.postRowsToShowInView
-  );
-  const postRowsToShowInViewValidationError = useAppSelector(
-    (state) => state.appConfig.postRowsToShowInViewValidationError
-  );
+    useContext(
+      AppConfigStateContext
+    ).autoScrollPostRowRateSecondsForSinglePostCardValidationError;
+  const randomIterationSelectWeightOption = useContext(
+    AppConfigStateContext
+  ).randomIterationSelectWeightOption;
+  const selectSubredditListMenuSortOption = useContext(
+    AppConfigStateContext
+  ).selectSubredditListMenuSortOption;
+  const sortOrderDirectionOption = useContext(
+    AppConfigStateContext
+  ).sortOrderDirectionOption;
+  const selectSubredditIterationMethodOption = useContext(
+    AppConfigStateContext
+  ).selectSubredditIterationMethodOption;
+  const concatRedditUrlMaxLength = useContext(
+    AppConfigStateContext
+  ).concatRedditUrlMaxLength;
+  const concatRedditUrlMaxLengthValidationError = useContext(
+    AppConfigStateContext
+  ).concatRedditUrlMaxLengthValidationError;
+  const postsToShowInRow = useContext(AppConfigStateContext).postsToShowInRow;
+  const postsToShowInRowValidationError = useContext(
+    AppConfigStateContext
+  ).postsToShowInRowValidationError;
+  const postRowsToShowInView = useContext(
+    AppConfigStateContext
+  ).postRowsToShowInView;
+  const postRowsToShowInViewValidationError = useContext(
+    AppConfigStateContext
+  ).postRowsToShowInViewValidationError;
 
   return (
     <div className="reddit-watcher-settings">
@@ -83,7 +65,11 @@ const ApplicationSettings: React.FC = () => {
         <select
           value={randomIterationSelectWeightOption}
           onChange={(event) =>
-            dispatch(setRandomIterationSelectWeightOption(event.target.value))
+            appConfigDispatch({
+              type: AppConfigActionType.SET_RANDOM_ITERATION_SELECT_WEIGHT_OPTION,
+              payload: event.target
+                .value as RandomIterationSelectWeightOptionsEnum,
+            })
           }
           className="select"
         >
@@ -104,7 +90,11 @@ const ApplicationSettings: React.FC = () => {
         <select
           value={selectSubredditListMenuSortOption}
           onChange={(event) =>
-            dispatch(setSelectSubredditListMenuSortOption(event.target.value))
+            appConfigDispatch({
+              type: AppConfigActionType.SET_SELECT_SUBREDDIT_LIST_MENU_SORT_OPTION,
+              payload: event.target
+                .value as SelectSubredditListMenuSortOptionEnum,
+            })
           }
           className="select"
         >
@@ -123,7 +113,10 @@ const ApplicationSettings: React.FC = () => {
         <select
           value={sortOrderDirectionOption}
           onChange={(event) =>
-            dispatch(setSortOrderDirectionOption(event.target.value))
+            appConfigDispatch({
+              type: AppConfigActionType.SET_SORT_ORDER_DIRECTION_OPTION,
+              payload: event.target.value as SortOrderDirectionOptionsEnum,
+            })
           }
           className="select"
         >
@@ -142,9 +135,11 @@ const ApplicationSettings: React.FC = () => {
         <select
           value={selectSubredditIterationMethodOption}
           onChange={(event) =>
-            dispatch(
-              setSelectSubredditIterationMethodOption(event.target.value)
-            )
+            appConfigDispatch({
+              type: AppConfigActionType.SET_SELECT_SUBREDDIT_ITERATION_METHOD_OPTION,
+              payload: event.target
+                .value as SelectSubredditIterationMethodOptionsEnum,
+            })
           }
           className="select"
         >
@@ -165,7 +160,10 @@ const ApplicationSettings: React.FC = () => {
         <select
           value={autoScrollPostRowOption}
           onChange={(event) =>
-            dispatch(setAutoScrollPostRowOption(event.target.value))
+            appConfigDispatch({
+              type: AppConfigActionType.SET_AUTO_SCROLL_POST_ROW_OPTION,
+              payload: event.target.value as AutoScrollPostRowOptionEnum,
+            })
           }
           className="select"
         >
@@ -185,7 +183,11 @@ const ApplicationSettings: React.FC = () => {
         <select
           value={autoScrollPostRowOptionDirection}
           onChange={(event) =>
-            dispatch(setAutoScrollPostRowDirectionOption(event.target.value))
+            appConfigDispatch({
+              type: AppConfigActionType.SET_AUTO_SCROLL_POST_ROW_DIRECTION_OPTION,
+              payload: event.target
+                .value as AutoScrollPostRowDirectionOptionEnum,
+            })
           }
           className="select"
         >
@@ -210,14 +212,15 @@ const ApplicationSettings: React.FC = () => {
           type="number"
           onChange={(event) => {
             const inputValue = parseFloat(event.target.value);
-            dispatch(
-              setAutoScrollPostRowRateSecondsForSinglePostCard(inputValue)
-            );
+            appConfigDispatch({
+              type: AppConfigActionType.SET_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD,
+              payload: inputValue,
+            });
           }}
           onBlur={() => {
-            dispatch(
-              clearAutoScrollPostRowRateSecondsForSinglePostCardValidationError()
-            );
+            appConfigDispatch({
+              type: AppConfigActionType.CLEAR_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD_VALIDATION_ERROR,
+            });
           }}
         />
         <p className="settings-item-error">
@@ -234,10 +237,15 @@ const ApplicationSettings: React.FC = () => {
           type="number"
           onChange={(event) => {
             const inputValue = parseInt(event.target.value);
-            dispatch(setConcatRedditUrlMaxLength(inputValue));
+            appConfigDispatch({
+              type: AppConfigActionType.SET_CONCAT_REDDIT_URL_MAX_LENGTH,
+              payload: inputValue,
+            });
           }}
           onBlur={() => {
-            dispatch(clearConcatRedditUrlMaxLengthValidationError());
+            appConfigDispatch({
+              type: AppConfigActionType.CLEAR_CONCAT_REDDIT_URL_MAX_LENGTH_VALIDATION_ERROR,
+            });
           }}
         />
         <p className="settings-item-error">
@@ -254,10 +262,15 @@ const ApplicationSettings: React.FC = () => {
           type="number"
           onChange={(event) => {
             const inputValue = parseFloat(event.target.value);
-            dispatch(setPostsToShowInRow(inputValue));
+            appConfigDispatch({
+              type: AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW,
+              payload: inputValue,
+            });
           }}
           onBlur={() => {
-            dispatch(clearPostsToShowInRowValidationError());
+            appConfigDispatch({
+              type: AppConfigActionType.CLEAR_POSTS_TO_SHOW_IN_ROW_VALIDATION_ERROR,
+            });
           }}
         />
         <p className="settings-item-error">{postsToShowInRowValidationError}</p>
@@ -271,10 +284,15 @@ const ApplicationSettings: React.FC = () => {
           type="number"
           onChange={(event) => {
             const inputValue = parseFloat(event.target.value);
-            dispatch(setPostRowsToShowInView(inputValue));
+            appConfigDispatch({
+              type: AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW,
+              payload: inputValue,
+            });
           }}
           onBlur={() => {
-            dispatch(clearPostRowsToShowInViewValidationError());
+            appConfigDispatch({
+              type: AppConfigActionType.CLEAR_POST_ROWS_TO_SHOW_IN_VIEW_VALIDATION_ERROR,
+            });
           }}
         />
         <p className="settings-item-error">

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import SideBar from "../components/SideBar.tsx";
 import {
@@ -9,14 +9,15 @@ import PostRow from "../components/PostRow.tsx";
 import "../theme/post-row-page.scss";
 import useRedditService from "../hook/use-reddit-service.ts";
 import { setSecondsTillGettingNextPosts } from "../redux/slice/SideBarSlice.ts";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
 
 const PostRowPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const postRowsState = useAppSelector((state) => state.postRows);
 
-  const postRowsToShowInView = useAppSelector(
-    (state) => state.appConfig.postRowsToShowInView
-  );
+  const postRowsToShowInView = useContext(
+    AppConfigStateContext
+  ).postRowsToShowInView;
 
   const postRowsDivRef = useRef(null);
   const postRowPageRef = useRef<HTMLDivElement>(null);

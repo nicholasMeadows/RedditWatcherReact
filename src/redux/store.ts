@@ -1,7 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import thunk from "redux-thunk";
-import appConfigReducer from "./slice/AppConfigSlice";
 import contextMenuReducer from "./slice/ContextMenuSlice.ts";
 import sideBarReducer from "./slice/SideBarSlice.ts";
 import singlePostPageSlice from "./slice/SinglePostPageSlice.ts";
@@ -10,7 +9,6 @@ import redditListsSlice from "./slice/RedditListSlice.ts";
 
 const store = configureStore({
   reducer: {
-    appConfig: appConfigReducer,
     contextMenu: contextMenuReducer,
     sideBar: sideBarReducer,
     singlePostPage: singlePostPageSlice,
