@@ -30,7 +30,6 @@ import {
   AppNotificationsActionType,
 } from "../reducer/app-notifications-reducer.ts";
 import { v4 as uuidV4 } from "uuid";
-import { subredditQueueRemoveAt } from "../redux/slice/SubRedditQueueSlice.ts";
 import {
   setMostRecentSubredditGotten,
   setSubredditsToShowInSideBar,
@@ -40,6 +39,10 @@ import {
   createPostRowAndInsertAtBeginning,
   postRowRemoveAt,
 } from "../redux/slice/PostRowsSlice.ts";
+import {
+  SubredditQueueAction,
+  SubredditQueueActionType,
+} from "../reducer/sub-reddit-queue-reducer.ts";
 
 export default class RedditService {
   async loadSubscribedSubreddits(
@@ -96,7 +99,7 @@ export default class RedditService {
 
     if (getPostsFromSubredditsState.subredditQueue.length != 0) {
       const subreddit = getPostsFromSubredditsState.subredditQueue[0];
-      getPostsUpdatedValues.subredditQueueRemoveAt = 0;
+      getPostsUpdatedValues.subredditQueueItemToRemove = subreddit;
       fromSubreddits.push(subreddit);
       postsFromSubreddit = await this.getPostsForSubreddit(
         [subreddit],
@@ -496,12 +499,14 @@ export default class RedditService {
     updatedValues: GetPostsUpdatedValues,
     subredditIndexRef: MutableRefObject<number>,
     nsfwRedditListIndex: MutableRefObject<number>,
-    lastPostRowWasSortOrderNewRef: MutableRefObject<boolean>
+    lastPostRowWasSortOrderNewRef: MutableRefObject<boolean>,
+    subredditQueueDispatch: Dispatch<SubredditQueueAction>
   ) {
-    if (updatedValues.subredditQueueRemoveAt != undefined) {
-      store.dispatch(
-        subredditQueueRemoveAt(updatedValues.subredditQueueRemoveAt)
-      );
+    if (updatedValues.subredditQueueItemToRemove != undefined) {
+      subredditQueueDispatch({
+        type: SubredditQueueActionType.REMOVE_SUBREDDIT_QUEUE_ITEM,
+        payload: updatedValues.subredditQueueItemToRemove,
+      });
     }
     if (updatedValues.mostRecentSubredditGotten != undefined) {
       store.dispatch(

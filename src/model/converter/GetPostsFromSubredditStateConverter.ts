@@ -34,7 +34,7 @@ export type GetPostsFromSubredditState = {
 };
 
 export type GetPostsUpdatedValues = {
-  subredditQueueRemoveAt: number | undefined;
+  subredditQueueItemToRemove: Subreddit;
   mostRecentSubredditGotten: Subreddit | undefined;
   postRowRemoveAt: number | undefined;
   subredditsToShowInSideBar: Array<Subreddit> | undefined;

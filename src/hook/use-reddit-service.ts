@@ -13,6 +13,10 @@ import { WaitUtil } from "../util/WaitUtil.ts";
 import { AppNotificationsActionType } from "../reducer/app-notifications-reducer.ts";
 import { v4 as uuidV4 } from "uuid";
 import { PostRow } from "../model/PostRow.ts";
+import {
+  SubredditQueueDispatchContext,
+  SubredditQueueStateContext,
+} from "../context/sub-reddit-queue-context.ts";
 
 export default function useRedditService() {
   const postRowsRef = useRef<Array<PostRow>>([]);
@@ -20,6 +24,8 @@ export default function useRedditService() {
   useEffect(() => {
     postRowsRef.current = postRows;
   }, [postRows]);
+
+  const subredditQueueDispatch = useContext(SubredditQueueDispatchContext);
 
   const subredditLists = useAppSelector(
     (state) => state.redditLists.subredditLists
@@ -33,9 +39,7 @@ export default function useRedditService() {
   const contentFiltering = useAppSelector(
     (state) => state.appConfig.contentFiltering
   );
-  const subredditQueue = useAppSelector(
-    (state) => state.subredditQueue.subredditQueue
-  );
+  const subredditQueue = useContext(SubredditQueueStateContext).subredditQueue;
   const concatRedditUrlMaxLength = useAppSelector(
     (state) => state.appConfig.concatRedditUrlMaxLength
   );
@@ -150,7 +154,8 @@ export default function useRedditService() {
       getPostsUpdatedValues,
       redditServiceContextState.subredditIndex,
       redditServiceContextState.nsfwRedditListIndex,
-      redditServiceContextState.lastPostRowWasSortOrderNew
+      redditServiceContextState.lastPostRowWasSortOrderNew,
+      subredditQueueDispatch
     );
   }, [
     appNotificationsDispatch,
@@ -168,6 +173,7 @@ export default function useRedditService() {
     sortOrderDirection,
     subredditLists,
     subredditQueue,
+    subredditQueueDispatch,
     subredditSortOrderOption,
     topTimeFrame,
     userFrontPagePostSortOrderOption,

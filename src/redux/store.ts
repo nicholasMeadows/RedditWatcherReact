@@ -7,7 +7,6 @@ import sideBarReducer from "./slice/SideBarSlice.ts";
 import singlePostPageSlice from "./slice/SinglePostPageSlice.ts";
 import postRowsSlice from "./slice/PostRowsSlice.ts";
 import redditListsSlice from "./slice/RedditListSlice.ts";
-import subRedditQueueSlice from "./slice/SubRedditQueueSlice.ts";
 
 const store = configureStore({
   reducer: {
@@ -17,7 +16,6 @@ const store = configureStore({
     singlePostPage: singlePostPageSlice,
     postRows: postRowsSlice,
     redditLists: redditListsSlice,
-    subredditQueue: subRedditQueueSlice,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk),
 });

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { SubredditLists } from "../model/SubredditList/SubredditLists";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import { useCopy } from "../hook/use-copy.ts";
@@ -13,11 +13,13 @@ import {
   showDeleteListConfirmationBox,
   showUpdateListBox,
 } from "../redux/slice/RedditListSlice.ts";
-import { addSubredditToQueue } from "../redux/slice/SubRedditQueueSlice.ts";
+import { SubredditQueueDispatchContext } from "../context/sub-reddit-queue-context.ts";
+import { SubredditQueueActionType } from "../reducer/sub-reddit-queue-reducer.ts";
 
 const ContextMenu: React.FC = () => {
   const dispatch = useAppDispatch();
   const copyHook = useCopy();
+  const subredditQueueDispatch = useContext(SubredditQueueDispatchContext);
   const contextMenuState = useAppSelector((state) => state.contextMenu);
   const redditListState = useAppSelector((state) => state.redditLists);
   const [contextMenuX, setContextMenuX] = useState(0);
@@ -179,7 +181,10 @@ const ContextMenu: React.FC = () => {
           hidden={!contextMenuState.showButtonControls.showSkipToSubreddit}
           onClick={() => {
             if (contextMenuState.subreddit != undefined) {
-              dispatch(addSubredditToQueue(contextMenuState.subreddit));
+              subredditQueueDispatch({
+                type: SubredditQueueActionType.ADD_SUBREDDIT_TO_QUEUE,
+                payload: contextMenuState.subreddit,
+              });
             }
             dispatch(closeContextMenu());
           }}

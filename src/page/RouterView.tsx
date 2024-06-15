@@ -46,6 +46,7 @@ import RedditServiceContext, {
   RedditServiceContextState,
 } from "../context/reddit-service-context.ts";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
+import SubredditQueueContextProvider from "../context/provider/sub-reddit-queue-context-provider.tsx";
 
 export type SecondsTillGettingNextPostContextData = {
   secondsTillGettingNextPosts: number;
@@ -185,54 +186,56 @@ const RouterView: React.FC = () => {
   };
   return (
     <AppNotificationsContextProvider>
-      <RedditServiceContext.Provider value={redditServiceContextState}>
-        <div className="root-app" ref={rootDivRef}>
-          <NavigationHamburgerMenu />
-          <AppNotifications />
-          <ContextMenu />
-          <div
-            style={{
-              marginTop: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
-              height: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
-              maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
-            }}
-            className="app-body"
-          >
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <Navigate to={APP_INITIALIZATION_ROUTE} replace={true} />
-                }
-              />
-              <Route
-                index
-                path={APP_INITIALIZATION_ROUTE}
-                element={<AppInitialization />}
-              />
-              <Route path={REDDIT_SIGN_IN_ROUTE} element={<RedditSignIn />} />
-              <Route path={POST_ROW_ROUTE} element={<PostRowPage />} />
-              <Route
-                path={REDDIT_SOURCE_SETTINGS_ROUTE}
-                element={<RedditSourceSettings />}
-              />
-              <Route
-                path={APPLICATION_SETTINGS_ROUTE}
-                element={<ApplicationSettings />}
-              />
-              <Route path={SINGPLE_POST_ROUTE} element={<SinglePostView />} />
-              <Route
-                path={MODIFY_SUBREDDIT_LISTS_ROUTE}
-                element={<ModifySubredditLists />}
-              />
-              <Route
-                path={MODIFY_SUBREDDIT_QUEUE_ROUTE}
-                element={<ModifySubredditQueue />}
-              />
-            </Routes>
+      <SubredditQueueContextProvider>
+        <RedditServiceContext.Provider value={redditServiceContextState}>
+          <div className="root-app" ref={rootDivRef}>
+            <NavigationHamburgerMenu />
+            <AppNotifications />
+            <ContextMenu />
+            <div
+              style={{
+                marginTop: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
+                height: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+                maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+              }}
+              className="app-body"
+            >
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <Navigate to={APP_INITIALIZATION_ROUTE} replace={true} />
+                  }
+                />
+                <Route
+                  index
+                  path={APP_INITIALIZATION_ROUTE}
+                  element={<AppInitialization />}
+                />
+                <Route path={REDDIT_SIGN_IN_ROUTE} element={<RedditSignIn />} />
+                <Route path={POST_ROW_ROUTE} element={<PostRowPage />} />
+                <Route
+                  path={REDDIT_SOURCE_SETTINGS_ROUTE}
+                  element={<RedditSourceSettings />}
+                />
+                <Route
+                  path={APPLICATION_SETTINGS_ROUTE}
+                  element={<ApplicationSettings />}
+                />
+                <Route path={SINGPLE_POST_ROUTE} element={<SinglePostView />} />
+                <Route
+                  path={MODIFY_SUBREDDIT_LISTS_ROUTE}
+                  element={<ModifySubredditLists />}
+                />
+                <Route
+                  path={MODIFY_SUBREDDIT_QUEUE_ROUTE}
+                  element={<ModifySubredditQueue />}
+                />
+              </Routes>
+            </div>
           </div>
-        </div>
-      </RedditServiceContext.Provider>
+        </RedditServiceContext.Provider>
+      </SubredditQueueContextProvider>
     </AppNotificationsContextProvider>
   );
 };

@@ -1,13 +1,13 @@
-import { useAppDispatch, useAppSelector } from "../redux/store.ts";
+import { useContext } from "react";
 import {
-  moveSubredditQueueItemBack,
-  moveSubredditQueueItemForward,
-  removeSubredditQueueItem,
-} from "../redux/slice/SubRedditQueueSlice.ts";
+  SubredditQueueDispatchContext,
+  SubredditQueueStateContext,
+} from "../context/sub-reddit-queue-context.ts";
+import { SubredditQueueActionType } from "../reducer/sub-reddit-queue-reducer.ts";
 
 const ModifySubredditQueue: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const subredditQueueState = useAppSelector((state) => state.subredditQueue);
+  const subredditQueueState = useContext(SubredditQueueStateContext);
+  const subredditQueueDispatch = useContext(SubredditQueueDispatchContext);
 
   return (
     <>
@@ -34,11 +34,10 @@ const ModifySubredditQueue: React.FC = () => {
                     <span
                       className="queue-item-control-delete"
                       onClick={() =>
-                        dispatch(
-                          removeSubredditQueueItem(
-                            subredditQueueItem.subredditQueueItemUuid
-                          )
-                        )
+                        subredditQueueDispatch({
+                          type: SubredditQueueActionType.REMOVE_SUBREDDIT_QUEUE_ITEM,
+                          payload: subredditQueueItem,
+                        })
                       }
                     >
                       {" "}
@@ -47,11 +46,10 @@ const ModifySubredditQueue: React.FC = () => {
                     <span
                       className="queue-item-control-move-up-down"
                       onClick={() => {
-                        dispatch(
-                          moveSubredditQueueItemForward(
-                            subredditQueueItem.subredditQueueItemUuid
-                          )
-                        );
+                        subredditQueueDispatch({
+                          type: SubredditQueueActionType.MOVE_SUBREDDIT_QUEUE_ITEM_FORWARD,
+                          payload: subredditQueueItem,
+                        });
                       }}
                     >
                       {" "}
@@ -61,11 +59,10 @@ const ModifySubredditQueue: React.FC = () => {
                     <span
                       className="queue-item-control-move-up-down queue-item-control-move-down-margin-left"
                       onClick={() =>
-                        dispatch(
-                          moveSubredditQueueItemBack(
-                            subredditQueueItem.subredditQueueItemUuid
-                          )
-                        )
+                        subredditQueueDispatch({
+                          type: SubredditQueueActionType.MOVE_SUBREDDIT_QUEUE_ITEM_BACKWARD,
+                          payload: subredditQueueItem,
+                        })
                       }
                     >
                       {" "}
