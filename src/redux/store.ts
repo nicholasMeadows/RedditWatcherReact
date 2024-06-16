@@ -1,12 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import thunk from "redux-thunk";
-import sideBarReducer from "./slice/SideBarSlice.ts";
 import redditListsSlice from "./slice/RedditListSlice.ts";
 
 const store = configureStore({
   reducer: {
-    sideBar: sideBarReducer,
     redditLists: redditListsSlice,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(thunk),

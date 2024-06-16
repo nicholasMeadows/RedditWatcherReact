@@ -31,16 +31,16 @@ import {
 } from "../reducer/app-notifications-reducer.ts";
 import { v4 as uuidV4 } from "uuid";
 import {
-  setMostRecentSubredditGotten,
-  setSubredditsToShowInSideBar,
-} from "../redux/slice/SideBarSlice.ts";
-import {
   SubredditQueueAction,
   SubredditQueueActionType,
 } from "../reducer/sub-reddit-queue-reducer.ts";
 import { RedditCredentials } from "../model/config/RedditCredentials.ts";
 import { PostRowsDispatch } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
+import {
+  SideBarActionType,
+  SideBarDispatch,
+} from "../reducer/side-bar-reducer.ts";
 
 export default class RedditService {
   declare redditClient: RedditClient;
@@ -512,7 +512,8 @@ export default class RedditService {
     subredditQueueDispatch: Dispatch<SubredditQueueAction>,
     currentUserFrontPagePostSortOrderOption: UserFrontPagePostSortOrderOptionsEnum,
     currentPostsToShowInRow: number,
-    postRowsDispatch: PostRowsDispatch
+    postRowsDispatch: PostRowsDispatch,
+    sideBarDispatch: SideBarDispatch
   ) {
     if (updatedValues.subredditQueueItemToRemove != undefined) {
       subredditQueueDispatch({
@@ -521,9 +522,10 @@ export default class RedditService {
       });
     }
     if (updatedValues.mostRecentSubredditGotten != undefined) {
-      store.dispatch(
-        setMostRecentSubredditGotten(updatedValues.mostRecentSubredditGotten)
-      );
+      sideBarDispatch({
+        type: SideBarActionType.SET_MOST_RECENT_SUBREDDIT_GOTTEN,
+        payload: updatedValues.mostRecentSubredditGotten,
+      });
     }
     if (updatedValues.postRowRemoveAt != undefined) {
       postRowsDispatch({
@@ -532,12 +534,13 @@ export default class RedditService {
       });
     }
     if (updatedValues.subredditsToShowInSideBar != undefined) {
-      store.dispatch(
-        setSubredditsToShowInSideBar({
+      sideBarDispatch({
+        type: SideBarActionType.SET_SUBREDDITS_TO_SHOW_IN_SIDEBAR,
+        payload: {
           subreddits: updatedValues.subredditsToShowInSideBar,
           subredditLists: store.getState().redditLists.subredditLists,
-        })
-      );
+        },
+      });
     }
     if (updatedValues.subredditIndex != undefined) {
       subredditIndexRef.current = updatedValues.subredditIndex;

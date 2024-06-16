@@ -10,18 +10,16 @@ import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../RedditWatcherCon
 import SideBarSubredditMenuEvent from "../model/Events/SideBarSubredditMenuEvent.ts";
 import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import SearchRedditBar from "./SearchRedditBar.tsx";
-import {
-  setListToFilterByUuid,
-  setMouseOverSubredditList,
-  setOpenSidebarButtonTopPercent,
-  setSearchInput,
-  subredditListsUpdated,
-} from "../redux/slice/SideBarSlice.ts";
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
 import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
+import {
+  SideBarDispatchContext,
+  SideBarStateContext,
+} from "../context/side-bar-context.ts";
+import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
 
 type SideBarProps = {
   onRedditSearchBarFocus: () => void;
@@ -34,10 +32,8 @@ const SideBar: React.FC<SideBarProps> = ({
   const sideBarButtonMoved = useRef(false);
   const dispatch = useAppDispatch();
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
-  const secondsTillGettingNextPosts = useAppSelector(
-    (state) => state.sideBar.secondsTillGettingNextPosts
-  );
-  const sideBarState = useAppSelector((state) => state.sideBar);
+  const sideBarState = useContext(SideBarStateContext);
+  const sideBarDispatch = useContext(SideBarDispatchContext);
   const redditListsState = useAppSelector((state) => state.redditLists);
   const [sideBarOpen, setSideBarOpen] = useState(false);
 
@@ -47,7 +43,10 @@ const SideBar: React.FC<SideBarProps> = ({
   const openSideBarButtonDivRef = useRef(null);
   const subredditListDivRef = useRef(null);
   useEffect(() => {
-    dispatch(subredditListsUpdated(redditListsState.subredditLists));
+    sideBarDispatch({
+      type: SideBarActionType.SUBREDDIT_LISTS_UPDATED,
+      payload: redditListsState.subredditLists,
+    });
   }, [dispatch, redditListsState.subredditLists]);
 
   const scrollToMostRecentSubredditGotten = useCallback(() => {
@@ -106,7 +105,10 @@ const SideBar: React.FC<SideBarProps> = ({
       } else if (updatedPercentage > maxPercentage) {
         updatedPercentage = maxPercentage;
       }
-      dispatch(setOpenSidebarButtonTopPercent(updatedPercentage));
+      sideBarDispatch({
+        type: SideBarActionType.SET_OPEN_SIDEBAR_BUTTON_TOP_PERCENT,
+        payload: updatedPercentage,
+      });
     }
   };
 
@@ -177,12 +179,13 @@ const SideBar: React.FC<SideBarProps> = ({
             value={sideBarState.listToFilterByUuid}
             onChange={(event) => {
               console.log(event.target.value);
-              dispatch(
-                setListToFilterByUuid({
+              sideBarDispatch({
+                type: SideBarActionType.SET_LIST_TO_FILTER_BY_UUID,
+                payload: {
                   listUuid: event.target.value,
                   subredditLists: redditListsState.subredditLists,
-                })
-              );
+                },
+              });
             }}
           >
             <option value={SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED}>
@@ -216,12 +219,13 @@ const SideBar: React.FC<SideBarProps> = ({
             type="text"
             className="search-in-list-input"
             onChange={(event) => {
-              dispatch(
-                setSearchInput({
+              sideBarDispatch({
+                type: SideBarActionType.SET_SEARCH_INPUT,
+                payload: {
                   searchInput: event.target.value,
                   subredditLists: redditListsState.subredditLists,
-                })
-              );
+                },
+              });
             }}
           />
         </div>
@@ -229,8 +233,18 @@ const SideBar: React.FC<SideBarProps> = ({
         <div
           className="subreddit-list"
           ref={subredditListDivRef}
-          onMouseEnter={() => dispatch(setMouseOverSubredditList(true))}
-          onMouseLeave={() => dispatch(setMouseOverSubredditList(false))}
+          onMouseEnter={() =>
+            sideBarDispatch({
+              type: SideBarActionType.SET_MOUSE_OVER_SUBREDDIT_LIST,
+              payload: true,
+            })
+          }
+          onMouseLeave={() =>
+            sideBarDispatch({
+              type: SideBarActionType.SET_MOUSE_OVER_SUBREDDIT_LIST,
+              payload: false,
+            })
+          }
         >
           {sideBarState.subredditsToShow.map((subreddit) => (
             <p
@@ -266,7 +280,7 @@ const SideBar: React.FC<SideBarProps> = ({
 
         <div className={"next-post-countdown-timer-text-box"}>
           <p className={"next-post-countdown-timer-text"}>
-            {`Getting next posts in ${secondsTillGettingNextPosts} seconds`}
+            {`Getting next posts in ${sideBarState.secondsTillGettingNextPosts} seconds`}
           </p>
         </div>
       </div>

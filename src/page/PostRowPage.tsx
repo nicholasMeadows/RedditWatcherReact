@@ -4,16 +4,18 @@ import SideBar from "../components/SideBar.tsx";
 import PostRow from "../components/PostRow.tsx";
 import "../theme/post-row-page.scss";
 import useRedditService from "../hook/use-reddit-service.ts";
-import { setSecondsTillGettingNextPosts } from "../redux/slice/SideBarSlice.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
 import {
   PostRowsContext,
   PostRowsDispatchContext,
 } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
+import { SideBarDispatchContext } from "../context/side-bar-context.ts";
+import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
 
 const PostRowPage: React.FC = () => {
   const dispatch = useAppDispatch();
+  const sideBarDispatch = useContext(SideBarDispatchContext);
   const postRowsState = useContext(PostRowsContext);
   const postRowsDispatch = useContext(PostRowsDispatchContext);
 
@@ -66,7 +68,10 @@ const PostRowPage: React.FC = () => {
       clearGetPostRowInterval();
       getPostRowIntervalRef.current = setInterval(() => {
         getPostRow();
-        dispatch(setSecondsTillGettingNextPosts(10));
+        sideBarDispatch({
+          type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
+          payload: 10,
+        });
       }, 10000);
     }, 250);
     return () => {

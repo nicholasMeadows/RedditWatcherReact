@@ -20,16 +20,18 @@ import { RedditClientContext } from "../context/reddit-client-context.ts";
 import RedditServiceContext from "../context/reddit-service-context.ts";
 import RedditService from "../service/RedditService.ts";
 import useRedditService from "../hook/use-reddit-service.ts";
-import { setSecondsTillGettingNextPosts } from "../redux/slice/SideBarSlice.ts";
 import {
   AppConfigDispatchContext,
   AppConfigStateContext,
 } from "../context/app-config-context.ts";
 import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
 import { PostRowsContext } from "../context/post-rows-context.ts";
+import { SideBarDispatchContext } from "../context/side-bar-context.ts";
+import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
 
 const AppInitialization: React.FC = () => {
   const dispatch = useAppDispatch();
+  const sideBarDispatch = useContext(SideBarDispatchContext);
   const appConfigDispatch = useContext(AppConfigDispatchContext);
   const navigate = useNavigate();
 
@@ -158,7 +160,10 @@ const AppInitialization: React.FC = () => {
         await loadSubscribedSubreddits();
         setText("Getting Posts...");
         getPostRow();
-        dispatch(setSecondsTillGettingNextPosts(10));
+        sideBarDispatch({
+          type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
+          payload: 10,
+        });
       } else {
         navigate(POST_ROW_ROUTE);
       }

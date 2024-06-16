@@ -22,11 +22,13 @@ import {
   PostRowsContext,
   PostRowsDispatchContext,
 } from "../context/post-rows-context.ts";
+import { SideBarDispatchContext } from "../context/side-bar-context.ts";
 
 export default function useRedditService() {
   const postRowsRef = useRef<Array<PostRow>>([]);
   const postRows = useContext(PostRowsContext).postRows;
   const getPostRowsPaused = useContext(PostRowsContext).getPostRowsPaused;
+  const sideBarDispatch = useContext(SideBarDispatchContext);
   useEffect(() => {
     postRowsRef.current = postRows;
   }, [postRows]);
@@ -168,7 +170,8 @@ export default function useRedditService() {
       subredditQueueDispatch,
       userFrontPagePostSortOrderOption,
       postsToShowInRow,
-      postRowsDispatch
+      postRowsDispatch,
+      sideBarDispatch
     );
   }, [
     appNotificationsDispatch,
