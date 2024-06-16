@@ -1,15 +1,4 @@
-import { useAppDispatch, useAppSelector } from "./../redux/store.ts";
-import { useEffect, useState } from "react";
-import {
-  setContentFiltering,
-  setPostSortOrderOption,
-  setRedditApiItemLimit,
-  setSelectedSubredditListSortOption,
-  setSubredditSortOrderOption,
-  setTopTimeFrameOption,
-  setUserFrontPagePostSortOrderOption,
-  validateRedditApiItemLimit,
-} from "./../redux/slice/AppConfigSlice.ts";
+import { useContext, useEffect, useState } from "react";
 import PostSortOrderOptionsEnum from "./../model/config/enums/PostSortOrderOptionsEnum.ts";
 import TopTimeFrameOptionsEnum from "./../model/config/enums/TopTimeFrameOptionsEnum.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "./../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
@@ -17,36 +6,37 @@ import SubredditSortOrderOptionsEnum from "./../model/config/enums/SubredditSort
 import { checkPlatformForSubredditSortOrderOption } from "./../util/PlatformUtil.ts";
 import ContentFilteringOptionEnum from "./../model/config/enums/ContentFilteringOptionEnum.ts";
 import SelectedSubredditListSortOptionEnum from "./../model/config/enums/SelectedSubredditListSortOptionEnum.ts";
+import {
+  AppConfigDispatchContext,
+  AppConfigStateContext,
+} from "../context/app-config-context.ts";
+import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
 
 const RedditSourceSettings: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const subredditSortOrderOption = useAppSelector(
-    (state) => state.appConfig.subredditSortOrderOption
-  );
-  const selectedSubredditListSortOption = useAppSelector(
-    (state) => state.appConfig.selectedSubredditListSortOption
-  );
-  const postSortOrder = useAppSelector(
-    (state) => state.appConfig.postSortOrderOption
-  );
-  const topTimeFrameOption = useAppSelector(
-    (state) => state.appConfig.topTimeFrameOption
-  );
-  const userFrontPagePostSortOrderOption = useAppSelector(
-    (state) => state.appConfig.userFrontPagePostSortOrderOption
-  );
-  const stateRedditApiItemLimit = useAppSelector(
-    (state) => state.appConfig.redditApiItemLimit
-  );
-  const contentFiltering = useAppSelector(
-    (state) => state.appConfig.contentFiltering
-  );
+  const appConfigDispatch = useContext(AppConfigDispatchContext);
+  const subredditSortOrderOption = useContext(
+    AppConfigStateContext
+  ).subredditSortOrderOption;
+  const selectedSubredditListSortOption = useContext(
+    AppConfigStateContext
+  ).selectedSubredditListSortOption;
+  const postSortOrder = useContext(AppConfigStateContext).postSortOrderOption;
+  const topTimeFrameOption = useContext(
+    AppConfigStateContext
+  ).topTimeFrameOption;
+  const userFrontPagePostSortOrderOption = useContext(
+    AppConfigStateContext
+  ).userFrontPagePostSortOrderOption;
+  const stateRedditApiItemLimit = useContext(
+    AppConfigStateContext
+  ).redditApiItemLimit;
+  const contentFiltering = useContext(AppConfigStateContext).contentFiltering;
   const [localRedditApiItemLimit, setLocalRedditApiItemLimit] = useState(
     stateRedditApiItemLimit
   );
-  const redditApiLimitValidationError = useAppSelector(
-    (state) => state.appConfig.redditApiItemLimitValidationError
-  );
+  const redditApiLimitValidationError = useContext(
+    AppConfigStateContext
+  ).redditApiItemLimitValidationError;
 
   useEffect(() => {
     console.log("inside use effect");
@@ -61,7 +51,10 @@ const RedditSourceSettings: React.FC = () => {
         <select
           value={subredditSortOrderOption}
           onChange={(event) =>
-            dispatch(setSubredditSortOrderOption(event.target.value))
+            appConfigDispatch({
+              type: AppConfigActionType.SET_SUBREDDIT_SORT_ORDER_OPTION,
+              payload: event.target.value as SubredditSortOrderOptionsEnum,
+            })
           }
           className="select"
         >
@@ -84,7 +77,11 @@ const RedditSourceSettings: React.FC = () => {
         <select
           value={selectedSubredditListSortOption}
           onChange={(event) =>
-            dispatch(setSelectedSubredditListSortOption(event.target.value))
+            appConfigDispatch({
+              type: AppConfigActionType.SET_SELECTED_SUBREDDIT_LIST_SORT_OPTION,
+              payload: event.target
+                .value as SelectedSubredditListSortOptionEnum,
+            })
           }
           className="select"
         >
@@ -104,7 +101,10 @@ const RedditSourceSettings: React.FC = () => {
           <select
             value={postSortOrder}
             onChange={(event) =>
-              dispatch(setPostSortOrderOption(event.target.value))
+              appConfigDispatch({
+                type: AppConfigActionType.SET_POST_SORT_ORDER_OPTION,
+                payload: event.target.value as PostSortOrderOptionsEnum,
+              })
             }
             className="select"
           >
@@ -123,7 +123,10 @@ const RedditSourceSettings: React.FC = () => {
           <select
             value={topTimeFrameOption}
             onChange={(event) =>
-              dispatch(setTopTimeFrameOption(event.target.value))
+              appConfigDispatch({
+                type: AppConfigActionType.SET_TOP_TIME_FRAME_OPTION,
+                payload: event.target.value as TopTimeFrameOptionsEnum,
+              })
             }
             className="select"
           >
@@ -142,7 +145,11 @@ const RedditSourceSettings: React.FC = () => {
           <select
             value={userFrontPagePostSortOrderOption}
             onChange={(event) =>
-              dispatch(setUserFrontPagePostSortOrderOption(event.target.value))
+              appConfigDispatch({
+                type: AppConfigActionType.SET_USER_FRONT_PAGE_POST_SORT_ORDER_OPTION,
+                payload: event.target
+                  .value as UserFrontPagePostSortOrderOptionsEnum,
+              })
             }
             className="select"
           >
@@ -166,12 +173,18 @@ const RedditSourceSettings: React.FC = () => {
             type="number"
             onChange={(event) => {
               const inputValue = parseInt(event.target.value);
-              dispatch(validateRedditApiItemLimit(inputValue));
+              appConfigDispatch({
+                type: AppConfigActionType.VALIDATE_REDDIT_API_ITEM_LIMIT,
+                payload: inputValue,
+              });
               setLocalRedditApiItemLimit(inputValue);
             }}
             onBlur={(event) => {
               const inputValue = parseInt(event.target.value);
-              dispatch(setRedditApiItemLimit(inputValue));
+              appConfigDispatch({
+                type: AppConfigActionType.SET_REDDIT_API_ITEM_LIMIT,
+                payload: inputValue,
+              });
             }}
           />
           <p className="settings-item-error">{redditApiLimitValidationError}</p>
@@ -183,7 +196,10 @@ const RedditSourceSettings: React.FC = () => {
           <select
             value={contentFiltering}
             onChange={(event) =>
-              dispatch(setContentFiltering(event.target.value))
+              appConfigDispatch({
+                type: AppConfigActionType.SET_CONTENT_FILTERING,
+                payload: event.target.value as ContentFilteringOptionEnum,
+              })
             }
             className="select"
           >

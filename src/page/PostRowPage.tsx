@@ -1,20 +1,25 @@
-import { useEffect, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../redux/store.ts";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import SideBar from "../components/SideBar.tsx";
-import {
-  setScrollY,
-  toggleClickedOnPlayPauseButton,
-} from "../redux/slice/PostRowsSlice.ts";
 import PostRow from "../components/PostRow.tsx";
 import "../theme/post-row-page.scss";
+import useRedditService from "../hook/use-reddit-service.ts";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
+import {
+  PostRowsContext,
+  PostRowsDispatchContext,
+} from "../context/post-rows-context.ts";
+import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
+import { SideBarDispatchContext } from "../context/side-bar-context.ts";
+import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
 
 const PostRowPage: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const postRowsState = useAppSelector((state) => state.postRows);
+  const sideBarDispatch = useContext(SideBarDispatchContext);
+  const postRowsState = useContext(PostRowsContext);
+  const postRowsDispatch = useContext(PostRowsDispatchContext);
 
-  const postRowsToShowInView = useAppSelector(
-    (state) => state.appConfig.postRowsToShowInView
-  );
+  const postRowsToShowInView = useContext(
+    AppConfigStateContext
+  ).postRowsToShowInView;
 
   const postRowsDivRef = useRef(null);
   const postRowPageRef = useRef<HTMLDivElement>(null);
@@ -36,7 +41,9 @@ const PostRowPage: React.FC = () => {
     const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
       const key = keyboardEvent.key;
       if (key == " " && !redditSearchBarFocused.current) {
-        dispatch(toggleClickedOnPlayPauseButton());
+        postRowsDispatch({
+          type: PostRowsActionType.TOGGLE_CLICKED_ON_PLAY_PAUSE_BUTTON,
+        });
       }
     };
 
@@ -44,7 +51,32 @@ const PostRowPage: React.FC = () => {
     return () => {
       postRowPage.removeEventListener("keyup", documentKeyUpEvent);
     };
-  }, [dispatch]);
+  }, []);
+
+  const { getPostRow } = useRedditService();
+  const getPostRowIntervalRef = useRef<NodeJS.Timeout>();
+  const clearGetPostRowInterval = useCallback(() => {
+    if (getPostRowIntervalRef.current !== undefined) {
+      clearInterval(getPostRowIntervalRef.current);
+      getPostRowIntervalRef.current = undefined;
+    }
+  }, []);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      clearGetPostRowInterval();
+      getPostRowIntervalRef.current = setInterval(() => {
+        getPostRow();
+        sideBarDispatch({
+          type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
+          payload: 10,
+        });
+      }, 10000);
+    }, 250);
+    return () => {
+      clearTimeout(timeout);
+      clearGetPostRowInterval();
+    };
+  }, [clearGetPostRowInterval, getPostRow]);
 
   return (
     <div className="post-row-page" ref={postRowPageRef}>
@@ -65,7 +97,10 @@ const PostRowPage: React.FC = () => {
         onScroll={(event) => {
           const target = event.target as HTMLElement;
           const scrollTop = target.scrollTop;
-          dispatch(setScrollY(scrollTop));
+          postRowsDispatch({
+            type: PostRowsActionType.SET_SCROLL_Y,
+            payload: scrollTop,
+          });
         }}
       >
         {postRowsState.postRows.map((postRow) => (
@@ -83,7 +118,11 @@ const PostRowPage: React.FC = () => {
 
       <div
         className={"play-pause-button-div"}
-        onClick={() => dispatch(toggleClickedOnPlayPauseButton())}
+        onClick={() => {
+          postRowsDispatch({
+            type: PostRowsActionType.TOGGLE_CLICKED_ON_PLAY_PAUSE_BUTTON,
+          });
+        }}
       >
         <img
           src={`assets/${

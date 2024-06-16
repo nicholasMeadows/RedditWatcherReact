@@ -17,19 +17,17 @@ import "./theme/search-reddit-bar.scss";
 import "./theme/side-bar.scss";
 import "./theme/single-post-page.scss";
 import "./theme/variables.css";
-
-import { Provider } from "react-redux";
 import RouterView from "./page/RouterView";
-import store from "./redux/store";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { RootFontSizeContext } from "./context/root-font-size-context.ts";
-import { RedditServiceContext } from "./context/reddit-service-context.ts";
-import RedditService from "./service/RedditService.ts";
 import { RedditAuthenticationStatus } from "./model/RedditAuthenticationState.ts";
 import {
   RedditClientContext,
   RedditClientContextData,
 } from "./context/reddit-client-context.ts";
+import AppConfigContextProvider from "./context/provider/app-config-context-provider.tsx";
+import ContextMenuContextProvider from "./context/provider/context-menu-context-provider.tsx";
+import { PostRowsContextProvider } from "./context/provider/post-rows-context-provider.tsx";
 
 const App: React.FC = () => {
   const [rootFontSize, setRootFontSize] = useState(0);
@@ -37,26 +35,30 @@ const App: React.FC = () => {
     useState<RedditClientContextData>({
       redditAuthenticationStatus: RedditAuthenticationStatus.NOT_YET_AUTHED,
     });
-  const redditServiceRef = useRef(new RedditService());
   return (
-    <Provider store={store}>
-      <HashRouter>
-        <RootFontSizeContext.Provider
-          value={{ fontSize: rootFontSize, setRootFontSize: setRootFontSize }}
-        >
-          <RedditServiceContext.Provider value={redditServiceRef.current}>
-            <RedditClientContext.Provider
+    <HashRouter>
+      <AppConfigContextProvider>
+        <ContextMenuContextProvider>
+          <PostRowsContextProvider>
+            <RootFontSizeContext.Provider
               value={{
-                redditClientContextData: redditClientContextData,
-                setRedditClientContextData: setRedditClientContextData,
+                fontSize: rootFontSize,
+                setRootFontSize: setRootFontSize,
               }}
             >
-              <RouterView />
-            </RedditClientContext.Provider>
-          </RedditServiceContext.Provider>
-        </RootFontSizeContext.Provider>
-      </HashRouter>
-    </Provider>
+              <RedditClientContext.Provider
+                value={{
+                  redditClientContextData: redditClientContextData,
+                  setRedditClientContextData: setRedditClientContextData,
+                }}
+              >
+                <RouterView />
+              </RedditClientContext.Provider>
+            </RootFontSizeContext.Provider>
+          </PostRowsContextProvider>
+        </ContextMenuContextProvider>
+      </AppConfigContextProvider>
+    </HashRouter>
   );
 };
 

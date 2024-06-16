@@ -1,13 +1,13 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { RedditSearchItemContextMenuEvent } from "../model/Events/RedditSearchItemContextMenuEvent";
-import { useAppDispatch, useAppSelector } from "../redux/store";
-import { setRedditSearchItemContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import useSearchReddit from "../hook/use-search-reddit.ts";
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
 const SearchRedditBar: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const darkmode = useAppSelector((state) => state.appConfig.darkMode);
+  const darkmode = useContext(AppConfigStateContext).darkMode;
   const {
     searchResultsOpen,
     setSearchResultsOpen,
@@ -15,6 +15,7 @@ const SearchRedditBar: React.FC = () => {
     onFocus,
     onBlur,
   } = useContext(SearchRedditBarContext);
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { searchResults, clearSearchResults, subOrUnSubFromSubreddit } =
     useSearchReddit(searchInputRef);
@@ -118,9 +119,10 @@ const SearchRedditBar: React.FC = () => {
                 y: event.clientY,
                 searchResultItem: searchResult,
               };
-              dispatch(
-                setRedditSearchItemContextMenuEvent({ event: customEvent })
-              );
+              contextMenuDispatch({
+                type: ContextMenuActionType.SET_REDDIT_SEARCH_ITEM_CONTEXT_MENU_EVENT,
+                payload: { event: customEvent },
+              });
             }}
           >
             <p className="search-result-p">

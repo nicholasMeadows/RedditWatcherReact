@@ -10,7 +10,6 @@ import {
   convertSubreddit,
 } from "../model/converter/SubredditAccountSearchResultConverter.ts";
 import ChildDataObj from "../model/RedditApiResponse/ChildDataObj.ts";
-import store from "../redux/store.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { T3 } from "../model/RedditApiResponse/Types/T3/T3.ts";
 import { Post } from "../model/Post/Post.ts";
@@ -19,6 +18,7 @@ import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEn
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { v4 as uuidV4 } from "uuid";
+import { RedditCredentials } from "../model/config/RedditCredentials.ts";
 
 const REDDIT_BASE_URL = "https://www.reddit.com";
 const REDDIT_OAUTH_BASE_URL = "https://oauth.reddit.com";
@@ -35,18 +35,19 @@ let accessTokenExpiration: number | undefined = undefined;
 let rateLimitRemaining: number | undefined = undefined;
 let rateLimitResetsAt: number | undefined = undefined;
 export default class RedditClient {
-  async authenticate(
-    username: string,
-    password: string,
-    clientId: string,
-    clientSecret: string
-  ) {
+  declare redditCredentials;
+
+  constructor(redditCredentials: RedditCredentials) {
+    this.redditCredentials = redditCredentials;
+  }
+
+  async authenticate() {
     accessToken = undefined;
     accessTokenExpiration = undefined;
-    username = username.trim();
-    password = password.trim();
-    clientId = clientId.trim();
-    clientSecret = clientSecret.trim();
+    const username = this.redditCredentials.username.trim();
+    const password = this.redditCredentials.password.trim();
+    const clientId = this.redditCredentials.clientId.trim();
+    const clientSecret = this.redditCredentials.clientSecret.trim();
     const url =
       REDDIT_BASE_URL +
       REDDIT_AUTH_ENDPOINT.replace("{username}", username).replace(
@@ -95,12 +96,12 @@ export default class RedditClient {
   }
 
   async getSubscribedSubReddits(
+    redditApiItemLimit: number,
     after: string | undefined
   ): Promise<{ after: string | undefined; subreddits: Array<Subreddit> }> {
     const authInfo = await this.getAuthInfo();
     this.checkRateLimits();
-    const state = store.getState();
-    const apiItemLimit = state.appConfig.redditApiItemLimit || 25;
+    const apiItemLimit = redditApiItemLimit || 25;
 
     let url =
       REDDIT_OAUTH_BASE_URL +
@@ -368,21 +369,16 @@ export default class RedditClient {
   }> {
     const expiration =
       accessTokenExpiration === undefined ? 0 : accessTokenExpiration;
-    const state = store.getState();
     const secondsSinceEpoch = Date.now() / 1000;
 
     if (expiration == undefined || secondsSinceEpoch > expiration - 1000) {
-      const username = state.appConfig.redditCredentials.username;
-      const password = state.appConfig.redditCredentials.password;
-      const clientId = state.appConfig.redditCredentials.clientId;
-      const clientSecret = state.appConfig.redditCredentials.clientSecret;
       if (
-        username != undefined &&
-        password != undefined &&
-        clientId != undefined &&
-        clientSecret != undefined
+        this.redditCredentials.username != undefined &&
+        this.redditCredentials.password != undefined &&
+        this.redditCredentials.clientId != undefined &&
+        this.redditCredentials.clientSecret != undefined
       ) {
-        await this.authenticate(username, password, clientId, clientSecret);
+        await this.authenticate();
       }
     }
     return {

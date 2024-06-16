@@ -1,8 +1,8 @@
-import { MutableRefObject, useEffect, useRef } from "react";
+import { MutableRefObject, useContext, useEffect, useRef } from "react";
 import { PostRow } from "../model/PostRow.ts";
 import { Post } from "../model/Post/Post.ts";
-import { useAppDispatch } from "../redux/store.ts";
-import { setLastAutoScrollPostRowState } from "../redux/slice/PostRowsSlice.ts";
+import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
+import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 
 export default function useInitializePostRow(
   postRow: PostRow,
@@ -10,7 +10,7 @@ export default function useInitializePostRow(
   postsToShow: Array<Post>,
   setPostsToShow: (postsToShow: Array<Post>) => void
 ) {
-  const dispatch = useAppDispatch();
+  const postRowsDispatch = useContext(PostRowsDispatchContext);
   const postRowScrollLeft = useRef(0);
 
   const initialized = useRef(false);
@@ -47,19 +47,20 @@ export default function useInitializePostRow(
 
   useEffect(() => {
     const saveState = () => {
-      dispatch(
-        setLastAutoScrollPostRowState({
+      postRowsDispatch({
+        type: PostRowsActionType.SET_LAST_AUTO_SCROLL_POST_ROW_STATE,
+        payload: {
           postRowUuid: postRow.postRowUuid,
           postsToShow: postsToShow,
           scrollLeft: postRowScrollLeft.current,
-        })
-      );
+        },
+      });
     };
     saveState();
     return () => {
       saveState();
     };
-  }, [dispatch, postRow.postRowUuid, postsToShow]);
+  }, [postRow.postRowUuid, postsToShow]);
 
   useEffect(() => {
     const onScroll = (event: Event) => {

@@ -1,14 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { setPostAttachmentIndex } from "../redux/slice/PostRowsSlice.ts";
-import { useAppDispatch } from "../redux/store.ts";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Post } from "../model/Post/Post.ts";
+import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
+import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 
 export default function useIncrementAttachment(
   postRowUuid: string | undefined,
   post: Post | undefined,
   autoIncrementAttachments?: boolean
 ) {
-  const dispatch = useAppDispatch();
+  const postRowsDispatch = useContext(PostRowsDispatchContext);
   const [currentAttachmentIndex, setCurrentAttachmentIndex] = useState(0);
   const autoIncrementPostAttachmentInterval = useRef<
     NodeJS.Timeout | undefined
@@ -26,14 +26,15 @@ export default function useIncrementAttachment(
       attachmentIndex = 0;
     }
     setCurrentAttachmentIndex(attachmentIndex);
-    dispatch(
-      setPostAttachmentIndex({
+    postRowsDispatch({
+      type: PostRowsActionType.SET_POST_ATTACHMENT_INDEX,
+      payload: {
         postRowUuid: postRowUuid,
         postUuid: post.postUuid,
         index: attachmentIndex,
-      })
-    );
-  }, [currentAttachmentIndex, dispatch, post, postRowUuid]);
+      },
+    });
+  }, [currentAttachmentIndex, post, postRowUuid]);
 
   const decrementPostAttachment = useCallback(() => {
     if (post === undefined || postRowUuid === undefined) {
@@ -47,14 +48,15 @@ export default function useIncrementAttachment(
       attachmentIndex = currentAttachmentIndex - 1;
     }
     setCurrentAttachmentIndex(attachmentIndex);
-    dispatch(
-      setPostAttachmentIndex({
+    postRowsDispatch({
+      type: PostRowsActionType.SET_POST_ATTACHMENT_INDEX,
+      payload: {
         postRowUuid: postRowUuid,
         postUuid: post.postUuid,
         index: attachmentIndex,
-      })
-    );
-  }, [currentAttachmentIndex, dispatch, post, postRowUuid]);
+      },
+    });
+  }, [currentAttachmentIndex, post, postRowUuid]);
 
   const jumpToPostAttachment = useCallback(
     (index: number) => {
@@ -64,16 +66,17 @@ export default function useIncrementAttachment(
       const attachments = post.attachments;
       if (index >= 0 && index < attachments.length) {
         setCurrentAttachmentIndex(index);
-        dispatch(
-          setPostAttachmentIndex({
+        postRowsDispatch({
+          type: PostRowsActionType.SET_POST_ATTACHMENT_INDEX,
+          payload: {
             postRowUuid: postRowUuid,
             postUuid: post.postUuid,
             index: index,
-          })
-        );
+          },
+        });
       }
     },
-    [dispatch, post, postRowUuid]
+    [post, postRowUuid]
   );
   const setupAutoIncrementPostAttachmentInterval = useCallback(() => {
     if (post === undefined) {

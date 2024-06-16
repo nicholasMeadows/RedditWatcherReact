@@ -1,13 +1,11 @@
-import { MouseEvent, useRef } from "react";
+import { MouseEvent, useContext, useRef } from "react";
 import SubredditListContextMenuEvent from "../model/Events/SubredditListContextMenuEvent";
 import SubredditListItemContextMenuEvent from "../model/Events/SubredditListItemContextMenuEvent";
 import { SubredditLists } from "../model/SubredditList/SubredditLists";
-import { useAppDispatch } from "../redux/store.ts";
-import {
-  setSubredditListContextMenuEvent,
-  setSubredditListItemContextMenuEvent,
-} from "../redux/slice/ContextMenuSlice.ts";
-import { toggleSubredditListSelected } from "../redux/slice/RedditListSlice.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
+import { RedditListDispatchContext } from "../context/reddit-list-context.ts";
+import { RedditListActionType } from "../reducer/reddit-list-reducer.ts";
 
 type Props = {
   subredditList: SubredditLists;
@@ -19,7 +17,8 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
   subredditListUuidClicked,
   accordionOnClick,
 }) => {
-  const dispatch = useAppDispatch();
+  const redditListDispatch = useContext(RedditListDispatchContext);
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const panelDivRef = useRef(null);
   return (
     <>
@@ -45,11 +44,12 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
             x: event.clientX,
             y: event.clientY,
           };
-          dispatch(
-            setSubredditListContextMenuEvent({
+          contextMenuDispatch({
+            type: ContextMenuActionType.SET_SUBREDDIT_LIST_CONTEXT_MENU_EVENT,
+            payload: {
               event: subredditListContextMenuEvent,
-            })
-          );
+            },
+          });
         }}
       >
         <input
@@ -62,7 +62,10 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
             event.stopPropagation();
           }}
           onChange={() => {
-            dispatch(toggleSubredditListSelected(subredditList));
+            redditListDispatch({
+              type: RedditListActionType.TOGGLE_SUBREDDIT_LIST_SELECTED,
+              payload: subredditList,
+            });
           }}
         />
         <label className="subredditListLabel text-color">
@@ -91,11 +94,12 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
                   x: event.clientX,
                   y: event.clientY,
                 };
-              dispatch(
-                setSubredditListItemContextMenuEvent({
+              contextMenuDispatch({
+                type: ContextMenuActionType.SET_SUBREDDIT_LIST_ITEM_CONTEXT_MENU_EVENT,
+                payload: {
                   event: subredditListItemContextMenuEvent,
-                })
-              );
+                },
+              });
             }}
           >
             {subreddit.displayName}

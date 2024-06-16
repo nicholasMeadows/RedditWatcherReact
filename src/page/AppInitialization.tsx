@@ -4,12 +4,9 @@ import {
   loadSubredditListsFromFile,
   saveConfig,
 } from "../service/ConfigService.ts";
-import { setAppConfig } from "../redux/slice/AppConfigSlice.ts";
 import { AppConfig } from "../model/config/AppConfig.ts";
-import store, { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { v4 as uuidV4 } from "uuid";
-import { setSubredditLists } from "../redux/slice/RedditListSlice.ts";
 import {
   POST_ROW_ROUTE,
   REDDIT_SIGN_IN_ROUTE,
@@ -18,20 +15,31 @@ import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState.t
 import { useNavigate } from "react-router-dom";
 import RedditClient from "../client/RedditClient.ts";
 import { RedditClientContext } from "../context/reddit-client-context.ts";
-import { RedditServiceContext } from "../context/reddit-service-context.ts";
-import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
+import RedditServiceContext from "../context/reddit-service-context.ts";
+import RedditService from "../service/RedditService.ts";
+import useRedditService from "../hook/use-reddit-service.ts";
+import {
+  AppConfigDispatchContext,
+  AppConfigStateContext,
+} from "../context/app-config-context.ts";
+import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
+import { PostRowsContext } from "../context/post-rows-context.ts";
+import { SideBarDispatchContext } from "../context/side-bar-context.ts";
+import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
+import { RedditListDispatchContext } from "../context/reddit-list-context.ts";
+import { RedditListActionType } from "../reducer/reddit-list-reducer.ts";
 
 const AppInitialization: React.FC = () => {
-  const redditService = useContext(RedditServiceContext);
-  const appNotificationsDispatch = useContext(AppNotificationsDispatchContext);
-  const dispatch = useAppDispatch();
+  const redditListDispatch = useContext(RedditListDispatchContext);
+  const sideBarDispatch = useContext(SideBarDispatchContext);
+  const appConfigDispatch = useContext(AppConfigDispatchContext);
   const navigate = useNavigate();
 
   const [config, setConfig] = useState<AppConfig | undefined>(undefined);
   const [subredditLists, setSubredditListsState] = useState<
     SubredditLists[] | undefined
   >(undefined);
-  const postRowsState = useAppSelector((state) => state.postRows);
+  const postRowsState = useContext(PostRowsContext);
 
   const [text, setText] = useState("");
   const { redditClientContextData, setRedditClientContextData } =
@@ -39,9 +47,12 @@ const AppInitialization: React.FC = () => {
 
   const loadConfigAsync = useCallback(async () => {
     const loadedConfig = await loadConfig();
-    dispatch(setAppConfig(loadedConfig));
+    appConfigDispatch({
+      type: AppConfigActionType.SET_APP_CONFIG,
+      payload: loadedConfig,
+    });
     setConfig(loadedConfig);
-  }, [dispatch]);
+  }, [appConfigDispatch]);
 
   const loadSubredditListsAsync = useCallback(async () => {
     let subredditListsLocal: SubredditLists[] = [];
@@ -55,10 +66,34 @@ const AppInitialization: React.FC = () => {
       list.subredditListUuid = uuidV4();
       list.subreddits.map((subreddit) => (subreddit.subredditUuid = uuidV4()));
     });
-    store.dispatch(setSubredditLists(subredditListsLocal));
+    redditListDispatch({
+      type: RedditListActionType.SET_SUBREDDIT_LISTS,
+      payload: subredditListsLocal,
+    });
     setSubredditListsState(subredditListsLocal);
   }, []);
 
+  const redditServiceContextState = useContext(RedditServiceContext);
+
+  const redditApiItemLimit = useContext(
+    AppConfigStateContext
+  ).redditApiItemLimit;
+  const redditCredentials = useContext(AppConfigStateContext).redditCredentials;
+
+  const loadSubscribedSubreddits = useCallback(async () => {
+    if (
+      redditServiceContextState.masterSubscribedSubredditList.current.length ===
+      0
+    ) {
+      const redditService = new RedditService(redditCredentials);
+      await redditService.loadSubscribedSubreddits(
+        redditServiceContextState.masterSubscribedSubredditList,
+        redditApiItemLimit
+      );
+    }
+  }, [redditServiceContextState.masterSubscribedSubredditList]);
+
+  const { getPostRow } = useRedditService();
   const authReddit = useCallback(
     async (appConfig: AppConfig) => {
       const redditCredentials = appConfig.redditCredentials;
@@ -89,24 +124,14 @@ const AppInitialization: React.FC = () => {
         console.log("Authenticating Reddit");
         setText("Logging In...");
 
-        const username = redditCredentials.username;
-        const password = redditCredentials.password;
-        const clientId = redditCredentials.clientId;
-        const clientSecret = redditCredentials.clientSecret;
-
         try {
           if (
-            username != undefined &&
-            password != undefined &&
-            clientId != undefined &&
-            clientSecret != undefined
+            redditCredentials.username != undefined &&
+            redditCredentials.password != undefined &&
+            redditCredentials.clientId != undefined &&
+            redditCredentials.clientSecret != undefined
           ) {
-            await new RedditClient().authenticate(
-              username,
-              password,
-              clientId,
-              clientSecret
-            );
+            await new RedditClient(redditCredentials).authenticate();
             saveConfig(appConfig);
             setRedditClientContextData((state) => ({
               ...state,
@@ -129,20 +154,30 @@ const AppInitialization: React.FC = () => {
         RedditAuthenticationStatus.AUTHENTICATION_DENIED
       ) {
         navigate(REDDIT_SIGN_IN_ROUTE);
-      } else if (postRowsState.postRows.length == 0) {
+      } else if (
+        postRowsState.postRows.length == 0 &&
+        redditServiceContextState.masterSubscribedSubredditList.current
+          .length === 0
+      ) {
+        setText("Loading Subscribed Subreddits...");
+        await loadSubscribedSubreddits();
         setText("Getting Posts...");
-        if (!redditService.loopingForPosts) {
-          redditService.startLoopingForPosts(appNotificationsDispatch);
-        }
+        getPostRow();
+        sideBarDispatch({
+          type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
+          payload: 10,
+        });
       } else {
         navigate(POST_ROW_ROUTE);
       }
     },
     [
+      getPostRow,
+      loadSubscribedSubreddits,
       navigate,
       postRowsState.postRows.length,
       redditClientContextData.redditAuthenticationStatus,
-      redditService,
+      redditServiceContextState.masterSubscribedSubredditList,
       setRedditClientContextData,
     ]
   );
@@ -158,13 +193,11 @@ const AppInitialization: React.FC = () => {
   }, [
     authReddit,
     config,
-    dispatch,
     loadConfigAsync,
     loadSubredditListsAsync,
     navigate,
     postRowsState.postRows.length,
     redditClientContextData.redditAuthenticationStatus,
-    redditService,
     setRedditClientContextData,
     subredditLists,
   ]);

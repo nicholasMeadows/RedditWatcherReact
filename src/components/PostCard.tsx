@@ -1,25 +1,31 @@
 import { FC, memo, useContext, useRef } from "react";
-import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import { PostCardContext } from "../context/post-card-context.ts";
 import "../theme/post-card.scss";
-import { setSinglePostPageUuids } from "../redux/slice/SinglePostPageSlice.ts";
-import { mouseLeavePostRow } from "../redux/slice/PostRowsSlice.ts";
 import {
   POST_CARD_LEFT_MARGIN_EM,
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants.ts";
 import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
-import { setPostContextMenuEvent } from "../redux/slice/ContextMenuSlice.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
 import { useNavigate } from "react-router-dom";
 import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
+import { SinglePostPageDispatchContext } from "../context/single-post-page-context.ts";
+import { SinglePostPageActionType } from "../reducer/single-post-page-reducer.ts";
+import {
+  PostRowsContext,
+  PostRowsDispatchContext,
+} from "../context/post-rows-context.ts";
+import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 
 const PostCard: FC = memo(() => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const postRowsDispatch = useContext(PostRowsDispatchContext);
+  const singlePostPageDispatch = useContext(SinglePostPageDispatchContext);
   const { postRowUuid, post } = useContext(PostCardContext);
-
-  const postRowsState = useAppSelector((state) => state.postRows);
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
+  const postRowsState = useContext(PostRowsContext);
   const initialMouseDownOrTouchX = useRef(0);
 
   const incrementAttachmentHook = useIncrementAttachment(
@@ -45,7 +51,10 @@ const PostCard: FC = memo(() => {
           x: event.clientX,
           y: event.clientY,
         };
-        dispatch(setPostContextMenuEvent({ event: postContextMenuEvent }));
+        contextMenuDispatch({
+          type: ContextMenuActionType.SET_POST_CONTEXT_MENU_EVENT,
+          payload: { event: postContextMenuEvent },
+        });
       }}
       onClickCapture={(event) => {
         if (Math.abs(initialMouseDownOrTouchX.current - event.clientX) >= 50) {
@@ -55,14 +64,18 @@ const PostCard: FC = memo(() => {
         initialMouseDownOrTouchX.current = 0;
       }}
       onClick={() => {
-        dispatch(
-          setSinglePostPageUuids({
+        singlePostPageDispatch({
+          type: SinglePostPageActionType.SET_SINGLE_POST_PAGE_UUIDS,
+          payload: {
             postRowUuid: postRowUuid,
             postUuid: post.postUuid,
-          })
-        );
+          },
+        });
         navigate(`${SINGPLE_POST_ROUTE}`);
-        dispatch(mouseLeavePostRow(postRowUuid));
+        postRowsDispatch({
+          type: PostRowsActionType.MOUSE_LEAVE_POST_ROW,
+          payload: postRowUuid,
+        });
       }}
       onMouseEnter={() => {
         incrementAttachmentHook.clearAutoIncrementPostAttachmentInterval();
