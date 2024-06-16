@@ -1,7 +1,6 @@
 import { MutableRefObject, useContext, useEffect, useRef } from "react";
 import { PostRow } from "../model/PostRow.ts";
 import { Post } from "../model/Post/Post.ts";
-import { useAppDispatch } from "../redux/store.ts";
 import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 
@@ -11,7 +10,6 @@ export default function useInitializePostRow(
   postsToShow: Array<Post>,
   setPostsToShow: (postsToShow: Array<Post>) => void
 ) {
-  const dispatch = useAppDispatch();
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const postRowScrollLeft = useRef(0);
 
@@ -62,7 +60,7 @@ export default function useInitializePostRow(
     return () => {
       saveState();
     };
-  }, [dispatch, postRow.postRowUuid, postsToShow]);
+  }, [postRow.postRowUuid, postsToShow]);
 
   useEffect(() => {
     const onScroll = (event: Event) => {

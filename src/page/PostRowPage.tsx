@@ -1,5 +1,4 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { useAppDispatch } from "../redux/store.ts";
 import SideBar from "../components/SideBar.tsx";
 import PostRow from "../components/PostRow.tsx";
 import "../theme/post-row-page.scss";
@@ -14,7 +13,6 @@ import { SideBarDispatchContext } from "../context/side-bar-context.ts";
 import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
 
 const PostRowPage: React.FC = () => {
-  const dispatch = useAppDispatch();
   const sideBarDispatch = useContext(SideBarDispatchContext);
   const postRowsState = useContext(PostRowsContext);
   const postRowsDispatch = useContext(PostRowsDispatchContext);
@@ -53,7 +51,7 @@ const PostRowPage: React.FC = () => {
     return () => {
       postRowPage.removeEventListener("keyup", documentKeyUpEvent);
     };
-  }, [dispatch]);
+  }, []);
 
   const { getPostRow } = useRedditService();
   const getPostRowIntervalRef = useRef<NodeJS.Timeout>();
@@ -78,7 +76,7 @@ const PostRowPage: React.FC = () => {
       clearTimeout(timeout);
       clearGetPostRowInterval();
     };
-  }, [clearGetPostRowInterval, dispatch, getPostRow]);
+  }, [clearGetPostRowInterval, getPostRow]);
 
   return (
     <div className="post-row-page" ref={postRowPageRef}>

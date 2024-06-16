@@ -1,4 +1,3 @@
-import { useAppSelector } from "../redux/store.ts";
 import { useCallback, useContext, useEffect, useRef } from "react";
 import RedditServiceContext from "../context/reddit-service-context.ts";
 import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
@@ -23,6 +22,7 @@ import {
   PostRowsDispatchContext,
 } from "../context/post-rows-context.ts";
 import { SideBarDispatchContext } from "../context/side-bar-context.ts";
+import { RedditListStateContext } from "../context/reddit-list-context.ts";
 
 export default function useRedditService() {
   const postRowsRef = useRef<Array<PostRow>>([]);
@@ -36,9 +36,7 @@ export default function useRedditService() {
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const subredditQueueDispatch = useContext(SubredditQueueDispatchContext);
 
-  const subredditLists = useAppSelector(
-    (state) => state.redditLists.subredditLists
-  );
+  const subredditLists = useContext(RedditListStateContext).subredditLists;
   const subredditSortOrderOption = useContext(
     AppConfigStateContext
   ).subredditSortOrderOption;
@@ -171,7 +169,8 @@ export default function useRedditService() {
       userFrontPagePostSortOrderOption,
       postsToShowInRow,
       postRowsDispatch,
-      sideBarDispatch
+      sideBarDispatch,
+      subredditLists
     );
   }, [
     appNotificationsDispatch,

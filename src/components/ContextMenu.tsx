@@ -1,13 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { SubredditLists } from "../model/SubredditList/SubredditLists";
-import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import { useCopy } from "../hook/use-copy.ts";
-import {
-  addSubredditToList,
-  removeSubredditFromList,
-  showDeleteListConfirmationBox,
-  showUpdateListBox,
-} from "../redux/slice/RedditListSlice.ts";
 import { SubredditQueueDispatchContext } from "../context/sub-reddit-queue-context.ts";
 import { SubredditQueueActionType } from "../reducer/sub-reddit-queue-reducer.ts";
 import {
@@ -15,14 +8,19 @@ import {
   ContextMenuStateContext,
 } from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
+import {
+  RedditListDispatchContext,
+  RedditListStateContext,
+} from "../context/reddit-list-context.ts";
+import { RedditListActionType } from "../reducer/reddit-list-reducer.ts";
 
 const ContextMenu: React.FC = () => {
-  const dispatch = useAppDispatch();
   const copyHook = useCopy();
   const subredditQueueDispatch = useContext(SubredditQueueDispatchContext);
   const contextMenuState = useContext(ContextMenuStateContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
-  const redditListState = useAppSelector((state) => state.redditLists);
+  const redditListState = useContext(RedditListStateContext);
+  const redditListDispatch = useContext(RedditListDispatchContext);
   const [contextMenuX, setContextMenuX] = useState(0);
   const [contextMenuY, setContextMenuY] = useState(0);
 
@@ -245,15 +243,16 @@ const ContextMenu: React.FC = () => {
                 key={subredditList.subredditListUuid}
                 onClick={() => {
                   if (contextMenuState.subreddit != undefined) {
-                    dispatch(
-                      addSubredditToList({
-                        subredditListItemToAdd: {
+                    redditListDispatch({
+                      type: RedditListActionType.ADD_SUBREDDIT_TO_LIST,
+                      payload: {
+                        subreddit: {
                           ...contextMenuState.subreddit,
                           fromList: subredditList.listName,
                         },
-                        subredditListToAddTo: subredditList,
-                      })
-                    );
+                        subredditList: subredditList,
+                      },
+                    });
                   }
                 }}
                 className="context-menu-sub-menu-item"
@@ -314,15 +313,16 @@ const ContextMenu: React.FC = () => {
                 key={subredditList.subredditListUuid}
                 onClick={() => {
                   if (contextMenuState.subreddit != undefined) {
-                    dispatch(
-                      removeSubredditFromList({
-                        removeFromList: subredditList,
-                        subredditListItemToRemove: {
+                    redditListDispatch({
+                      type: RedditListActionType.REMOVE_SUBREDDIT_FROM_LIST,
+                      payload: {
+                        subreddit: {
                           ...contextMenuState.subreddit,
                           fromList: subredditList.listName,
                         },
-                      })
-                    );
+                        subredditList: subredditList,
+                      },
+                    });
                   }
                 }}
                 className="context-menu-sub-menu-item"
@@ -343,11 +343,10 @@ const ContextMenu: React.FC = () => {
               contextMenuState.updateSubredditListInfo?.subredditList !=
               undefined
             ) {
-              dispatch(
-                showUpdateListBox(
-                  contextMenuState.updateSubredditListInfo?.subredditList
-                )
-              );
+              redditListDispatch({
+                type: RedditListActionType.SHOW_UPDATE_LIST_BOX,
+                payload: contextMenuState.updateSubredditListInfo.subredditList,
+              });
             }
             contextMenuDispatch({
               type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
@@ -365,11 +364,10 @@ const ContextMenu: React.FC = () => {
               contextMenuState.updateSubredditListInfo?.subredditList !=
               undefined
             ) {
-              dispatch(
-                showDeleteListConfirmationBox(
-                  contextMenuState.updateSubredditListInfo?.subredditList
-                )
-              );
+              redditListDispatch({
+                type: RedditListActionType.SHOW_DELETE_LIST_CONFIRMATION,
+                payload: contextMenuState.updateSubredditListInfo.subredditList,
+              });
             }
             contextMenuDispatch({
               type: ContextMenuActionType.CLOSE_CONTEXT_MENU,

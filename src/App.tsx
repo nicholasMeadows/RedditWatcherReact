@@ -17,10 +17,7 @@ import "./theme/search-reddit-bar.scss";
 import "./theme/side-bar.scss";
 import "./theme/single-post-page.scss";
 import "./theme/variables.css";
-
-import { Provider } from "react-redux";
 import RouterView from "./page/RouterView";
-import store from "./redux/store";
 import { useState } from "react";
 import { RootFontSizeContext } from "./context/root-font-size-context.ts";
 import { RedditAuthenticationStatus } from "./model/RedditAuthenticationState.ts";
@@ -39,31 +36,29 @@ const App: React.FC = () => {
       redditAuthenticationStatus: RedditAuthenticationStatus.NOT_YET_AUTHED,
     });
   return (
-    <Provider store={store}>
-      <HashRouter>
-        <AppConfigContextProvider>
-          <ContextMenuContextProvider>
-            <PostRowsContextProvider>
-              <RootFontSizeContext.Provider
+    <HashRouter>
+      <AppConfigContextProvider>
+        <ContextMenuContextProvider>
+          <PostRowsContextProvider>
+            <RootFontSizeContext.Provider
+              value={{
+                fontSize: rootFontSize,
+                setRootFontSize: setRootFontSize,
+              }}
+            >
+              <RedditClientContext.Provider
                 value={{
-                  fontSize: rootFontSize,
-                  setRootFontSize: setRootFontSize,
+                  redditClientContextData: redditClientContextData,
+                  setRedditClientContextData: setRedditClientContextData,
                 }}
               >
-                <RedditClientContext.Provider
-                  value={{
-                    redditClientContextData: redditClientContextData,
-                    setRedditClientContextData: setRedditClientContextData,
-                  }}
-                >
-                  <RouterView />
-                </RedditClientContext.Provider>
-              </RootFontSizeContext.Provider>
-            </PostRowsContextProvider>
-          </ContextMenuContextProvider>
-        </AppConfigContextProvider>
-      </HashRouter>
-    </Provider>
+                <RouterView />
+              </RedditClientContext.Provider>
+            </RootFontSizeContext.Provider>
+          </PostRowsContextProvider>
+        </ContextMenuContextProvider>
+      </AppConfigContextProvider>
+    </HashRouter>
   );
 };
 

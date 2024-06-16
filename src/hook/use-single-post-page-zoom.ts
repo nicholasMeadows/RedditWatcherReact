@@ -13,7 +13,6 @@ import {
   SINGLE_POST_PAGE_MIN_SCALE,
   SINGLE_POST_PAGE_SCALE_STEP,
 } from "../RedditWatcherConstants.ts";
-import { useAppDispatch } from "../redux/store.ts";
 import {
   SinglePostPageActionType,
   SinglePostPageState,
@@ -27,7 +26,6 @@ export default function useSinglePostPageZoom(
   postRowsState: PostRowsState
 ) {
   const singlePostPageDispatch = useContext(SinglePostPageDispatchContext);
-  const dispatch = useAppDispatch();
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const minSwipeDistance = 50;
@@ -82,7 +80,6 @@ export default function useSinglePostPageZoom(
       },
     });
   }, [
-    dispatch,
     postRowsState.postRows,
     resetImgPositionAndScale,
     singlePostPageState.postRowUuid,
@@ -122,7 +119,6 @@ export default function useSinglePostPageZoom(
       },
     });
   }, [
-    dispatch,
     postRowsState.postRows,
     resetImgPositionAndScale,
     singlePostPageState.postRowUuid,

@@ -1,29 +1,23 @@
 import { useContext, useEffect, useState } from "react";
 import { NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT } from "../RedditWatcherConstants";
 import { ModifySubredditListMode } from "../model/ModifySubredditListMode";
-import { useAppDispatch, useAppSelector } from "../redux/store";
 import ModifySubredditListAccordion from "../components/ModifySubredditListAccordion";
 import SearchRedditBar from "../components/SearchRedditBar";
 import SelectSubredditListMenuSortOptionEnum from "../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum.ts";
-import {
-  createOrModifyList,
-  deleteList,
-  deselectAllLists,
-  resetModifyListBox,
-  selectAllLists,
-  selectRandomLists,
-  setCreateUpdateInputValue,
-  showCreateListBox,
-} from "../redux/slice/RedditListSlice.ts";
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
+import {
+  RedditListDispatchContext,
+  RedditListStateContext,
+} from "../context/reddit-list-context.ts";
+import { RedditListActionType } from "../reducer/reddit-list-reducer.ts";
 
 const ModifySubredditLists: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const redditListsState = useAppSelector((state) => state.redditLists);
+  const redditListsState = useContext(RedditListStateContext);
+  const redditListDispatch = useContext(RedditListDispatchContext);
   const selectSubredditListMenuSortOption = useContext(
     AppConfigStateContext
   ).selectSubredditListMenuSortOption;
@@ -34,7 +28,9 @@ const ModifySubredditLists: React.FC = () => {
     Array<SubredditLists>
   >([]);
   useEffect(() => {
-    dispatch(resetModifyListBox());
+    redditListDispatch({
+      type: RedditListActionType.RESET_MODIFY_LIST_BOX,
+    });
   }, []);
 
   useEffect(() => {
@@ -119,11 +115,10 @@ const ModifySubredditLists: React.FC = () => {
                   type="text"
                   className="search-input"
                   onChange={(event) =>
-                    dispatch(
-                      setCreateUpdateInputValue(
-                        (event.target as HTMLInputElement).value
-                      )
-                    )
+                    redditListDispatch({
+                      type: RedditListActionType.SET_CREATE_UPDATE_INPUT_VALUE,
+                      payload: (event.target as HTMLInputElement).value,
+                    })
                   }
                   value={redditListsState.createUpdateInputValue}
                 />
@@ -136,11 +131,21 @@ const ModifySubredditLists: React.FC = () => {
                       redditListsState.createUpdateInputValue.length == 0 ||
                       redditListsState.createUpdateInputValidationError != ""
                     }
-                    onClick={() => dispatch(createOrModifyList())}
+                    onClick={() =>
+                      redditListDispatch({
+                        type: RedditListActionType.CREATE_OR_MODIFY_LIST,
+                      })
+                    }
                   >
                     {redditListsState.createUpdateButtonText}
                   </button>
-                  <button onClick={() => dispatch(resetModifyListBox())}>
+                  <button
+                    onClick={() =>
+                      redditListDispatch({
+                        type: RedditListActionType.RESET_MODIFY_LIST_BOX,
+                      })
+                    }
+                  >
                     Cancel
                   </button>
                 </div>
@@ -150,8 +155,22 @@ const ModifySubredditLists: React.FC = () => {
               ModifySubredditListMode.DELETE && (
               <>
                 <div className="flex flex-row create-update-button-box">
-                  <button onClick={() => dispatch(deleteList())}>Yes</button>
-                  <button onClick={() => dispatch(resetModifyListBox())}>
+                  <button
+                    onClick={() =>
+                      redditListDispatch({
+                        type: RedditListActionType.DELETE_LIST,
+                      })
+                    }
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={() =>
+                      redditListDispatch({
+                        type: RedditListActionType.RESET_MODIFY_LIST_BOX,
+                      })
+                    }
+                  >
                     Cancel
                   </button>
                 </div>
@@ -194,13 +213,21 @@ const ModifySubredditLists: React.FC = () => {
           <div className="modify-subreddit-list-button-box flex flex-column flex-grow">
             <button
               className="flex-grow"
-              onClick={() => dispatch(showCreateListBox())}
+              onClick={() =>
+                redditListDispatch({
+                  type: RedditListActionType.SHOW_CREATE_LIST_BOX,
+                })
+              }
             >
               Create new List
             </button>
             <button
               className="flex-grow"
-              onClick={() => dispatch(selectAllLists())}
+              onClick={() =>
+                redditListDispatch({
+                  type: RedditListActionType.SELECT_ALL_LISTS,
+                })
+              }
             >
               Select All Lists
             </button>
@@ -208,13 +235,21 @@ const ModifySubredditLists: React.FC = () => {
           <div className="modify-subreddit-list-button-box flex flex-column flex-grow">
             <button
               className="flex-grow"
-              onClick={() => dispatch(deselectAllLists())}
+              onClick={() =>
+                redditListDispatch({
+                  type: RedditListActionType.DESELECT_ALL_LISTS,
+                })
+              }
             >
               Deselect All Lists
             </button>
             <button
               className="flex-grow"
-              onClick={() => dispatch(selectRandomLists())}
+              onClick={() =>
+                redditListDispatch({
+                  type: RedditListActionType.SELECT_RANDOM_LISTS,
+                })
+              }
             >
               Select Random Lists
             </button>

@@ -1,5 +1,4 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { useAppDispatch } from "../redux/store.ts";
 import { Post } from "../model/Post/Post.ts";
 import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
@@ -9,7 +8,6 @@ export default function useIncrementAttachment(
   post: Post | undefined,
   autoIncrementAttachments?: boolean
 ) {
-  const dispatch = useAppDispatch();
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const [currentAttachmentIndex, setCurrentAttachmentIndex] = useState(0);
   const autoIncrementPostAttachmentInterval = useRef<
@@ -36,7 +34,7 @@ export default function useIncrementAttachment(
         index: attachmentIndex,
       },
     });
-  }, [currentAttachmentIndex, dispatch, post, postRowUuid]);
+  }, [currentAttachmentIndex, post, postRowUuid]);
 
   const decrementPostAttachment = useCallback(() => {
     if (post === undefined || postRowUuid === undefined) {
@@ -58,7 +56,7 @@ export default function useIncrementAttachment(
         index: attachmentIndex,
       },
     });
-  }, [currentAttachmentIndex, dispatch, post, postRowUuid]);
+  }, [currentAttachmentIndex, post, postRowUuid]);
 
   const jumpToPostAttachment = useCallback(
     (index: number) => {
@@ -78,7 +76,7 @@ export default function useIncrementAttachment(
         });
       }
     },
-    [dispatch, post, postRowUuid]
+    [post, postRowUuid]
   );
   const setupAutoIncrementPostAttachmentInterval = useCallback(() => {
     if (post === undefined) {

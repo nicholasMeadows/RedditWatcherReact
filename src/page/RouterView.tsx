@@ -1,5 +1,3 @@
-import { useAppDispatch } from "../redux/store";
-
 import { KeepAwake } from "@capacitor-community/keep-awake";
 import { useCallback, useContext, useEffect, useRef } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
@@ -48,13 +46,13 @@ import SinglePostPageContextProvider from "../context/provider/single-post-page-
 import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import SideBarContextProvider from "../context/provider/side-bar-context-provider.tsx";
+import RedditListContextProvider from "../context/provider/reddit-list-context-provider.tsx";
 
 export type SecondsTillGettingNextPostContextData = {
   secondsTillGettingNextPosts: number;
   setSecondsTillGettingNextPosts: (seconds: number) => void;
 };
 const RouterView: React.FC = () => {
-  const dispatch = useAppDispatch();
   const location = useLocation();
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const { setRootFontSize } = useContext(RootFontSizeContext);
@@ -67,36 +65,33 @@ const RouterView: React.FC = () => {
     AppConfigStateContext
   ).postsToShowInRow;
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
-  const wheelEventHandler = useCallback(
-    (event: WheelEvent) => {
-      const ctrlKeyPressed = event.ctrlKey;
-      if (ctrlKeyPressed) {
-        event.preventDefault();
+  const wheelEventHandler = useCallback((event: WheelEvent) => {
+    const ctrlKeyPressed = event.ctrlKey;
+    if (ctrlKeyPressed) {
+      event.preventDefault();
 
-        const deltaY = event.deltaY;
-        if (deltaY > 0) {
-          appConfigDispatch({
-            type: AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW,
-            payload: currentPostsToShowInRow + 0.1,
-          });
-          appConfigDispatch({
-            type: AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW,
-            payload: currentPostRowsToShowInView + 0.1,
-          });
-        } else if (deltaY < 0) {
-          appConfigDispatch({
-            type: AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW,
-            payload: currentPostsToShowInRow - 0.1,
-          });
-          appConfigDispatch({
-            type: AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW,
-            payload: currentPostRowsToShowInView - 0.1,
-          });
-        }
+      const deltaY = event.deltaY;
+      if (deltaY > 0) {
+        appConfigDispatch({
+          type: AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW,
+          payload: currentPostsToShowInRow + 0.1,
+        });
+        appConfigDispatch({
+          type: AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW,
+          payload: currentPostRowsToShowInView + 0.1,
+        });
+      } else if (deltaY < 0) {
+        appConfigDispatch({
+          type: AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW,
+          payload: currentPostsToShowInRow - 0.1,
+        });
+        appConfigDispatch({
+          type: AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW,
+          payload: currentPostRowsToShowInView - 0.1,
+        });
       }
-    },
-    [dispatch]
-  );
+    }
+  }, []);
 
   useEffect(() => {
     document.addEventListener("wheel", wheelEventHandler, { passive: false });
@@ -105,7 +100,7 @@ const RouterView: React.FC = () => {
     return () => {
       document.removeEventListener("wheel", wheelEventHandler);
     };
-  }, [dispatch, wheelEventHandler]);
+  }, [wheelEventHandler]);
 
   useEffect(() => {
     const documentClickedEvent = () => {
@@ -115,14 +110,14 @@ const RouterView: React.FC = () => {
     return () => {
       document.removeEventListener("click", documentClickedEvent);
     };
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     postRowsDispatch({
       type: PostRowsActionType.SET_CURRENT_LOCATION,
       payload: location.pathname,
     });
-  }, [dispatch, location]);
+  }, [location]);
 
   useEffect(() => {
     let background = "white";
@@ -199,7 +194,7 @@ const RouterView: React.FC = () => {
     if (div != undefined) {
       contentResizeObserver.observe(div);
     }
-  }, [currentPostsToShowInRow, dispatch, setRootFontSize]);
+  }, [currentPostsToShowInRow, setRootFontSize]);
 
   const redditServiceContextState: RedditServiceContextState = {
     lastPostRowWasSortOrderNew: useRef(false),
@@ -213,61 +208,63 @@ const RouterView: React.FC = () => {
         <RedditServiceContext.Provider value={redditServiceContextState}>
           <SinglePostPageContextProvider>
             <SideBarContextProvider>
-              <div className="root-app" ref={rootDivRef}>
-                <NavigationHamburgerMenu />
-                <AppNotifications />
-                <ContextMenu />
-                <div
-                  style={{
-                    marginTop: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
-                    height: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
-                    maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
-                  }}
-                  className="app-body"
-                >
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={
-                        <Navigate
-                          to={APP_INITIALIZATION_ROUTE}
-                          replace={true}
-                        />
-                      }
-                    />
-                    <Route
-                      index
-                      path={APP_INITIALIZATION_ROUTE}
-                      element={<AppInitialization />}
-                    />
-                    <Route
-                      path={REDDIT_SIGN_IN_ROUTE}
-                      element={<RedditSignIn />}
-                    />
-                    <Route path={POST_ROW_ROUTE} element={<PostRowPage />} />
-                    <Route
-                      path={REDDIT_SOURCE_SETTINGS_ROUTE}
-                      element={<RedditSourceSettings />}
-                    />
-                    <Route
-                      path={APPLICATION_SETTINGS_ROUTE}
-                      element={<ApplicationSettings />}
-                    />
-                    <Route
-                      path={SINGPLE_POST_ROUTE}
-                      element={<SinglePostView />}
-                    />
-                    <Route
-                      path={MODIFY_SUBREDDIT_LISTS_ROUTE}
-                      element={<ModifySubredditLists />}
-                    />
-                    <Route
-                      path={MODIFY_SUBREDDIT_QUEUE_ROUTE}
-                      element={<ModifySubredditQueue />}
-                    />
-                  </Routes>
+              <RedditListContextProvider>
+                <div className="root-app" ref={rootDivRef}>
+                  <NavigationHamburgerMenu />
+                  <AppNotifications />
+                  <ContextMenu />
+                  <div
+                    style={{
+                      marginTop: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
+                      height: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+                      maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+                    }}
+                    className="app-body"
+                  >
+                    <Routes>
+                      <Route
+                        path="/"
+                        element={
+                          <Navigate
+                            to={APP_INITIALIZATION_ROUTE}
+                            replace={true}
+                          />
+                        }
+                      />
+                      <Route
+                        index
+                        path={APP_INITIALIZATION_ROUTE}
+                        element={<AppInitialization />}
+                      />
+                      <Route
+                        path={REDDIT_SIGN_IN_ROUTE}
+                        element={<RedditSignIn />}
+                      />
+                      <Route path={POST_ROW_ROUTE} element={<PostRowPage />} />
+                      <Route
+                        path={REDDIT_SOURCE_SETTINGS_ROUTE}
+                        element={<RedditSourceSettings />}
+                      />
+                      <Route
+                        path={APPLICATION_SETTINGS_ROUTE}
+                        element={<ApplicationSettings />}
+                      />
+                      <Route
+                        path={SINGPLE_POST_ROUTE}
+                        element={<SinglePostView />}
+                      />
+                      <Route
+                        path={MODIFY_SUBREDDIT_LISTS_ROUTE}
+                        element={<ModifySubredditLists />}
+                      />
+                      <Route
+                        path={MODIFY_SUBREDDIT_QUEUE_ROUTE}
+                        element={<ModifySubredditQueue />}
+                      />
+                    </Routes>
+                  </div>
                 </div>
-              </div>
+              </RedditListContextProvider>
             </SideBarContextProvider>
           </SinglePostPageContextProvider>
         </RedditServiceContext.Provider>

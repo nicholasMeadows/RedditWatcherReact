@@ -12,7 +12,6 @@ import {
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
-import { useAppDispatch, useAppSelector } from "../redux/store";
 import { RedditClientContext } from "../context/reddit-client-context.ts";
 import packageJson from "../../package.json";
 import {
@@ -33,9 +32,9 @@ import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
+import { RedditListStateContext } from "../context/reddit-list-context.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
-  const dispatch = useAppDispatch();
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const appConfigDispatch = useContext(AppConfigDispatchContext);
   const appConfigState = useContext(AppConfigStateContext);
@@ -44,7 +43,7 @@ const NavigationHamburgerMenu: React.FC = () => {
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const { redditClientContextData, setRedditClientContextData } =
     useContext(RedditClientContext);
-  const redditListsState = useAppSelector((state) => state.redditLists);
+  const redditListsState = useContext(RedditListStateContext);
   const [pageName, setPageName] = useState("");
   const [showBackButton, setShowBackButton] = useState(false);
   const darkMode = useContext(AppConfigStateContext).darkMode;
@@ -103,7 +102,7 @@ const NavigationHamburgerMenu: React.FC = () => {
     setPageName(pageName);
     setShowBackButton(showBackButton);
     contextMenuDispatch({ type: ContextMenuActionType.CLOSE_CONTEXT_MENU });
-  }, [dispatch, location, redditClientContextData.redditAuthenticationStatus]);
+  }, [location, redditClientContextData.redditAuthenticationStatus]);
   const navigateTo = (pathName: string) => {
     setPopoutDrawerOpen(false);
     if (window.location.href.endsWith(POST_ROW_ROUTE)) {

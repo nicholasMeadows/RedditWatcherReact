@@ -6,7 +6,6 @@ import {
 } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import RedditClient from "../client/RedditClient.ts";
-import store from "../redux/store.ts";
 import { MAX_POSTS_PER_ROW } from "../RedditWatcherConstants.ts";
 import { GetPostsForSubredditUrlConverter } from "../model/converter/GetPostsForSubredditUrlConverter.ts";
 import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum.ts";
@@ -41,6 +40,7 @@ import {
   SideBarActionType,
   SideBarDispatch,
 } from "../reducer/side-bar-reducer.ts";
+import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 
 export default class RedditService {
   declare redditClient: RedditClient;
@@ -126,7 +126,7 @@ export default class RedditService {
         getPostsFromSubredditsState.topTimeFrame,
         getPostsFromSubredditsState.redditApiItemLimit,
         getPostsFromSubredditsState.masterSubredditList,
-        store.getState().redditLists.subredditLists
+        getPostsFromSubredditsState.subredditLists
       );
     } else {
       const { posts, fromSubreddits } = await this.getPostsBasedOnSettings(
@@ -168,7 +168,7 @@ export default class RedditService {
     let posts = await this.redditClient.getPostsForSubredditUri(
       url,
       getPostsFromSubredditsState.masterSubredditList,
-      store.getState().redditLists.subredditLists
+      getPostsFromSubredditsState.subredditLists
     );
     posts = posts.map<Post>((value) => {
       value.randomSourceString = randomSourceString;
@@ -513,7 +513,8 @@ export default class RedditService {
     currentUserFrontPagePostSortOrderOption: UserFrontPagePostSortOrderOptionsEnum,
     currentPostsToShowInRow: number,
     postRowsDispatch: PostRowsDispatch,
-    sideBarDispatch: SideBarDispatch
+    sideBarDispatch: SideBarDispatch,
+    subredditLists: Array<SubredditLists>
   ) {
     if (updatedValues.subredditQueueItemToRemove != undefined) {
       subredditQueueDispatch({
@@ -538,7 +539,7 @@ export default class RedditService {
         type: SideBarActionType.SET_SUBREDDITS_TO_SHOW_IN_SIDEBAR,
         payload: {
           subreddits: updatedValues.subredditsToShowInSideBar,
-          subredditLists: store.getState().redditLists.subredditLists,
+          subredditLists: subredditLists,
         },
       });
     }

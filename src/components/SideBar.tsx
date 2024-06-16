@@ -8,7 +8,6 @@ import React, {
 } from "react";
 import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../RedditWatcherConstants.ts";
 import SideBarSubredditMenuEvent from "../model/Events/SideBarSubredditMenuEvent.ts";
-import { useAppDispatch, useAppSelector } from "../redux/store.ts";
 import SearchRedditBar from "./SearchRedditBar.tsx";
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
@@ -20,6 +19,7 @@ import {
   SideBarStateContext,
 } from "../context/side-bar-context.ts";
 import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
+import { RedditListStateContext } from "../context/reddit-list-context.ts";
 
 type SideBarProps = {
   onRedditSearchBarFocus: () => void;
@@ -30,11 +30,10 @@ const SideBar: React.FC<SideBarProps> = ({
   onRedditSearchBarBlur,
 }) => {
   const sideBarButtonMoved = useRef(false);
-  const dispatch = useAppDispatch();
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const sideBarState = useContext(SideBarStateContext);
   const sideBarDispatch = useContext(SideBarDispatchContext);
-  const redditListsState = useAppSelector((state) => state.redditLists);
+  const redditListsState = useContext(RedditListStateContext);
   const [sideBarOpen, setSideBarOpen] = useState(false);
 
   const darkMode = useContext(AppConfigStateContext).darkMode;
@@ -47,7 +46,7 @@ const SideBar: React.FC<SideBarProps> = ({
       type: SideBarActionType.SUBREDDIT_LISTS_UPDATED,
       payload: redditListsState.subredditLists,
     });
-  }, [dispatch, redditListsState.subredditLists]);
+  }, [redditListsState.subredditLists]);
 
   const scrollToMostRecentSubredditGotten = useCallback(() => {
     const foundSubredditIndex = sideBarState.subredditsToShow.findIndex(

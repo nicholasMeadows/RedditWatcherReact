@@ -5,10 +5,8 @@ import {
   saveConfig,
 } from "../service/ConfigService.ts";
 import { AppConfig } from "../model/config/AppConfig.ts";
-import store, { useAppDispatch } from "../redux/store.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { v4 as uuidV4 } from "uuid";
-import { setSubredditLists } from "../redux/slice/RedditListSlice.ts";
 import {
   POST_ROW_ROUTE,
   REDDIT_SIGN_IN_ROUTE,
@@ -28,9 +26,11 @@ import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
 import { PostRowsContext } from "../context/post-rows-context.ts";
 import { SideBarDispatchContext } from "../context/side-bar-context.ts";
 import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
+import { RedditListDispatchContext } from "../context/reddit-list-context.ts";
+import { RedditListActionType } from "../reducer/reddit-list-reducer.ts";
 
 const AppInitialization: React.FC = () => {
-  const dispatch = useAppDispatch();
+  const redditListDispatch = useContext(RedditListDispatchContext);
   const sideBarDispatch = useContext(SideBarDispatchContext);
   const appConfigDispatch = useContext(AppConfigDispatchContext);
   const navigate = useNavigate();
@@ -66,7 +66,10 @@ const AppInitialization: React.FC = () => {
       list.subredditListUuid = uuidV4();
       list.subreddits.map((subreddit) => (subreddit.subredditUuid = uuidV4()));
     });
-    store.dispatch(setSubredditLists(subredditListsLocal));
+    redditListDispatch({
+      type: RedditListActionType.SET_SUBREDDIT_LISTS,
+      payload: subredditListsLocal,
+    });
     setSubredditListsState(subredditListsLocal);
   }, []);
 
@@ -169,7 +172,6 @@ const AppInitialization: React.FC = () => {
       }
     },
     [
-      dispatch,
       getPostRow,
       loadSubscribedSubreddits,
       navigate,
@@ -191,7 +193,6 @@ const AppInitialization: React.FC = () => {
   }, [
     authReddit,
     config,
-    dispatch,
     loadConfigAsync,
     loadSubredditListsAsync,
     navigate,
