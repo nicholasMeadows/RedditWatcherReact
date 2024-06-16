@@ -12,7 +12,7 @@ import {
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
-import store, { useAppDispatch, useAppSelector } from "../redux/store";
+import { useAppDispatch, useAppSelector } from "../redux/store";
 import { RedditClientContext } from "../context/reddit-client-context.ts";
 import packageJson from "../../package.json";
 import {
@@ -28,13 +28,15 @@ import {
 } from "../service/ConfigService.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
-import { clearPostRows } from "../redux/slice/PostRowsSlice.ts";
 import ImportExportConfig from "../model/ImportExportConfig.ts";
 import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
+import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
+import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
   const dispatch = useAppDispatch();
+  const postRowsDispatch = useContext(PostRowsDispatchContext);
   const appConfigDispatch = useContext(AppConfigDispatchContext);
   const appConfigState = useContext(AppConfigStateContext);
   const navigate = useNavigate();
@@ -193,7 +195,7 @@ const NavigationHamburgerMenu: React.FC = () => {
         }
 
         console.log("done importing");
-        store.dispatch(clearPostRows());
+        postRowsDispatch({ type: PostRowsActionType.CLEAR_POST_ROWS });
         appConfigDispatch({ type: AppConfigActionType.RESET_CONFIG_LOADED });
       } catch (e) {
         console.log("exception", e);

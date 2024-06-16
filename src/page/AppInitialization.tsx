@@ -5,7 +5,7 @@ import {
   saveConfig,
 } from "../service/ConfigService.ts";
 import { AppConfig } from "../model/config/AppConfig.ts";
-import store, { useAppDispatch, useAppSelector } from "../redux/store.ts";
+import store, { useAppDispatch } from "../redux/store.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { v4 as uuidV4 } from "uuid";
 import { setSubredditLists } from "../redux/slice/RedditListSlice.ts";
@@ -26,6 +26,7 @@ import {
   AppConfigStateContext,
 } from "../context/app-config-context.ts";
 import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
+import { PostRowsContext } from "../context/post-rows-context.ts";
 
 const AppInitialization: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -36,7 +37,7 @@ const AppInitialization: React.FC = () => {
   const [subredditLists, setSubredditListsState] = useState<
     SubredditLists[] | undefined
   >(undefined);
-  const postRowsState = useAppSelector((state) => state.postRows);
+  const postRowsState = useContext(PostRowsContext);
 
   const [text, setText] = useState("");
   const { redditClientContextData, setRedditClientContextData } =

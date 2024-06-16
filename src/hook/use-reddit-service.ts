@@ -1,4 +1,4 @@
-import store, { useAppSelector } from "../redux/store.ts";
+import { useAppSelector } from "../redux/store.ts";
 import { useCallback, useContext, useEffect, useRef } from "react";
 import RedditServiceContext from "../context/reddit-service-context.ts";
 import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
@@ -18,14 +18,20 @@ import {
   SubredditQueueStateContext,
 } from "../context/sub-reddit-queue-context.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
+import {
+  PostRowsContext,
+  PostRowsDispatchContext,
+} from "../context/post-rows-context.ts";
 
 export default function useRedditService() {
   const postRowsRef = useRef<Array<PostRow>>([]);
-  const postRows = useAppSelector((state) => state.postRows.postRows);
+  const postRows = useContext(PostRowsContext).postRows;
+  const getPostRowsPaused = useContext(PostRowsContext).getPostRowsPaused;
   useEffect(() => {
     postRowsRef.current = postRows;
   }, [postRows]);
 
+  const postRowsDispatch = useContext(PostRowsDispatchContext);
   const subredditQueueDispatch = useContext(SubredditQueueDispatchContext);
 
   const subredditLists = useAppSelector(
@@ -65,6 +71,11 @@ export default function useRedditService() {
   const appNotificationsDispatch = useContext(AppNotificationsDispatchContext);
   const redditCredentials = useContext(AppConfigStateContext).redditCredentials;
   const postsToShowInRow = useContext(AppConfigStateContext).postsToShowInRow;
+
+  const getPostRowsPausedRef = useRef<boolean>(false);
+  useEffect(() => {
+    getPostRowsPausedRef.current = getPostRowsPaused;
+  }, [getPostRowsPaused]);
 
   const getPostRow = useCallback(async () => {
     const redditService = new RedditService(redditCredentials);
@@ -122,9 +133,10 @@ export default function useRedditService() {
         postsGotten = posts;
         postsFromSubreddits = fromSubreddits;
       }
-      await WaitUtil.WaitUntilGetPostsIsNotPaused(
-        () => store.getState().postRows.getPostRowsPaused
-      );
+
+      await WaitUtil.WaitUntilGetPostsIsNotPaused(() => {
+        return getPostRowsPausedRef.current;
+      });
 
       if (postRowsRef.current.length == 10) {
         getPostsUpdatedValues.postRowRemoveAt = postRowsRef.current.length - 1;
@@ -155,7 +167,8 @@ export default function useRedditService() {
       redditServiceContextState.lastPostRowWasSortOrderNew,
       subredditQueueDispatch,
       userFrontPagePostSortOrderOption,
-      postsToShowInRow
+      postsToShowInRow,
+      postRowsDispatch
     );
   }, [
     appNotificationsDispatch,

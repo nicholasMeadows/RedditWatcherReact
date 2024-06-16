@@ -35,15 +35,12 @@ import {
   setSubredditsToShowInSideBar,
 } from "../redux/slice/SideBarSlice.ts";
 import {
-  addPostsToFrontOfRow,
-  createPostRowAndInsertAtBeginning,
-  postRowRemoveAt,
-} from "../redux/slice/PostRowsSlice.ts";
-import {
   SubredditQueueAction,
   SubredditQueueActionType,
 } from "../reducer/sub-reddit-queue-reducer.ts";
 import { RedditCredentials } from "../model/config/RedditCredentials.ts";
+import { PostRowsDispatch } from "../context/post-rows-context.ts";
+import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 
 export default class RedditService {
   declare redditClient: RedditClient;
@@ -514,7 +511,8 @@ export default class RedditService {
     lastPostRowWasSortOrderNewRef: MutableRefObject<boolean>,
     subredditQueueDispatch: Dispatch<SubredditQueueAction>,
     currentUserFrontPagePostSortOrderOption: UserFrontPagePostSortOrderOptionsEnum,
-    currentPostsToShowInRow: number
+    currentPostsToShowInRow: number,
+    postRowsDispatch: PostRowsDispatch
   ) {
     if (updatedValues.subredditQueueItemToRemove != undefined) {
       subredditQueueDispatch({
@@ -528,7 +526,10 @@ export default class RedditService {
       );
     }
     if (updatedValues.postRowRemoveAt != undefined) {
-      store.dispatch(postRowRemoveAt(updatedValues.postRowRemoveAt));
+      postRowsDispatch({
+        type: PostRowsActionType.POST_ROW_REMOVE_AT,
+        payload: updatedValues.postRowRemoveAt,
+      });
     }
     if (updatedValues.subredditsToShowInSideBar != undefined) {
       store.dispatch(
@@ -549,23 +550,25 @@ export default class RedditService {
         updatedValues.lastPostRowWasSortOrderNew;
     }
     if (updatedValues.createPostRowAndInsertAtBeginning != undefined) {
-      store.dispatch(
-        createPostRowAndInsertAtBeginning({
+      postRowsDispatch({
+        type: PostRowsActionType.CREATE_POST_ROW_AND_INSERT_AT_BEGINNING,
+        payload: {
           posts: updatedValues.createPostRowAndInsertAtBeginning,
           userFrontPagePostSortOrderOption:
             currentUserFrontPagePostSortOrderOption,
           postsToShowInRow: currentPostsToShowInRow,
-        })
-      );
+        },
+      });
     }
     if (updatedValues.shiftPostsAndUiPosts != undefined) {
-      store.dispatch(
-        addPostsToFrontOfRow({
+      postRowsDispatch({
+        type: PostRowsActionType.ADD_POSTS_TO_FRONT_OF_ROW,
+        payload: {
           postRowUuid: updatedValues.shiftPostsAndUiPosts.postRowUuid,
           posts: updatedValues.shiftPostsAndUiPosts.posts,
           postsToShowInRow: currentPostsToShowInRow,
-        })
-      );
+        },
+      });
     }
   }
 }

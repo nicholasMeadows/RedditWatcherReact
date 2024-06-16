@@ -30,11 +30,6 @@ import ApplicationSettings from "./ApplicationSettings.tsx";
 import getPlatform from "../util/PlatformUtil.ts";
 import { Platform } from "../model/Platform.ts";
 import { RootFontSizeContext } from "../context/root-font-size-context.ts";
-import {
-  setCurrentLocation,
-  setPostCardWidthPercentage,
-  setPostRowContentWidthPx,
-} from "../redux/slice/PostRowsSlice.ts";
 import AppNotificationsContextProvider from "../context/provider/app-notifications-context-provider.tsx";
 import AppNotifications from "../components/AppNotifications.tsx";
 import RedditServiceContext, {
@@ -50,6 +45,8 @@ import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
 import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 import SinglePostPageContextProvider from "../context/provider/single-post-page-context-provider.tsx";
+import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
+import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 
 export type SecondsTillGettingNextPostContextData = {
   secondsTillGettingNextPosts: number;
@@ -58,6 +55,7 @@ export type SecondsTillGettingNextPostContextData = {
 const RouterView: React.FC = () => {
   const dispatch = useAppDispatch();
   const location = useLocation();
+  const postRowsDispatch = useContext(PostRowsDispatchContext);
   const { setRootFontSize } = useContext(RootFontSizeContext);
   const appConfigDispatch = useContext(AppConfigDispatchContext);
   const darkmode = useContext(AppConfigStateContext).darkMode;
@@ -119,7 +117,10 @@ const RouterView: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    dispatch(setCurrentLocation(location.pathname));
+    postRowsDispatch({
+      type: PostRowsActionType.SET_CURRENT_LOCATION,
+      payload: location.pathname,
+    });
   }, [dispatch, location]);
 
   useEffect(() => {
@@ -175,18 +176,22 @@ const RouterView: React.FC = () => {
             ? baseFontSize * POST_ROW_SCROLL_BTN_WIDTH_EM * 2
             : 0;
         const postRowContentWidthPx = div.clientWidth - scrollButtonWidths;
-        dispatch(setPostRowContentWidthPx(postRowContentWidthPx));
+        postRowsDispatch({
+          type: PostRowsActionType.SET_POST_ROW_CONTENT_WIDTH_PX,
+          payload: postRowContentWidthPx,
+        });
 
         const postCardWidthPx = postRowContentWidthPx / currentPostsToShowInRow;
         const postCardWidthPercentage =
           (postCardWidthPx / postRowContentWidthPx) * 100;
 
-        dispatch(
-          setPostCardWidthPercentage({
+        postRowsDispatch({
+          type: PostRowsActionType.SET_POST_CARD_WIDTH_PERCENTAGE,
+          payload: {
             postsToShowInRow: currentPostsToShowInRow,
             postCardWidthPercentage: postCardWidthPercentage,
-          })
-        );
+          },
+        });
       }
     });
     const div = rootDivRef.current;

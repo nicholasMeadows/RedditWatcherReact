@@ -30,6 +30,7 @@ import {
 } from "./context/reddit-client-context.ts";
 import AppConfigContextProvider from "./context/provider/app-config-context-provider.tsx";
 import ContextMenuContextProvider from "./context/provider/context-menu-context-provider.tsx";
+import { PostRowsContextProvider } from "./context/provider/post-rows-context-provider.tsx";
 
 const App: React.FC = () => {
   const [rootFontSize, setRootFontSize] = useState(0);
@@ -42,21 +43,23 @@ const App: React.FC = () => {
       <HashRouter>
         <AppConfigContextProvider>
           <ContextMenuContextProvider>
-            <RootFontSizeContext.Provider
-              value={{
-                fontSize: rootFontSize,
-                setRootFontSize: setRootFontSize,
-              }}
-            >
-              <RedditClientContext.Provider
+            <PostRowsContextProvider>
+              <RootFontSizeContext.Provider
                 value={{
-                  redditClientContextData: redditClientContextData,
-                  setRedditClientContextData: setRedditClientContextData,
+                  fontSize: rootFontSize,
+                  setRootFontSize: setRootFontSize,
                 }}
               >
-                <RouterView />
-              </RedditClientContext.Provider>
-            </RootFontSizeContext.Provider>
+                <RedditClientContext.Provider
+                  value={{
+                    redditClientContextData: redditClientContextData,
+                    setRedditClientContextData: setRedditClientContextData,
+                  }}
+                >
+                  <RouterView />
+                </RedditClientContext.Provider>
+              </RootFontSizeContext.Provider>
+            </PostRowsContextProvider>
           </ContextMenuContextProvider>
         </AppConfigContextProvider>
       </HashRouter>

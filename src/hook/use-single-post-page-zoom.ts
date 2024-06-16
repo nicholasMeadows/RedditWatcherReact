@@ -14,12 +14,12 @@ import {
   SINGLE_POST_PAGE_SCALE_STEP,
 } from "../RedditWatcherConstants.ts";
 import { useAppDispatch } from "../redux/store.ts";
-import { PostRowsState } from "../redux/slice/PostRowsSlice.ts";
 import {
   SinglePostPageActionType,
   SinglePostPageState,
 } from "../reducer/single-post-page-reducer.ts";
 import { SinglePostPageDispatchContext } from "../context/single-post-page-context.ts";
+import { PostRowsState } from "../reducer/post-rows-reducer.ts";
 
 export default function useSinglePostPageZoom(
   postElementDivWrapperRef: MutableRefObject<HTMLDivElement | null>,

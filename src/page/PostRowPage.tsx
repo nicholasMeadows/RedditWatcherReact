@@ -1,19 +1,21 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../redux/store.ts";
+import { useAppDispatch } from "../redux/store.ts";
 import SideBar from "../components/SideBar.tsx";
-import {
-  setScrollY,
-  toggleClickedOnPlayPauseButton,
-} from "../redux/slice/PostRowsSlice.ts";
 import PostRow from "../components/PostRow.tsx";
 import "../theme/post-row-page.scss";
 import useRedditService from "../hook/use-reddit-service.ts";
 import { setSecondsTillGettingNextPosts } from "../redux/slice/SideBarSlice.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
+import {
+  PostRowsContext,
+  PostRowsDispatchContext,
+} from "../context/post-rows-context.ts";
+import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 
 const PostRowPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const postRowsState = useAppSelector((state) => state.postRows);
+  const postRowsState = useContext(PostRowsContext);
+  const postRowsDispatch = useContext(PostRowsDispatchContext);
 
   const postRowsToShowInView = useContext(
     AppConfigStateContext
@@ -39,7 +41,9 @@ const PostRowPage: React.FC = () => {
     const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
       const key = keyboardEvent.key;
       if (key == " " && !redditSearchBarFocused.current) {
-        dispatch(toggleClickedOnPlayPauseButton());
+        postRowsDispatch({
+          type: PostRowsActionType.TOGGLE_CLICKED_ON_PLAY_PAUSE_BUTTON,
+        });
       }
     };
 
@@ -90,7 +94,10 @@ const PostRowPage: React.FC = () => {
         onScroll={(event) => {
           const target = event.target as HTMLElement;
           const scrollTop = target.scrollTop;
-          dispatch(setScrollY(scrollTop));
+          postRowsDispatch({
+            type: PostRowsActionType.SET_SCROLL_Y,
+            payload: scrollTop,
+          });
         }}
       >
         {postRowsState.postRows.map((postRow) => (
@@ -108,7 +115,11 @@ const PostRowPage: React.FC = () => {
 
       <div
         className={"play-pause-button-div"}
-        onClick={() => dispatch(toggleClickedOnPlayPauseButton())}
+        onClick={() => {
+          postRowsDispatch({
+            type: PostRowsActionType.TOGGLE_CLICKED_ON_PLAY_PAUSE_BUTTON,
+          });
+        }}
       >
         <img
           src={`assets/${

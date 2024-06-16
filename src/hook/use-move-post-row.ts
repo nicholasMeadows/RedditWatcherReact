@@ -6,11 +6,11 @@ import {
   useRef,
 } from "react";
 import { v4 as uuidV4 } from "uuid";
-import { useAppSelector } from "../redux/store.ts";
 import { Post } from "../model/Post/Post.ts";
 import { PostRow } from "../model/PostRow.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
+import { PostRowsContext } from "../context/post-rows-context.ts";
 
 export default function useMovePostRow(
   postRow: PostRow,
@@ -21,9 +21,8 @@ export default function useMovePostRow(
   const autoScrollPostRowRateSecondsForSinglePostCard = useContext(
     AppConfigStateContext
   ).autoScrollPostRowRateSecondsForSinglePostCard;
-  const postCardWidthPercentage = useAppSelector(
-    (state) => state.postRows.postCardWidthPercentage
-  );
+  const postCardWidthPercentage =
+    useContext(PostRowsContext).postCardWidthPercentage;
   const autoScrollPostRowDirectionOption = useContext(
     AppConfigStateContext
   ).autoScrollPostRowDirectionOption;
