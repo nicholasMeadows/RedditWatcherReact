@@ -130,9 +130,12 @@ function createAttachments(post: T3): Array<Attachment> {
       let attachment: Attachment | undefined;
 
       const attachmentResolutions = new Array<AttachmentResolution>();
-      const previewImages = post.preview.images;
-      if (previewImages !== undefined && previewImages.length > 0) {
-        const previewImage = previewImages[0];
+      if (
+        post.preview !== undefined &&
+        post.preview.images !== undefined &&
+        post.preview.images.length > 0
+      ) {
+        const previewImage = post.preview.images[0];
         const mappedResolutions: Array<AttachmentResolution> =
           previewImage.resolutions.map((resolution) => {
             return {

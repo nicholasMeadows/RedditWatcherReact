@@ -13,6 +13,6 @@ export interface T3 {
   permalink: string;
   media_metadata: { [key: string]: MediaMetadata } | undefined;
   crosspost_parent_list: Array<T3> | undefined;
-  preview: Preview;
+  preview: Preview | undefined;
   thumbnail: string;
 }
