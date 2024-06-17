@@ -1,8 +1,14 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import {
+  FC,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import SideBar from "../components/SideBar.tsx";
 import PostRow from "../components/PostRow.tsx";
 import "../theme/post-row-page.scss";
-import useRedditService from "../hook/use-reddit-service.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
 import {
   PostRowsContext,
@@ -10,9 +16,10 @@ import {
 } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import { SideBarDispatchContext } from "../context/side-bar-context.ts";
+import useRedditService from "../hook/use-reddit-service.ts";
 import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
 
-const PostRowPage: React.FC = () => {
+const PostRowPage: FC = () => {
   const sideBarDispatch = useContext(SideBarDispatchContext);
   const postRowsState = useContext(PostRowsContext);
   const postRowsDispatch = useContext(PostRowsDispatchContext);
@@ -42,7 +49,7 @@ const PostRowPage: React.FC = () => {
       const key = keyboardEvent.key;
       if (key == " " && !redditSearchBarFocused.current) {
         postRowsDispatch({
-          type: PostRowsActionType.TOGGLE_CLICKED_ON_PLAY_PAUSE_BUTTON,
+          type: PostRowsActionType.TOGGLE_PLAY_PAUSE_BUTTON,
         });
       }
     };
@@ -51,33 +58,39 @@ const PostRowPage: React.FC = () => {
     return () => {
       postRowPage.removeEventListener("keyup", documentKeyUpEvent);
     };
-  }, []);
+  }, [postRowsDispatch]);
 
   const { getPostRow } = useRedditService();
-  const getPostRowIntervalRef = useRef<NodeJS.Timeout>();
-  const clearGetPostRowInterval = useCallback(() => {
-    if (getPostRowIntervalRef.current !== undefined) {
-      clearInterval(getPostRowIntervalRef.current);
-      getPostRowIntervalRef.current = undefined;
+  const isLoopingForPostsRef = useRef(false);
+  const loopForPostRowsAbortControllerRef = useRef(new AbortController());
+  const loopForPostRows = useCallback(async () => {
+    isLoopingForPostsRef.current = true;
+    while (isLoopingForPostsRef.current) {
+      if (loopForPostRowsAbortControllerRef.current.signal.aborted) {
+        break;
+      }
+      await getPostRow();
+      sideBarDispatch({
+        type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
+        payload: 10,
+      });
+      await new Promise<void>((resolve) => setTimeout(() => resolve(), 10000));
     }
-  }, []);
+  }, [getPostRow, sideBarDispatch]);
   useEffect(() => {
     const timeout = setTimeout(() => {
-      clearGetPostRowInterval();
-      getPostRowIntervalRef.current = setInterval(() => {
-        getPostRow();
-        sideBarDispatch({
-          type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
-          payload: 10,
-        });
-      }, 10000);
+      loopForPostRowsAbortControllerRef.current = new AbortController();
+      if (!isLoopingForPostsRef.current) {
+        loopForPostRows();
+      }
     }, 250);
+    const loopForPostRowsAbortController =
+      loopForPostRowsAbortControllerRef.current;
     return () => {
       clearTimeout(timeout);
-      clearGetPostRowInterval();
+      loopForPostRowsAbortController.abort();
     };
-  }, [clearGetPostRowInterval, getPostRow]);
-
+  }, [getPostRow, loopForPostRows]);
   return (
     <div className="post-row-page" ref={postRowPageRef}>
       <div
@@ -96,10 +109,9 @@ const PostRowPage: React.FC = () => {
         ref={postRowsDivRef}
         onScroll={(event) => {
           const target = event.target as HTMLElement;
-          const scrollTop = target.scrollTop;
           postRowsDispatch({
             type: PostRowsActionType.SET_SCROLL_Y,
-            payload: scrollTop,
+            payload: target.scrollTop,
           });
         }}
       >
@@ -120,13 +132,13 @@ const PostRowPage: React.FC = () => {
         className={"play-pause-button-div"}
         onClick={() => {
           postRowsDispatch({
-            type: PostRowsActionType.TOGGLE_CLICKED_ON_PLAY_PAUSE_BUTTON,
+            type: PostRowsActionType.TOGGLE_PLAY_PAUSE_BUTTON,
           });
         }}
       >
         <img
           src={`assets/${
-            postRowsState.getPostRowsPaused ? "pause" : "play"
+            postRowsState.playPauseButtonIsPaused ? "pause" : "play"
           }_black.png`}
           className={"play-pause-button-img"}
         />

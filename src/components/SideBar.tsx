@@ -46,7 +46,7 @@ const SideBar: React.FC<SideBarProps> = ({
       type: SideBarActionType.SUBREDDIT_LISTS_UPDATED,
       payload: redditListsState.subredditLists,
     });
-  }, [redditListsState.subredditLists]);
+  }, [redditListsState.subredditLists, sideBarDispatch]);
 
   const scrollToMostRecentSubredditGotten = useCallback(() => {
     const foundSubredditIndex = sideBarState.subredditsToShow.findIndex(
@@ -123,6 +123,20 @@ const SideBar: React.FC<SideBarProps> = ({
   };
 
   const searchRedditBarContextData = useSearchRedditBar();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (sideBarState.secondsTillGettingNextPosts > 0) {
+        sideBarDispatch({
+          type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
+          payload: sideBarState.secondsTillGettingNextPosts - 1,
+        });
+      }
+    }, 1000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [sideBarDispatch, sideBarState.secondsTillGettingNextPosts]);
 
   return (
     <div className="side-bar">

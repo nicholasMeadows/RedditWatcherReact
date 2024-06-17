@@ -79,23 +79,6 @@ export default class RedditService {
   }
 
   async getPostsForPostRow(
-    getPostsFromSubredditState: GetPostsFromSubredditState,
-    getPostsUpdatedValues: GetPostsUpdatedValues
-  ): Promise<{
-    posts: Array<Post>;
-    fromSubreddits: Array<Subreddit>;
-  }> {
-    const { posts, fromSubreddits } = await this.getPostsFromSubreddit(
-      getPostsFromSubredditState,
-      getPostsUpdatedValues
-    );
-    return {
-      posts: posts,
-      fromSubreddits: fromSubreddits,
-    };
-  }
-
-  private async getPostsFromSubreddit(
     getPostsFromSubredditsState: GetPostsFromSubredditState,
     getPostsUpdatedValues: GetPostsUpdatedValues
   ): Promise<{

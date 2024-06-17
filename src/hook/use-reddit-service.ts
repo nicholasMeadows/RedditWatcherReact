@@ -8,10 +8,8 @@ import {
 } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
 import { Post } from "../model/Post/Post.ts";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
-import { WaitUtil } from "../util/WaitUtil.ts";
 import { AppNotificationsActionType } from "../reducer/app-notifications-reducer.ts";
 import { v4 as uuidV4 } from "uuid";
-import { PostRow } from "../model/PostRow.ts";
 import {
   SubredditQueueDispatchContext,
   SubredditQueueStateContext,
@@ -25,13 +23,14 @@ import { SideBarDispatchContext } from "../context/side-bar-context.ts";
 import { RedditListStateContext } from "../context/reddit-list-context.ts";
 
 export default function useRedditService() {
-  const postRowsRef = useRef<Array<PostRow>>([]);
   const postRows = useContext(PostRowsContext).postRows;
-  const getPostRowsPaused = useContext(PostRowsContext).getPostRowsPaused;
-  const sideBarDispatch = useContext(SideBarDispatchContext);
+  const getPostRowsPaused = useContext(PostRowsContext).playPauseButtonIsPaused;
+  const pauseGetPostsLoop = useContext(PostRowsContext).pauseGetPostsLoop;
+  const pauseGetPostsLoopRef = useRef(pauseGetPostsLoop);
   useEffect(() => {
-    postRowsRef.current = postRows;
-  }, [postRows]);
+    pauseGetPostsLoopRef.current = pauseGetPostsLoop;
+  }, [pauseGetPostsLoop]);
+  const sideBarDispatch = useContext(SideBarDispatchContext);
 
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const subredditQueueDispatch = useContext(SubredditQueueDispatchContext);
@@ -77,11 +76,10 @@ export default function useRedditService() {
     getPostRowsPausedRef.current = getPostRowsPaused;
   }, [getPostRowsPaused]);
 
-  const getPostRow = useCallback(async () => {
-    const redditService = new RedditService(redditCredentials);
-    const getPostsFromSubredditState: GetPostsFromSubredditState = JSON.parse(
+  const createCurrentStateObj = useCallback((): GetPostsFromSubredditState => {
+    return JSON.parse(
       JSON.stringify({
-        postRows: postRowsRef.current,
+        postRows: postRows,
         subredditSortOrderOption: subredditSortOrderOption,
         userFrontPagePostSortOrderOption: userFrontPagePostSortOrderOption,
         contentFiltering: contentFiltering,
@@ -105,41 +103,51 @@ export default function useRedditService() {
         selectedSubredditListSortOption: selectedSubredditListSortOption,
       })
     );
+  }, [
+    concatRedditUrlMaxLength,
+    contentFiltering,
+    postRows,
+    postSortOrder,
+    randomIterationSelectWeightOption,
+    redditApiItemLimit,
+    redditServiceContextState.lastPostRowWasSortOrderNew,
+    redditServiceContextState.masterSubscribedSubredditList,
+    redditServiceContextState.nsfwRedditListIndex,
+    redditServiceContextState.subredditIndex,
+    selectSubredditIterationMethodOption,
+    selectedSubredditListSortOption,
+    sortOrderDirection,
+    subredditLists,
+    subredditQueue,
+    subredditSortOrderOption,
+    topTimeFrame,
+    userFrontPagePostSortOrderOption,
+  ]);
+
+  const getPostRow = useCallback(async () => {
+    const redditService = new RedditService(redditCredentials);
+    const getPostsFromSubredditState: GetPostsFromSubredditState =
+      createCurrentStateObj();
     let postsGotten = new Array<Post>();
     let postsFromSubreddits = new Array<Subreddit>();
     const getPostsUpdatedValues: GetPostsUpdatedValues =
       {} as GetPostsUpdatedValues;
 
     try {
-      if (getPostsFromSubredditState.postRows.length == 0) {
-        while (postsGotten.length == 0) {
-          const { posts, fromSubreddits } =
-            await redditService.getPostsForPostRow(
-              getPostsFromSubredditState,
-              getPostsUpdatedValues
-            );
-          if (postsGotten.length == 0) {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-          }
-          postsGotten = posts;
-          postsFromSubreddits = fromSubreddits;
-        }
-      } else {
-        const { posts, fromSubreddits } =
-          await redditService.getPostsForPostRow(
-            getPostsFromSubredditState,
-            getPostsUpdatedValues
-          );
-        postsGotten = posts;
-        postsFromSubreddits = fromSubreddits;
+      const { posts, fromSubreddits } = await redditService.getPostsForPostRow(
+        getPostsFromSubredditState,
+        getPostsUpdatedValues
+      );
+      postsGotten = posts;
+      postsFromSubreddits = fromSubreddits;
+
+      while (pauseGetPostsLoopRef.current) {
+        await new Promise<void>((res) => setTimeout(() => res(), 100));
       }
 
-      await WaitUtil.WaitUntilGetPostsIsNotPaused(() => {
-        return getPostRowsPausedRef.current;
-      });
-
-      if (postRowsRef.current.length == 10) {
-        getPostsUpdatedValues.postRowRemoveAt = postRowsRef.current.length - 1;
+      if (getPostsFromSubredditState.postRows.length == 10) {
+        getPostsUpdatedValues.postRowRemoveAt =
+          getPostsFromSubredditState.postRows.length - 1;
       }
     } catch (e) {
       appNotificationsDispatch({
@@ -174,29 +182,21 @@ export default function useRedditService() {
     );
   }, [
     appNotificationsDispatch,
-    concatRedditUrlMaxLength,
-    contentFiltering,
-    postSortOrder,
+    createCurrentStateObj,
+    postRowsDispatch,
     postsToShowInRow,
-    randomIterationSelectWeightOption,
-    redditApiItemLimit,
     redditCredentials,
     redditServiceContextState.lastPostRowWasSortOrderNew,
-    redditServiceContextState.masterSubscribedSubredditList,
     redditServiceContextState.nsfwRedditListIndex,
     redditServiceContextState.subredditIndex,
-    selectSubredditIterationMethodOption,
-    selectedSubredditListSortOption,
-    sortOrderDirection,
+    sideBarDispatch,
     subredditLists,
-    subredditQueue,
     subredditQueueDispatch,
-    subredditSortOrderOption,
-    topTimeFrame,
     userFrontPagePostSortOrderOption,
   ]);
 
   return {
     getPostRow: getPostRow,
+    createCurrentStateObj: createCurrentStateObj,
   };
 }

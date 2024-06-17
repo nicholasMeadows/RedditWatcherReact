@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import {
   loadConfig,
   loadSubredditListsFromFile,
@@ -23,11 +23,19 @@ import {
   AppConfigStateContext,
 } from "../context/app-config-context.ts";
 import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
-import { PostRowsContext } from "../context/post-rows-context.ts";
+import {
+  PostRowsContext,
+  PostRowsDispatchContext,
+} from "../context/post-rows-context.ts";
 import { SideBarDispatchContext } from "../context/side-bar-context.ts";
 import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
 import { RedditListDispatchContext } from "../context/reddit-list-context.ts";
 import { RedditListActionType } from "../reducer/reddit-list-reducer.ts";
+import { GetPostsUpdatedValues } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
+import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
+import { SubredditQueueDispatchContext } from "../context/sub-reddit-queue-context.ts";
+import { Post } from "../model/Post/Post.ts";
+import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 
 const AppInitialization: React.FC = () => {
   const redditListDispatch = useContext(RedditListDispatchContext);
@@ -71,7 +79,7 @@ const AppInitialization: React.FC = () => {
       payload: subredditListsLocal,
     });
     setSubredditListsState(subredditListsLocal);
-  }, []);
+  }, [redditListDispatch]);
 
   const redditServiceContextState = useContext(RedditServiceContext);
 
@@ -91,9 +99,79 @@ const AppInitialization: React.FC = () => {
         redditApiItemLimit
       );
     }
-  }, [redditServiceContextState.masterSubscribedSubredditList]);
+  }, [
+    redditApiItemLimit,
+    redditCredentials,
+    redditServiceContextState.masterSubscribedSubredditList,
+  ]);
 
-  const { getPostRow } = useRedditService();
+  const { createCurrentStateObj } = useRedditService();
+  const getFirstPostRowAbortController = useRef<AbortController>(
+    new AbortController()
+  );
+  const appNotificationsDispatch = useContext(AppNotificationsDispatchContext);
+  const subredditQueueDispatch = useContext(SubredditQueueDispatchContext);
+  const postsToShowInRow = useContext(AppConfigStateContext).postsToShowInRow;
+  const postRowsDispatch = useContext(PostRowsDispatchContext);
+  const getFirstPostRow = useCallback(async () => {
+    getFirstPostRowAbortController.current.signal;
+    const redditService = new RedditService(redditCredentials);
+    let currentState = createCurrentStateObj();
+    const updatedStateValues = {} as GetPostsUpdatedValues;
+    let gottenPosts = new Array<Post>();
+    let gottenFromSubreddits = new Array<Subreddit>();
+    do {
+      try {
+        currentState = createCurrentStateObj();
+        const { posts, fromSubreddits } =
+          await redditService.getPostsForPostRow(
+            currentState,
+            updatedStateValues
+          );
+        gottenPosts = posts;
+        gottenFromSubreddits = fromSubreddits;
+      } catch (e) {
+        console.log(`Caught error ${e} while getting first post row.`);
+      }
+      redditService.addPostRow(
+        gottenPosts,
+        gottenFromSubreddits,
+        currentState,
+        updatedStateValues,
+        appNotificationsDispatch
+      );
+      redditService.applyUpdatedStateValues(
+        updatedStateValues,
+        redditServiceContextState.subredditIndex,
+        redditServiceContextState.nsfwRedditListIndex,
+        redditServiceContextState.lastPostRowWasSortOrderNew,
+        subredditQueueDispatch,
+        currentState.userFrontPagePostSortOrderOption,
+        postsToShowInRow,
+        postRowsDispatch,
+        sideBarDispatch,
+        currentState.subredditLists
+      );
+      if (gottenPosts.length === 0) {
+        console.log(
+          "Got 0 posts while trying to get first post row. Pausing for 1 second then trying again."
+        );
+        await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
+      }
+    } while (gottenPosts.length === 0);
+  }, [
+    appNotificationsDispatch,
+    createCurrentStateObj,
+    postRowsDispatch,
+    postsToShowInRow,
+    redditCredentials,
+    redditServiceContextState.lastPostRowWasSortOrderNew,
+    redditServiceContextState.nsfwRedditListIndex,
+    redditServiceContextState.subredditIndex,
+    sideBarDispatch,
+    subredditQueueDispatch,
+  ]);
+
   const authReddit = useCallback(
     async (appConfig: AppConfig) => {
       const redditCredentials = appConfig.redditCredentials;
@@ -162,7 +240,9 @@ const AppInitialization: React.FC = () => {
         setText("Loading Subscribed Subreddits...");
         await loadSubscribedSubreddits();
         setText("Getting Posts...");
-        getPostRow();
+        getFirstPostRowAbortController.current.abort();
+        getFirstPostRowAbortController.current = new AbortController();
+        getFirstPostRow();
         sideBarDispatch({
           type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
           payload: 10,
@@ -172,13 +252,14 @@ const AppInitialization: React.FC = () => {
       }
     },
     [
-      getPostRow,
+      getFirstPostRow,
       loadSubscribedSubreddits,
       navigate,
       postRowsState.postRows.length,
       redditClientContextData.redditAuthenticationStatus,
       redditServiceContextState.masterSubscribedSubredditList,
       setRedditClientContextData,
+      sideBarDispatch,
     ]
   );
 

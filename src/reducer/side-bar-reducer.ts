@@ -25,7 +25,6 @@ export type SideBarState = {
   openSidebarButtonTopPercent: number;
   mouseOverSubredditList: boolean;
   secondsTillGettingNextPosts: number;
-  decreaseSecondsTillNextPostsSecondsInterval: NodeJS.Timeout;
 };
 type SideBarUpdateFieldsObj = {
   subredditsToShowInSideBar: Array<Subreddit>;

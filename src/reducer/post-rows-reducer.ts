@@ -1,30 +1,25 @@
 import { Post } from "../model/Post/Post.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
-import {
-  MAX_POSTS_PER_ROW,
-  POST_ROW_ROUTE,
-} from "../RedditWatcherConstants.ts";
+import { MAX_POSTS_PER_ROW } from "../RedditWatcherConstants.ts";
 import { PostRow } from "../model/PostRow.ts";
 import { v4 as uuidV4 } from "uuid";
 
 export type PostRowsState = {
-  getPostRowsPaused: boolean;
   currentPath: string;
   scrollY: number;
-  clickedOnPlayPauseButton: boolean;
+  playPauseButtonIsPaused: boolean;
   postRows: Array<PostRow>;
   postRowsHasAtLeast1PostRow: boolean;
   postCardWidthPercentage: number;
   postRowContentWidthPx: number;
+  pauseGetPostsLoop: boolean;
 };
 
 export enum PostRowsActionType {
   SET_CURRENT_LOCATION = "SET_CURRENT_LOCATION",
-  SET_SCROLL_Y = "SET_SCROLL_Y",
-  TOGGLE_CLICKED_ON_PLAY_PAUSE_BUTTON = "TOGGLE_CLICKED_ON_PLAY_PAUSE_BUTTON",
+  TOGGLE_PLAY_PAUSE_BUTTON = "TOGGLE_PLAY_PAUSE_BUTTON",
   MOUSE_LEAVE_POST_ROW = "MOUSE_LEAVE_POST_ROW",
   CREATE_POST_ROW_AND_INSERT_AT_BEGINNING = "CREATE_POST_ROW_AND_INSERT_AT_BEGINNING",
-  CHECK_GET_POST_ROW_PAUSED_CONDITIONS = "CHECK_GET_POST_ROW_PAUSED_CONDITIONS",
   POST_ROW_REMOVE_AT = "POST_ROW_REMOVE_AT",
   SET_POST_ATTACHMENT_INDEX = "SET_POST_ATTACHMENT_INDEX",
   CLEAR_POST_ROWS = "CLEAR_POST_ROWS",
@@ -33,6 +28,7 @@ export enum PostRowsActionType {
   SET_POST_ROW_CONTENT_WIDTH_PX = "SET_POST_ROW_CONTENT_WIDTH_PX",
   MOUSE_ENTER_POST_ROW = "MOUSE_ENTER_POST_ROW",
   SET_LAST_AUTO_SCROLL_POST_ROW_STATE = "SET_LAST_AUTO_SCROLL_POST_ROW_STATE",
+  SET_SCROLL_Y = "SET_SCROLL_Y",
 }
 
 export type PostRowsStringPayloadAction = {
@@ -44,15 +40,14 @@ export type PostRowsStringPayloadAction = {
 };
 export type PostRowsNumberPayloadAction = {
   type:
-    | PostRowsActionType.SET_SCROLL_Y
     | PostRowsActionType.POST_ROW_REMOVE_AT
-    | PostRowsActionType.SET_POST_ROW_CONTENT_WIDTH_PX;
+    | PostRowsActionType.SET_POST_ROW_CONTENT_WIDTH_PX
+    | PostRowsActionType.SET_SCROLL_Y;
   payload: number;
 };
 export type PostRowsNoPayloadAction = {
   type:
-    | PostRowsActionType.TOGGLE_CLICKED_ON_PLAY_PAUSE_BUTTON
-    | PostRowsActionType.CHECK_GET_POST_ROW_PAUSED_CONDITIONS
+    | PostRowsActionType.TOGGLE_PLAY_PAUSE_BUTTON
     | PostRowsActionType.CLEAR_POST_ROWS;
 };
 
@@ -110,16 +105,12 @@ export default function PostRowsReducer(
   switch (action.type) {
     case PostRowsActionType.SET_CURRENT_LOCATION:
       return setCurrentLocation(state, action);
-    case PostRowsActionType.SET_SCROLL_Y:
-      return setScrollY(state, action);
-    case PostRowsActionType.TOGGLE_CLICKED_ON_PLAY_PAUSE_BUTTON:
-      return toggleClickedOnPlayPauseButton(state);
+    case PostRowsActionType.TOGGLE_PLAY_PAUSE_BUTTON:
+      return togglePlayPauseButton(state);
     case PostRowsActionType.MOUSE_LEAVE_POST_ROW:
       return mouseLeavePostRow(state, action);
     case PostRowsActionType.CREATE_POST_ROW_AND_INSERT_AT_BEGINNING:
       return createPostRowAndInsertAtBeginning(state, action);
-    case PostRowsActionType.CHECK_GET_POST_ROW_PAUSED_CONDITIONS:
-      return checkGetPostRowPausedConditions(state);
     case PostRowsActionType.POST_ROW_REMOVE_AT:
       return postRowRemoveAt(state, action);
     case PostRowsActionType.SET_POST_ATTACHMENT_INDEX:
@@ -136,6 +127,8 @@ export default function PostRowsReducer(
       return mouseEnterPostRow(state, action);
     case PostRowsActionType.SET_LAST_AUTO_SCROLL_POST_ROW_STATE:
       return setLastAutoScrollPostRowState(state, action);
+    case PostRowsActionType.SET_SCROLL_Y:
+      return setScrollY(state, action);
     default:
       return state;
   }
@@ -146,27 +139,18 @@ const setCurrentLocation = (
 ): PostRowsState => {
   return {
     ...state,
-    getPostRowsPaused: checkGetPostRowPausedConditions(state).getPostRowsPaused,
     currentPath: action.payload,
   };
 };
-const setScrollY = (
-  state: PostRowsState,
-  action: PostRowsNumberPayloadAction
-): PostRowsState => {
+const togglePlayPauseButton = (state: PostRowsState): PostRowsState => {
   return {
     ...state,
-    getPostRowsPaused: checkGetPostRowPausedConditions(state).getPostRowsPaused,
-    scrollY: action.payload,
-  };
-};
-const toggleClickedOnPlayPauseButton = (
-  state: PostRowsState
-): PostRowsState => {
-  return {
-    ...state,
-    getPostRowsPaused: checkGetPostRowPausedConditions(state).getPostRowsPaused,
-    clickedOnPlayPauseButton: !state.clickedOnPlayPauseButton,
+    playPauseButtonIsPaused: !state.playPauseButtonIsPaused,
+    pauseGetPostsLoop: shouldPause(
+      state.postRows,
+      state.scrollY,
+      !state.playPauseButtonIsPaused
+    ),
   };
 };
 const mouseLeavePostRow = (
@@ -182,8 +166,12 @@ const mouseLeavePostRow = (
   }
   return {
     ...state,
-    getPostRowsPaused: checkGetPostRowPausedConditions(state).getPostRowsPaused,
     postRows: updatedPostRows,
+    pauseGetPostsLoop: shouldPause(
+      updatedPostRows,
+      state.scrollY,
+      state.playPauseButtonIsPaused
+    ),
   };
 };
 const createPostRowAndInsertAtBeginning = (
@@ -208,33 +196,6 @@ const createPostRowAndInsertAtBeginning = (
     ...state,
     postRows: updatedPostRows,
     postRowsHasAtLeast1PostRow: true,
-  };
-};
-const checkGetPostRowPausedConditions = (
-  state: PostRowsState
-): PostRowsState => {
-  if (state.postRows.length == 0) {
-    return {
-      ...state,
-      getPostRowsPaused: false,
-    };
-  }
-  if (state.clickedOnPlayPauseButton) {
-    return {
-      ...state,
-      getPostRowsPaused: true,
-    };
-  }
-
-  const mouseOverPostRow = state.postRows.find(
-    (postRow) => postRow.mouseOverPostRow
-  );
-  return {
-    ...state,
-    getPostRowsPaused:
-      state.scrollY != 0 ||
-      mouseOverPostRow != undefined ||
-      state.currentPath != POST_ROW_ROUTE,
   };
 };
 const postRowRemoveAt = (
@@ -354,7 +315,11 @@ const mouseEnterPostRow = (
   return {
     ...state,
     postRows: updatedPostRow,
-    getPostRowsPaused: checkGetPostRowPausedConditions(state).getPostRowsPaused,
+    pauseGetPostsLoop: shouldPause(
+      updatedPostRow,
+      state.scrollY,
+      state.playPauseButtonIsPaused
+    ),
   };
 };
 const setLastAutoScrollPostRowState = (
@@ -383,6 +348,32 @@ const setLastAutoScrollPostRowState = (
     ...state,
     postRows: updatedPostRow,
   };
+};
+
+const setScrollY = (
+  state: PostRowsState,
+  action: PostRowsNumberPayloadAction
+) => {
+  return {
+    ...state,
+    scrollY: action.payload,
+    pauseGetPostsLoop: shouldPause(
+      state.postRows,
+      action.payload,
+      state.playPauseButtonIsPaused
+    ),
+  };
+};
+
+const shouldPause = (
+  postRows: Array<PostRow>,
+  scrollY: number,
+  playPauseButtonIsPaused: boolean
+) => {
+  const mouseOverPostRow = postRows.find((postRow) => postRow.mouseOverPostRow);
+  return (
+    scrollY !== 0 || playPauseButtonIsPaused || mouseOverPostRow !== undefined
+  );
 };
 const createPostRow = (
   posts: Array<Post>,
