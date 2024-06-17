@@ -83,7 +83,7 @@ const PostRowPage: FC = () => {
       if (!isLoopingForPostsRef.current) {
         loopForPostRows();
       }
-    }, 250);
+    }, 10000);
     const loopForPostRowsAbortController =
       loopForPostRowsAbortControllerRef.current;
     return () => {

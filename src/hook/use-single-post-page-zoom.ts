@@ -82,6 +82,7 @@ export default function useSinglePostPageZoom(
   }, [
     postRowsState.postRows,
     resetImgPositionAndScale,
+    singlePostPageDispatch,
     singlePostPageState.postRowUuid,
     singlePostPageState.postUuid,
   ]);
@@ -121,6 +122,7 @@ export default function useSinglePostPageZoom(
   }, [
     postRowsState.postRows,
     resetImgPositionAndScale,
+    singlePostPageDispatch,
     singlePostPageState.postRowUuid,
     singlePostPageState.postUuid,
   ]);
