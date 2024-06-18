@@ -9,7 +9,6 @@ export type PostRowsState = {
   scrollY: number;
   playPauseButtonIsPaused: boolean;
   postRows: Array<PostRow>;
-  postRowsHasAtLeast1PostRow: boolean;
   postCardWidthPercentage: number;
   postRowContentWidthPx: number;
   pauseGetPostsLoop: boolean;
@@ -195,7 +194,6 @@ const createPostRowAndInsertAtBeginning = (
   return {
     ...state,
     postRows: updatedPostRows,
-    postRowsHasAtLeast1PostRow: true,
   };
 };
 const postRowRemoveAt = (
@@ -243,7 +241,6 @@ const clearPostRows = (state: PostRowsState): PostRowsState => {
   return {
     ...state,
     postRows: [],
-    postRowsHasAtLeast1PostRow: false,
   };
 };
 const addPostsToFrontOfRow = (

@@ -48,7 +48,6 @@ export enum AppConfigActionType {
   SET_CONCAT_REDDIT_URL_MAX_LENGTH = "SET_CONCAT_REDDIT_URL_MAX_LENGTH",
   CLEAR_CONCAT_REDDIT_URL_MAX_LENGTH_VALIDATION_ERROR = "CLEAR_CONCAT_REDDIT_URL_MAX_LENGTH_VALIDATION_ERROR",
   SET_CONTENT_FILTERING = "SET_CONTENT_FILTERING",
-  VALIDATE_REDDIT_API_ITEM_LIMIT = "VALIDATE_REDDIT_API_ITEM_LIMIT",
   SET_REDDIT_API_ITEM_LIMIT = "SET_REDDIT_API_ITEM_LIMIT",
   SET_POSTS_TO_SHOW_IN_ROW = "SET_POSTS_TO_SHOW_IN_ROW",
   CLEAR_POSTS_TO_SHOW_IN_ROW_VALIDATION_ERROR = "CLEAR_POSTS_TO_SHOW_IN_ROW_VALIDATION_ERROR",
@@ -57,6 +56,7 @@ export enum AppConfigActionType {
   TOGGLE_DARK_MODE = "TOGGLE_DARK_MODE",
   RESET_CONFIG_LOADED = "RESET_CONFIG_LOADED",
   SET_APP_CONFIG = "SET_APP_CONFIG",
+  CLEAR_REDDIT_API_ITEM_LIMIT_VALIDATION_ERROR = "CLEAR_REDDIT_API_ITEM_LIMIT_VALIDATION_ERROR",
 }
 
 export type AppConfigActionStringPayload = {
@@ -127,8 +127,7 @@ export type AppConfigActionNumberPayload = {
     | AppConfigActionType.SET_CONCAT_REDDIT_URL_MAX_LENGTH
     | AppConfigActionType.SET_REDDIT_API_ITEM_LIMIT
     | AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW
-    | AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW
-    | AppConfigActionType.VALIDATE_REDDIT_API_ITEM_LIMIT;
+    | AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW;
   payload: number;
 };
 
@@ -139,7 +138,8 @@ export type AppConfigActionNoPayload = {
     | AppConfigActionType.CLEAR_POSTS_TO_SHOW_IN_ROW_VALIDATION_ERROR
     | AppConfigActionType.CLEAR_POST_ROWS_TO_SHOW_IN_VIEW_VALIDATION_ERROR
     | AppConfigActionType.TOGGLE_DARK_MODE
-    | AppConfigActionType.RESET_CONFIG_LOADED;
+    | AppConfigActionType.RESET_CONFIG_LOADED
+    | AppConfigActionType.CLEAR_REDDIT_API_ITEM_LIMIT_VALIDATION_ERROR;
 };
 
 export type AppConfigActionAppConfigPayload = {
@@ -209,8 +209,6 @@ export default function AppConfigReducer(
       return clearConcatRedditUrlMaxLengthValidationError(state);
     case AppConfigActionType.SET_CONTENT_FILTERING:
       return setContentFiltering(state, action);
-    case AppConfigActionType.VALIDATE_REDDIT_API_ITEM_LIMIT:
-      return validateRedditApiItemLimit(state, action);
     case AppConfigActionType.SET_REDDIT_API_ITEM_LIMIT:
       return setRedditApiItemLimit(state, action);
     case AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW:
@@ -227,6 +225,8 @@ export default function AppConfigReducer(
       return resetConfigLoaded(state);
     case AppConfigActionType.SET_APP_CONFIG:
       return setAppConfig(action);
+    case AppConfigActionType.CLEAR_REDDIT_API_ITEM_LIMIT_VALIDATION_ERROR:
+      return clearRedditApiItemLimitValidationError(state);
     default:
       return state;
   }
@@ -488,20 +488,6 @@ const setContentFiltering = (
   saveConfig(state);
   return updatedState;
 };
-const validateRedditApiItemLimit = (
-  state: AppConfigState,
-  action: AppConfigActionNumberPayload
-): AppConfigState => {
-  return {
-    ...state,
-    redditApiItemLimitValidationError: ValidationUtil.validateNumberRequire(
-      "Reddit API Limit",
-      action.payload,
-      MIN_REDDIT_API_ITEM_LIMIT,
-      MAX_REDDIT_API_ITEM_LIMIT
-    ),
-  };
-};
 const setRedditApiItemLimit = (
   state: AppConfigState,
   action: AppConfigActionNumberPayload
@@ -509,18 +495,27 @@ const setRedditApiItemLimit = (
   const redditApiItemLimit = action.payload;
   const validationError = validateRedditApiItemLimitField(redditApiItemLimit);
   const updatedState = { ...state };
-  if (validationError == undefined) {
-    updatedState.redditApiItemLimit = redditApiItemLimit;
-  } else {
+  if (validationError !== undefined) {
+    updatedState.redditApiItemLimitValidationError = validationError;
     if (redditApiItemLimit < MIN_REDDIT_API_ITEM_LIMIT) {
       updatedState.redditApiItemLimit = MIN_REDDIT_API_ITEM_LIMIT;
     } else if (redditApiItemLimit > MAX_REDDIT_API_ITEM_LIMIT) {
       updatedState.redditApiItemLimit = MAX_REDDIT_API_ITEM_LIMIT;
     }
+  } else {
+    updatedState.redditApiItemLimit = redditApiItemLimit;
+    updatedState.redditApiItemLimitValidationError = undefined;
   }
-  updatedState.redditApiItemLimitValidationError = validationError;
+
   saveConfig(updatedState);
   return updatedState;
+};
+
+const clearRedditApiItemLimitValidationError = (state: AppConfigState) => {
+  return {
+    ...state,
+    redditApiItemLimitValidationError: undefined,
+  };
 };
 const setPostsToShowInRow = (
   state: AppConfigState,

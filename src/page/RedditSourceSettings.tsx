@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import PostSortOrderOptionsEnum from "./../model/config/enums/PostSortOrderOptionsEnum.ts";
 import TopTimeFrameOptionsEnum from "./../model/config/enums/TopTimeFrameOptionsEnum.ts";
 import UserFrontPagePostSortOrderOptionsEnum from "./../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
@@ -27,21 +27,13 @@ const RedditSourceSettings: React.FC = () => {
   const userFrontPagePostSortOrderOption = useContext(
     AppConfigStateContext
   ).userFrontPagePostSortOrderOption;
-  const stateRedditApiItemLimit = useContext(
+  const redditApiItemLimit = useContext(
     AppConfigStateContext
   ).redditApiItemLimit;
   const contentFiltering = useContext(AppConfigStateContext).contentFiltering;
-  const [localRedditApiItemLimit, setLocalRedditApiItemLimit] = useState(
-    stateRedditApiItemLimit
-  );
   const redditApiLimitValidationError = useContext(
     AppConfigStateContext
   ).redditApiItemLimitValidationError;
-
-  useEffect(() => {
-    console.log("inside use effect");
-    setLocalRedditApiItemLimit(stateRedditApiItemLimit);
-  }, [stateRedditApiItemLimit]);
 
   return (
     <>
@@ -165,25 +157,22 @@ const RedditSourceSettings: React.FC = () => {
           </select>
         </div>
         <hr />
-        <div className="settings-item">
+        <div className="settings-item  flex-column">
           <label className="select-label">Reddit API Limit</label>
           <input
-            value={localRedditApiItemLimit}
+            value={redditApiItemLimit}
             className="input"
             type="number"
             onChange={(event) => {
               const inputValue = parseInt(event.target.value);
               appConfigDispatch({
-                type: AppConfigActionType.VALIDATE_REDDIT_API_ITEM_LIMIT,
-                payload: inputValue,
-              });
-              setLocalRedditApiItemLimit(inputValue);
-            }}
-            onBlur={(event) => {
-              const inputValue = parseInt(event.target.value);
-              appConfigDispatch({
                 type: AppConfigActionType.SET_REDDIT_API_ITEM_LIMIT,
                 payload: inputValue,
+              });
+            }}
+            onBlur={() => {
+              appConfigDispatch({
+                type: AppConfigActionType.CLEAR_REDDIT_API_ITEM_LIMIT_VALIDATION_ERROR,
               });
             }}
           />

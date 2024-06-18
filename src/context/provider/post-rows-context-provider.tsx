@@ -17,7 +17,6 @@ export const PostRowsContextProvider: FC<Props> = ({ children }) => {
     currentPath: "",
     scrollY: 0,
     playPauseButtonIsPaused: false,
-    postRowsHasAtLeast1PostRow: false,
     postRows: new Array<PostRow>(),
     postCardWidthPercentage: 0,
     postRowContentWidthPx: 0,
