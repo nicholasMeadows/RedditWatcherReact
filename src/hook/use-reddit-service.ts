@@ -1,6 +1,4 @@
 import { useCallback, useContext, useEffect, useRef } from "react";
-import RedditServiceContext from "../context/reddit-service-context.ts";
-import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
 import RedditService from "../service/RedditService.ts";
 import {
   GetPostsFromSubredditState,
@@ -11,16 +9,18 @@ import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import { AppNotificationsActionType } from "../reducer/app-notifications-reducer.ts";
 import { v4 as uuidV4 } from "uuid";
 import {
-  SubredditQueueDispatchContext,
-  SubredditQueueStateContext,
-} from "../context/sub-reddit-queue-context.ts";
-import { AppConfigStateContext } from "../context/app-config-context.ts";
-import {
   PostRowsContext,
   PostRowsDispatchContext,
 } from "../context/post-rows-context.ts";
 import { SideBarDispatchContext } from "../context/side-bar-context.ts";
+import {
+  SubredditQueueDispatchContext,
+  SubredditQueueStateContext,
+} from "../context/sub-reddit-queue-context.ts";
 import { RedditListStateContext } from "../context/reddit-list-context.ts";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
+import RedditServiceContext from "../context/reddit-service-context.ts";
+import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
 
 export default function useRedditService() {
   const postRows = useContext(PostRowsContext).postRows;
@@ -72,48 +72,63 @@ export default function useRedditService() {
   const postsToShowInRow = useContext(AppConfigStateContext).postsToShowInRow;
 
   const getPostRowsPausedRef = useRef<boolean>(false);
+  const redditCredentialsRef = useRef(redditCredentials);
+  const postRowsRef = useRef(postRows);
+  const subredditSortOrderOptionRef = useRef(subredditSortOrderOption);
+  const userFrontPagePostSortOrderOptionRef = useRef(
+    userFrontPagePostSortOrderOption
+  );
+  const contentFilteringRef = useRef(contentFiltering);
+  const subredditQueueRef = useRef(subredditQueue);
+  const concatRedditUrlMaxLengthRef = useRef(concatRedditUrlMaxLength);
+  const postSortOrderRef = useRef(postSortOrder);
+  const topTimeFrameRef = useRef(topTimeFrame);
+  const redditApiItemLimitRef = useRef(redditApiItemLimit);
+  const selectSubredditIterationMethodOptionRef = useRef(
+    selectSubredditIterationMethodOption
+  );
+  const sortOrderDirectionRef = useRef(sortOrderDirection);
+  const subredditListsRef = useRef(subredditLists);
+  const randomIterationSelectWeightOptionRef = useRef(
+    randomIterationSelectWeightOption
+  );
+  const selectedSubredditListSortOptionRef = useRef(
+    selectedSubredditListSortOption
+  );
+  const postsToShowInRowRef = useRef(postsToShowInRow);
+
   useEffect(() => {
     getPostRowsPausedRef.current = getPostRowsPaused;
-  }, [getPostRowsPaused]);
-
-  const createCurrentStateObj = useCallback((): GetPostsFromSubredditState => {
-    return JSON.parse(
-      JSON.stringify({
-        postRows: postRows,
-        subredditSortOrderOption: subredditSortOrderOption,
-        userFrontPagePostSortOrderOption: userFrontPagePostSortOrderOption,
-        contentFiltering: contentFiltering,
-        subredditQueue: subredditQueue,
-        concatRedditUrlMaxLength: concatRedditUrlMaxLength,
-        postSortOrder: postSortOrder,
-        topTimeFrame: topTimeFrame,
-        redditApiItemLimit: redditApiItemLimit,
-        selectSubredditIterationMethodOption:
-          selectSubredditIterationMethodOption,
-        sortOrderDirection: sortOrderDirection,
-        nsfwSubredditIndex:
-          redditServiceContextState.nsfwRedditListIndex.current,
-        masterSubredditList:
-          redditServiceContextState.masterSubscribedSubredditList.current,
-        subredditIndex: redditServiceContextState.subredditIndex.current,
-        subredditLists: subredditLists,
-        lastPostRowWasSortOrderNew:
-          redditServiceContextState.lastPostRowWasSortOrderNew.current,
-        randomIterationSelectWeightOption: randomIterationSelectWeightOption,
-        selectedSubredditListSortOption: selectedSubredditListSortOption,
-      })
-    );
+    redditCredentialsRef.current = redditCredentials;
+    postRowsRef.current = postRows;
+    subredditSortOrderOptionRef.current = subredditSortOrderOption;
+    userFrontPagePostSortOrderOptionRef.current =
+      userFrontPagePostSortOrderOption;
+    contentFilteringRef.current = contentFiltering;
+    subredditQueueRef.current = subredditQueue;
+    concatRedditUrlMaxLengthRef.current = concatRedditUrlMaxLength;
+    postSortOrderRef.current = postSortOrder;
+    topTimeFrameRef.current = topTimeFrame;
+    redditApiItemLimitRef.current = redditApiItemLimit;
+    selectSubredditIterationMethodOptionRef.current =
+      selectSubredditIterationMethodOption;
+    sortOrderDirectionRef.current = sortOrderDirection;
+    subredditListsRef.current = subredditLists;
+    randomIterationSelectWeightOptionRef.current =
+      randomIterationSelectWeightOption;
+    selectedSubredditListSortOptionRef.current =
+      selectedSubredditListSortOption;
+    postsToShowInRowRef.current = postsToShowInRow;
   }, [
     concatRedditUrlMaxLength,
     contentFiltering,
+    getPostRowsPaused,
     postRows,
     postSortOrder,
+    postsToShowInRow,
     randomIterationSelectWeightOption,
     redditApiItemLimit,
-    redditServiceContextState.lastPostRowWasSortOrderNew,
-    redditServiceContextState.masterSubscribedSubredditList,
-    redditServiceContextState.nsfwRedditListIndex,
-    redditServiceContextState.subredditIndex,
+    redditCredentials,
     selectSubredditIterationMethodOption,
     selectedSubredditListSortOption,
     sortOrderDirection,
@@ -124,76 +139,130 @@ export default function useRedditService() {
     userFrontPagePostSortOrderOption,
   ]);
 
-  const getPostRow = useCallback(async () => {
-    const redditService = new RedditService(redditCredentials);
-    const getPostsFromSubredditState: GetPostsFromSubredditState =
-      createCurrentStateObj();
-    let postsGotten = new Array<Post>();
-    let postsFromSubreddits = new Array<Subreddit>();
-    const getPostsUpdatedValues: GetPostsUpdatedValues =
-      {} as GetPostsUpdatedValues;
-
-    try {
-      const { posts, fromSubreddits } = await redditService.getPostsForPostRow(
-        getPostsFromSubredditState,
-        getPostsUpdatedValues
-      );
-      postsGotten = posts;
-      postsFromSubreddits = fromSubreddits;
-
-      while (pauseGetPostsLoopRef.current) {
-        await new Promise<void>((res) => setTimeout(() => res(), 100));
-      }
-
-      if (getPostsFromSubredditState.postRows.length == 10) {
-        getPostsUpdatedValues.postRowRemoveAt =
-          getPostsFromSubredditState.postRows.length - 1;
-      }
-    } catch (e) {
-      appNotificationsDispatch({
-        type: AppNotificationsActionType.SUBMIT_APP_NOTIFICATION,
-        payload: {
-          notificationUuid: uuidV4(),
-          message: `Got exception while trying to get post. ${
-            (e as DOMException).message
-          }`,
-        },
-      });
-      console.log("Caught exception while getPosts ", e);
-    }
-    redditService.addPostRow(
-      postsGotten,
-      postsFromSubreddits,
-      getPostsFromSubredditState,
-      getPostsUpdatedValues,
-      appNotificationsDispatch
-    );
-    redditService.applyUpdatedStateValues(
-      getPostsUpdatedValues,
-      redditServiceContextState.subredditIndex,
-      redditServiceContextState.nsfwRedditListIndex,
-      redditServiceContextState.lastPostRowWasSortOrderNew,
-      subredditQueueDispatch,
-      userFrontPagePostSortOrderOption,
-      postsToShowInRow,
-      postRowsDispatch,
-      sideBarDispatch,
-      subredditLists
+  const createCurrentStateObj = useCallback((): GetPostsFromSubredditState => {
+    return JSON.parse(
+      JSON.stringify({
+        postRows: postRowsRef.current,
+        subredditSortOrderOption: subredditSortOrderOptionRef.current,
+        userFrontPagePostSortOrderOption:
+          userFrontPagePostSortOrderOptionRef.current,
+        contentFiltering: contentFilteringRef.current,
+        subredditQueue: subredditQueueRef.current,
+        concatRedditUrlMaxLength: concatRedditUrlMaxLengthRef.current,
+        postSortOrder: postSortOrderRef.current,
+        topTimeFrame: topTimeFrameRef.current,
+        redditApiItemLimit: redditApiItemLimitRef.current,
+        selectSubredditIterationMethodOption:
+          selectSubredditIterationMethodOptionRef.current,
+        sortOrderDirection: sortOrderDirectionRef.current,
+        nsfwSubredditIndex:
+          redditServiceContextState.nsfwRedditListIndex.current,
+        masterSubredditList:
+          redditServiceContextState.masterSubscribedSubredditList.current,
+        subredditIndex: redditServiceContextState.subredditIndex.current,
+        subredditLists: subredditListsRef.current,
+        lastPostRowWasSortOrderNew:
+          redditServiceContextState.lastPostRowWasSortOrderNew.current,
+        randomIterationSelectWeightOption:
+          randomIterationSelectWeightOptionRef.current,
+        selectedSubredditListSortOption:
+          selectedSubredditListSortOptionRef.current,
+      })
     );
   }, [
-    appNotificationsDispatch,
-    createCurrentStateObj,
-    postRowsDispatch,
-    postsToShowInRow,
-    redditCredentials,
     redditServiceContextState.lastPostRowWasSortOrderNew,
+    redditServiceContextState.masterSubscribedSubredditList,
     redditServiceContextState.nsfwRedditListIndex,
     redditServiceContextState.subredditIndex,
-    sideBarDispatch,
-    subredditLists,
-    subredditQueueDispatch,
-    userFrontPagePostSortOrderOption,
   ]);
+
+  const getPostRow = useCallback(
+    async (abortController: AbortController) => {
+      const redditService = new RedditService(redditCredentialsRef.current);
+      const getPostsFromSubredditState: GetPostsFromSubredditState =
+        createCurrentStateObj();
+      if (abortController.signal.aborted) return;
+      let postsGotten = new Array<Post>();
+      let postsFromSubreddits = new Array<Subreddit>();
+      const getPostsUpdatedValues: GetPostsUpdatedValues =
+        {} as GetPostsUpdatedValues;
+
+      try {
+        const { posts, fromSubreddits } =
+          await redditService.getPostsForPostRow(
+            getPostsFromSubredditState,
+            getPostsUpdatedValues
+          );
+        if (abortController.signal.aborted) return;
+        postsGotten = posts;
+        postsFromSubreddits = fromSubreddits;
+
+        if (posts.length == 0) {
+          let msg = `Got 0 posts. Trying again in a little bit.`;
+          if (fromSubreddits.length == 1) {
+            msg = `Got 0 posts from ${fromSubreddits[0].displayNamePrefixed}. Trying again in a little bit.`;
+          }
+          appNotificationsDispatch({
+            type: AppNotificationsActionType.SUBMIT_APP_NOTIFICATION,
+            payload: {
+              notificationUuid: uuidV4(),
+              message: msg,
+            },
+          });
+          return;
+        }
+        while (pauseGetPostsLoopRef.current) {
+          await new Promise<void>((res) => setTimeout(() => res(), 100));
+        }
+        if (abortController.signal.aborted) return;
+        if (getPostsFromSubredditState.postRows.length == 10) {
+          getPostsUpdatedValues.postRowRemoveAt =
+            getPostsFromSubredditState.postRows.length - 1;
+        }
+      } catch (e) {
+        appNotificationsDispatch({
+          type: AppNotificationsActionType.SUBMIT_APP_NOTIFICATION,
+          payload: {
+            notificationUuid: uuidV4(),
+            message: `Got exception while trying to get post. ${
+              (e as DOMException).message
+            }`,
+          },
+        });
+        console.log("Caught exception while getPosts ", e);
+      }
+      if (abortController.signal.aborted) return;
+      redditService.addPostRow(
+        postsGotten,
+        postsFromSubreddits,
+        getPostsFromSubredditState,
+        getPostsUpdatedValues,
+        appNotificationsDispatch
+      );
+      redditService.applyUpdatedStateValues(
+        getPostsUpdatedValues,
+        redditServiceContextState.subredditIndex,
+        redditServiceContextState.nsfwRedditListIndex,
+        redditServiceContextState.lastPostRowWasSortOrderNew,
+        subredditQueueDispatch,
+        userFrontPagePostSortOrderOptionRef.current,
+        postsToShowInRowRef.current,
+        postRowsDispatch,
+        sideBarDispatch,
+        subredditListsRef.current
+      );
+    },
+    [
+      appNotificationsDispatch,
+      createCurrentStateObj,
+      postRowsDispatch,
+      redditServiceContextState.lastPostRowWasSortOrderNew,
+      redditServiceContextState.nsfwRedditListIndex,
+      redditServiceContextState.subredditIndex,
+      sideBarDispatch,
+      subredditQueueDispatch,
+    ]
+  );
 
   return {
     getPostRow: getPostRow,

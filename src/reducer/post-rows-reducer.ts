@@ -12,12 +12,12 @@ export type PostRowsState = {
   postCardWidthPercentage: number;
   postRowContentWidthPx: number;
   pauseGetPostsLoop: boolean;
+  mouseOverAPostRow: boolean;
 };
 
 export enum PostRowsActionType {
   SET_CURRENT_LOCATION = "SET_CURRENT_LOCATION",
   TOGGLE_PLAY_PAUSE_BUTTON = "TOGGLE_PLAY_PAUSE_BUTTON",
-  MOUSE_LEAVE_POST_ROW = "MOUSE_LEAVE_POST_ROW",
   CREATE_POST_ROW_AND_INSERT_AT_BEGINNING = "CREATE_POST_ROW_AND_INSERT_AT_BEGINNING",
   POST_ROW_REMOVE_AT = "POST_ROW_REMOVE_AT",
   SET_POST_ATTACHMENT_INDEX = "SET_POST_ATTACHMENT_INDEX",
@@ -25,16 +25,13 @@ export enum PostRowsActionType {
   ADD_POSTS_TO_FRONT_OF_ROW = "ADD_POSTS_TO_FRONT_OF_ROW",
   SET_POST_CARD_WIDTH_PERCENTAGE = "SET_POST_CARD_WIDTH_PERCENTAGE",
   SET_POST_ROW_CONTENT_WIDTH_PX = "SET_POST_ROW_CONTENT_WIDTH_PX",
-  MOUSE_ENTER_POST_ROW = "MOUSE_ENTER_POST_ROW",
   SET_LAST_AUTO_SCROLL_POST_ROW_STATE = "SET_LAST_AUTO_SCROLL_POST_ROW_STATE",
   SET_SCROLL_Y = "SET_SCROLL_Y",
+  SET_MOUSE_OVER_A_POST_ROW = "SET_MOUSE_OVER_A_POST_ROW",
 }
 
 export type PostRowsStringPayloadAction = {
-  type:
-    | PostRowsActionType.SET_CURRENT_LOCATION
-    | PostRowsActionType.MOUSE_LEAVE_POST_ROW
-    | PostRowsActionType.MOUSE_ENTER_POST_ROW;
+  type: PostRowsActionType.SET_CURRENT_LOCATION;
   payload: string;
 };
 export type PostRowsNumberPayloadAction = {
@@ -43,6 +40,10 @@ export type PostRowsNumberPayloadAction = {
     | PostRowsActionType.SET_POST_ROW_CONTENT_WIDTH_PX
     | PostRowsActionType.SET_SCROLL_Y;
   payload: number;
+};
+export type PostRowsBooleanPayloadAction = {
+  type: PostRowsActionType.SET_MOUSE_OVER_A_POST_ROW;
+  payload: boolean;
 };
 export type PostRowsNoPayloadAction = {
   type:
@@ -100,14 +101,13 @@ export default function PostRowsReducer(
     | AddPostsToFrontOfRowAction
     | SetPostCardWidthPercentageAction
     | SetLastAutoScrollPostRowStateAction
+    | PostRowsBooleanPayloadAction
 ) {
   switch (action.type) {
     case PostRowsActionType.SET_CURRENT_LOCATION:
       return setCurrentLocation(state, action);
     case PostRowsActionType.TOGGLE_PLAY_PAUSE_BUTTON:
       return togglePlayPauseButton(state);
-    case PostRowsActionType.MOUSE_LEAVE_POST_ROW:
-      return mouseLeavePostRow(state, action);
     case PostRowsActionType.CREATE_POST_ROW_AND_INSERT_AT_BEGINNING:
       return createPostRowAndInsertAtBeginning(state, action);
     case PostRowsActionType.POST_ROW_REMOVE_AT:
@@ -122,12 +122,12 @@ export default function PostRowsReducer(
       return setPostCardWidthPercentage(state, action);
     case PostRowsActionType.SET_POST_ROW_CONTENT_WIDTH_PX:
       return setPostRowContentWidthPx(state, action);
-    case PostRowsActionType.MOUSE_ENTER_POST_ROW:
-      return mouseEnterPostRow(state, action);
     case PostRowsActionType.SET_LAST_AUTO_SCROLL_POST_ROW_STATE:
       return setLastAutoScrollPostRowState(state, action);
     case PostRowsActionType.SET_SCROLL_Y:
       return setScrollY(state, action);
+    case PostRowsActionType.SET_MOUSE_OVER_A_POST_ROW:
+      return setMouseOverAPostRow(state, action);
     default:
       return state;
   }
@@ -141,38 +141,7 @@ const setCurrentLocation = (
     currentPath: action.payload,
   };
 };
-const togglePlayPauseButton = (state: PostRowsState): PostRowsState => {
-  return {
-    ...state,
-    playPauseButtonIsPaused: !state.playPauseButtonIsPaused,
-    pauseGetPostsLoop: shouldPause(
-      state.postRows,
-      state.scrollY,
-      !state.playPauseButtonIsPaused
-    ),
-  };
-};
-const mouseLeavePostRow = (
-  state: PostRowsState,
-  action: PostRowsStringPayloadAction
-): PostRowsState => {
-  const updatedPostRows = [...state.postRows];
-  const postRow = updatedPostRows.find(
-    (postRow) => postRow.postRowUuid == action.payload
-  );
-  if (postRow != undefined) {
-    postRow.mouseOverPostRow = false;
-  }
-  return {
-    ...state,
-    postRows: updatedPostRows,
-    pauseGetPostsLoop: shouldPause(
-      updatedPostRows,
-      state.scrollY,
-      state.playPauseButtonIsPaused
-    ),
-  };
-};
+
 const createPostRowAndInsertAtBeginning = (
   state: PostRowsState,
   action: {
@@ -296,29 +265,6 @@ const setPostRowContentWidthPx = (
     postRowContentWidthPx: action.payload,
   };
 };
-const mouseEnterPostRow = (
-  state: PostRowsState,
-  action: PostRowsStringPayloadAction
-): PostRowsState => {
-  const postRowUuid = action.payload;
-  const updatedPostRow = [...state.postRows];
-  const postRow = updatedPostRow.find(
-    (postRow) => postRow.postRowUuid == postRowUuid
-  );
-  if (postRow == undefined) {
-    return state;
-  }
-  postRow.mouseOverPostRow = true;
-  return {
-    ...state,
-    postRows: updatedPostRow,
-    pauseGetPostsLoop: shouldPause(
-      updatedPostRow,
-      state.scrollY,
-      state.playPauseButtonIsPaused
-    ),
-  };
-};
 const setLastAutoScrollPostRowState = (
   state: PostRowsState,
   action: {
@@ -355,22 +301,43 @@ const setScrollY = (
     ...state,
     scrollY: action.payload,
     pauseGetPostsLoop: shouldPause(
-      state.postRows,
       action.payload,
-      state.playPauseButtonIsPaused
+      state.playPauseButtonIsPaused,
+      state.mouseOverAPostRow
     ),
   };
 };
-
+const togglePlayPauseButton = (state: PostRowsState): PostRowsState => {
+  return {
+    ...state,
+    playPauseButtonIsPaused: !state.playPauseButtonIsPaused,
+    pauseGetPostsLoop: shouldPause(
+      state.scrollY,
+      !state.playPauseButtonIsPaused,
+      state.mouseOverAPostRow
+    ),
+  };
+};
+const setMouseOverAPostRow = (
+  state: PostRowsState,
+  action: PostRowsBooleanPayloadAction
+): PostRowsState => {
+  return {
+    ...state,
+    mouseOverAPostRow: action.payload,
+    pauseGetPostsLoop: shouldPause(
+      state.scrollY,
+      state.playPauseButtonIsPaused,
+      action.payload
+    ),
+  };
+};
 const shouldPause = (
-  postRows: Array<PostRow>,
   scrollY: number,
-  playPauseButtonIsPaused: boolean
+  playPauseButtonIsPaused: boolean,
+  mouseOverAPostRow: boolean
 ) => {
-  const mouseOverPostRow = postRows.find((postRow) => postRow.mouseOverPostRow);
-  return (
-    scrollY !== 0 || playPauseButtonIsPaused || mouseOverPostRow !== undefined
-  );
+  return scrollY !== 0 || playPauseButtonIsPaused || mouseOverAPostRow;
 };
 const createPostRow = (
   posts: Array<Post>,
@@ -383,7 +350,6 @@ const createPostRow = (
     posts: posts,
     postRowContentWidthAtCreation: postRowContentWidth,
     userFrontPagePostSortOrderOptionAtRowCreation: userFrontPageSortOption,
-    mouseOverPostRow: false,
     lastAutoScrollPostRowState: undefined,
   };
 };

@@ -58,14 +58,14 @@ const PostRow: FC<Props> = memo(({ postRow }) => {
         ref={postRowContentDivRef}
         onMouseEnter={() => {
           postRowsDispatch({
-            type: PostRowsActionType.MOUSE_ENTER_POST_ROW,
-            payload: postRow.postRowUuid,
+            type: PostRowsActionType.SET_MOUSE_OVER_A_POST_ROW,
+            payload: true,
           });
         }}
         onMouseLeave={() => {
           postRowsDispatch({
-            type: PostRowsActionType.MOUSE_LEAVE_POST_ROW,
-            payload: postRow.postRowUuid,
+            type: PostRowsActionType.SET_MOUSE_OVER_A_POST_ROW,
+            payload: false,
           });
         }}
       >
@@ -76,7 +76,6 @@ const PostRow: FC<Props> = memo(({ postRow }) => {
               post: post,
               userFrontPagePostSortOrderOptionAtRowCreation:
                 postRow.userFrontPagePostSortOrderOptionAtRowCreation,
-              mouseOverPostRow: postRow.mouseOverPostRow,
             }}
             key={post.postUuid}
           >

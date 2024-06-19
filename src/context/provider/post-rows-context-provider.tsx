@@ -21,6 +21,7 @@ export const PostRowsContextProvider: FC<Props> = ({ children }) => {
     postCardWidthPercentage: 0,
     postRowContentWidthPx: 0,
     pauseGetPostsLoop: false,
+    mouseOverAPostRow: false,
   };
   const [postRowsState, dispatch] = useReducer(PostRowsReducer, initialState);
   return (

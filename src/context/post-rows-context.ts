@@ -2,6 +2,7 @@ import { createContext, Dispatch } from "react";
 import {
   AddPostsToFrontOfRowAction,
   CreatePostRowAndInsertAtBeginningAction,
+  PostRowsBooleanPayloadAction,
   PostRowsNoPayloadAction,
   PostRowsNumberPayloadAction,
   PostRowsState,
@@ -14,6 +15,7 @@ import {
 export type PostRowsDispatch = Dispatch<
   | PostRowsStringPayloadAction
   | PostRowsNumberPayloadAction
+  | PostRowsBooleanPayloadAction
   | PostRowsNoPayloadAction
   | CreatePostRowAndInsertAtBeginningAction
   | SetPostAttachmentIndexAction

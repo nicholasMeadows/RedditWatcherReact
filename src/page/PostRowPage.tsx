@@ -21,7 +21,8 @@ import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
 
 const PostRowPage: FC = () => {
   const sideBarDispatch = useContext(SideBarDispatchContext);
-  const postRowsState = useContext(PostRowsContext);
+  const postRows = useContext(PostRowsContext).postRows;
+  const pauseGetPostsLoop = useContext(PostRowsContext).pauseGetPostsLoop;
   const postRowsDispatch = useContext(PostRowsDispatchContext);
 
   const postRowsToShowInView = useContext(
@@ -38,7 +39,7 @@ const PostRowPage: FC = () => {
   useEffect(() => {
     const scrollDiv = postRowsDivRef.current as unknown as HTMLDivElement;
     setScrollBarWidth(scrollDiv.offsetWidth - scrollDiv.clientWidth);
-  }, [postRowsDivRef, postRowsState.postRows]);
+  }, [postRowsDivRef, postRows]);
 
   useEffect(() => {
     const postRowPage = postRowPageRef.current;
@@ -61,36 +62,42 @@ const PostRowPage: FC = () => {
   }, [postRowsDispatch]);
 
   const { getPostRow } = useRedditService();
-  const isLoopingForPostsRef = useRef(false);
-  const loopForPostRowsAbortControllerRef = useRef(new AbortController());
-  const loopForPostRows = useCallback(async () => {
-    isLoopingForPostsRef.current = true;
-    while (isLoopingForPostsRef.current) {
-      if (loopForPostRowsAbortControllerRef.current.signal.aborted) {
-        break;
+  const getPostsAbortController = useRef(new AbortController());
+
+  const startLoopingForPosts = useCallback(
+    async (abortController: AbortController) => {
+      while (!abortController.signal.aborted) {
+        await new Promise<void>((resolve) => {
+          if (abortController.signal.aborted) resolve();
+          const timeout = setTimeout(() => resolve(), 10000);
+          abortController.signal.onabort = () => {
+            clearTimeout(timeout);
+            resolve();
+          };
+        });
+        if (abortController.signal.aborted) break;
+        await getPostRow(abortController);
+        sideBarDispatch({
+          type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
+          payload: 10,
+        });
       }
-      await getPostRow();
-      sideBarDispatch({
-        type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
-        payload: 10,
-      });
-      await new Promise<void>((resolve) => setTimeout(() => resolve(), 10000));
-    }
-  }, [getPostRow, sideBarDispatch]);
+    },
+    [getPostRow, sideBarDispatch]
+  );
+
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      loopForPostRowsAbortControllerRef.current = new AbortController();
-      if (!isLoopingForPostsRef.current) {
-        loopForPostRows();
-      }
-    }, 10000);
-    const loopForPostRowsAbortController =
-      loopForPostRowsAbortControllerRef.current;
+    if (!getPostsAbortController.current.signal.aborted) {
+      getPostsAbortController.current.abort();
+    }
+    const abortController = new AbortController();
+    getPostsAbortController.current = abortController;
+    startLoopingForPosts(getPostsAbortController.current);
     return () => {
-      clearTimeout(timeout);
-      loopForPostRowsAbortController.abort();
+      abortController.abort();
     };
-  }, [getPostRow, loopForPostRows]);
+  }, [startLoopingForPosts]);
+
   return (
     <div className="post-row-page" ref={postRowPageRef}>
       <div
@@ -115,7 +122,7 @@ const PostRowPage: FC = () => {
           });
         }}
       >
-        {postRowsState.postRows.map((postRow) => (
+        {postRows.map((postRow) => (
           <div
             key={"post-row-" + postRow.postRowUuid}
             style={{
@@ -137,9 +144,7 @@ const PostRowPage: FC = () => {
         }}
       >
         <img
-          src={`assets/${
-            postRowsState.playPauseButtonIsPaused ? "pause" : "play"
-          }_black.png`}
+          src={`assets/${pauseGetPostsLoop ? "pause" : "play"}_black.png`}
           className={"play-pause-button-img"}
         />
       </div>

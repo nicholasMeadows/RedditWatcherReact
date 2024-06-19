@@ -73,8 +73,8 @@ const PostCard: FC = memo(() => {
         });
         navigate(`${SINGPLE_POST_ROUTE}`);
         postRowsDispatch({
-          type: PostRowsActionType.MOUSE_LEAVE_POST_ROW,
-          payload: postRowUuid,
+          type: PostRowsActionType.SET_MOUSE_OVER_A_POST_ROW,
+          payload: false,
         });
       }}
       onMouseEnter={() => {

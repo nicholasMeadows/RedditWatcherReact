@@ -6,7 +6,6 @@ export interface PostRow {
   posts: Array<Post>;
   postRowContentWidthAtCreation: number;
   userFrontPagePostSortOrderOptionAtRowCreation: UserFrontPagePostSortOrderOptionsEnum;
-  mouseOverPostRow: boolean;
   lastAutoScrollPostRowState:
     | {
         postsToShow: Array<Post>;
