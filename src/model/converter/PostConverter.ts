@@ -204,6 +204,7 @@ function createAttachments(post: T3): Array<Attachment> {
       //     mediaType: "IFRAME",
       //     url: postUrl,
       //     status: "VALID",
+      //     attachmentResolutions: [],
       //   };
       //   attachments.push(attachment);
       // }
