@@ -186,28 +186,28 @@ function createAttachments(post: T3): Array<Attachment> {
           attachmentResolutions: attachmentResolutions,
         };
         attachments.push(attachment);
+      } else if (domain == DOMAIN_REDGIFS) {
+        console.log("GOT IFRAME!!! redgifs");
+        if (postUrl.startsWith("https://redgifs.com")) {
+          postUrl = postUrl.replace(
+            "https://redgifs.com",
+            "https://www.redgifs.com"
+          );
+        }
+
+        postUrl = postUrl.replace(
+          "https://www.redgifs.com/watch/",
+          "https://redgifs.com/ifr/"
+        );
+
+        attachment = {
+          mediaType: "IFRAME",
+          url: postUrl,
+          status: "VALID",
+          attachmentResolutions: [],
+        };
+        attachments.push(attachment);
       }
-      // else if (domain == DOMAIN_REDGIFS) {
-      //   if (postUrl.startsWith("https://redgifs.com")) {
-      //     postUrl = postUrl.replace(
-      //       "https://redgifs.com",
-      //       "https://www.redgifs.com"
-      //     );
-      //   }
-      //
-      //   postUrl = postUrl.replace(
-      //     "https://www.redgifs.com/watch/",
-      //     "https://redgifs.com/ifr/"
-      //   );
-      //
-      //   attachment = {
-      //     mediaType: "IFRAME",
-      //     url: postUrl,
-      //     status: "VALID",
-      //     attachmentResolutions: [],
-      //   };
-      //   attachments.push(attachment);
-      // }
       return attachments;
     }
   }

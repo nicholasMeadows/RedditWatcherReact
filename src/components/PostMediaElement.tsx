@@ -248,10 +248,19 @@ const PostMediaElement: React.FC<Props> = memo(
           </video>
         )}
         {post.attachments[currentAttachmentIndex].mediaType == "IFRAME" && (
-          <iframe
-            src={post.attachments[currentAttachmentIndex].url}
-            className="post-element-media-element"
-          />
+          <>
+            <div className={"post-element-media-element"}>
+              <iframe
+                src={post.attachments[currentAttachmentIndex].url}
+                frameBorder="0"
+                scrolling="no"
+                width="100%"
+                height="100%"
+                style={{ position: "absolute", top: 0, left: 0 }}
+                allowFullScreen
+              ></iframe>
+            </div>
+          </>
         )}
 
         {post.attachments.length > 1 && (
