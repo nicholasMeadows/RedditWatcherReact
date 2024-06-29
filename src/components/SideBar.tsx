@@ -12,7 +12,10 @@ import SearchRedditBar from "./SearchRedditBar.tsx";
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
-import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import {
+  ContextMenuDispatchContext,
+  ContextMenuStateContext,
+} from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 import {
   SideBarDispatchContext,
@@ -31,6 +34,7 @@ const SideBar: React.FC<SideBarProps> = ({
 }) => {
   const sideBarButtonMoved = useRef(false);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
+  const showContextMenu = useContext(ContextMenuStateContext).showContextMenu;
   const sideBarState = useContext(SideBarStateContext);
   const sideBarDispatch = useContext(SideBarDispatchContext);
   const redditListsState = useContext(RedditListStateContext);
@@ -38,15 +42,23 @@ const SideBar: React.FC<SideBarProps> = ({
 
   const darkMode = useContext(AppConfigStateContext).darkMode;
 
+  const mouseOverSubredditListRef = useRef(false);
+  const showContextMenuRef = useRef(false);
+
   const openSideBarButtonColumnDivRef = useRef(null);
   const openSideBarButtonDivRef = useRef(null);
   const subredditListDivRef = useRef(null);
+
   useEffect(() => {
     sideBarDispatch({
       type: SideBarActionType.SUBREDDIT_LISTS_UPDATED,
       payload: redditListsState.subredditLists,
     });
   }, [redditListsState.subredditLists, sideBarDispatch]);
+
+  useEffect(() => {
+    showContextMenuRef.current = showContextMenu;
+  }, [showContextMenu]);
 
   const scrollToMostRecentSubredditGotten = useCallback(() => {
     const foundSubredditIndex = sideBarState.subredditsToShow.findIndex(
@@ -66,14 +78,11 @@ const SideBar: React.FC<SideBarProps> = ({
   }, [sideBarState.mostRecentSubredditGotten, sideBarState.subredditsToShow]);
 
   useEffect(() => {
-    if (!sideBarState.mouseOverSubredditList) {
+    if (!mouseOverSubredditListRef.current && !showContextMenuRef.current) {
       scrollToMostRecentSubredditGotten();
     }
-  }, [
-    scrollToMostRecentSubredditGotten,
-    sideBarState.mouseOverSubredditList,
-    sideBarState.subredditsToShow,
-  ]);
+  }, [scrollToMostRecentSubredditGotten]);
+
   const mouseDownOnOpenSidebarButton = useRef<boolean>(false);
 
   const handleOpenCloseButtonMouseMove = (event: MouseEvent) => {
@@ -246,18 +255,8 @@ const SideBar: React.FC<SideBarProps> = ({
         <div
           className="subreddit-list"
           ref={subredditListDivRef}
-          onMouseEnter={() =>
-            sideBarDispatch({
-              type: SideBarActionType.SET_MOUSE_OVER_SUBREDDIT_LIST,
-              payload: true,
-            })
-          }
-          onMouseLeave={() =>
-            sideBarDispatch({
-              type: SideBarActionType.SET_MOUSE_OVER_SUBREDDIT_LIST,
-              payload: false,
-            })
-          }
+          onMouseEnter={() => (mouseOverSubredditListRef.current = true)}
+          onMouseLeave={() => (mouseOverSubredditListRef.current = false)}
         >
           {sideBarState.subredditsToShow.map((subreddit) => (
             <p

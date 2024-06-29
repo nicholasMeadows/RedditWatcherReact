@@ -8,7 +8,6 @@ export enum SideBarActionType {
   SET_LIST_TO_FILTER_BY_UUID = "SET_LIST_TO_FILTER_BY_UUID",
   SET_SEARCH_INPUT = "SET_SEARCH_INPUT",
   SUBREDDIT_LISTS_UPDATED = "SUBREDDIT_LISTS_UPDATED",
-  SET_MOUSE_OVER_SUBREDDIT_LIST = "SET_MOUSE_OVER_SUBREDDIT_LIST",
   SET_OPEN_SIDEBAR_BUTTON_TOP_PERCENT = "SET_OPEN_SIDEBAR_BUTTON_TOP_PERCENT",
   SET_MOST_RECENT_SUBREDDIT_GOTTEN = "SET_MOST_RECENT_SUBREDDIT_GOTTEN",
   SET_SECONDS_TILL_GETTING_NEXT_POSTS = "SET_SECONDS_TILL_GETTING_NEXT_POSTS",
@@ -23,7 +22,6 @@ export type SideBarState = {
   searchInput: string;
   sideBarOpen: boolean;
   openSidebarButtonTopPercent: number;
-  mouseOverSubredditList: boolean;
   secondsTillGettingNextPosts: number;
 };
 type SideBarUpdateFieldsObj = {
@@ -60,11 +58,6 @@ export type SubredditListsUpdatedAction = {
   payload: Array<SubredditLists>;
 };
 
-export type SetMouseOverSubredditListAction = {
-  type: SideBarActionType.SET_MOUSE_OVER_SUBREDDIT_LIST;
-  payload: boolean;
-};
-
 export type SetOpenNumberPayloadAction = {
   type:
     | SideBarActionType.SET_OPEN_SIDEBAR_BUTTON_TOP_PERCENT
@@ -81,7 +74,6 @@ export type SideBarDispatch = Dispatch<
   | SetListToFilterByUuidAction
   | SetSearchInputAction
   | SubredditListsUpdatedAction
-  | SetMouseOverSubredditListAction
   | SetOpenNumberPayloadAction
   | SetMostRecentSubredditGottenAction
 >;
@@ -92,7 +84,6 @@ export default function SideBarReducer(
     | SetListToFilterByUuidAction
     | SetSearchInputAction
     | SubredditListsUpdatedAction
-    | SetMouseOverSubredditListAction
     | SetOpenNumberPayloadAction
     | SetMostRecentSubredditGottenAction
 ) {
@@ -105,8 +96,6 @@ export default function SideBarReducer(
       return setSearchInput(state, action);
     case SideBarActionType.SUBREDDIT_LISTS_UPDATED:
       return subredditListsUpdated(state, action);
-    case SideBarActionType.SET_MOUSE_OVER_SUBREDDIT_LIST:
-      return setMouseOverSubredditList(state, action);
     case SideBarActionType.SET_OPEN_SIDEBAR_BUTTON_TOP_PERCENT:
       return setOpenSidebarButtonTopPercent(state, action);
     case SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS:
@@ -180,15 +169,6 @@ const subredditListsUpdated = (
     searchInput
   );
   return applySideBarFields(state, filtered);
-};
-const setMouseOverSubredditList = (
-  state: SideBarState,
-  action: { type: string; payload: boolean }
-): SideBarState => {
-  return {
-    ...state,
-    mouseOverSubredditList: action.payload,
-  };
 };
 const setOpenSidebarButtonTopPercent = (
   state: SideBarState,
