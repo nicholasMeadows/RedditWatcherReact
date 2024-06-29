@@ -24,7 +24,6 @@ const SideBarContextProvider: FC<Props> = ({ children }) => {
     searchInput: "",
     sideBarOpen: false,
     openSidebarButtonTopPercent: 50,
-    mouseOverSubredditList: false,
     secondsTillGettingNextPosts: 0,
   };
   const [sideBarState, dispatch] = useReducer(SideBarReducer, initialState);
