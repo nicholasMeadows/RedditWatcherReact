@@ -197,7 +197,24 @@ export default function useRedditService() {
         postsGotten = posts;
         postsFromSubreddits = fromSubreddits;
 
-        if (posts.length == 0) {
+        if (posts.length != 0) {
+          while (pauseGetPostsLoopRef.current) {
+            await new Promise<void>((res) => setTimeout(() => res(), 100));
+          }
+          if (abortController.signal.aborted) return;
+          if (getPostsFromSubredditState.postRows.length == 10) {
+            getPostsUpdatedValues.postRowRemoveAt =
+              getPostsFromSubredditState.postRows.length - 1;
+          }
+          if (abortController.signal.aborted) return;
+          redditService.addPostRow(
+            postsGotten,
+            postsFromSubreddits,
+            getPostsFromSubredditState,
+            getPostsUpdatedValues,
+            appNotificationsDispatch
+          );
+        } else {
           let msg = `Got 0 posts. Trying again in a little bit.`;
           if (fromSubreddits.length == 1) {
             msg = `Got 0 posts from ${fromSubreddits[0].displayNamePrefixed}. Trying again in a little bit.`;
@@ -209,15 +226,6 @@ export default function useRedditService() {
               message: msg,
             },
           });
-          return;
-        }
-        while (pauseGetPostsLoopRef.current) {
-          await new Promise<void>((res) => setTimeout(() => res(), 100));
-        }
-        if (abortController.signal.aborted) return;
-        if (getPostsFromSubredditState.postRows.length == 10) {
-          getPostsUpdatedValues.postRowRemoveAt =
-            getPostsFromSubredditState.postRows.length - 1;
         }
       } catch (e) {
         appNotificationsDispatch({
@@ -231,14 +239,7 @@ export default function useRedditService() {
         });
         console.log("Caught exception while getPosts ", e);
       }
-      if (abortController.signal.aborted) return;
-      redditService.addPostRow(
-        postsGotten,
-        postsFromSubreddits,
-        getPostsFromSubredditState,
-        getPostsUpdatedValues,
-        appNotificationsDispatch
-      );
+
       redditService.applyUpdatedStateValues(
         getPostsUpdatedValues,
         redditServiceContextState.subredditIndex,
