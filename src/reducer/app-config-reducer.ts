@@ -326,7 +326,7 @@ const setAutoScrollPostRowDirectionOption = (
     ...state,
     autoScrollPostRowDirectionOption: action.payload,
   };
-  saveConfig(state);
+  saveConfig(updatedState);
   return updatedState;
 };
 const setAutoScrollPostRowRateSecondsForSinglePostCard = (
@@ -374,7 +374,7 @@ const setSelectedSubredditListSortOption = (
 ): AppConfigState => {
   const updatedState = { ...state };
   updatedState.selectedSubredditListSortOption = action.payload;
-  saveConfig(state);
+  saveConfig(updatedState);
   return updatedState;
 };
 const setRandomIterationSelectWeightOption = (
@@ -383,7 +383,7 @@ const setRandomIterationSelectWeightOption = (
 ): AppConfigState => {
   const updatedState = { ...state };
   updatedState.randomIterationSelectWeightOption = action.payload;
-  saveConfig(state);
+  saveConfig(updatedState);
   return updatedState;
 };
 const setSelectSubredditListMenuSortOption = (
@@ -392,7 +392,7 @@ const setSelectSubredditListMenuSortOption = (
 ): AppConfigState => {
   const updatedState = { ...state };
   updatedState.selectSubredditListMenuSortOption = action.payload;
-  saveConfig(state);
+  saveConfig(updatedState);
   return updatedState;
 };
 const setSortOrderDirectionOption = (
@@ -401,7 +401,7 @@ const setSortOrderDirectionOption = (
 ): AppConfigState => {
   const updatedState = { ...state };
   updatedState.sortOrderDirectionOption = action.payload;
-  saveConfig(state);
+  saveConfig(updatedState);
   return updatedState;
 };
 const setPostSortOrderOption = (
@@ -410,7 +410,7 @@ const setPostSortOrderOption = (
 ): AppConfigState => {
   const updatedState = { ...state };
   updatedState.postSortOrderOption = action.payload;
-  saveConfig(state);
+  saveConfig(updatedState);
   return updatedState;
 };
 const setTopTimeFrameOption = (
@@ -419,7 +419,7 @@ const setTopTimeFrameOption = (
 ): AppConfigState => {
   const updatedState = { ...state };
   updatedState.topTimeFrameOption = action.payload;
-  saveConfig(state);
+  saveConfig(updatedState);
   return updatedState;
 };
 const setSelectSubredditIterationMethodOption = (
@@ -428,7 +428,7 @@ const setSelectSubredditIterationMethodOption = (
 ): AppConfigState => {
   const updatedState = { ...state };
   updatedState.selectSubredditIterationMethodOption = action.payload;
-  saveConfig(state);
+  saveConfig(updatedState);
   return updatedState;
 };
 const setConcatRedditUrlMaxLength = (
@@ -468,7 +468,7 @@ const setContentFiltering = (
 ): AppConfigState => {
   const updatedState = { ...state };
   updatedState.contentFiltering = action.payload;
-  saveConfig(state);
+  saveConfig(updatedState);
   return updatedState;
 };
 const setRedditApiItemLimit = (
