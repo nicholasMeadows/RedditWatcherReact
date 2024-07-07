@@ -111,7 +111,7 @@ export default function useMovePostRow(
 
   const createAutoScrollInterval = useCallback(() => {
     const postRowContentDiv = postRowContentDivRef.current;
-    if (postRowContentDiv === null) {
+    if (postRowContentDiv === null || !postRow.shouldAutoScroll) {
       return;
     }
     const scrollPxPerStep = 1;

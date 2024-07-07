@@ -149,7 +149,8 @@ const AppInitialization: React.FC = () => {
         postsToShowInRow,
         postRowsDispatch,
         sideBarDispatch,
-        currentState.subredditLists
+        currentState.subredditLists,
+        currentState.subredditSortOrderOption
       );
       if (gottenPosts.length === 0) {
         console.log(

@@ -2,6 +2,7 @@ import { Post } from "../model/Post/Post.ts";
 import { MAX_POSTS_PER_ROW } from "../RedditWatcherConstants.ts";
 import { PostRow } from "../model/PostRow.ts";
 import { v4 as uuidV4 } from "uuid";
+import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum.ts";
 
 export type PostRowsState = {
   currentPath: string;
@@ -55,6 +56,7 @@ export type CreatePostRowAndInsertAtBeginningAction = {
   payload: {
     posts: Array<Post>;
     postsToShowInRow: number;
+    subredditSortOrderOption: SubredditSortOrderOptionsEnum;
   };
 };
 
@@ -147,12 +149,14 @@ const createPostRowAndInsertAtBeginning = (
     payload: {
       posts: Array<Post>;
       postsToShowInRow: number;
+      subredditSortOrderOption: SubredditSortOrderOptionsEnum;
     };
   }
 ): PostRowsState => {
   const postRow = createPostRow(
     action.payload.posts,
-    state.postCardWidthPercentage
+    state.postCardWidthPercentage,
+    action.payload.subredditSortOrderOption
   );
   const updatedPostRows = [...state.postRows];
   updatedPostRows.unshift(postRow);
@@ -337,7 +341,8 @@ const shouldPause = (
 };
 const createPostRow = (
   posts: Array<Post>,
-  postRowContentWidth: number
+  postRowContentWidth: number,
+  subredditSortOrderOption: SubredditSortOrderOptionsEnum
 ): PostRow => {
   const postRowUuid = uuidV4();
   return {
@@ -345,5 +350,7 @@ const createPostRow = (
     posts: posts,
     postRowContentWidthAtCreation: postRowContentWidth,
     lastAutoScrollPostRowState: undefined,
+    shouldAutoScroll:
+      subredditSortOrderOption !== SubredditSortOrderOptionsEnum.FrontPage,
   };
 };

@@ -496,7 +496,8 @@ export default class RedditService {
     currentPostsToShowInRow: number,
     postRowsDispatch: PostRowsDispatch,
     sideBarDispatch: SideBarDispatch,
-    subredditLists: Array<SubredditLists>
+    subredditLists: Array<SubredditLists>,
+    subredditSortOrderOption: SubredditSortOrderOptionsEnum
   ) {
     if (updatedValues.subredditQueueItemToRemove != undefined) {
       subredditQueueDispatch({
@@ -541,6 +542,7 @@ export default class RedditService {
         payload: {
           posts: updatedValues.createPostRowAndInsertAtBeginning,
           postsToShowInRow: currentPostsToShowInRow,
+          subredditSortOrderOption: subredditSortOrderOption,
         },
       });
     }

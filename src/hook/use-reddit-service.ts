@@ -238,7 +238,8 @@ export default function useRedditService() {
         postsToShowInRowRef.current,
         postRowsDispatch,
         sideBarDispatch,
-        subredditListsRef.current
+        subredditListsRef.current,
+        getPostsFromSubredditState.subredditSortOrderOption
       );
     },
     [
