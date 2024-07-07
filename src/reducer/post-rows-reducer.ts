@@ -1,5 +1,4 @@
 import { Post } from "../model/Post/Post.ts";
-import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { MAX_POSTS_PER_ROW } from "../RedditWatcherConstants.ts";
 import { PostRow } from "../model/PostRow.ts";
 import { v4 as uuidV4 } from "uuid";
@@ -56,7 +55,6 @@ export type CreatePostRowAndInsertAtBeginningAction = {
   payload: {
     posts: Array<Post>;
     postsToShowInRow: number;
-    userFrontPagePostSortOrderOption: UserFrontPagePostSortOrderOptionsEnum;
   };
 };
 
@@ -149,14 +147,12 @@ const createPostRowAndInsertAtBeginning = (
     payload: {
       posts: Array<Post>;
       postsToShowInRow: number;
-      userFrontPagePostSortOrderOption: UserFrontPagePostSortOrderOptionsEnum;
     };
   }
 ): PostRowsState => {
   const postRow = createPostRow(
     action.payload.posts,
-    state.postCardWidthPercentage,
-    action.payload.userFrontPagePostSortOrderOption
+    state.postCardWidthPercentage
   );
   const updatedPostRows = [...state.postRows];
   updatedPostRows.unshift(postRow);
@@ -341,15 +337,13 @@ const shouldPause = (
 };
 const createPostRow = (
   posts: Array<Post>,
-  postRowContentWidth: number,
-  userFrontPageSortOption: UserFrontPagePostSortOrderOptionsEnum
+  postRowContentWidth: number
 ): PostRow => {
   const postRowUuid = uuidV4();
   return {
     postRowUuid: postRowUuid,
     posts: posts,
     postRowContentWidthAtCreation: postRowContentWidth,
-    userFrontPagePostSortOrderOptionAtRowCreation: userFrontPageSortOption,
     lastAutoScrollPostRowState: undefined,
   };
 };

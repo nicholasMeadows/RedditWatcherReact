@@ -8,7 +8,6 @@ import SelectedSubredditListSortOptionEnum from "./enums/SelectedSubredditListSo
 import SortOrderDirectionOptionsEnum from "./enums/SortOrderDirectionOptionsEnum";
 import SubredditSortOrderOptionsEnum from "./enums/SubredditSortOrderOptionsEnum";
 import TopTimeFrameOptionsEnum from "./enums/TopTimeFrameOptionsEnum";
-import UserFrontPagePostSortOrderOptionsEnum from "./enums/UserFrontPagePostSortOrderOptionsEnum";
 import { AutoScrollPostRowOptionEnum } from "./enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "./enums/AutoScrollPostRowDirectionOptionEnum.ts";
 
@@ -23,7 +22,6 @@ export interface AppConfig {
   selectSubredditListMenuSortOption: SelectSubredditListMenuSortOptionEnum;
   sortOrderDirectionOption: SortOrderDirectionOptionsEnum;
   postSortOrderOption: PostSortOrderOptionsEnum;
-  userFrontPagePostSortOrderOption: UserFrontPagePostSortOrderOptionsEnum;
   topTimeFrameOption: TopTimeFrameOptionsEnum;
   selectSubredditIterationMethodOption: SelectSubredditIterationMethodOptionsEnum;
   concatRedditUrlMaxLength: number;

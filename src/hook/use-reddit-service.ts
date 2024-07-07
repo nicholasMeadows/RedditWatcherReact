@@ -39,9 +39,6 @@ export default function useRedditService() {
   const subredditSortOrderOption = useContext(
     AppConfigStateContext
   ).subredditSortOrderOption;
-  const userFrontPagePostSortOrderOption = useContext(
-    AppConfigStateContext
-  ).userFrontPagePostSortOrderOption;
   const contentFiltering = useContext(AppConfigStateContext).contentFiltering;
   const subredditQueue = useContext(SubredditQueueStateContext).subredditQueue;
   const concatRedditUrlMaxLength = useContext(
@@ -75,9 +72,6 @@ export default function useRedditService() {
   const redditCredentialsRef = useRef(redditCredentials);
   const postRowsRef = useRef(postRows);
   const subredditSortOrderOptionRef = useRef(subredditSortOrderOption);
-  const userFrontPagePostSortOrderOptionRef = useRef(
-    userFrontPagePostSortOrderOption
-  );
   const contentFilteringRef = useRef(contentFiltering);
   const subredditQueueRef = useRef(subredditQueue);
   const concatRedditUrlMaxLengthRef = useRef(concatRedditUrlMaxLength);
@@ -102,8 +96,6 @@ export default function useRedditService() {
     redditCredentialsRef.current = redditCredentials;
     postRowsRef.current = postRows;
     subredditSortOrderOptionRef.current = subredditSortOrderOption;
-    userFrontPagePostSortOrderOptionRef.current =
-      userFrontPagePostSortOrderOption;
     contentFilteringRef.current = contentFiltering;
     subredditQueueRef.current = subredditQueue;
     concatRedditUrlMaxLengthRef.current = concatRedditUrlMaxLength;
@@ -136,7 +128,6 @@ export default function useRedditService() {
     subredditQueue,
     subredditSortOrderOption,
     topTimeFrame,
-    userFrontPagePostSortOrderOption,
   ]);
 
   const createCurrentStateObj = useCallback((): GetPostsFromSubredditState => {
@@ -144,8 +135,6 @@ export default function useRedditService() {
       JSON.stringify({
         postRows: postRowsRef.current,
         subredditSortOrderOption: subredditSortOrderOptionRef.current,
-        userFrontPagePostSortOrderOption:
-          userFrontPagePostSortOrderOptionRef.current,
         contentFiltering: contentFilteringRef.current,
         subredditQueue: subredditQueueRef.current,
         concatRedditUrlMaxLength: concatRedditUrlMaxLengthRef.current,
@@ -246,7 +235,6 @@ export default function useRedditService() {
         redditServiceContextState.nsfwRedditListIndex,
         redditServiceContextState.lastPostRowWasSortOrderNew,
         subredditQueueDispatch,
-        userFrontPagePostSortOrderOptionRef.current,
         postsToShowInRowRef.current,
         postRowsDispatch,
         sideBarDispatch,

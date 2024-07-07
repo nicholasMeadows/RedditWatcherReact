@@ -1,5 +1,4 @@
 import SubredditSortOrderOptionsEnum from "../config/enums/SubredditSortOrderOptionsEnum.ts";
-import UserFrontPagePostSortOrderOptionsEnum from "../config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import ContentFilteringOptionEnum from "../config/enums/ContentFilteringOptionEnum.ts";
 import { Subreddit } from "../Subreddit/Subreddit.ts";
 import PostSortOrderOptionsEnum from "../config/enums/PostSortOrderOptionsEnum.ts";
@@ -15,7 +14,6 @@ import SelectedSubredditListSortOptionEnum from "../config/enums/SelectedSubredd
 export type GetPostsFromSubredditState = {
   postRows: Array<PostRow>;
   subredditSortOrderOption: SubredditSortOrderOptionsEnum;
-  userFrontPagePostSortOrderOption: UserFrontPagePostSortOrderOptionsEnum;
   contentFiltering: ContentFilteringOptionEnum;
   subredditQueue: Array<Subreddit>;
   concatRedditUrlMaxLength: number;

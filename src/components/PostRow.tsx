@@ -74,8 +74,6 @@ const PostRow: FC<Props> = memo(({ postRow }) => {
             value={{
               postRowUuid: postRow.postRowUuid,
               post: post,
-              userFrontPagePostSortOrderOptionAtRowCreation:
-                postRow.userFrontPagePostSortOrderOptionAtRowCreation,
             }}
             key={post.postUuid}
           >

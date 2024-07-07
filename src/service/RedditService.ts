@@ -4,7 +4,6 @@ import {
   GetPostsFromSubredditState,
   GetPostsUpdatedValues,
 } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
-import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import RedditClient from "../client/RedditClient.ts";
 import { MAX_POSTS_PER_ROW } from "../RedditWatcherConstants.ts";
 import { GetPostsForSubredditUrlConverter } from "../model/converter/GetPostsForSubredditUrlConverter.ts";
@@ -41,6 +40,7 @@ import {
   SideBarDispatch,
 } from "../reducer/side-bar-reducer.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
+import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum.ts";
 
 export default class RedditService {
   declare redditClient: RedditClient;
@@ -99,13 +99,11 @@ export default class RedditService {
       );
       getPostsUpdatedValues.mostRecentSubredditGotten = subreddit;
     } else if (
-      !(
-        UserFrontPagePostSortOrderOptionsEnum.NotSelected ===
-        getPostsFromSubredditsState.userFrontPagePostSortOrderOption
-      )
+      getPostsFromSubredditsState.subredditSortOrderOption ===
+      SubredditSortOrderOptionsEnum.FrontPage
     ) {
       postsFromSubreddit = await this.redditClient.getUserFrontPage(
-        getPostsFromSubredditsState.userFrontPagePostSortOrderOption,
+        getPostsFromSubredditsState.postSortOrder,
         getPostsFromSubredditsState.topTimeFrame,
         getPostsFromSubredditsState.redditApiItemLimit,
         getPostsFromSubredditsState.masterSubredditList,
@@ -430,8 +428,6 @@ export default class RedditService {
     getPostsUpdatedValues: GetPostsUpdatedValues,
     appNotificationsDispatch: Dispatch<AppNotificationsAction>
   ) {
-    const userFrontPageOption =
-      getPostsFromSubredditsState.userFrontPagePostSortOrderOption;
     const postRows = getPostsFromSubredditsState.postRows;
     const lastPostRowWasSortOrderNew =
       getPostsFromSubredditsState.lastPostRowWasSortOrderNew;
@@ -451,7 +447,11 @@ export default class RedditService {
       return;
     }
 
-    if (UserFrontPagePostSortOrderOptionsEnum.New != userFrontPageOption) {
+    if (
+      getPostsFromSubredditsState.subredditSortOrderOption ===
+        SubredditSortOrderOptionsEnum.FrontPage &&
+      getPostsFromSubredditsState.postSortOrder === PostSortOrderOptionsEnum.New
+    ) {
       getPostsUpdatedValues.lastPostRowWasSortOrderNew = false;
       getPostsUpdatedValues.createPostRowAndInsertAtBeginning = posts;
       return;
@@ -493,7 +493,6 @@ export default class RedditService {
     nsfwRedditListIndex: MutableRefObject<number>,
     lastPostRowWasSortOrderNewRef: MutableRefObject<boolean>,
     subredditQueueDispatch: Dispatch<SubredditQueueAction>,
-    currentUserFrontPagePostSortOrderOption: UserFrontPagePostSortOrderOptionsEnum,
     currentPostsToShowInRow: number,
     postRowsDispatch: PostRowsDispatch,
     sideBarDispatch: SideBarDispatch,
@@ -541,8 +540,6 @@ export default class RedditService {
         type: PostRowsActionType.CREATE_POST_ROW_AND_INSERT_AT_BEGINNING,
         payload: {
           posts: updatedValues.createPostRowAndInsertAtBeginning,
-          userFrontPagePostSortOrderOption:
-            currentUserFrontPagePostSortOrderOption,
           postsToShowInRow: currentPostsToShowInRow,
         },
       });

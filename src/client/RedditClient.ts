@@ -10,7 +10,6 @@ import {
   convertSubreddit,
 } from "../model/converter/SubredditAccountSearchResultConverter.ts";
 import ChildDataObj from "../model/RedditApiResponse/ChildDataObj.ts";
-import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import { T3 } from "../model/RedditApiResponse/Types/T3/T3.ts";
 import { Post } from "../model/Post/Post.ts";
 import { convertPost } from "../model/converter/PostConverter.ts";
@@ -19,6 +18,7 @@ import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { v4 as uuidV4 } from "uuid";
 import { RedditCredentials } from "../model/config/RedditCredentials.ts";
+import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum.ts";
 
 const REDDIT_BASE_URL = "https://www.reddit.com";
 const REDDIT_OAUTH_BASE_URL = "https://oauth.reddit.com";
@@ -152,7 +152,7 @@ export default class RedditClient {
   }
 
   async getUserFrontPage(
-    userFrontPagePostSortOrderOption: UserFrontPagePostSortOrderOptionsEnum,
+    postSortOrder: PostSortOrderOptionsEnum,
     topTimeFrame: TopTimeFrameOptionsEnum,
     redditApiItemLimit: number,
     masterSubscribedSubredditList: Array<Subreddit>,
@@ -162,24 +162,72 @@ export default class RedditClient {
     const authInfo = await this.getAuthInfo();
     this.checkRateLimits();
 
-    let uri = REDDIT_OAUTH_BASE_URL + "/";
-    switch (userFrontPagePostSortOrderOption) {
-      case UserFrontPagePostSortOrderOptionsEnum.Top:
-        uri = "/top?t=" + topTimeFrame;
+    let queryStr = `?feed=home&limit=${redditApiItemLimit}`;
+    let uri = "/";
+
+    const setTopUri = (topTimeFrame: TopTimeFrameOptionsEnum) => {
+      queryStr += `&t=${topTimeFrame.toLowerCase()}`;
+      uri = "/top";
+    };
+    const setNewUri = () => {
+      uri = "/new";
+    };
+    const setHotUri = () => {
+      uri = "/hot";
+    };
+    const handlePostSortOrderRandom = () => {
+      switch (Math.floor(Math.random() * 3)) {
+        case 0:
+          setNewUri();
+          break;
+        case 1:
+          setHotUri();
+          break;
+        case 2:
+          {
+            const randomIndex = Math.floor(Math.random() * 6);
+            let randomTopTimeFrame: TopTimeFrameOptionsEnum =
+              TopTimeFrameOptionsEnum.All;
+            switch (randomIndex) {
+              case 0:
+                randomTopTimeFrame = TopTimeFrameOptionsEnum.All;
+                break;
+              case 1:
+                randomTopTimeFrame = TopTimeFrameOptionsEnum.Day;
+                break;
+              case 2:
+                randomTopTimeFrame = TopTimeFrameOptionsEnum.Hour;
+                break;
+              case 3:
+                randomTopTimeFrame = TopTimeFrameOptionsEnum.Year;
+                break;
+              case 4:
+                randomTopTimeFrame = TopTimeFrameOptionsEnum.Week;
+                break;
+              case 5:
+                randomTopTimeFrame = TopTimeFrameOptionsEnum.Month;
+                break;
+            }
+            setTopUri(randomTopTimeFrame);
+          }
+          break;
+      }
+    };
+    switch (postSortOrder) {
+      case PostSortOrderOptionsEnum.Top:
+        setTopUri(topTimeFrame);
         break;
-      case UserFrontPagePostSortOrderOptionsEnum.New:
-        uri = "/new";
+      case PostSortOrderOptionsEnum.New:
+        setNewUri();
         break;
-      case UserFrontPagePostSortOrderOptionsEnum.Hot:
-        uri = "/hot";
+      case PostSortOrderOptionsEnum.Hot:
+        setHotUri();
         break;
-      case UserFrontPagePostSortOrderOptionsEnum.Random:
-        uri = "/";
+      case PostSortOrderOptionsEnum.Random:
+        handlePostSortOrderRandom();
         break;
     }
-
-    uri += "?limit=" + redditApiItemLimit;
-    const url = REDDIT_OAUTH_BASE_URL + uri;
+    const url = REDDIT_OAUTH_BASE_URL + uri + queryStr;
     console.log("Getting User front page @ URL: ", url);
     const response = await fetch(url, {
       method: "GET",

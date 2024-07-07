@@ -17,7 +17,6 @@ import SelectedSubredditListSortOptionEnum from "../model/config/enums/SelectedS
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum";
 import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum";
 import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEnum";
-import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum";
 import getPlatform from "../util/PlatformUtil";
 import { AutoScrollPostRowOptionEnum } from "../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
@@ -40,8 +39,6 @@ const SELECT_SUBREDDIT_LIST_MENU_SORT_OPTION =
   "selectSubredditListMenuSortOption";
 const SORT_ORDER_DIRECTION_OPTION = "sortOrderDirectionOption";
 const POST_SORT_ORDER_OPTION = "postSortOrderOption";
-const USER_FRONT_PAGE_POST_POST_SORT_ORDER_OPTION =
-  "userFrontPagePostSortOrderOption";
 const TOP_TIME_FRAME_OPTION = "topTimeFrameOption";
 const SELECT_SUBREDDIT_ITERATION_METHOD_OPTION =
   "selectSubredditIterationMethodOption";
@@ -132,9 +129,6 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
     SortOrderDirectionOptionsEnum.Normal;
   const postSortOrderOption: PostSortOrderOptionsEnum =
     configJsonObj[POST_SORT_ORDER_OPTION] || PostSortOrderOptionsEnum.Random;
-  const userFrontPagePostSortOrderOption: UserFrontPagePostSortOrderOptionsEnum =
-    configJsonObj[USER_FRONT_PAGE_POST_POST_SORT_ORDER_OPTION] ||
-    UserFrontPagePostSortOrderOptionsEnum.NotSelected;
   const topTimeFrameOption: TopTimeFrameOptionsEnum =
     configJsonObj[TOP_TIME_FRAME_OPTION] || TopTimeFrameOptionsEnum.All;
   const selectSubredditIterationMethodOption: SelectSubredditIterationMethodOptionsEnum =
@@ -167,7 +161,6 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
     selectSubredditListMenuSortOption: selectSubredditListMenuSortOption,
     sortOrderDirectionOption: sortOrderDirectionOption,
     postSortOrderOption: postSortOrderOption,
-    userFrontPagePostSortOrderOption: userFrontPagePostSortOrderOption,
     topTimeFrameOption: topTimeFrameOption,
     selectSubredditIterationMethodOption: selectSubredditIterationMethodOption,
     concatRedditUrlMaxLength: concatRedditUrlMaxLength,

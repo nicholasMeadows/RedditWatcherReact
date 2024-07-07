@@ -1,7 +1,6 @@
 import { useContext } from "react";
 import PostSortOrderOptionsEnum from "./../model/config/enums/PostSortOrderOptionsEnum.ts";
 import TopTimeFrameOptionsEnum from "./../model/config/enums/TopTimeFrameOptionsEnum.ts";
-import UserFrontPagePostSortOrderOptionsEnum from "./../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import SubredditSortOrderOptionsEnum from "./../model/config/enums/SubredditSortOrderOptionsEnum.ts";
 import { checkPlatformForSubredditSortOrderOption } from "./../util/PlatformUtil.ts";
 import ContentFilteringOptionEnum from "./../model/config/enums/ContentFilteringOptionEnum.ts";
@@ -24,9 +23,6 @@ const RedditSourceSettings: React.FC = () => {
   const topTimeFrameOption = useContext(
     AppConfigStateContext
   ).topTimeFrameOption;
-  const userFrontPagePostSortOrderOption = useContext(
-    AppConfigStateContext
-  ).userFrontPagePostSortOrderOption;
   const redditApiItemLimit = useContext(
     AppConfigStateContext
   ).redditApiItemLimit;
@@ -129,31 +125,6 @@ const RedditSourceSettings: React.FC = () => {
                 </option>
               );
             })}
-          </select>
-        </div>
-        <hr />
-        <div className="settings-item">
-          <label className="select-label">User Front Page Sort Option</label>
-          <select
-            value={userFrontPagePostSortOrderOption}
-            onChange={(event) =>
-              appConfigDispatch({
-                type: AppConfigActionType.SET_USER_FRONT_PAGE_POST_SORT_ORDER_OPTION,
-                payload: event.target
-                  .value as UserFrontPagePostSortOrderOptionsEnum,
-              })
-            }
-            className="select"
-          >
-            {Object.entries(UserFrontPagePostSortOrderOptionsEnum).map(
-              (key) => {
-                return (
-                  <option key={key[0]} value={key[1]}>
-                    {key[1]}
-                  </option>
-                );
-              }
-            )}
           </select>
         </div>
         <hr />

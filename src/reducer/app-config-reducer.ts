@@ -18,7 +18,6 @@ import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/Auto
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum.ts";
 import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
 import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEnum.ts";
-import UserFrontPagePostSortOrderOptionsEnum from "../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum.ts";
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum.ts";
 import SelectSubredditListMenuSortOptionEnum from "../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
@@ -104,10 +103,6 @@ export type AppConfigActionPostSortOrderOptionEnumPayload = {
   type: AppConfigActionType.SET_POST_SORT_ORDER_OPTION;
   payload: PostSortOrderOptionsEnum;
 };
-export type AppConfigActionUserFrontPagePostSortOrderOptionEnumPayload = {
-  type: AppConfigActionType.SET_USER_FRONT_PAGE_POST_SORT_ORDER_OPTION;
-  payload: UserFrontPagePostSortOrderOptionsEnum;
-};
 export type AppConfigActionTopTimeFrameOptionEnumPayload = {
   type: AppConfigActionType.SET_TOP_TIME_FRAME_OPTION;
   payload: TopTimeFrameOptionsEnum;
@@ -158,7 +153,6 @@ export default function AppConfigReducer(
     | AppConfigActionSelectSubredditListMenuSortOptionEnumPayload
     | AppConfigActionSortOrderDirectionOptionEnumPayload
     | AppConfigActionPostSortOrderOptionEnumPayload
-    | AppConfigActionUserFrontPagePostSortOrderOptionEnumPayload
     | AppConfigActionTopTimeFrameOptionEnumPayload
     | AppConfigActionSelectSubredditIterationMethodOptionEnumPayload
     | AppConfigActionContentFilteringEnumPayload
@@ -197,8 +191,6 @@ export default function AppConfigReducer(
       return setSortOrderDirectionOption(state, action);
     case AppConfigActionType.SET_POST_SORT_ORDER_OPTION:
       return setPostSortOrderOption(state, action);
-    case AppConfigActionType.SET_USER_FRONT_PAGE_POST_SORT_ORDER_OPTION:
-      return setUserFrontPagePostSortOrderOption(state, action);
     case AppConfigActionType.SET_TOP_TIME_FRAME_OPTION:
       return setTopTimeFrameOption(state, action);
     case AppConfigActionType.SET_SELECT_SUBREDDIT_ITERATION_METHOD_OPTION:
@@ -418,15 +410,6 @@ const setPostSortOrderOption = (
 ): AppConfigState => {
   const updatedState = { ...state };
   updatedState.postSortOrderOption = action.payload;
-  saveConfig(state);
-  return updatedState;
-};
-const setUserFrontPagePostSortOrderOption = (
-  state: AppConfigState,
-  action: AppConfigActionUserFrontPagePostSortOrderOptionEnumPayload
-): AppConfigState => {
-  const updatedState = { ...state };
-  updatedState.userFrontPagePostSortOrderOption = action.payload;
   saveConfig(state);
   return updatedState;
 };

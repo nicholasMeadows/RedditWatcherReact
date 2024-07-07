@@ -9,7 +9,6 @@ import RandomIterationSelectWeightOptionsEnum from "../../model/config/enums/Ran
 import SelectSubredditListMenuSortOptionEnum from "../../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
 import SortOrderDirectionOptionsEnum from "../../model/config/enums/SortOrderDirectionOptionsEnum.ts";
 import PostSortOrderOptionsEnum from "../../model/config/enums/PostSortOrderOptionsEnum.ts";
-import UserFrontPagePostSortOrderOptionsEnum from "../../model/config/enums/UserFrontPagePostSortOrderOptionsEnum.ts";
 import TopTimeFrameOptionsEnum from "../../model/config/enums/TopTimeFrameOptionsEnum.ts";
 import SelectSubredditIterationMethodOptionsEnum from "../../model/config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
 import ContentFilteringOptionEnum from "../../model/config/enums/ContentFilteringOptionEnum.ts";
@@ -32,8 +31,6 @@ const defaultSelectSubredditListMenuSortOption =
   SelectSubredditListMenuSortOptionEnum.Alphabetically;
 const defaultSortOrderDirectionOption = SortOrderDirectionOptionsEnum.Normal;
 const defaultPostSortOrderOption = PostSortOrderOptionsEnum.Random;
-const defaultUserFrontPagePostSortOrderOption =
-  UserFrontPagePostSortOrderOptionsEnum.NotSelected;
 const defaultTopTimeFrameOption = TopTimeFrameOptionsEnum.All;
 const defaultSelectSubredditIterationMethodOption =
   SelectSubredditIterationMethodOptionsEnum.Sequential;
@@ -66,7 +63,6 @@ const initialState: AppConfigState = {
   selectSubredditListMenuSortOption: defaultSelectSubredditListMenuSortOption,
   sortOrderDirectionOption: defaultSortOrderDirectionOption,
   postSortOrderOption: defaultPostSortOrderOption,
-  userFrontPagePostSortOrderOption: defaultUserFrontPagePostSortOrderOption,
   topTimeFrameOption: defaultTopTimeFrameOption,
   selectSubredditIterationMethodOption:
     defaultSelectSubredditIterationMethodOption,

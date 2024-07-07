@@ -146,7 +146,6 @@ const AppInitialization: React.FC = () => {
         redditServiceContextState.nsfwRedditListIndex,
         redditServiceContextState.lastPostRowWasSortOrderNew,
         subredditQueueDispatch,
-        currentState.userFrontPagePostSortOrderOption,
         postsToShowInRow,
         postRowsDispatch,
         sideBarDispatch,

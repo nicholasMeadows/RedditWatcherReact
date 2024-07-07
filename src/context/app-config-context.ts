@@ -16,7 +16,6 @@ import {
   AppConfigActionStringPayload,
   AppConfigActionSubredditSortOrderOptionsEnumPayload,
   AppConfigActionTopTimeFrameOptionEnumPayload,
-  AppConfigActionUserFrontPagePostSortOrderOptionEnumPayload,
 } from "../reducer/app-config-reducer.ts";
 
 export const AppConfigStateContext = createContext<AppConfigState>(
@@ -33,7 +32,6 @@ type dispatchType = Dispatch<
   | AppConfigActionSelectSubredditListMenuSortOptionEnumPayload
   | AppConfigActionSortOrderDirectionOptionEnumPayload
   | AppConfigActionPostSortOrderOptionEnumPayload
-  | AppConfigActionUserFrontPagePostSortOrderOptionEnumPayload
   | AppConfigActionTopTimeFrameOptionEnumPayload
   | AppConfigActionSelectSubredditIterationMethodOptionEnumPayload
   | AppConfigActionContentFilteringEnumPayload
