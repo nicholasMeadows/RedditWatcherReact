@@ -448,9 +448,9 @@ export default class RedditService {
     }
 
     if (
-      getPostsFromSubredditsState.subredditSortOrderOption ===
+      getPostsFromSubredditsState.subredditSortOrderOption !==
         SubredditSortOrderOptionsEnum.FrontPage &&
-      getPostsFromSubredditsState.postSortOrder === PostSortOrderOptionsEnum.New
+      getPostsFromSubredditsState.postSortOrder !== PostSortOrderOptionsEnum.New
     ) {
       getPostsUpdatedValues.lastPostRowWasSortOrderNew = false;
       getPostsUpdatedValues.createPostRowAndInsertAtBeginning = posts;
