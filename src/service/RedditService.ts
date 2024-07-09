@@ -553,6 +553,7 @@ export default class RedditService {
           postRowUuid: updatedValues.shiftPostsAndUiPosts.postRowUuid,
           posts: updatedValues.shiftPostsAndUiPosts.posts,
           postsToShowInRow: currentPostsToShowInRow,
+          subredditSortOrderOption: subredditSortOrderOption,
         },
       });
     }

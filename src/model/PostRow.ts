@@ -5,10 +5,4 @@ export interface PostRow {
   posts: Array<Post>;
   shouldAutoScroll: boolean;
   postRowContentWidthAtCreation: number;
-  lastAutoScrollPostRowState:
-    | {
-        postsToShow: Array<Post>;
-        scrollLeft: number;
-      }
-    | undefined;
 }

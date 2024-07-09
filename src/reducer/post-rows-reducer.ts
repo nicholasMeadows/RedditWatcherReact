@@ -1,5 +1,4 @@
 import { Post } from "../model/Post/Post.ts";
-import { MAX_POSTS_PER_ROW } from "../RedditWatcherConstants.ts";
 import { PostRow } from "../model/PostRow.ts";
 import { v4 as uuidV4 } from "uuid";
 import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum.ts";
@@ -25,7 +24,6 @@ export enum PostRowsActionType {
   ADD_POSTS_TO_FRONT_OF_ROW = "ADD_POSTS_TO_FRONT_OF_ROW",
   SET_POST_CARD_WIDTH_PERCENTAGE = "SET_POST_CARD_WIDTH_PERCENTAGE",
   SET_POST_ROW_CONTENT_WIDTH_PX = "SET_POST_ROW_CONTENT_WIDTH_PX",
-  SET_LAST_AUTO_SCROLL_POST_ROW_STATE = "SET_LAST_AUTO_SCROLL_POST_ROW_STATE",
   SET_SCROLL_Y = "SET_SCROLL_Y",
   SET_MOUSE_OVER_A_POST_ROW = "SET_MOUSE_OVER_A_POST_ROW",
 }
@@ -71,6 +69,7 @@ export type AddPostsToFrontOfRowAction = {
     postRowUuid: string;
     posts: Array<Post>;
     postsToShowInRow: number;
+    subredditSortOrderOption: SubredditSortOrderOptionsEnum;
   };
 };
 
@@ -82,14 +81,6 @@ export type SetPostCardWidthPercentageAction = {
   };
 };
 
-export type SetLastAutoScrollPostRowStateAction = {
-  type: PostRowsActionType.SET_LAST_AUTO_SCROLL_POST_ROW_STATE;
-  payload: {
-    postRowUuid: string;
-    postsToShow: Array<Post>;
-    scrollLeft: number;
-  };
-};
 export default function PostRowsReducer(
   state: PostRowsState,
   action:
@@ -100,7 +91,6 @@ export default function PostRowsReducer(
     | SetPostAttachmentIndexAction
     | AddPostsToFrontOfRowAction
     | SetPostCardWidthPercentageAction
-    | SetLastAutoScrollPostRowStateAction
     | PostRowsBooleanPayloadAction
 ) {
   switch (action.type) {
@@ -122,8 +112,6 @@ export default function PostRowsReducer(
       return setPostCardWidthPercentage(state, action);
     case PostRowsActionType.SET_POST_ROW_CONTENT_WIDTH_PX:
       return setPostRowContentWidthPx(state, action);
-    case PostRowsActionType.SET_LAST_AUTO_SCROLL_POST_ROW_STATE:
-      return setLastAutoScrollPostRowState(state, action);
     case PostRowsActionType.SET_SCROLL_Y:
       return setScrollY(state, action);
     case PostRowsActionType.SET_MOUSE_OVER_A_POST_ROW:
@@ -185,26 +173,20 @@ const setPostAttachmentIndex = (
   }
 ): PostRowsState => {
   const postRowUuid = action.payload.postRowUuid;
-  const updatedPostRows = [...state.postRows];
-  const postRow = updatedPostRows.find(
+  const postRow = state.postRows.find(
     (postRow) => postRow.postRowUuid == postRowUuid
   );
   if (postRow == undefined) {
     return state;
   }
-  const updatedPosts = [...postRow.posts];
+
   const postUuid = action.payload.postUuid;
-  const post = updatedPosts.find((post) => post.postUuid == postUuid);
+  const post = postRow.posts.find((post) => post.postUuid == postUuid);
   if (post == undefined) {
     return state;
   }
-
   post.currentAttachmentIndex = action.payload.index;
-  postRow.posts = updatedPosts;
-  return {
-    ...state,
-    postRows: updatedPostRows,
-  };
+  return state;
 };
 const clearPostRows = (state: PostRowsState): PostRowsState => {
   return {
@@ -220,25 +202,28 @@ const addPostsToFrontOfRow = (
       postRowUuid: string;
       posts: Array<Post>;
       postsToShowInRow: number;
+      subredditSortOrderOption: SubredditSortOrderOptionsEnum;
     };
   }
 ): PostRowsState => {
   const postRowUuid = action.payload.postRowUuid;
-  const updatedPostRows = [...state.postRows];
-  const postRow = updatedPostRows.find(
-    (postRow) => postRow.postRowUuid == postRowUuid
+  const postRowsDeepCopy: PostRow[] = JSON.parse(
+    JSON.stringify(state.postRows)
   );
-  if (postRow == undefined) {
+  const postRowIndex = postRowsDeepCopy.findIndex(
+    (postRow) => postRow.postRowUuid === postRowUuid
+  );
+  if (postRowIndex === -1) {
     return state;
   }
-  postRow.posts = [...action.payload.posts, ...postRow.posts];
-  if (postRow.posts.length > MAX_POSTS_PER_ROW) {
-    postRow.posts.splice(MAX_POSTS_PER_ROW - postRow.posts.length);
-  }
-
+  postRowsDeepCopy[postRowIndex] = createPostRow(
+    [...action.payload.posts, ...state.postRows[postRowIndex].posts],
+    state.postRowContentWidthPx,
+    action.payload.subredditSortOrderOption
+  );
   return {
     ...state,
-    postRows: updatedPostRows,
+    postRows: postRowsDeepCopy,
   };
 };
 const setPostCardWidthPercentage = (
@@ -263,33 +248,6 @@ const setPostRowContentWidthPx = (
   return {
     ...state,
     postRowContentWidthPx: action.payload,
-  };
-};
-const setLastAutoScrollPostRowState = (
-  state: PostRowsState,
-  action: {
-    type: string;
-    payload: {
-      postRowUuid: string;
-      postsToShow: Array<Post>;
-      scrollLeft: number;
-    };
-  }
-): PostRowsState => {
-  const postRowUuid = action.payload.postRowUuid;
-  const updatedPostRow = [...state.postRows];
-  const postRow = updatedPostRow.find(
-    (postRow) => postRow.postRowUuid === postRowUuid
-  );
-  if (postRow !== undefined) {
-    postRow.lastAutoScrollPostRowState = {
-      postsToShow: action.payload.postsToShow,
-      scrollLeft: action.payload.scrollLeft,
-    };
-  }
-  return {
-    ...state,
-    postRows: updatedPostRow,
   };
 };
 
@@ -349,7 +307,6 @@ const createPostRow = (
     postRowUuid: postRowUuid,
     posts: posts,
     postRowContentWidthAtCreation: postRowContentWidth,
-    lastAutoScrollPostRowState: undefined,
     shouldAutoScroll:
       subredditSortOrderOption !== SubredditSortOrderOptionsEnum.FrontPage,
   };
