@@ -7,7 +7,6 @@ import {
   PostRowsNumberPayloadAction,
   PostRowsState,
   PostRowsStringPayloadAction,
-  SetLastAutoScrollPostRowStateAction,
   SetPostAttachmentIndexAction,
   SetPostCardWidthPercentageAction,
 } from "../reducer/post-rows-reducer.ts";
@@ -21,7 +20,6 @@ export type PostRowsDispatch = Dispatch<
   | SetPostAttachmentIndexAction
   | AddPostsToFrontOfRowAction
   | SetPostCardWidthPercentageAction
-  | SetLastAutoScrollPostRowStateAction
 >;
 export const PostRowsContext = createContext<PostRowsState>(
   {} as PostRowsState
