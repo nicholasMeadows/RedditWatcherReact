@@ -147,7 +147,9 @@ function setupGlobalShortcut() {
   const quitAccelerator = "CommandOrControl+W";
   if (!globalShortcut.isRegistered(quitAccelerator)) {
     globalShortcut.register(quitAccelerator, () => {
-      app.quit();
+      if (myCapacitorApp.getMainWindow().isFocused()) {
+        app.quit();
+      }
     });
   }
   app.on("will-quit", () => {
