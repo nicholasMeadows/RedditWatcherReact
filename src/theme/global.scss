@@ -123,6 +123,12 @@ button[disabled] {
   font-size: 1em;
 }
 
+.select-label-relative {
+  margin-left: 0.8em;
+  font-size: 1.3em;
+  align-self: center;
+}
+
 .input {
   background-color: transparent;
   border: none;
@@ -187,8 +193,7 @@ input[type="number"] {
 }
 
 .settings-checkbox-input {
-  margin-left: auto;
-  margin-right: 1em;
+  margin-left: 1em;
   width: 2em;
   height: 2em;
   align-self: center;

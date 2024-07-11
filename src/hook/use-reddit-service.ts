@@ -36,9 +36,15 @@ export default function useRedditService() {
   const subredditQueueDispatch = useContext(SubredditQueueDispatchContext);
 
   const subredditLists = useContext(RedditListStateContext).subredditLists;
+  const subredditSourceOption = useContext(
+    AppConfigStateContext
+  ).subredditSourceOption;
   const subredditSortOrderOption = useContext(
     AppConfigStateContext
   ).subredditSortOrderOption;
+  const getAllSubredditsAtOnce = useContext(
+    AppConfigStateContext
+  ).getAllSubredditsAtOnce;
   const contentFiltering = useContext(AppConfigStateContext).contentFiltering;
   const subredditQueue = useContext(SubredditQueueStateContext).subredditQueue;
   const concatRedditUrlMaxLength = useContext(
@@ -59,9 +65,6 @@ export default function useRedditService() {
   const randomIterationSelectWeightOption = useContext(
     AppConfigStateContext
   ).randomIterationSelectWeightOption;
-  const selectedSubredditListSortOption = useContext(
-    AppConfigStateContext
-  ).selectedSubredditListSortOption;
   const redditServiceContextState = useContext(RedditServiceContext);
 
   const appNotificationsDispatch = useContext(AppNotificationsDispatchContext);
@@ -71,7 +74,9 @@ export default function useRedditService() {
   const getPostRowsPausedRef = useRef<boolean>(false);
   const redditCredentialsRef = useRef(redditCredentials);
   const postRowsRef = useRef(postRows);
+  const subredditSourceOptionRef = useRef(subredditSourceOption);
   const subredditSortOrderOptionRef = useRef(subredditSortOrderOption);
+  const getAllSubredditsAtOnceRef = useRef(getAllSubredditsAtOnce);
   const contentFilteringRef = useRef(contentFiltering);
   const subredditQueueRef = useRef(subredditQueue);
   const concatRedditUrlMaxLengthRef = useRef(concatRedditUrlMaxLength);
@@ -86,16 +91,15 @@ export default function useRedditService() {
   const randomIterationSelectWeightOptionRef = useRef(
     randomIterationSelectWeightOption
   );
-  const selectedSubredditListSortOptionRef = useRef(
-    selectedSubredditListSortOption
-  );
   const postsToShowInRowRef = useRef(postsToShowInRow);
 
   useEffect(() => {
     getPostRowsPausedRef.current = getPostRowsPaused;
     redditCredentialsRef.current = redditCredentials;
     postRowsRef.current = postRows;
+    subredditSourceOptionRef.current = subredditSourceOption;
     subredditSortOrderOptionRef.current = subredditSortOrderOption;
+    getAllSubredditsAtOnceRef.current = getAllSubredditsAtOnce;
     contentFilteringRef.current = contentFiltering;
     subredditQueueRef.current = subredditQueue;
     concatRedditUrlMaxLengthRef.current = concatRedditUrlMaxLength;
@@ -108,8 +112,6 @@ export default function useRedditService() {
     subredditListsRef.current = subredditLists;
     randomIterationSelectWeightOptionRef.current =
       randomIterationSelectWeightOption;
-    selectedSubredditListSortOptionRef.current =
-      selectedSubredditListSortOption;
     postsToShowInRowRef.current = postsToShowInRow;
   }, [
     concatRedditUrlMaxLength,
@@ -122,19 +124,22 @@ export default function useRedditService() {
     redditApiItemLimit,
     redditCredentials,
     selectSubredditIterationMethodOption,
-    selectedSubredditListSortOption,
     sortOrderDirection,
     subredditLists,
     subredditQueue,
     subredditSortOrderOption,
+    subredditSourceOption,
     topTimeFrame,
+    getAllSubredditsAtOnce,
   ]);
 
   const createCurrentStateObj = useCallback((): GetPostsFromSubredditState => {
     return JSON.parse(
       JSON.stringify({
         postRows: postRowsRef.current,
+        subredditSourceOption: subredditSourceOptionRef.current,
         subredditSortOrderOption: subredditSortOrderOptionRef.current,
+        getAllSubredditsAtOnce: getAllSubredditsAtOnceRef.current,
         contentFiltering: contentFilteringRef.current,
         subredditQueue: subredditQueueRef.current,
         concatRedditUrlMaxLength: concatRedditUrlMaxLengthRef.current,
@@ -154,8 +159,6 @@ export default function useRedditService() {
           redditServiceContextState.lastPostRowWasSortOrderNew.current,
         randomIterationSelectWeightOption:
           randomIterationSelectWeightOptionRef.current,
-        selectedSubredditListSortOption:
-          selectedSubredditListSortOptionRef.current,
       })
     );
   }, [
@@ -239,7 +242,7 @@ export default function useRedditService() {
         postRowsDispatch,
         sideBarDispatch,
         subredditListsRef.current,
-        getPostsFromSubredditState.subredditSortOrderOption
+        getPostsFromSubredditState.subredditSourceOption
       );
     },
     [

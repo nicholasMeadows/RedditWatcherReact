@@ -1,24 +1,31 @@
 import { useContext } from "react";
 import PostSortOrderOptionsEnum from "./../model/config/enums/PostSortOrderOptionsEnum.ts";
 import TopTimeFrameOptionsEnum from "./../model/config/enums/TopTimeFrameOptionsEnum.ts";
-import SubredditSortOrderOptionsEnum from "./../model/config/enums/SubredditSortOrderOptionsEnum.ts";
 import { checkPlatformForSubredditSortOrderOption } from "./../util/PlatformUtil.ts";
 import ContentFilteringOptionEnum from "./../model/config/enums/ContentFilteringOptionEnum.ts";
-import SelectedSubredditListSortOptionEnum from "./../model/config/enums/SelectedSubredditListSortOptionEnum.ts";
 import {
   AppConfigDispatchContext,
   AppConfigStateContext,
 } from "../context/app-config-context.ts";
 import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
+import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
+import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum.ts";
+import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
 
 const RedditSourceSettings: React.FC = () => {
   const appConfigDispatch = useContext(AppConfigDispatchContext);
+  const subredditSourceOption = useContext(
+    AppConfigStateContext
+  ).subredditSourceOption;
   const subredditSortOrderOption = useContext(
     AppConfigStateContext
   ).subredditSortOrderOption;
-  const selectedSubredditListSortOption = useContext(
+  const getAllSubredditsAtOnce = useContext(
     AppConfigStateContext
-  ).selectedSubredditListSortOption;
+  ).getAllSubredditsAtOnce;
+  const selectSubredditIterationMethodOption = useContext(
+    AppConfigStateContext
+  ).selectSubredditIterationMethodOption;
   const postSortOrder = useContext(AppConfigStateContext).postSortOrderOption;
   const topTimeFrameOption = useContext(
     AppConfigStateContext
@@ -37,16 +44,16 @@ const RedditSourceSettings: React.FC = () => {
       <div className="settings-item flex-column">
         <label className="select-label">Subreddit Source</label>
         <select
-          value={subredditSortOrderOption}
+          value={subredditSourceOption}
           onChange={(event) =>
             appConfigDispatch({
-              type: AppConfigActionType.SET_SUBREDDIT_SORT_ORDER_OPTION,
-              payload: event.target.value as SubredditSortOrderOptionsEnum,
+              type: AppConfigActionType.SET_SUBREDDIT_SOURCE_OPTION,
+              payload: event.target.value as SubredditSourceOptionsEnum,
             })
           }
           className="select"
         >
-          {Object.entries(SubredditSortOrderOptionsEnum).map((key) => {
+          {Object.entries(SubredditSourceOptionsEnum).map((key) => {
             return (
               <option
                 hidden={!checkPlatformForSubredditSortOrderOption(key[1])}
@@ -61,25 +68,66 @@ const RedditSourceSettings: React.FC = () => {
       </div>
       <hr />
       <div className="settings-item flex-column">
-        <label className="select-label">Sort Selected Subreddit lists by</label>
+        <label className="select-label">Subreddit Sort By</label>
         <select
-          value={selectedSubredditListSortOption}
+          value={subredditSortOrderOption}
           onChange={(event) =>
             appConfigDispatch({
-              type: AppConfigActionType.SET_SELECTED_SUBREDDIT_LIST_SORT_OPTION,
-              payload: event.target
-                .value as SelectedSubredditListSortOptionEnum,
+              type: AppConfigActionType.SET_SUBREDDIT_SORT_ORDER_OPTION,
+              payload: event.target.value as SubredditSortOrderOptionsEnum,
             })
           }
           className="select"
         >
-          {Object.entries(SelectedSubredditListSortOptionEnum).map((key) => {
+          {Object.entries(SubredditSortOrderOptionsEnum).map((key) => {
             return (
               <option key={key[0]} value={key[1]}>
                 {key[1]}
               </option>
             );
           })}
+        </select>
+      </div>
+      <hr />
+      <div className="settings-item flex-row">
+        <label className="select-label-relative">
+          Get All Subreddits At Once
+        </label>
+        <input
+          type={"checkbox"}
+          className={"settings-checkbox-input"}
+          checked={getAllSubredditsAtOnce}
+          onChange={() => {
+            appConfigDispatch({
+              type: AppConfigActionType.SET_GET_ALL_SUBREDDITS_AT_ONCE,
+              payload: !getAllSubredditsAtOnce,
+            });
+          }}
+        />
+      </div>
+      <hr />
+      <div className="settings-item flex-column">
+        <label className="select-label">Subreddit Iteration method</label>
+        <select
+          value={selectSubredditIterationMethodOption}
+          onChange={(event) =>
+            appConfigDispatch({
+              type: AppConfigActionType.SET_SELECT_SUBREDDIT_ITERATION_METHOD_OPTION,
+              payload: event.target
+                .value as SelectSubredditIterationMethodOptionsEnum,
+            })
+          }
+          className="select"
+        >
+          {Object.entries(SelectSubredditIterationMethodOptionsEnum).map(
+            (key) => {
+              return (
+                <option key={key[0]} value={key[1]}>
+                  {key[1]}
+                </option>
+              );
+            }
+          )}
         </select>
       </div>
       <hr />

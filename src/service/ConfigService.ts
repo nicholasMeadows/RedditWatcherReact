@@ -13,26 +13,27 @@ import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptions
 import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum";
 import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum";
 import SelectSubredditListMenuSortOptionEnum from "../model/config/enums/SelectSubredditListMenuSortOptionEnum";
-import SelectedSubredditListSortOptionEnum from "../model/config/enums/SelectedSubredditListSortOptionEnum";
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum";
-import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum";
 import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEnum";
 import getPlatform from "../util/PlatformUtil";
 import { AutoScrollPostRowOptionEnum } from "../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import { WindowElectronAPI } from "../model/WindowElectronAPI.ts";
+import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
+import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum.ts";
 
 const REDDIT_CREDENTIALS_KEY = "redditCredentials";
 const REDDIT_USERNAME_KEY = "username";
 const REDDIT_PASSWORD_KEY = "password";
 const REDDIT_CLIENT_ID_KEY = "clientId";
 const REDDIT_CLIENT_SECRET_KEY = "clientSecret";
+const SUBREDDIT_SOURCE_OPTION_KEY = "subredditSourceOption";
 const SUBREDDIT_SORT_ORDER_OPTION_KEY = "subredditSortOrderOption";
+const GET_ALL_SUBREDDITS_AT_ONCE = "getAllSubredditsAtOnce";
 const AUTO_SCROLL_POST_ROW = "autoScrollPostRowOption";
 const AUTO_SCROLL_POST_ROW_DIRECTION = "autoScrollPostRowDirectionOption";
 const AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD =
   "autoScrollPostRowRateSecondsForSinglePostCard";
-const SELECTED_SUBREDDIT_LIST_SORT_OPTION = "selectedSubredditListSortOption";
 const RANDOM_ITERATION_SELECT_WEIGHT_OPTION =
   "randomIterationSelectWeightOption";
 const SELECT_SUBREDDIT_LIST_MENU_SORT_OPTION =
@@ -92,21 +93,26 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
     redditClientSecret = redditCredentialsObj[REDDIT_CLIENT_SECRET_KEY] || "";
   }
 
-  let subredditSortOrderOption =
-    configJsonObj[SUBREDDIT_SORT_ORDER_OPTION_KEY] ||
-    SubredditSortOrderOptionsEnum.Random;
+  let subredditSourceOptionsEnum =
+    configJsonObj[SUBREDDIT_SOURCE_OPTION_KEY] ||
+    SubredditSourceOptionsEnum.FrontPage;
 
   if (
-    (subredditSortOrderOption ==
-      SubredditSortOrderOptionsEnum.RedditListDotCom24HourGrowth ||
-      subredditSortOrderOption ==
-        SubredditSortOrderOptionsEnum.RedditListDotComRecentActivity ||
-      subredditSortOrderOption ==
-        SubredditSortOrderOptionsEnum.RedditListDotComSubscribers) &&
+    (subredditSourceOptionsEnum ==
+      SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth ||
+      subredditSourceOptionsEnum ==
+        SubredditSourceOptionsEnum.RedditListDotComRecentActivity ||
+      subredditSourceOptionsEnum ==
+        SubredditSourceOptionsEnum.RedditListDotComSubscribers) &&
     getPlatform() == Platform.Web
   ) {
-    subredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
+    subredditSourceOptionsEnum = SubredditSourceOptionsEnum.FrontPage;
   }
+  const subredditSortOrderOption =
+    configJsonObj[SUBREDDIT_SORT_ORDER_OPTION_KEY] ||
+    SubredditSortOrderOptionsEnum.Alphabetically;
+  const getAllSubredditsAtOnce =
+    configJsonObj[GET_ALL_SUBREDDITS_AT_ONCE] || false;
   const autoScrollPostRowOption =
     configJsonObj[AUTO_SCROLL_POST_ROW] ||
     AutoScrollPostRowOptionEnum.SmoothContinuousScroll;
@@ -115,9 +121,6 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
     AutoScrollPostRowDirectionOptionEnum.Left;
   const autoScrollPostRowRateSecondsForSinglePostCard =
     configJsonObj[AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD] || 5;
-  const selectedSubredditListSortOption =
-    configJsonObj[SELECTED_SUBREDDIT_LIST_SORT_OPTION] ||
-    SelectedSubredditListSortOptionEnum.Alphabetically;
   const randomIterationSelectWeightOption =
     configJsonObj[RANDOM_ITERATION_SELECT_WEIGHT_OPTION] ||
     RandomIterationSelectWeightOptionsEnum.PureRandom;
@@ -151,12 +154,13 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
       clientId: redditClientId,
       clientSecret: redditClientSecret,
     },
+    subredditSourceOption: subredditSourceOptionsEnum,
     subredditSortOrderOption: subredditSortOrderOption,
+    getAllSubredditsAtOnce: getAllSubredditsAtOnce,
     autoScrollPostRowOption: autoScrollPostRowOption,
     autoScrollPostRowDirectionOption: autoScrollPostRowDirectionOption,
     autoScrollPostRowRateSecondsForSinglePostCard:
       autoScrollPostRowRateSecondsForSinglePostCard,
-    selectedSubredditListSortOption: selectedSubredditListSortOption,
     randomIterationSelectWeightOption: randomIterationSelectWeightOption,
     selectSubredditListMenuSortOption: selectSubredditListMenuSortOption,
     sortOrderDirectionOption: sortOrderDirectionOption,

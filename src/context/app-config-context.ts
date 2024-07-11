@@ -5,16 +5,17 @@ import {
   AppConfigActionAutoScrollPostRowDirectionOptionEnumPayload,
   AppConfigActionAutoScrollPostRowOptionEnumPayload,
   AppConfigActionContentFilteringEnumPayload,
+  AppConfigActionGetAllSubredditsAtOnce,
   AppConfigActionNoPayload,
   AppConfigActionNumberPayload,
   AppConfigActionPostSortOrderOptionEnumPayload,
   AppConfigActionRandomIterationSelectWeightOptionEnumPayload,
-  AppConfigActionSelectedSubredditListSortOptionEnumPayload,
   AppConfigActionSelectSubredditIterationMethodOptionEnumPayload,
   AppConfigActionSelectSubredditListMenuSortOptionEnumPayload,
   AppConfigActionSortOrderDirectionOptionEnumPayload,
   AppConfigActionStringPayload,
   AppConfigActionSubredditSortOrderOptionsEnumPayload,
+  AppConfigActionSubredditSourceOptionEnumPayload,
   AppConfigActionTopTimeFrameOptionEnumPayload,
 } from "../reducer/app-config-reducer.ts";
 
@@ -24,10 +25,11 @@ export const AppConfigStateContext = createContext<AppConfigState>(
 
 type dispatchType = Dispatch<
   | AppConfigActionStringPayload
+  | AppConfigActionSubredditSourceOptionEnumPayload
   | AppConfigActionSubredditSortOrderOptionsEnumPayload
+  | AppConfigActionGetAllSubredditsAtOnce
   | AppConfigActionAutoScrollPostRowOptionEnumPayload
   | AppConfigActionAutoScrollPostRowDirectionOptionEnumPayload
-  | AppConfigActionSelectedSubredditListSortOptionEnumPayload
   | AppConfigActionRandomIterationSelectWeightOptionEnumPayload
   | AppConfigActionSelectSubredditListMenuSortOptionEnumPayload
   | AppConfigActionSortOrderDirectionOptionEnumPayload

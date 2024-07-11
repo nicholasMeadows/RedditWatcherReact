@@ -3,7 +3,6 @@ import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/Auto
 import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum.ts";
 import SelectSubredditListMenuSortOptionEnum from "../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum.ts";
-import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
 import { useContext } from "react";
 import {
   AppConfigDispatchContext,
@@ -35,9 +34,7 @@ const ApplicationSettings: React.FC = () => {
   const sortOrderDirectionOption = useContext(
     AppConfigStateContext
   ).sortOrderDirectionOption;
-  const selectSubredditIterationMethodOption = useContext(
-    AppConfigStateContext
-  ).selectSubredditIterationMethodOption;
+
   const concatRedditUrlMaxLength = useContext(
     AppConfigStateContext
   ).concatRedditUrlMaxLength;
@@ -127,31 +124,6 @@ const ApplicationSettings: React.FC = () => {
               </option>
             );
           })}
-        </select>
-      </div>
-      <hr />
-      <div className="settings-item flex-column">
-        <label className="select-label">Subreddit Iteration method</label>
-        <select
-          value={selectSubredditIterationMethodOption}
-          onChange={(event) =>
-            appConfigDispatch({
-              type: AppConfigActionType.SET_SELECT_SUBREDDIT_ITERATION_METHOD_OPTION,
-              payload: event.target
-                .value as SelectSubredditIterationMethodOptionsEnum,
-            })
-          }
-          className="select"
-        >
-          {Object.entries(SelectSubredditIterationMethodOptionsEnum).map(
-            (key) => {
-              return (
-                <option key={key[0]} value={key[1]}>
-                  {key[1]}
-                </option>
-              );
-            }
-          )}
         </select>
       </div>
       <hr />

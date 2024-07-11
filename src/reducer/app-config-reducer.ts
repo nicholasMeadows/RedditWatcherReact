@@ -22,21 +22,22 @@ import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptions
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum.ts";
 import SelectSubredditListMenuSortOptionEnum from "../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
 import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum.ts";
-import SelectedSubredditListSortOptionEnum from "../model/config/enums/SelectedSubredditListSortOptionEnum.ts";
 import { saveConfig } from "../service/ConfigService.ts";
 import { AppConfig } from "../model/config/AppConfig.ts";
+import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
 
 export enum AppConfigActionType {
   SET_USERNAME = "SET_USERNAME",
   SET_PASSWORD = "SET_PASSWORD",
   SET_CLIENT_ID = "SET_CLIENT_ID",
   SET_CLIENT_SECRET = "SET_CLIENT_SECRET",
+  SET_SUBREDDIT_SOURCE_OPTION = "SET_SUBREDDIT_SOURCE_OPTION",
   SET_SUBREDDIT_SORT_ORDER_OPTION = "SET_SUBREDDIT_SORT_ORDER_OPTION",
+  SET_GET_ALL_SUBREDDITS_AT_ONCE = "SET_GET_ALL_SUBREDDITS_AT_ONCE",
   SET_AUTO_SCROLL_POST_ROW_OPTION = "SET_AUTO_SCROLL_POST_ROW_OPTION",
   SET_AUTO_SCROLL_POST_ROW_DIRECTION_OPTION = "SET_AUTO_SCROLL_POST_ROW_DIRECTION_OPTION",
   SET_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD = "SET_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD",
   CLEAR_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD_VALIDATION_ERROR = "CLEAR_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD_VALIDATION_ERROR",
-  SET_SELECTED_SUBREDDIT_LIST_SORT_OPTION = "SET_SELECTED_SUBREDDIT_LIST_SORT_OPTION",
   SET_RANDOM_ITERATION_SELECT_WEIGHT_OPTION = "SET_RANDOM_ITERATION_SELECT_WEIGHT_OPTION",
   SET_SELECT_SUBREDDIT_LIST_MENU_SORT_OPTION = "SET_SELECT_SUBREDDIT_LIST_MENU_SORT_OPTION",
   SET_SORT_ORDER_DIRECTION_OPTION = "SET_SORT_ORDER_DIRECTION_OPTION",
@@ -70,11 +71,20 @@ export type AppConfigActionStringPayload = {
     | AppConfigActionType.CLEAR_POST_ROWS_TO_SHOW_IN_VIEW_VALIDATION_ERROR;
   payload: string;
 };
-
+export type AppConfigActionSubredditSourceOptionEnumPayload = {
+  type: AppConfigActionType.SET_SUBREDDIT_SOURCE_OPTION;
+  payload: SubredditSourceOptionsEnum;
+};
 export type AppConfigActionSubredditSortOrderOptionsEnumPayload = {
   type: AppConfigActionType.SET_SUBREDDIT_SORT_ORDER_OPTION;
   payload: SubredditSortOrderOptionsEnum;
 };
+
+export type AppConfigActionGetAllSubredditsAtOnce = {
+  type: AppConfigActionType.SET_GET_ALL_SUBREDDITS_AT_ONCE;
+  payload: boolean;
+};
+
 export type AppConfigActionAutoScrollPostRowOptionEnumPayload = {
   type: AppConfigActionType.SET_AUTO_SCROLL_POST_ROW_OPTION;
   payload: AutoScrollPostRowOptionEnum;
@@ -82,10 +92,6 @@ export type AppConfigActionAutoScrollPostRowOptionEnumPayload = {
 export type AppConfigActionAutoScrollPostRowDirectionOptionEnumPayload = {
   type: AppConfigActionType.SET_AUTO_SCROLL_POST_ROW_DIRECTION_OPTION;
   payload: AutoScrollPostRowDirectionOptionEnum;
-};
-export type AppConfigActionSelectedSubredditListSortOptionEnumPayload = {
-  type: AppConfigActionType.SET_SELECTED_SUBREDDIT_LIST_SORT_OPTION;
-  payload: SelectedSubredditListSortOptionEnum;
 };
 export type AppConfigActionRandomIterationSelectWeightOptionEnumPayload = {
   type: AppConfigActionType.SET_RANDOM_ITERATION_SELECT_WEIGHT_OPTION;
@@ -145,10 +151,11 @@ export default function AppConfigReducer(
   state: AppConfigState,
   action:
     | AppConfigActionStringPayload
+    | AppConfigActionSubredditSourceOptionEnumPayload
     | AppConfigActionSubredditSortOrderOptionsEnumPayload
+    | AppConfigActionGetAllSubredditsAtOnce
     | AppConfigActionAutoScrollPostRowOptionEnumPayload
     | AppConfigActionAutoScrollPostRowDirectionOptionEnumPayload
-    | AppConfigActionSelectedSubredditListSortOptionEnumPayload
     | AppConfigActionRandomIterationSelectWeightOptionEnumPayload
     | AppConfigActionSelectSubredditListMenuSortOptionEnumPayload
     | AppConfigActionSortOrderDirectionOptionEnumPayload
@@ -169,8 +176,12 @@ export default function AppConfigReducer(
       return setClientId(state, action);
     case AppConfigActionType.SET_CLIENT_SECRET:
       return setClientSecret(state, action);
+    case AppConfigActionType.SET_SUBREDDIT_SOURCE_OPTION:
+      return setSubredditSourceOption(state, action);
     case AppConfigActionType.SET_SUBREDDIT_SORT_ORDER_OPTION:
       return setSubredditSortOrderOption(state, action);
+    case AppConfigActionType.SET_GET_ALL_SUBREDDITS_AT_ONCE:
+      return setGetAllSubredditsAtOnce(state, action);
     case AppConfigActionType.SET_AUTO_SCROLL_POST_ROW_OPTION:
       return setAutoScrollPostRowOption(state, action);
     case AppConfigActionType.SET_AUTO_SCROLL_POST_ROW_DIRECTION_OPTION:
@@ -181,8 +192,7 @@ export default function AppConfigReducer(
       return clearAutoScrollPostRowRateSecondsForSinglePostCardValidationError(
         state
       );
-    case AppConfigActionType.SET_SELECTED_SUBREDDIT_LIST_SORT_OPTION:
-      return setSelectedSubredditListSortOption(state, action);
+
     case AppConfigActionType.SET_RANDOM_ITERATION_SELECT_WEIGHT_OPTION:
       return setRandomIterationSelectWeightOption(state, action);
     case AppConfigActionType.SET_SELECT_SUBREDDIT_LIST_MENU_SORT_OPTION:
@@ -300,12 +310,33 @@ const setClientSecret = (
   saveConfig(updatedState);
   return updatedState;
 };
+const setSubredditSourceOption = (
+  state: AppConfigState,
+  action: AppConfigActionSubredditSourceOptionEnumPayload
+): AppConfigState => {
+  const updatedState = { ...state };
+  updatedState.subredditSourceOption = action.payload;
+  saveConfig(updatedState);
+  return updatedState;
+};
 const setSubredditSortOrderOption = (
   state: AppConfigState,
   action: AppConfigActionSubredditSortOrderOptionsEnumPayload
 ): AppConfigState => {
   const updatedState = { ...state };
   updatedState.subredditSortOrderOption = action.payload;
+  saveConfig(updatedState);
+  return updatedState;
+};
+
+const setGetAllSubredditsAtOnce = (
+  state: AppConfigState,
+  action: AppConfigActionGetAllSubredditsAtOnce
+): AppConfigState => {
+  const updatedState = {
+    ...state,
+    getAllSubredditsAtOnce: action.payload,
+  };
   saveConfig(updatedState);
   return updatedState;
 };
@@ -367,15 +398,6 @@ const clearAutoScrollPostRowRateSecondsForSinglePostCardValidationError = (
     ...state,
     autoScrollPostRowRateSecondsForSinglePostCardValidationError: undefined,
   };
-};
-const setSelectedSubredditListSortOption = (
-  state: AppConfigState,
-  action: AppConfigActionSelectedSubredditListSortOptionEnumPayload
-): AppConfigState => {
-  const updatedState = { ...state };
-  updatedState.selectedSubredditListSortOption = action.payload;
-  saveConfig(updatedState);
-  return updatedState;
 };
 const setRandomIterationSelectWeightOption = (
   state: AppConfigState,

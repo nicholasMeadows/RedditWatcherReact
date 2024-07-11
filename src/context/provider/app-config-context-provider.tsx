@@ -4,7 +4,6 @@ import { AppConfigState } from "../../model/config/AppConfigState.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import SubredditSortOrderOptionsEnum from "../../model/config/enums/SubredditSortOrderOptionsEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
-import SelectedSubredditListSortOptionEnum from "../../model/config/enums/SelectedSubredditListSortOptionEnum.ts";
 import RandomIterationSelectWeightOptionsEnum from "../../model/config/enums/RandomIterationSelectWeightOptionsEnum.ts";
 import SelectSubredditListMenuSortOptionEnum from "../../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
 import SortOrderDirectionOptionsEnum from "../../model/config/enums/SortOrderDirectionOptionsEnum.ts";
@@ -16,15 +15,17 @@ import {
   AppConfigDispatchContext,
   AppConfigStateContext,
 } from "../app-config-context.ts";
+import SubredditSourceOptionsEnum from "../../model/config/enums/SubredditSourceOptionsEnum.ts";
 
-const defaultSubredditSortOrderOption = SubredditSortOrderOptionsEnum.Random;
+const defaultSubredditSourceOption = SubredditSourceOptionsEnum.FrontPage;
+const defaultSubredditSortOrderOption =
+  SubredditSortOrderOptionsEnum.Alphabetically;
+const defaultGetAllSubredditsAtOnce = false;
 const defaultAutoScrollPostRowOption =
   AutoScrollPostRowOptionEnum.SmoothContinuousScroll;
 const defaultAutoScrollPostRowDirectionOption =
   AutoScrollPostRowDirectionOptionEnum.Left;
 const defaultAutoScrollPostRowRateSecondsForSinglePostCard = 5;
-const defaultSelectedSubredditListSortOption =
-  SelectedSubredditListSortOptionEnum.Alphabetically;
 const defaultRandomIterationSelectWeightOption =
   RandomIterationSelectWeightOptionsEnum.PureRandom;
 const defaultSelectSubredditListMenuSortOption =
@@ -52,13 +53,14 @@ const initialState: AppConfigState = {
     clientSecret: "",
     clientSecretValidationError: undefined,
   },
+  subredditSourceOption: defaultSubredditSourceOption,
   subredditSortOrderOption: defaultSubredditSortOrderOption,
+  getAllSubredditsAtOnce: defaultGetAllSubredditsAtOnce,
   autoScrollPostRowOption: defaultAutoScrollPostRowOption,
   autoScrollPostRowDirectionOption: defaultAutoScrollPostRowDirectionOption,
   autoScrollPostRowRateSecondsForSinglePostCard:
     defaultAutoScrollPostRowRateSecondsForSinglePostCard,
   autoScrollPostRowRateSecondsForSinglePostCardValidationError: undefined,
-  selectedSubredditListSortOption: defaultSelectedSubredditListSortOption,
   randomIterationSelectWeightOption: defaultRandomIterationSelectWeightOption,
   selectSubredditListMenuSortOption: defaultSelectSubredditListMenuSortOption,
   sortOrderDirectionOption: defaultSortOrderDirectionOption,

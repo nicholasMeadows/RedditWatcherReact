@@ -1,19 +1,21 @@
+import { Subreddit } from "../Subreddit/Subreddit.ts";
+import { Post } from "../Post/Post.ts";
+import TopTimeFrameOptionsEnum from "../config/enums/TopTimeFrameOptionsEnum.ts";
+import PostSortOrderOptionsEnum from "../config/enums/PostSortOrderOptionsEnum.ts";
+import { SubredditLists } from "../SubredditList/SubredditLists.ts";
+import SubredditSourceOptionsEnum from "../config/enums/SubredditSourceOptionsEnum.ts";
+import SortOrderDirectionOptionsEnum from "../config/enums/SortOrderDirectionOptionsEnum.ts";
 import SubredditSortOrderOptionsEnum from "../config/enums/SubredditSortOrderOptionsEnum.ts";
 import ContentFilteringOptionEnum from "../config/enums/ContentFilteringOptionEnum.ts";
-import { Subreddit } from "../Subreddit/Subreddit.ts";
-import PostSortOrderOptionsEnum from "../config/enums/PostSortOrderOptionsEnum.ts";
-import TopTimeFrameOptionsEnum from "../config/enums/TopTimeFrameOptionsEnum.ts";
-import SelectSubredditIterationMethodOptionsEnum from "../config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
-import SortOrderDirectionOptionsEnum from "../config/enums/SortOrderDirectionOptionsEnum.ts";
-import { SubredditLists } from "../SubredditList/SubredditLists.ts";
 import { PostRow } from "../PostRow.ts";
-import { Post } from "../Post/Post.ts";
+import SelectSubredditIterationMethodOptionsEnum from "../config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
 import RandomIterationSelectWeightOptionsEnum from "../config/enums/RandomIterationSelectWeightOptionsEnum.ts";
-import SelectedSubredditListSortOptionEnum from "../config/enums/SelectedSubredditListSortOptionEnum.ts";
 
 export type GetPostsFromSubredditState = {
   postRows: Array<PostRow>;
+  subredditSourceOption: SubredditSourceOptionsEnum;
   subredditSortOrderOption: SubredditSortOrderOptionsEnum;
+  getAllSubredditsAtOnce: boolean;
   contentFiltering: ContentFilteringOptionEnum;
   subredditQueue: Array<Subreddit>;
   concatRedditUrlMaxLength: number;
@@ -28,7 +30,6 @@ export type GetPostsFromSubredditState = {
   subredditLists: Array<SubredditLists>;
   lastPostRowWasSortOrderNew: boolean;
   randomIterationSelectWeightOption: RandomIterationSelectWeightOptionsEnum;
-  selectedSubredditListSortOption: SelectedSubredditListSortOptionEnum;
 };
 
 export type GetPostsUpdatedValues = {

@@ -1,6 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { Platform } from "../model/Platform";
-import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum";
+import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
 
 export default function getPlatform(): Platform {
   if (
@@ -21,13 +21,14 @@ export default function getPlatform(): Platform {
   }
   return Platform.Unknown;
 }
+
 export function checkPlatformForSubredditSortOrderOption(
-  option: SubredditSortOrderOptionsEnum
+  option: SubredditSourceOptionsEnum
 ): boolean {
   if (
-    option == SubredditSortOrderOptionsEnum.RedditListDotCom24HourGrowth ||
-    option == SubredditSortOrderOptionsEnum.RedditListDotComRecentActivity ||
-    option == SubredditSortOrderOptionsEnum.RedditListDotComSubscribers
+    option == SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth ||
+    option == SubredditSourceOptionsEnum.RedditListDotComRecentActivity ||
+    option == SubredditSourceOptionsEnum.RedditListDotComSubscribers
   ) {
     return getPlatform() != Platform.Web;
   }

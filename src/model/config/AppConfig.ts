@@ -4,20 +4,21 @@ import PostSortOrderOptionsEnum from "./enums/PostSortOrderOptionsEnum";
 import RandomIterationSelectWeightOptionsEnum from "./enums/RandomIterationSelectWeightOptionsEnum";
 import SelectSubredditIterationMethodOptionsEnum from "./enums/SelectSubredditIterationMethodOptionsEnum";
 import SelectSubredditListMenuSortOptionEnum from "./enums/SelectSubredditListMenuSortOptionEnum";
-import SelectedSubredditListSortOptionEnum from "./enums/SelectedSubredditListSortOptionEnum";
 import SortOrderDirectionOptionsEnum from "./enums/SortOrderDirectionOptionsEnum";
 import SubredditSortOrderOptionsEnum from "./enums/SubredditSortOrderOptionsEnum";
 import TopTimeFrameOptionsEnum from "./enums/TopTimeFrameOptionsEnum";
 import { AutoScrollPostRowOptionEnum } from "./enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "./enums/AutoScrollPostRowDirectionOptionEnum.ts";
+import SubredditSourceOptionsEnum from "./enums/SubredditSourceOptionsEnum.ts";
 
 export interface AppConfig {
   redditCredentials: RedditCredentials;
+  subredditSourceOption: SubredditSourceOptionsEnum;
   subredditSortOrderOption: SubredditSortOrderOptionsEnum;
+  getAllSubredditsAtOnce: boolean;
   autoScrollPostRowOption: AutoScrollPostRowOptionEnum;
   autoScrollPostRowDirectionOption: AutoScrollPostRowDirectionOptionEnum;
   autoScrollPostRowRateSecondsForSinglePostCard: number;
-  selectedSubredditListSortOption: SelectedSubredditListSortOptionEnum;
   randomIterationSelectWeightOption: RandomIterationSelectWeightOptionsEnum;
   selectSubredditListMenuSortOption: SelectSubredditListMenuSortOptionEnum;
   sortOrderDirectionOption: SortOrderDirectionOptionsEnum;

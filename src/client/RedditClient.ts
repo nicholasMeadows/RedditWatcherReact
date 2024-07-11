@@ -271,6 +271,7 @@ export default class RedditClient {
     masterSubscribedSubredditList: Array<Subreddit>,
     redditLists: Array<SubredditLists>
   ): Promise<Array<Post>> {
+    console.log(`getting posts from uri ${uri}`);
     // CheckIsUserLoggedIn();
     const authInfo = await this.getAuthInfo();
     this.checkRateLimits();

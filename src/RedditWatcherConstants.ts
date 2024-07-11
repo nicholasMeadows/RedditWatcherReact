@@ -16,7 +16,7 @@ export const MODIFY_SUBREDDIT_QUEUE_ROUTE = "/modifysubredditqueue";
 export const NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT = "56px";
 
 export const MIN_CONCAT_REDDIT_URL_LENGTH = 1;
-export const Max_CONCAT_REDDIT_URL_LENGTH = 1000;
+export const Max_CONCAT_REDDIT_URL_LENGTH = 8000;
 
 export const MIN_REDDIT_API_ITEM_LIMIT = 1;
 export const MAX_REDDIT_API_ITEM_LIMIT = 25;
