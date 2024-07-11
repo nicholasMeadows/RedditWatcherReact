@@ -180,76 +180,30 @@ export default class RedditService {
       subredditLists
     );
 
-    if (
-      subredditSourceOption !==
-        SubredditSourceOptionsEnum.RedditListDotComRecentActivity &&
-      subredditSourceOption !==
-        SubredditSourceOptionsEnum.RedditListDotComSubscribers &&
-      subredditSourceOption !==
-        SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth
-    ) {
-      sourceSubreddits = this.sortSourceSubreddits(
-        sourceSubreddits,
-        subredditSortOption,
-        sortOrderDirection
-      );
-    }
+    sourceSubreddits = this.sortSourceSubreddits(
+      sourceSubreddits,
+      subredditSourceOption,
+      subredditSortOption,
+      sortOrderDirection
+    );
     getPostsUpdatedValues.subredditsToShowInSideBar = sourceSubreddits;
-    let subredditsToGet = [];
-    if (getAllSubredditsAtOnce) {
-      subredditsToGet.push(...sourceSubreddits);
-    } else {
-      let index = 0;
-      if (
-        selectSubredditIterationMethodOption ===
-        SelectSubredditIterationMethodOptionsEnum.Random
-      ) {
-        index = Math.floor(Math.random() * sourceSubreddits.length);
-
-        if (
-          RandomIterationSelectWeightOptionsEnum.PureRandom ==
-          randomIterationSelectWeightOption
-        ) {
-          index = Math.floor(Math.random() * sourceSubreddits.length);
-        } else if (
-          RandomIterationSelectWeightOptionsEnum.WeightedBySubCount ==
-          randomIterationSelectWeightOption
-        ) {
-          let totalWeight: number = 0;
-          sourceSubreddits.map((sub) => (totalWeight += sub.subscribers));
-          const randomWeightedIndex = Math.floor(Math.random() * totalWeight);
-          let itemWeightedIndex = 0;
-          for (let i = 0; i < sourceSubreddits.length; ++i) {
-            const item = sourceSubreddits[i];
-            itemWeightedIndex += item.subscribers;
-            if (randomWeightedIndex < itemWeightedIndex) {
-              index = i;
-              break;
-            }
-          }
-        }
-      } else if (
-        subredditSourceOption ===
-          SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth ||
-        subredditSourceOption ===
-          SubredditSourceOptionsEnum.RedditListDotComRecentActivity ||
-        subredditSourceOption ===
-          SubredditSourceOptionsEnum.RedditListDotComSubscribers
-      ) {
-        index =
-          nsfwSubredditIndex >= sourceSubreddits.length
-            ? 0
-            : nsfwSubredditIndex;
-        getPostsUpdatedValues.nsfwRedditListIndex = index + 1;
-      } else {
-        index = subredditIndex >= sourceSubreddits.length ? 0 : subredditIndex;
-        getPostsUpdatedValues.subredditIndex = index + 1;
-      }
-      const singleSubredditToGet = sourceSubreddits[index];
-      subredditsToGet = [singleSubredditToGet];
-      getPostsUpdatedValues.mostRecentSubredditGotten = singleSubredditToGet;
-    }
-
+    let {
+      subredditsToGet,
+      updatedSubredditIndex,
+      updatedNsfwSubredditIndex,
+      mostRecentSubredditGotten,
+    } = this.getSubredditsToGetPostsFor(
+      sourceSubreddits,
+      subredditSourceOption,
+      getAllSubredditsAtOnce,
+      selectSubredditIterationMethodOption,
+      randomIterationSelectWeightOption,
+      nsfwSubredditIndex,
+      subredditIndex
+    );
+    getPostsUpdatedValues.subredditIndex = updatedSubredditIndex;
+    getPostsUpdatedValues.nsfwRedditListIndex = updatedNsfwSubredditIndex;
+    getPostsUpdatedValues.mostRecentSubredditGotten = mostRecentSubredditGotten;
     const posts = await this.getPostsForSubreddit(
       subredditsToGet,
       concatUrlMaxLength,
@@ -354,9 +308,20 @@ export default class RedditService {
 
   private sortSourceSubreddits(
     subreddits: Subreddit[],
+    subredditSourceOption: SubredditSourceOptionsEnum,
     subredditSortOption: SubredditSortOrderOptionsEnum,
     sortOrderDirection: SortOrderDirectionOptionsEnum
   ) {
+    if (
+      subredditSourceOption !==
+        SubredditSourceOptionsEnum.RedditListDotComRecentActivity &&
+      subredditSourceOption !==
+        SubredditSourceOptionsEnum.RedditListDotComSubscribers &&
+      subredditSourceOption !==
+        SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth
+    ) {
+      return subreddits;
+    }
     switch (subredditSortOption) {
       case SubredditSortOrderOptionsEnum.Alphabetically:
         return sortByDisplayName(subreddits, sortOrderDirection);
@@ -365,6 +330,87 @@ export default class RedditService {
       case SubredditSortOrderOptionsEnum.SubCountAndListName:
         return sortByFromListThenSubscribers(subreddits, sortOrderDirection);
     }
+  }
+
+  private getSubredditsToGetPostsFor(
+    sourceSubreddits: Subreddit[],
+    subredditSourceOption: SubredditSourceOptionsEnum,
+    getAllSubredditsAtOnce: boolean,
+    selectSubredditIterationMethodOption: SelectSubredditIterationMethodOptionsEnum,
+    randomIterationSelectWeightOption: RandomIterationSelectWeightOptionsEnum,
+    nsfwSubredditIndex: number,
+    subredditIndex: number
+  ): {
+    subredditsToGet: Subreddit[];
+    updatedSubredditIndex: number;
+    updatedNsfwSubredditIndex: number;
+    mostRecentSubredditGotten: Subreddit | undefined;
+  } {
+    let subredditsToGet = [];
+    if (getAllSubredditsAtOnce) {
+      return {
+        subredditsToGet: sourceSubreddits,
+        updatedNsfwSubredditIndex: nsfwSubredditIndex,
+        updatedSubredditIndex: subredditIndex,
+        mostRecentSubredditGotten: undefined,
+      };
+    }
+
+    let index = 0;
+    let updatedNsfwSubredditIndex = nsfwSubredditIndex;
+    let updatedSubredditIndex = subredditIndex;
+    if (
+      selectSubredditIterationMethodOption ===
+      SelectSubredditIterationMethodOptionsEnum.Random
+    ) {
+      index = Math.floor(Math.random() * sourceSubreddits.length);
+
+      if (
+        RandomIterationSelectWeightOptionsEnum.PureRandom ==
+        randomIterationSelectWeightOption
+      ) {
+        index = Math.floor(Math.random() * sourceSubreddits.length);
+      } else if (
+        RandomIterationSelectWeightOptionsEnum.WeightedBySubCount ==
+        randomIterationSelectWeightOption
+      ) {
+        let totalWeight: number = 0;
+        sourceSubreddits.map((sub) => (totalWeight += sub.subscribers));
+        const randomWeightedIndex = Math.floor(Math.random() * totalWeight);
+        let itemWeightedIndex = 0;
+        for (let i = 0; i < sourceSubreddits.length; ++i) {
+          const item = sourceSubreddits[i];
+          itemWeightedIndex += item.subscribers;
+          if (randomWeightedIndex < itemWeightedIndex) {
+            index = i;
+            break;
+          }
+        }
+      }
+    } else if (
+      subredditSourceOption ===
+        SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth ||
+      subredditSourceOption ===
+        SubredditSourceOptionsEnum.RedditListDotComRecentActivity ||
+      subredditSourceOption ===
+        SubredditSourceOptionsEnum.RedditListDotComSubscribers
+    ) {
+      index =
+        nsfwSubredditIndex >= sourceSubreddits.length ? 0 : nsfwSubredditIndex;
+      updatedNsfwSubredditIndex = index + 1;
+    } else {
+      index = subredditIndex >= sourceSubreddits.length ? 0 : subredditIndex;
+      updatedSubredditIndex = index + 1;
+    }
+
+    const singleSubredditToGet = sourceSubreddits[index];
+    subredditsToGet = [singleSubredditToGet];
+    return {
+      subredditsToGet: subredditsToGet,
+      updatedSubredditIndex: updatedSubredditIndex,
+      updatedNsfwSubredditIndex: updatedNsfwSubredditIndex,
+      mostRecentSubredditGotten: singleSubredditToGet,
+    };
   }
 
   private async getPostsForSubreddit(
@@ -439,37 +485,33 @@ export default class RedditService {
     if (
       getPostsFromSubredditsState.subredditSourceOption ===
         SubredditSourceOptionsEnum.FrontPage &&
-      getPostsFromSubredditsState.postSortOrder ===
-        PostSortOrderOptionsEnum.New &&
-      lastPostRowWasSortOrderNew
+      getPostsFromSubredditsState.postSortOrder === PostSortOrderOptionsEnum.New
     ) {
       posts = sortPostsByCreate(posts);
-      const postsAlreadyInViewModel = postRows[0].posts;
-      const postsToAddToViewModel = new Array<Post>();
-
-      for (const post of posts) {
-        const foundPosts = postsAlreadyInViewModel.filter(
-          (p) => p.postId == post.postId
-        );
-
-        if (foundPosts.length == 0) {
-          postsToAddToViewModel.push(post);
+      if (postRows.length === 0) {
+        getPostsUpdatedValues.createPostRowAndInsertAtBeginning = posts;
+        getPostsUpdatedValues.lastPostRowWasSortOrderNew = true;
+      } else {
+        const firstPostRow = postRows[0];
+        const mostRecentPost = firstPostRow.posts[0];
+        const mostRecentPostCreated = mostRecentPost.created;
+        const postsToAddToViewModel = posts.filter((post) => {
+          return post.created > mostRecentPostCreated;
+        });
+        if (lastPostRowWasSortOrderNew) {
+          getPostsUpdatedValues.shiftPostsAndUiPosts = {
+            postRowUuid: firstPostRow.postRowUuid,
+            posts: postsToAddToViewModel,
+          };
         } else {
-          break;
+          getPostsUpdatedValues.createPostRowAndInsertAtBeginning =
+            postsToAddToViewModel;
         }
+        getPostsUpdatedValues.lastPostRowWasSortOrderNew = true;
       }
-
-      if (postsToAddToViewModel.length > 0) {
-        const postRowUuid = postRows[0].postRowUuid;
-        getPostsUpdatedValues.shiftPostsAndUiPosts = {
-          postRowUuid: postRowUuid,
-          posts: postsToAddToViewModel,
-        };
-      }
-      getPostsUpdatedValues.lastPostRowWasSortOrderNew = true;
     } else {
-      getPostsUpdatedValues.lastPostRowWasSortOrderNew = false;
       getPostsUpdatedValues.createPostRowAndInsertAtBeginning = posts;
+      getPostsUpdatedValues.lastPostRowWasSortOrderNew = false;
     }
   }
 
