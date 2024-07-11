@@ -114,6 +114,8 @@ export default class RedditService {
         getPostsFromSubredditsState.masterSubredditList,
         getPostsFromSubredditsState.subredditLists
       );
+      getPostsUpdatedValues.subredditsToShowInSideBar =
+        getPostsFromSubredditsState.masterSubredditList;
     } else {
       const { posts, fromSubreddits } = await this.getPosts(
         getPostsUpdatedValues,
@@ -171,19 +173,28 @@ export default class RedditService {
     posts: Array<Post>;
     fromSubreddits: Array<Subreddit>;
   }> {
-    const sourceSubreddits = await this.getSourceSubreddits(
+    let sourceSubreddits = await this.getSourceSubreddits(
       subredditSourceOption,
       masterSubredditList,
       sortOrderDirection,
       subredditLists
     );
-    const sortedSourceSubreddits = this.sortSourceSubreddits(
-      sourceSubreddits,
-      subredditSortOption,
-      sortOrderDirection
-    );
-    getPostsUpdatedValues.subredditsToShowInSideBar = sortedSourceSubreddits;
 
+    if (
+      subredditSourceOption !==
+        SubredditSourceOptionsEnum.RedditListDotComRecentActivity &&
+      subredditSourceOption !==
+        SubredditSourceOptionsEnum.RedditListDotComSubscribers &&
+      subredditSourceOption !==
+        SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth
+    ) {
+      sourceSubreddits = this.sortSourceSubreddits(
+        sourceSubreddits,
+        subredditSortOption,
+        sortOrderDirection
+      );
+    }
+    getPostsUpdatedValues.subredditsToShowInSideBar = sourceSubreddits;
     let subredditsToGet = [];
     if (getAllSubredditsAtOnce) {
       subredditsToGet.push(...sourceSubreddits);
@@ -193,23 +204,23 @@ export default class RedditService {
         selectSubredditIterationMethodOption ===
         SelectSubredditIterationMethodOptionsEnum.Random
       ) {
-        index = Math.floor(Math.random() * sortedSourceSubreddits.length);
+        index = Math.floor(Math.random() * sourceSubreddits.length);
 
         if (
           RandomIterationSelectWeightOptionsEnum.PureRandom ==
           randomIterationSelectWeightOption
         ) {
-          index = Math.floor(Math.random() * sortedSourceSubreddits.length);
+          index = Math.floor(Math.random() * sourceSubreddits.length);
         } else if (
           RandomIterationSelectWeightOptionsEnum.WeightedBySubCount ==
           randomIterationSelectWeightOption
         ) {
           let totalWeight: number = 0;
-          sortedSourceSubreddits.map((sub) => (totalWeight += sub.subscribers));
+          sourceSubreddits.map((sub) => (totalWeight += sub.subscribers));
           const randomWeightedIndex = Math.floor(Math.random() * totalWeight);
           let itemWeightedIndex = 0;
-          for (let i = 0; i < sortedSourceSubreddits.length; ++i) {
-            const item = sortedSourceSubreddits[i];
+          for (let i = 0; i < sourceSubreddits.length; ++i) {
+            const item = sourceSubreddits[i];
             itemWeightedIndex += item.subscribers;
             if (randomWeightedIndex < itemWeightedIndex) {
               index = i;
@@ -226,16 +237,15 @@ export default class RedditService {
           SubredditSourceOptionsEnum.RedditListDotComSubscribers
       ) {
         index =
-          nsfwSubredditIndex >= sortedSourceSubreddits.length
+          nsfwSubredditIndex >= sourceSubreddits.length
             ? 0
             : nsfwSubredditIndex;
         getPostsUpdatedValues.nsfwRedditListIndex = index + 1;
       } else {
-        index =
-          subredditIndex >= sortedSourceSubreddits.length ? 0 : subredditIndex;
+        index = subredditIndex >= sourceSubreddits.length ? 0 : subredditIndex;
         getPostsUpdatedValues.subredditIndex = index + 1;
       }
-      const singleSubredditToGet = sortedSourceSubreddits[index];
+      const singleSubredditToGet = sourceSubreddits[index];
       subredditsToGet = [singleSubredditToGet];
       getPostsUpdatedValues.mostRecentSubredditGotten = singleSubredditToGet;
     }
