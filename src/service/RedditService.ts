@@ -187,7 +187,7 @@ export default class RedditService {
       sortOrderDirection
     );
     getPostsUpdatedValues.subredditsToShowInSideBar = sourceSubreddits;
-    let {
+    const {
       subredditsToGet,
       updatedSubredditIndex,
       updatedNsfwSubredditIndex,
