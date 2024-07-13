@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useCallback, useContext } from "react";
 import PostSortOrderOptionsEnum from "./../model/config/enums/PostSortOrderOptionsEnum.ts";
 import TopTimeFrameOptionsEnum from "./../model/config/enums/TopTimeFrameOptionsEnum.ts";
 import { checkPlatformForSubredditSortOrderOption } from "./../util/PlatformUtil.ts";
@@ -38,6 +38,19 @@ const RedditSourceSettings: React.FC = () => {
     AppConfigStateContext
   ).redditApiItemLimitValidationError;
 
+  const disableSubredditSortOrderSelect = useCallback(() => {
+    return (
+      subredditSourceOption ===
+        SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth ||
+      subredditSourceOption ===
+        SubredditSourceOptionsEnum.RedditListDotComSubscribers ||
+      subredditSourceOption ===
+        SubredditSourceOptionsEnum.RedditListDotComRecentActivity ||
+      getAllSubredditsAtOnce ||
+      subredditSourceOption === SubredditSourceOptionsEnum.FrontPage
+    );
+  }, [getAllSubredditsAtOnce, subredditSourceOption]);
+
   return (
     <>
       <hr />
@@ -67,9 +80,14 @@ const RedditSourceSettings: React.FC = () => {
         </select>
       </div>
       <hr />
-      <div className="settings-item flex-column">
+      <div
+        className={`settings-item flex-column ${
+          disableSubredditSortOrderSelect() ? "disabled-field-color" : ""
+        }`}
+      >
         <label className="select-label">Subreddit Sort By</label>
         <select
+          disabled={disableSubredditSortOrderSelect()}
           value={subredditSortOrderOption}
           onChange={(event) =>
             appConfigDispatch({
@@ -77,7 +95,9 @@ const RedditSourceSettings: React.FC = () => {
               payload: event.target.value as SubredditSortOrderOptionsEnum,
             })
           }
-          className="select"
+          className={`select ${
+            disableSubredditSortOrderSelect() ? "disabled-field-color" : ""
+          }`}
         >
           {Object.entries(SubredditSortOrderOptionsEnum).map((key) => {
             return (
