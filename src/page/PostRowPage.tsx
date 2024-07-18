@@ -34,10 +34,6 @@ const PostRowPage: FC = () => {
 
   const redditSearchBarFocused = useRef(false);
 
-  const mouseDownOnPostRowDiv = useRef(false);
-  const lastMouseDownY = useRef(0);
-  const totalMoveY = useRef(0);
-
   const [scrollBarWidth, setScrollBarWidth] = useState(0);
 
   useEffect(() => {
@@ -124,36 +120,6 @@ const PostRowPage: FC = () => {
             type: PostRowsActionType.SET_SCROLL_Y,
             payload: target.scrollTop,
           });
-        }}
-        onMouseDown={(event) => {
-          totalMoveY.current = 0;
-          lastMouseDownY.current = event.clientY;
-          mouseDownOnPostRowDiv.current = true;
-        }}
-        onMouseUp={() => {
-          lastMouseDownY.current = 0;
-          mouseDownOnPostRowDiv.current = false;
-        }}
-        onMouseLeave={() => {
-          totalMoveY.current = 0;
-          lastMouseDownY.current = 0;
-          mouseDownOnPostRowDiv.current = false;
-        }}
-        onMouseMove={(event) => {
-          if (mouseDownOnPostRowDiv.current) {
-            const deltaY = lastMouseDownY.current - event.clientY;
-            totalMoveY.current += Math.abs(deltaY);
-            const postRowDiv = event.currentTarget as HTMLDivElement;
-            postRowDiv.scrollBy({ top: deltaY });
-            lastMouseDownY.current = event.clientY;
-          }
-        }}
-        onClickCapture={(event) => {
-          console.log(totalMoveY.current);
-          if (totalMoveY.current >= 20) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
         }}
       >
         {postRows.map((postRow) => (
