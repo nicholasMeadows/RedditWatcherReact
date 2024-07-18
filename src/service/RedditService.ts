@@ -313,11 +313,11 @@ export default class RedditService {
     sortOrderDirection: SortOrderDirectionOptionsEnum
   ) {
     if (
-      subredditSourceOption !==
-        SubredditSourceOptionsEnum.RedditListDotComRecentActivity &&
-      subredditSourceOption !==
-        SubredditSourceOptionsEnum.RedditListDotComSubscribers &&
-      subredditSourceOption !==
+      subredditSourceOption ===
+        SubredditSourceOptionsEnum.RedditListDotComRecentActivity ||
+      subredditSourceOption ===
+        SubredditSourceOptionsEnum.RedditListDotComSubscribers ||
+      subredditSourceOption ===
         SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth
     ) {
       return subreddits;
