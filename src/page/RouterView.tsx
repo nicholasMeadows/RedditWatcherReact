@@ -7,8 +7,7 @@ import {
   MODIFY_SUBREDDIT_LISTS_ROUTE,
   MODIFY_SUBREDDIT_QUEUE_ROUTE,
   NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT,
-  POST_CARD_LEFT_MARGIN_EM,
-  POST_CARD_RIGHT_MARGIN_EM,
+  POST_CARD_GAP_EM,
   POST_ROW_ROUTE,
   POST_ROW_SCROLL_BTN_WIDTH_EM,
   REDDIT_SIGN_IN_ROUTE,
@@ -25,8 +24,6 @@ import SinglePostView from "./SinglePostView.tsx";
 import RedditSourceSettings from "./RedditSourceSettings.tsx";
 import RedditSignIn from "./RedditSignIn.tsx";
 import ApplicationSettings from "./ApplicationSettings.tsx";
-import getPlatform from "../util/PlatformUtil.ts";
-import { Platform } from "../model/Platform.ts";
 import { RootFontSizeContext } from "../context/root-font-size-context.ts";
 import AppNotificationsContextProvider from "../context/provider/app-notifications-context-provider.tsx";
 import AppNotifications from "../components/AppNotifications.tsx";
@@ -150,12 +147,8 @@ const RouterView: React.FC = () => {
     );
 
     document.body.style.setProperty(
-      "--post-card-left-margin-em",
-      POST_CARD_LEFT_MARGIN_EM.toString()
-    );
-    document.body.style.setProperty(
-      "--post-card-right-margin-em",
-      POST_CARD_RIGHT_MARGIN_EM.toString()
+      "--post-card-gap-em",
+      POST_CARD_GAP_EM.toString()
     );
   }, [darkmode]);
 
@@ -167,17 +160,17 @@ const RouterView: React.FC = () => {
 
         const baseFontSize = parseFloat(getComputedStyle(div).fontSize);
         setRootFontSize(baseFontSize);
-        const scrollButtonWidths =
-          getPlatform() != Platform.Android && getPlatform() != Platform.Ios
-            ? baseFontSize * POST_ROW_SCROLL_BTN_WIDTH_EM * 2
-            : 0;
-        const postRowContentWidthPx = div.clientWidth - scrollButtonWidths;
+        const postRowContentWidthPx = div.clientWidth;
         postRowsDispatch({
           type: PostRowsActionType.SET_POST_ROW_CONTENT_WIDTH_PX,
           payload: postRowContentWidthPx,
         });
 
-        const postCardWidthPx = postRowContentWidthPx / currentPostsToShowInRow;
+        const postCardGapPx = baseFontSize * POST_CARD_GAP_EM;
+
+        const postCardWidthPx =
+          (postRowContentWidthPx - currentPostsToShowInRow * postCardGapPx) /
+          currentPostsToShowInRow;
         const postCardWidthPercentage =
           (postCardWidthPx / postRowContentWidthPx) * 100;
 

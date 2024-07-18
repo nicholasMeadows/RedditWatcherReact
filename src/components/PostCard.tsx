@@ -1,10 +1,7 @@
 import { FC, memo, useContext, useRef } from "react";
 import { PostCardContext } from "../context/post-card-context.ts";
 import "../theme/post-card.scss";
-import {
-  POST_CARD_LEFT_MARGIN_EM,
-  SINGPLE_POST_ROUTE,
-} from "../RedditWatcherConstants.ts";
+import { SINGPLE_POST_ROUTE } from "../RedditWatcherConstants.ts";
 import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
 import { useNavigate } from "react-router-dom";
@@ -37,8 +34,8 @@ const PostCard: FC = memo(() => {
     <div
       className={`post-card-outer`}
       style={{
-        minWidth: `calc(${postRowsState.postCardWidthPercentage}% - ((1em * ${POST_CARD_LEFT_MARGIN_EM})*2) )`,
-        maxWidth: `calc(${postRowsState.postCardWidthPercentage}% - ((1em * ${POST_CARD_LEFT_MARGIN_EM})*2) )`,
+        minWidth: `calc(${postRowsState.postCardWidthPercentage}%)`,
+        maxWidth: `calc(${postRowsState.postCardWidthPercentage}%)`,
       }}
       onMouseDown={(event) => {
         initialMouseDownOrTouchX.current = event.clientX;
