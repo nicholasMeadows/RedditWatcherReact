@@ -109,6 +109,10 @@ const PostRow: FC<Props> = memo(({ postRow }) => {
       <div
         hidden={hideScrollButtonDivs()}
         className="postRowScrollButton leftPostRowScrollButton"
+        style={{
+          visibility:
+            postsToShow.length > postsToShowInRow ? "visible" : "hidden",
+        }}
       >
         <img
           alt={""}
@@ -118,10 +122,6 @@ const PostRow: FC<Props> = memo(({ postRow }) => {
               : "assets/left_chevron_light_mode.png"
           }
           className="postRowScrollImg"
-          style={{
-            visibility:
-              postsToShow.length > postsToShowInRow ? "visible" : "hidden",
-          }}
         />
       </div>
       <div
@@ -155,6 +155,10 @@ const PostRow: FC<Props> = memo(({ postRow }) => {
       <div
         hidden={hideScrollButtonDivs()}
         className="postRowScrollButton rightPostRowScrollButton"
+        style={{
+          visibility:
+            postsToShow.length > postsToShowInRow ? "visible" : "hidden",
+        }}
       >
         <img
           alt={""}
@@ -164,10 +168,6 @@ const PostRow: FC<Props> = memo(({ postRow }) => {
               : "assets/right_chevron_light_mode.png"
           }
           className="postRowScrollImg"
-          style={{
-            visibility:
-              postsToShow.length > postsToShowInRow ? "visible" : "hidden",
-          }}
         />
       </div>
     </div>
