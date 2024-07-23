@@ -1,122 +1,127 @@
 import {
-  MutableRefObject,
+  RefObject,
   useCallback,
   useContext,
   useEffect,
   useRef,
+  useState,
 } from "react";
-import { v4 as uuidV4 } from "uuid";
 import { Post } from "../model/Post/Post.ts";
-import { PostRow } from "../model/PostRow.ts";
-import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
-import { PostRowsContext } from "../context/post-rows-context.ts";
+import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
+import { v4 as uuidV4 } from "uuid";
+import { MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX } from "../RedditWatcherConstants.ts";
 
+type MovePostRowStateSessionStorage = {
+  postsToShow: Array<Post>;
+  scrollLeft: number;
+};
 export default function useMovePostRow(
-  postRow: PostRow,
-  postRowContentDivRef: MutableRefObject<HTMLDivElement | null>,
-  postsToShow: Array<Post>,
-  setPostsToShow: (updatedPostsToShow: Array<Post>) => void
+  postRowUuid: string,
+  masterPosts: Array<Post>,
+  postRowContentDivRef: RefObject<HTMLDivElement>,
+  shouldAutoScroll: boolean,
+  postCardWidthPercentage: number,
+  postsToShowInRow: number
 ) {
+  const POST_ROW_STATE_SESSION_STORAGE_KEY = `${postRowUuid}${MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX}`;
+
   const autoScrollPostRowRateSecondsForSinglePostCard = useContext(
     AppConfigStateContext
   ).autoScrollPostRowRateSecondsForSinglePostCard;
-  const postCardWidthPercentage =
-    useContext(PostRowsContext).postCardWidthPercentage;
   const autoScrollPostRowDirectionOption = useContext(
     AppConfigStateContext
   ).autoScrollPostRowDirectionOption;
-  const lastMouseDownOrTouchX = useRef(0);
-  const mouseDownOrTouchOnPostRow = useRef(false);
+  const [postsToShow, setPostsToShow] = useState<Array<Post>>([]);
 
-  const scrollToPx = useRef(0);
+  const currentPostRowScrollLeft = useRef<number>(0);
   const autoScrollInterval = useRef<NodeJS.Timeout>();
+  const mouseDownOrTouchOnPostRow = useRef<boolean>(false);
+  const lastMouseDownOrTouchX = useRef<number>(0);
 
-  useEffect(() => {
-    const postRowContentDiv = postRowContentDivRef.current;
-    if (postRowContentDiv === null || scrollToPx.current === 0) {
-      return;
-    }
-    postRowContentDiv.scrollTo({
-      left: scrollToPx.current,
-    });
-    scrollToPx.current = 0;
-  }, [postRowContentDivRef, postsToShow]);
-
-  const movePostRow = useCallback(
-    (updatedX: number) => {
-      if (!mouseDownOrTouchOnPostRow.current) {
-        return;
-      }
-      const postRowContentDiv = postRowContentDivRef.current;
-      if (postRowContentDiv !== null) {
-        const deltaX = lastMouseDownOrTouchX.current - updatedX;
-        postRowContentDiv.scrollBy({ left: deltaX });
-        lastMouseDownOrTouchX.current = updatedX;
-      }
+  const updatePostsToShowAndScrollLeft = useCallback(
+    (
+      postRowContentDiv: HTMLDivElement,
+      postsToShow: Array<Post>,
+      scrollLeft: number
+    ) => {
+      setPostsToShow(postsToShow);
+      setTimeout(() => postRowContentDiv.scrollTo({ left: scrollLeft }), 0);
+      const sessionStorageState: MovePostRowStateSessionStorage = {
+        postsToShow: postsToShow,
+        scrollLeft: scrollLeft,
+      };
+      sessionStorage.setItem(
+        POST_ROW_STATE_SESSION_STORAGE_KEY,
+        JSON.stringify(sessionStorageState)
+      );
     },
-    [postRowContentDivRef]
+    [POST_ROW_STATE_SESSION_STORAGE_KEY]
   );
 
-  const onPostRowContentScroll = useCallback(() => {
+  useEffect(() => {
     const postRowContentDiv = postRowContentDivRef.current;
     if (postRowContentDiv === null) {
       return;
     }
-    const scrollLeft = postRowContentDiv.scrollLeft;
-    const scrollWidth = postRowContentDiv.scrollWidth;
-    const clientWidth = postRowContentDiv.clientWidth;
 
-    const postCardWidthPx = (postCardWidthPercentage / 100) * clientWidth;
+    const sessionStorageStateString = sessionStorage.getItem(
+      POST_ROW_STATE_SESSION_STORAGE_KEY
+    );
 
-    const updatedPostsToShow = [...postsToShow];
+    let sessionStorageObj: MovePostRowStateSessionStorage | undefined;
 
-    if (scrollLeft === 0 || scrollLeft + clientWidth >= scrollWidth) {
-      const postsToInsert = postRow.posts.map((post) => {
-        return {
-          ...post,
-          postUuid: `${uuidV4()}:${post.postUuid}`,
-        };
-      });
-      if (scrollLeft === 0) {
-        updatedPostsToShow.unshift(...postsToInsert);
-        setPostsToShow(updatedPostsToShow);
-        scrollToPx.current = postCardWidthPx * postRow.posts.length;
-      } else if (scrollLeft + clientWidth >= scrollWidth) {
-        updatedPostsToShow.push(...postsToInsert);
-        setPostsToShow(updatedPostsToShow);
+    try {
+      if (
+        sessionStorageStateString !== null &&
+        sessionStorageStateString !== ""
+      ) {
+        sessionStorageObj = JSON.parse(sessionStorageStateString);
       }
-    }
+    } finally {
+      if (sessionStorageObj === undefined) {
+        const postRowContentDivWidth =
+          postRowContentDiv.getBoundingClientRect().width;
+        const cardWidthPx =
+          postRowContentDivWidth * (postCardWidthPercentage / 100);
 
-    if (scrollLeft > postCardWidthPx * postRow.posts.length) {
-      updatedPostsToShow.splice(0, postRow.posts.length);
-      setPostsToShow(updatedPostsToShow);
-      postRowContentDiv.scrollTo({ left: 0 });
-    }
+        const postsToShowToSet = new Array<Post>();
+        const lastPost = masterPosts[masterPosts.length - 1];
+        postsToShowToSet.push({
+          ...lastPost,
+          postUuid: `${uuidV4()}:${lastPost.postUuid}`,
+        });
+        postsToShowToSet.push(...masterPosts.slice(0, postsToShowInRow + 1));
+        sessionStorageObj = {
+          postsToShow: postsToShowToSet,
+          scrollLeft: cardWidthPx,
+        };
+      }
 
-    if (
-      postsToShow.length === postRow.posts.length * 2 &&
-      scrollLeft + clientWidth < postCardWidthPx * postRow.posts.length
-    ) {
-      updatedPostsToShow.splice(postRow.posts.length);
-      setPostsToShow(updatedPostsToShow);
+      updatePostsToShowAndScrollLeft(
+        postRowContentDiv,
+        sessionStorageObj.postsToShow,
+        sessionStorageObj.scrollLeft
+      );
     }
   }, [
+    POST_ROW_STATE_SESSION_STORAGE_KEY,
+    masterPosts,
     postCardWidthPercentage,
-    postRow.posts,
     postRowContentDivRef,
-    postsToShow,
-    setPostsToShow,
+    postsToShowInRow,
+    updatePostsToShowAndScrollLeft,
   ]);
 
   const createAutoScrollInterval = useCallback(() => {
     const postRowContentDiv = postRowContentDivRef.current;
-    if (postRowContentDiv === null || !postRow.shouldAutoScroll) {
+    if (postRowContentDiv === null || !shouldAutoScroll) {
       return;
     }
     const scrollPxPerStep = 1;
     const postCardWidthPx =
-      postRowContentDiv.clientWidth * (postCardWidthPercentage / 100);
+      postRowContentDiv.getBoundingClientRect().width *
+      (postCardWidthPercentage / 100);
     const steps = postCardWidthPx / scrollPxPerStep;
     const intervalMs =
       (autoScrollPostRowRateSecondsForSinglePostCard * 1000) / steps;
@@ -143,6 +148,7 @@ export default function useMovePostRow(
     autoScrollPostRowRateSecondsForSinglePostCard,
     postCardWidthPercentage,
     postRowContentDivRef,
+    shouldAutoScroll,
   ]);
 
   const clearAutoScrollInterval = useCallback(() => {
@@ -163,7 +169,116 @@ export default function useMovePostRow(
     postCardWidthPercentage,
   ]);
 
+  const onPostRowContentScroll = useCallback(() => {
+    const postRowContentDiv = postRowContentDivRef.current;
+    if (postRowContentDiv === null) {
+      return;
+    }
+    const updatedPostsToShow = [...postsToShow];
+
+    const scrollLeft = postRowContentDiv.scrollLeft;
+    let updatedScrollLeft = scrollLeft;
+    const postRowContentDivWidth =
+      postRowContentDiv.getBoundingClientRect().width;
+    const postRowContentDivScrollWidth = postRowContentDiv.scrollWidth;
+    const postCardWidthPx =
+      postRowContentDivWidth * (postCardWidthPercentage / 100);
+
+    if (currentPostRowScrollLeft.current > scrollLeft) {
+      if (scrollLeft === 0) {
+        const firstPostShowing = postsToShow[0];
+        const indexInMaster = masterPosts.findIndex((post) =>
+          firstPostShowing.postUuid.endsWith(post.postUuid)
+        );
+        if (indexInMaster === -1) {
+          return;
+        }
+        const postToInsert =
+          masterPosts[
+            indexInMaster === 0 ? masterPosts.length - 1 : indexInMaster - 1
+          ];
+
+        updatedPostsToShow.unshift({
+          ...postToInsert,
+          postUuid: `${uuidV4()}:${postToInsert.postUuid}`,
+        });
+        updatedScrollLeft = postCardWidthPx;
+      }
+      if (
+        Math.abs(
+          scrollLeft + postRowContentDivWidth - postRowContentDivScrollWidth
+        ) > postCardWidthPx
+      ) {
+        updatedPostsToShow.pop();
+      }
+      updatePostsToShowAndScrollLeft(
+        postRowContentDiv,
+        updatedPostsToShow,
+        updatedScrollLeft
+      );
+    } else if (currentPostRowScrollLeft.current < scrollLeft) {
+      if (
+        Math.round(scrollLeft + postRowContentDivWidth) >=
+        postRowContentDivScrollWidth
+      ) {
+        const lastPostBeingShown = postsToShow[postsToShow.length - 1];
+        const lastPostBeingShownIndexInMaster = masterPosts.findIndex((post) =>
+          lastPostBeingShown.postUuid.endsWith(post.postUuid)
+        );
+        if (lastPostBeingShownIndexInMaster === -1) {
+          return;
+        }
+        const masterIndexToInsert =
+          lastPostBeingShownIndexInMaster === masterPosts.length - 1
+            ? 0
+            : lastPostBeingShownIndexInMaster + 1;
+        const masterPostToInsert = masterPosts[masterIndexToInsert];
+        const postToInsert = {
+          ...masterPostToInsert,
+          postUuid: `${uuidV4()}:${masterPostToInsert.postUuid}`,
+        };
+        updatedPostsToShow.push(postToInsert);
+      }
+      if (scrollLeft > postCardWidthPx) {
+        updatedPostsToShow.shift();
+        updatedScrollLeft = scrollLeft - postCardWidthPx;
+      }
+      updatePostsToShowAndScrollLeft(
+        postRowContentDiv,
+        updatedPostsToShow,
+        updatedScrollLeft
+      );
+    }
+    currentPostRowScrollLeft.current = scrollLeft;
+  }, [
+    masterPosts,
+    postCardWidthPercentage,
+    postRowContentDivRef,
+    postsToShow,
+    updatePostsToShowAndScrollLeft,
+  ]);
+
+  const movePostRow = useCallback(
+    (updatedX: number) => {
+      if (!mouseDownOrTouchOnPostRow.current) {
+        return;
+      }
+      const postRowContentDiv = postRowContentDivRef.current;
+      if (postRowContentDiv !== null) {
+        const deltaX = lastMouseDownOrTouchX.current - updatedX;
+        postRowContentDiv.scrollBy({ left: deltaX });
+        lastMouseDownOrTouchX.current = updatedX;
+      }
+    },
+    [postRowContentDivRef]
+  );
+
   useEffect(() => {
+    const postRowContentDiv = postRowContentDivRef.current;
+    if (postRowContentDiv === null) {
+      return;
+    }
+
     const mouseEnter = () => {
       clearAutoScrollInterval();
     };
@@ -227,33 +342,25 @@ export default function useMovePostRow(
       }
     };
 
-    const postRowContentDiv = postRowContentDivRef.current;
-    if (postRowContentDiv !== null) {
-      postRowContentDiv.addEventListener("mouseenter", mouseEnter);
-      postRowContentDiv.addEventListener("mouseleave", mouseLeave);
-      postRowContentDiv.addEventListener("mousedown", mouseDownTouchStart);
-      postRowContentDiv.addEventListener("touchstart", mouseDownTouchStart);
-      postRowContentDiv.addEventListener("mouseup", mouseUpTouchEnd);
-      postRowContentDiv.addEventListener("touchend", mouseUpTouchEnd);
-      postRowContentDiv.addEventListener("mousemove", mouseMoveTouchMove);
-      postRowContentDiv.addEventListener("touchmove", mouseMoveTouchMove);
-      postRowContentDiv.addEventListener("scroll", onPostRowContentScroll);
-    }
+    postRowContentDiv.addEventListener("scroll", onPostRowContentScroll);
+    postRowContentDiv.addEventListener("mouseenter", mouseEnter);
+    postRowContentDiv.addEventListener("mouseleave", mouseLeave);
+    postRowContentDiv.addEventListener("mousedown", mouseDownTouchStart);
+    postRowContentDiv.addEventListener("touchstart", mouseDownTouchStart);
+    postRowContentDiv.addEventListener("mouseup", mouseUpTouchEnd);
+    postRowContentDiv.addEventListener("touchend", mouseUpTouchEnd);
+    postRowContentDiv.addEventListener("mousemove", mouseMoveTouchMove);
+    postRowContentDiv.addEventListener("touchmove", mouseMoveTouchMove);
     return () => {
-      if (postRowContentDiv !== null) {
-        postRowContentDiv.removeEventListener("mouseenter", mouseEnter);
-        postRowContentDiv.removeEventListener("mouseleave", mouseLeave);
-        postRowContentDiv.removeEventListener("mousedown", mouseDownTouchStart);
-        postRowContentDiv.removeEventListener(
-          "touchstart",
-          mouseDownTouchStart
-        );
-        postRowContentDiv.removeEventListener("mouseup", mouseUpTouchEnd);
-        postRowContentDiv.removeEventListener("touchend", mouseUpTouchEnd);
-        postRowContentDiv.removeEventListener("mousemove", mouseMoveTouchMove);
-        postRowContentDiv.removeEventListener("touchmove", mouseMoveTouchMove);
-        postRowContentDiv.removeEventListener("scroll", onPostRowContentScroll);
-      }
+      postRowContentDiv.removeEventListener("scroll", onPostRowContentScroll);
+      postRowContentDiv.removeEventListener("mouseenter", mouseEnter);
+      postRowContentDiv.removeEventListener("mouseleave", mouseLeave);
+      postRowContentDiv.removeEventListener("mousedown", mouseDownTouchStart);
+      postRowContentDiv.removeEventListener("touchstart", mouseDownTouchStart);
+      postRowContentDiv.removeEventListener("mouseup", mouseUpTouchEnd);
+      postRowContentDiv.removeEventListener("touchend", mouseUpTouchEnd);
+      postRowContentDiv.removeEventListener("mousemove", mouseMoveTouchMove);
+      postRowContentDiv.removeEventListener("touchmove", mouseMoveTouchMove);
     };
   }, [
     clearAutoScrollInterval,
@@ -262,4 +369,6 @@ export default function useMovePostRow(
     onPostRowContentScroll,
     postRowContentDivRef,
   ]);
+
+  return postsToShow;
 }

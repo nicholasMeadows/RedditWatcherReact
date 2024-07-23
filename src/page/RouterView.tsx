@@ -160,27 +160,6 @@ const RouterView: React.FC = () => {
 
         const baseFontSize = parseFloat(getComputedStyle(div).fontSize);
         setRootFontSize(baseFontSize);
-        const postRowContentWidthPx = div.clientWidth;
-        postRowsDispatch({
-          type: PostRowsActionType.SET_POST_ROW_CONTENT_WIDTH_PX,
-          payload: postRowContentWidthPx,
-        });
-
-        const postCardGapPx = baseFontSize * POST_CARD_GAP_EM;
-
-        const postCardWidthPx =
-          (postRowContentWidthPx - currentPostsToShowInRow * postCardGapPx) /
-          currentPostsToShowInRow;
-        const postCardWidthPercentage =
-          (postCardWidthPx / postRowContentWidthPx) * 100;
-
-        postRowsDispatch({
-          type: PostRowsActionType.SET_POST_CARD_WIDTH_PERCENTAGE,
-          payload: {
-            postsToShowInRow: currentPostsToShowInRow,
-            postCardWidthPercentage: postCardWidthPercentage,
-          },
-        });
       }
     });
     const div = rootDivRef.current;

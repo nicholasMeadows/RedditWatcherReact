@@ -18,8 +18,6 @@ export const PostRowsContextProvider: FC<Props> = ({ children }) => {
     scrollY: 0,
     playPauseButtonIsPaused: false,
     postRows: new Array<PostRow>(),
-    postCardWidthPercentage: 0,
-    postRowContentWidthPx: 0,
     pauseGetPostsLoop: false,
     mouseOverAPostRow: false,
   };

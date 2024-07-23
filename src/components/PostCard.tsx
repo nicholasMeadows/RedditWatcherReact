@@ -10,10 +10,7 @@ import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 import { SinglePostPageDispatchContext } from "../context/single-post-page-context.ts";
 import { SinglePostPageActionType } from "../reducer/single-post-page-reducer.ts";
-import {
-  PostRowsContext,
-  PostRowsDispatchContext,
-} from "../context/post-rows-context.ts";
+import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 
 const PostCard: FC = memo(() => {
@@ -22,7 +19,6 @@ const PostCard: FC = memo(() => {
   const singlePostPageDispatch = useContext(SinglePostPageDispatchContext);
   const { postRowUuid, post } = useContext(PostCardContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
-  const postRowsState = useContext(PostRowsContext);
   const initialMouseDownOrTouchX = useRef(0);
 
   const incrementAttachmentHook = useIncrementAttachment(
@@ -33,10 +29,6 @@ const PostCard: FC = memo(() => {
   return (
     <div
       className={`post-card-outer`}
-      style={{
-        minWidth: `calc(${postRowsState.postCardWidthPercentage}%)`,
-        maxWidth: `calc(${postRowsState.postCardWidthPercentage}%)`,
-      }}
       onMouseDown={(event) => {
         initialMouseDownOrTouchX.current = event.clientX;
       }}

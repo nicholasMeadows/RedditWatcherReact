@@ -18,6 +18,7 @@ import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import { SideBarDispatchContext } from "../context/side-bar-context.ts";
 import useRedditService from "../hook/use-reddit-service.ts";
 import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
+import IndividualPostRowContext from "../context/individual-post-row-context.ts";
 
 const PostRowPage: FC = () => {
   const sideBarDispatch = useContext(SideBarDispatchContext);
@@ -130,7 +131,15 @@ const PostRowPage: FC = () => {
               maxHeight: `calc(100%/${postRowsToShowInView})`,
             }}
           >
-            <PostRow postRow={postRow} />
+            <IndividualPostRowContext.Provider
+              value={{
+                posts: postRow.posts,
+                postRowUuid: postRow.postRowUuid,
+                shouldAutoScroll: postRow.shouldAutoScroll,
+              }}
+            >
+              <PostRow />
+            </IndividualPostRowContext.Provider>
           </div>
         ))}
       </div>

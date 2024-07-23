@@ -4,5 +4,4 @@ export interface PostRow {
   postRowUuid: string;
   posts: Array<Post>;
   shouldAutoScroll: boolean;
-  postRowContentWidthAtCreation: number;
 }

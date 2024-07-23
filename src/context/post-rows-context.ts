@@ -8,7 +8,6 @@ import {
   PostRowsState,
   PostRowsStringPayloadAction,
   SetPostAttachmentIndexAction,
-  SetPostCardWidthPercentageAction,
 } from "../reducer/post-rows-reducer.ts";
 
 export type PostRowsDispatch = Dispatch<
@@ -19,7 +18,6 @@ export type PostRowsDispatch = Dispatch<
   | CreatePostRowAndInsertAtBeginningAction
   | SetPostAttachmentIndexAction
   | AddPostsToFrontOfRowAction
-  | SetPostCardWidthPercentageAction
 >;
 export const PostRowsContext = createContext<PostRowsState>(
   {} as PostRowsState

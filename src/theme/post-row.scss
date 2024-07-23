@@ -42,7 +42,12 @@
   position: relative;
   margin-top: 5px;
   margin-bottom: 5px;
-  gap: calc(1em * var(--post-card-gap-em));
+}
+
+.post-card-wrapper {
+  padding-left: calc((1em * var(--post-card-gap-em)) / 2);
+  padding-right: calc((1em * var(--post-card-gap-em)) / 2);
+  box-sizing: border-box;
 }
 
 .postRow:focus {

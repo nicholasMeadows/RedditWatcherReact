@@ -2,14 +2,13 @@ import { Post } from "../model/Post/Post.ts";
 import { PostRow } from "../model/PostRow.ts";
 import { v4 as uuidV4 } from "uuid";
 import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
+import { MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX } from "../RedditWatcherConstants.ts";
 
 export type PostRowsState = {
   currentPath: string;
   scrollY: number;
   playPauseButtonIsPaused: boolean;
   postRows: Array<PostRow>;
-  postCardWidthPercentage: number;
-  postRowContentWidthPx: number;
   pauseGetPostsLoop: boolean;
   mouseOverAPostRow: boolean;
 };
@@ -22,8 +21,6 @@ export enum PostRowsActionType {
   SET_POST_ATTACHMENT_INDEX = "SET_POST_ATTACHMENT_INDEX",
   CLEAR_POST_ROWS = "CLEAR_POST_ROWS",
   ADD_POSTS_TO_FRONT_OF_ROW = "ADD_POSTS_TO_FRONT_OF_ROW",
-  SET_POST_CARD_WIDTH_PERCENTAGE = "SET_POST_CARD_WIDTH_PERCENTAGE",
-  SET_POST_ROW_CONTENT_WIDTH_PX = "SET_POST_ROW_CONTENT_WIDTH_PX",
   SET_SCROLL_Y = "SET_SCROLL_Y",
   SET_MOUSE_OVER_A_POST_ROW = "SET_MOUSE_OVER_A_POST_ROW",
 }
@@ -33,10 +30,7 @@ export type PostRowsStringPayloadAction = {
   payload: string;
 };
 export type PostRowsNumberPayloadAction = {
-  type:
-    | PostRowsActionType.POST_ROW_REMOVE_AT
-    | PostRowsActionType.SET_POST_ROW_CONTENT_WIDTH_PX
-    | PostRowsActionType.SET_SCROLL_Y;
+  type: PostRowsActionType.POST_ROW_REMOVE_AT | PostRowsActionType.SET_SCROLL_Y;
   payload: number;
 };
 export type PostRowsBooleanPayloadAction = {
@@ -73,14 +67,6 @@ export type AddPostsToFrontOfRowAction = {
   };
 };
 
-export type SetPostCardWidthPercentageAction = {
-  type: PostRowsActionType.SET_POST_CARD_WIDTH_PERCENTAGE;
-  payload: {
-    postCardWidthPercentage: number;
-    postsToShowInRow: number;
-  };
-};
-
 export default function PostRowsReducer(
   state: PostRowsState,
   action:
@@ -90,7 +76,6 @@ export default function PostRowsReducer(
     | CreatePostRowAndInsertAtBeginningAction
     | SetPostAttachmentIndexAction
     | AddPostsToFrontOfRowAction
-    | SetPostCardWidthPercentageAction
     | PostRowsBooleanPayloadAction
 ) {
   switch (action.type) {
@@ -108,10 +93,6 @@ export default function PostRowsReducer(
       return clearPostRows(state);
     case PostRowsActionType.ADD_POSTS_TO_FRONT_OF_ROW:
       return addPostsToFrontOfRow(state, action);
-    case PostRowsActionType.SET_POST_CARD_WIDTH_PERCENTAGE:
-      return setPostCardWidthPercentage(state, action);
-    case PostRowsActionType.SET_POST_ROW_CONTENT_WIDTH_PX:
-      return setPostRowContentWidthPx(state, action);
     case PostRowsActionType.SET_SCROLL_Y:
       return setScrollY(state, action);
     case PostRowsActionType.SET_MOUSE_OVER_A_POST_ROW:
@@ -143,7 +124,6 @@ const createPostRowAndInsertAtBeginning = (
 ): PostRowsState => {
   const postRow = createPostRow(
     action.payload.posts,
-    state.postCardWidthPercentage,
     action.payload.subredditSourceOption
   );
   const updatedPostRows = [...state.postRows];
@@ -157,6 +137,11 @@ const postRowRemoveAt = (
   state: PostRowsState,
   action: PostRowsNumberPayloadAction
 ): PostRowsState => {
+  sessionStorage.removeItem(
+    `${
+      state.postRows[action.payload].postRowUuid
+    }${MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX}`
+  );
   const updatedPostRows = [...state.postRows];
   updatedPostRows.splice(action.payload, 1);
   return {
@@ -189,6 +174,11 @@ const setPostAttachmentIndex = (
   return state;
 };
 const clearPostRows = (state: PostRowsState): PostRowsState => {
+  state.postRows.forEach((postRow) => {
+    sessionStorage.removeItem(
+      `${postRow.postRowUuid}${MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX}`
+    );
+  });
   return {
     ...state,
     postRows: [],
@@ -218,36 +208,11 @@ const addPostsToFrontOfRow = (
   }
   postRowsDeepCopy[postRowIndex] = createPostRow(
     [...action.payload.posts, ...state.postRows[postRowIndex].posts],
-    state.postRowContentWidthPx,
     action.payload.subredditSourceOption
   );
   return {
     ...state,
     postRows: postRowsDeepCopy,
-  };
-};
-const setPostCardWidthPercentage = (
-  state: PostRowsState,
-  action: {
-    type: string;
-    payload: {
-      postCardWidthPercentage: number;
-      postsToShowInRow: number;
-    };
-  }
-): PostRowsState => {
-  return {
-    ...state,
-    postCardWidthPercentage: action.payload.postCardWidthPercentage,
-  };
-};
-const setPostRowContentWidthPx = (
-  state: PostRowsState,
-  action: PostRowsNumberPayloadAction
-): PostRowsState => {
-  return {
-    ...state,
-    postRowContentWidthPx: action.payload,
   };
 };
 
@@ -290,6 +255,7 @@ const setMouseOverAPostRow = (
     ),
   };
 };
+
 const shouldPause = (
   scrollY: number,
   playPauseButtonIsPaused: boolean,
@@ -299,14 +265,12 @@ const shouldPause = (
 };
 const createPostRow = (
   posts: Array<Post>,
-  postRowContentWidth: number,
   subredditSourceOption: SubredditSourceOptionsEnum
 ): PostRow => {
   const postRowUuid = uuidV4();
   return {
     postRowUuid: postRowUuid,
     posts: posts,
-    postRowContentWidthAtCreation: postRowContentWidth,
     shouldAutoScroll:
       subredditSourceOption !== SubredditSourceOptionsEnum.FrontPage,
   };
