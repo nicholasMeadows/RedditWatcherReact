@@ -80,22 +80,29 @@ export default function useMovePostRow(
       }
     } finally {
       if (sessionStorageObj === undefined) {
-        const postRowContentDivWidth =
-          postRowContentDiv.getBoundingClientRect().width;
-        const cardWidthPx =
-          postRowContentDivWidth * (postCardWidthPercentage / 100);
+        if (masterPosts.length <= postsToShowInRow) {
+          sessionStorageObj = {
+            postsToShow: masterPosts,
+            scrollLeft: 0,
+          };
+        } else {
+          const postRowContentDivWidth =
+            postRowContentDiv.getBoundingClientRect().width;
+          const cardWidthPx =
+            postRowContentDivWidth * (postCardWidthPercentage / 100);
 
-        const postsToShowToSet = new Array<Post>();
-        const lastPost = masterPosts[masterPosts.length - 1];
-        postsToShowToSet.push({
-          ...lastPost,
-          postUuid: `${uuidV4()}:${lastPost.postUuid}`,
-        });
-        postsToShowToSet.push(...masterPosts.slice(0, postsToShowInRow + 1));
-        sessionStorageObj = {
-          postsToShow: postsToShowToSet,
-          scrollLeft: cardWidthPx,
-        };
+          const postsToShowToSet = new Array<Post>();
+          const lastPost = masterPosts[masterPosts.length - 1];
+          postsToShowToSet.push({
+            ...lastPost,
+            postUuid: `${uuidV4()}:${lastPost.postUuid}`,
+          });
+          postsToShowToSet.push(...masterPosts.slice(0, postsToShowInRow + 1));
+          sessionStorageObj = {
+            postsToShow: postsToShowToSet,
+            scrollLeft: cardWidthPx,
+          };
+        }
       }
 
       updatePostsToShowAndScrollLeft(
