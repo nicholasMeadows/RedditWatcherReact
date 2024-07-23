@@ -178,7 +178,11 @@ export default function useMovePostRow(
 
   const onPostRowContentScroll = useCallback(() => {
     const postRowContentDiv = postRowContentDivRef.current;
-    if (postRowContentDiv === null) {
+    if (
+      postRowContentDiv === null ||
+      postsToShow === undefined ||
+      postsToShow.length === 0
+    ) {
       return;
     }
     const updatedPostsToShow = [...postsToShow];
