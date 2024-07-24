@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -34,7 +35,7 @@ export default function useMovePostRow(
   ).autoScrollPostRowDirectionOption;
   const [postsToShow, setPostsToShow] = useState<Array<Post>>([]);
 
-  const currentPostRowScrollLeft = useRef<number>(0);
+  const lastPostRowScrollLeft = useRef<number>(0);
   const autoScrollInterval = useRef<NodeJS.Timeout>();
   const mouseDownOrTouchOnPostRow = useRef<boolean>(false);
   const lastMouseDownOrTouchX = useRef<number>(0);
@@ -59,9 +60,9 @@ export default function useMovePostRow(
     [POST_ROW_STATE_SESSION_STORAGE_KEY]
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const postRowContentDiv = postRowContentDivRef.current;
-    if (postRowContentDiv === null) {
+    if (postRowContentDiv === null || postCardWidthPercentage === 0) {
       return;
     }
 
@@ -86,11 +87,9 @@ export default function useMovePostRow(
             scrollLeft: 0,
           };
         } else {
-          const postRowContentDivWidth =
-            postRowContentDiv.getBoundingClientRect().width;
+          const postRowContentDivWidth = postRowContentDiv.clientWidth;
           const cardWidthPx =
             postRowContentDivWidth * (postCardWidthPercentage / 100);
-
           const postsToShowToSet = new Array<Post>();
           const lastPost = masterPosts[masterPosts.length - 1];
           postsToShowToSet.push({
@@ -180,56 +179,25 @@ export default function useMovePostRow(
     const postRowContentDiv = postRowContentDivRef.current;
     if (
       postRowContentDiv === null ||
-      postsToShow === undefined ||
-      postsToShow.length === 0
+      postsToShow.length === 0 ||
+      postsToShow.length <= postsToShowInRow
     ) {
       return;
     }
-    const updatedPostsToShow = [...postsToShow];
 
-    const scrollLeft = postRowContentDiv.scrollLeft;
-    let updatedScrollLeft = scrollLeft;
-    const postRowContentDivWidth =
-      postRowContentDiv.getBoundingClientRect().width;
-    const postRowContentDivScrollWidth = postRowContentDiv.scrollWidth;
+    const postRowContentDivScrollLeft = postRowContentDiv.scrollLeft;
+    let updatedScrollLeft = postRowContentDivScrollLeft;
+
+    const postRowContentDivWidth = postRowContentDiv.clientWidth;
     const postCardWidthPx =
       postRowContentDivWidth * (postCardWidthPercentage / 100);
+    const postRowContentDivScrollWidth = postRowContentDiv.scrollWidth;
 
-    if (currentPostRowScrollLeft.current > scrollLeft) {
-      if (scrollLeft === 0) {
-        const firstPostShowing = postsToShow[0];
-        const indexInMaster = masterPosts.findIndex((post) =>
-          firstPostShowing.postUuid.endsWith(post.postUuid)
-        );
-        if (indexInMaster === -1) {
-          return;
-        }
-        const postToInsert =
-          masterPosts[
-            indexInMaster === 0 ? masterPosts.length - 1 : indexInMaster - 1
-          ];
+    const updatedPostsToShow = [...postsToShow];
 
-        updatedPostsToShow.unshift({
-          ...postToInsert,
-          postUuid: `${uuidV4()}:${postToInsert.postUuid}`,
-        });
-        updatedScrollLeft = postCardWidthPx;
-      }
+    if (postRowContentDivScrollLeft > lastPostRowScrollLeft.current) {
       if (
-        Math.abs(
-          scrollLeft + postRowContentDivWidth - postRowContentDivScrollWidth
-        ) > postCardWidthPx
-      ) {
-        updatedPostsToShow.pop();
-      }
-      updatePostsToShowAndScrollLeft(
-        postRowContentDiv,
-        updatedPostsToShow,
-        updatedScrollLeft
-      );
-    } else if (currentPostRowScrollLeft.current < scrollLeft) {
-      if (
-        Math.round(scrollLeft + postRowContentDivWidth) >=
+        postRowContentDivScrollLeft + postRowContentDivWidth >=
         postRowContentDivScrollWidth
       ) {
         const lastPostBeingShown = postsToShow[postsToShow.length - 1];
@@ -250,22 +218,54 @@ export default function useMovePostRow(
         };
         updatedPostsToShow.push(postToInsert);
       }
-      if (scrollLeft > postCardWidthPx) {
+      if (postRowContentDivScrollLeft > postCardWidthPx) {
         updatedPostsToShow.shift();
-        updatedScrollLeft = scrollLeft - postCardWidthPx;
+        updatedScrollLeft = postRowContentDivScrollLeft - postCardWidthPx;
       }
-      updatePostsToShowAndScrollLeft(
-        postRowContentDiv,
-        updatedPostsToShow,
-        updatedScrollLeft
-      );
+    } else if (postRowContentDivScrollLeft < lastPostRowScrollLeft.current) {
+      if (postRowContentDivScrollLeft === 0) {
+        const firstPostShowing = postsToShow[0];
+        const indexInMaster = masterPosts.findIndex((post) =>
+          firstPostShowing.postUuid.endsWith(post.postUuid)
+        );
+        if (indexInMaster === -1) {
+          return;
+        }
+        const postToInsert =
+          masterPosts[
+            indexInMaster === 0 ? masterPosts.length - 1 : indexInMaster - 1
+          ];
+
+        updatedPostsToShow.unshift({
+          ...postToInsert,
+          postUuid: `${uuidV4()}:${postToInsert.postUuid}`,
+        });
+        updatedScrollLeft = postCardWidthPx;
+      }
+      if (
+        Math.abs(
+          postRowContentDivScrollLeft +
+            postRowContentDivWidth -
+            postRowContentDivScrollWidth
+        ) > postCardWidthPx
+      ) {
+        updatedPostsToShow.pop();
+      }
     }
-    currentPostRowScrollLeft.current = scrollLeft;
+
+    updatePostsToShowAndScrollLeft(
+      postRowContentDiv,
+      updatedPostsToShow,
+      updatedScrollLeft
+    );
+
+    lastPostRowScrollLeft.current = updatedScrollLeft;
   }, [
     masterPosts,
     postCardWidthPercentage,
     postRowContentDivRef,
     postsToShow,
+    postsToShowInRow,
     updatePostsToShowAndScrollLeft,
   ]);
 
