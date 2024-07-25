@@ -3,7 +3,6 @@ import {
   MutableRefObject,
   TouchEvent,
   useCallback,
-  useContext,
   useEffect,
   useState,
   WheelEvent,
@@ -13,19 +12,12 @@ import {
   SINGLE_POST_PAGE_MIN_SCALE,
   SINGLE_POST_PAGE_SCALE_STEP,
 } from "../RedditWatcherConstants.ts";
-import {
-  SinglePostPageActionType,
-  SinglePostPageState,
-} from "../reducer/single-post-page-reducer.ts";
-import { SinglePostPageDispatchContext } from "../context/single-post-page-context.ts";
-import { PostRowsState } from "../reducer/post-rows-reducer.ts";
 
 export default function useSinglePostPageZoom(
   postElementDivWrapperRef: MutableRefObject<HTMLDivElement | null>,
-  singlePostPageState: SinglePostPageState,
-  postRowsState: PostRowsState
+  goToNextPostClicked: () => void,
+  goToPrevPostClicked: () => void
 ) {
-  const singlePostPageDispatch = useContext(SinglePostPageDispatchContext);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const minSwipeDistance = 50;
@@ -47,94 +39,16 @@ export default function useSinglePostPageZoom(
     setImgScale(1);
   }, []);
 
-  const goToNextPostClicked = useCallback(() => {
-    if (singlePostPageState.postRowUuid === undefined) {
-      return;
-    }
-
-    const postRow = postRowsState.postRows.find(
-      (postRow) => postRow.postRowUuid === singlePostPageState.postRowUuid
-    );
-    if (postRow === undefined) {
-      return;
-    }
-    const postIndex = postRow.posts.findIndex(
-      (post) => post.postUuid === singlePostPageState.postUuid
-    );
-    if (postIndex === -1) {
-      return;
-    }
-
-    let postUuidToSet: string;
-    if (postIndex < postRow.posts.length - 1) {
-      postUuidToSet = postRow.posts[postIndex + 1].postUuid;
-    } else {
-      postUuidToSet = postRow.posts[0].postUuid;
-    }
-    resetImgPositionAndScale();
-    singlePostPageDispatch({
-      type: SinglePostPageActionType.SET_SINGLE_POST_PAGE_UUIDS,
-      payload: {
-        postRowUuid: singlePostPageState.postRowUuid,
-        postUuid: postUuidToSet,
-      },
-    });
-  }, [
-    postRowsState.postRows,
-    resetImgPositionAndScale,
-    singlePostPageDispatch,
-    singlePostPageState.postRowUuid,
-    singlePostPageState.postUuid,
-  ]);
-
-  const goToPrevPostClicked = useCallback(() => {
-    const postRowUuid = singlePostPageState.postRowUuid;
-    if (postRowUuid === undefined) {
-      return;
-    }
-
-    const postRow = postRowsState.postRows.find(
-      (postRow) => postRow.postRowUuid === postRowUuid
-    );
-    if (postRow === undefined) {
-      return;
-    }
-    const postIndex = postRow.posts.findIndex(
-      (post) => post.postUuid === singlePostPageState.postUuid
-    );
-    if (postIndex === -1) {
-      return;
-    }
-    let postUuid: string;
-    if (postIndex == 0) {
-      postUuid = postRow.posts[postRow.posts.length - 1].postUuid;
-    } else {
-      postUuid = postRow.posts[postIndex - 1].postUuid;
-    }
-    resetImgPositionAndScale();
-    singlePostPageDispatch({
-      type: SinglePostPageActionType.SET_SINGLE_POST_PAGE_UUIDS,
-      payload: {
-        postRowUuid: postRowUuid,
-        postUuid: postUuid,
-      },
-    });
-  }, [
-    postRowsState.postRows,
-    resetImgPositionAndScale,
-    singlePostPageDispatch,
-    singlePostPageState.postRowUuid,
-    singlePostPageState.postUuid,
-  ]);
-
   useEffect(() => {
     const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
       const key = keyboardEvent.key;
-
-      if (key == "ArrowRight") {
-        goToNextPostClicked();
-      } else if (key == "ArrowLeft") {
-        goToPrevPostClicked();
+      if (key === "ArrowRight" || key === "ArrowLeft") {
+        resetImgPositionAndScale();
+        if (key == "ArrowRight") {
+          goToNextPostClicked();
+        } else if (key == "ArrowLeft") {
+          goToPrevPostClicked();
+        }
       }
     };
 

@@ -97,7 +97,7 @@ const PostRow: FC = memo(() => {
               minWidth: `calc(${postCardWidthPercentage}%)`,
             }}
             className={"post-card-wrapper"}
-            key={post.postUuid}
+            key={post.postToShowUuid}
           >
             <PostCardContext.Provider
               value={{

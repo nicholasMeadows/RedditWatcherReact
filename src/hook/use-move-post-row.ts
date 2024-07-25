@@ -12,9 +12,10 @@ import { AppConfigStateContext } from "../context/app-config-context.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import { v4 as uuidV4 } from "uuid";
 import { MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX } from "../RedditWatcherConstants.ts";
+import { PostToShow } from "../model/Post/PostToShow.ts";
 
 type MovePostRowStateSessionStorage = {
-  postsToShow: Array<Post>;
+  postsToShow: Array<PostToShow>;
   scrollLeft: number;
 };
 export default function useMovePostRow(
@@ -33,7 +34,7 @@ export default function useMovePostRow(
   const autoScrollPostRowDirectionOption = useContext(
     AppConfigStateContext
   ).autoScrollPostRowDirectionOption;
-  const [postsToShow, setPostsToShow] = useState<Array<Post>>([]);
+  const [postsToShow, setPostsToShow] = useState<Array<PostToShow>>([]);
 
   const lastPostRowScrollLeft = useRef<number>(0);
   const autoScrollInterval = useRef<NodeJS.Timeout>();
@@ -43,7 +44,7 @@ export default function useMovePostRow(
   const updatePostsToShowAndScrollLeft = useCallback(
     (
       postRowContentDiv: HTMLDivElement,
-      postsToShow: Array<Post>,
+      postsToShow: Array<PostToShow>,
       scrollLeft: number
     ) => {
       setPostsToShow(postsToShow);
@@ -83,20 +84,29 @@ export default function useMovePostRow(
       if (sessionStorageObj === undefined) {
         if (masterPosts.length <= postsToShowInRow) {
           sessionStorageObj = {
-            postsToShow: masterPosts,
+            postsToShow: masterPosts.map((post) => ({
+              ...post,
+              postToShowUuid: `${uuidV4()}:${post.postUuid}`,
+            })),
             scrollLeft: 0,
           };
         } else {
           const postRowContentDivWidth = postRowContentDiv.clientWidth;
           const cardWidthPx =
             postRowContentDivWidth * (postCardWidthPercentage / 100);
-          const postsToShowToSet = new Array<Post>();
+          const postsToShowToSet = new Array<PostToShow>();
           const lastPost = masterPosts[masterPosts.length - 1];
           postsToShowToSet.push({
             ...lastPost,
-            postUuid: `${uuidV4()}:${lastPost.postUuid}`,
+            postToShowUuid: `${uuidV4()}:${lastPost.postUuid}`,
           });
-          postsToShowToSet.push(...masterPosts.slice(0, postsToShowInRow + 1));
+          const postsToPush = masterPosts
+            .slice(0, postsToShowInRow + 1)
+            .map<PostToShow>((post) => ({
+              ...post,
+              postToShowUuid: `${uuidV4()}:${post.postUuid}`,
+            }));
+          postsToShowToSet.push(...postsToPush);
           sessionStorageObj = {
             postsToShow: postsToShowToSet,
             scrollLeft: cardWidthPx,
@@ -214,7 +224,7 @@ export default function useMovePostRow(
         const masterPostToInsert = masterPosts[masterIndexToInsert];
         const postToInsert = {
           ...masterPostToInsert,
-          postUuid: `${uuidV4()}:${masterPostToInsert.postUuid}`,
+          postToShowUuid: `${uuidV4()}:${masterPostToInsert.postUuid}`,
         };
         updatedPostsToShow.push(postToInsert);
       }
@@ -238,7 +248,7 @@ export default function useMovePostRow(
 
         updatedPostsToShow.unshift({
           ...postToInsert,
-          postUuid: `${uuidV4()}:${postToInsert.postUuid}`,
+          postToShowUuid: `${uuidV4()}:${postToInsert.postUuid}`,
         });
         updatedScrollLeft = postCardWidthPx;
       }
