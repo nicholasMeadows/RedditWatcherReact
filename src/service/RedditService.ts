@@ -42,6 +42,7 @@ import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOp
 import { MAX_POSTS_PER_ROW } from "../RedditWatcherConstants.ts";
 import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
 import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum.ts";
+import { MediaType } from "../model/Post/MediaTypeEnum.ts";
 
 export default class RedditService {
   declare redditClient: RedditClient;
@@ -100,7 +101,8 @@ export default class RedditService {
         getPostsFromSubredditsState.topTimeFrame,
         getPostsFromSubredditsState.redditApiItemLimit,
         getPostsFromSubredditsState.masterSubredditList,
-        getPostsFromSubredditsState.subredditLists
+        getPostsFromSubredditsState.subredditLists,
+        getPostsFromSubredditsState.useInMemoryImagesAndGifs
       );
       getPostsUpdatedValues.mostRecentSubredditGotten = subreddit;
     } else if (
@@ -132,7 +134,8 @@ export default class RedditService {
         getPostsFromSubredditsState.redditApiItemLimit,
         getPostsFromSubredditsState.selectSubredditIterationMethodOption,
         getPostsFromSubredditsState.randomIterationSelectWeightOption,
-        getPostsFromSubredditsState.getAllSubredditsAtOnce
+        getPostsFromSubredditsState.getAllSubredditsAtOnce,
+        getPostsFromSubredditsState.useInMemoryImagesAndGifs
       );
       postsFromSubreddit = posts;
       fromSubreddits.push(...fromSubreddits);
@@ -168,7 +171,8 @@ export default class RedditService {
     redditApiItemLimit: number,
     selectSubredditIterationMethodOption: SelectSubredditIterationMethodOptionsEnum,
     randomIterationSelectWeightOption: RandomIterationSelectWeightOptionsEnum,
-    getAllSubredditsAtOnce: boolean
+    getAllSubredditsAtOnce: boolean,
+    useInMemoryImagesAndGifs: boolean
   ): Promise<{
     posts: Array<Post>;
     fromSubreddits: Array<Subreddit>;
@@ -211,7 +215,8 @@ export default class RedditService {
       topTimeFrame,
       redditApiItemLimit,
       masterSubredditList,
-      subredditLists
+      subredditLists,
+      useInMemoryImagesAndGifs
     );
     return {
       posts: posts,
@@ -420,7 +425,8 @@ export default class RedditService {
     topTimeFrame: TopTimeFrameOptionsEnum,
     redditApiItemLimit: number,
     masterSubredditList: Subreddit[],
-    subredditLists: SubredditLists[]
+    subredditLists: SubredditLists[],
+    useInMemoryImagesAndGifs: boolean
   ): Promise<Array<Post>> {
     const urlConverter = new GetPostsForSubredditUrlConverter();
     const [url, randomSourceString] = urlConverter.convert(
@@ -439,7 +445,87 @@ export default class RedditService {
       value.randomSourceString = randomSourceString;
       return value;
     });
+    if (useInMemoryImagesAndGifs) {
+      await this.getBase64ForImages(posts);
+    }
     return posts;
+  }
+
+  private async getBase64ForImages(posts: Array<Post>) {
+    const promiseArr = new Array<Promise<string | ArrayBuffer | null>>();
+
+    posts.forEach((post) => {
+      post.attachments.forEach((attachment) => {
+        if (attachment.mediaType === MediaType.Image) {
+          const prom = this.getBase64ForImgUrl(attachment.url);
+          prom
+            .then((res) => {
+              attachment.base64Img = res;
+            })
+            .catch((err) => {
+              console.log("Caught error while fetching base64 img", err);
+            });
+          promiseArr.push(prom);
+          const resolutions = attachment.attachmentResolutions;
+          if (resolutions !== undefined) {
+            resolutions.forEach((resolution) => {
+              const resolutionPromise = this.getBase64ForImgUrl(resolution.url);
+              resolutionPromise
+                .then((res) => (resolution.base64Img = res))
+                .catch((err) => {
+                  console.log(
+                    "Caught error while fetching base64 attachment",
+                    err
+                  );
+                });
+              promiseArr.push(resolutionPromise);
+            });
+          }
+        }
+      });
+    });
+
+    await Promise.allSettled(promiseArr);
+  }
+
+  private getBase64ForImgUrl(imgUrl: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const timeoutController = new AbortController();
+      const timeoutId = setTimeout(() => timeoutController.abort(), 30000);
+      fetch(imgUrl, { signal: timeoutController.signal })
+        .then((fetchResponse) => {
+          if (fetchResponse.status === 200) {
+            fetchResponse
+              .blob()
+              .then((blob) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  const result = reader.result;
+                  if (result === null) {
+                    reject("reader returned null");
+                  } else {
+                    resolve(result.toString());
+                  }
+                };
+                reader.onerror = (err) => {
+                  reject(err);
+                };
+                reader.readAsDataURL(blob);
+              })
+              .catch((err) => {
+                reject(err);
+              });
+          } else {
+            reject(
+              `Fetch response did not return OK response. Actual was ${fetchResponse.status}`
+            );
+          }
+        })
+        .catch((err) => {
+          reject(err);
+        });
+      clearTimeout(timeoutId);
+    });
   }
 
   private filterPostContent(

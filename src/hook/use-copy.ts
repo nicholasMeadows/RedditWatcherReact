@@ -1,7 +1,9 @@
+import { MediaType } from "../model/Post/MediaTypeEnum.ts";
+
 export function useCopy() {
   return {
-    copy: async (copyInfo: { url: string; mediaType: string }) => {
-      if (copyInfo.mediaType == "IMAGE") {
+    copy: async (copyInfo: { url: string; mediaType: MediaType }) => {
+      if (copyInfo.mediaType == MediaType.Image) {
         const img = new Image();
         img.crossOrigin = "anonymous";
         img.onload = () => {

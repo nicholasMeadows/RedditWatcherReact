@@ -15,7 +15,7 @@ import { MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX } from "../RedditWatcherConsta
 import { PostToShow } from "../model/Post/PostToShow.ts";
 
 type MovePostRowStateSessionStorage = {
-  postsToShow: Array<PostToShow>;
+  postsToShowUuids: Array<string>;
   scrollLeft: number;
 };
 export default function useMovePostRow(
@@ -50,7 +50,7 @@ export default function useMovePostRow(
       setPostsToShow(postsToShow);
       setTimeout(() => postRowContentDiv.scrollTo({ left: scrollLeft }), 0);
       const sessionStorageState: MovePostRowStateSessionStorage = {
-        postsToShow: postsToShow,
+        postsToShowUuids: postsToShow.map((post) => post.postUuid),
         scrollLeft: scrollLeft,
       };
       sessionStorage.setItem(
@@ -73,6 +73,8 @@ export default function useMovePostRow(
 
     let sessionStorageObj: MovePostRowStateSessionStorage | undefined;
 
+    const postsToShowToSet = new Array<PostToShow>();
+
     try {
       if (
         sessionStorageStateString !== null &&
@@ -81,20 +83,40 @@ export default function useMovePostRow(
         sessionStorageObj = JSON.parse(sessionStorageStateString);
       }
     } finally {
-      if (sessionStorageObj === undefined) {
+      if (sessionStorageObj !== undefined) {
+        const postsToShowUuids = sessionStorageObj.postsToShowUuids;
+        const unmappedPostsToShow = new Array<Post>();
+        postsToShowUuids.forEach((uuid) => {
+          const post = masterPosts.find((post) => post.postUuid === uuid);
+          if (post !== undefined) {
+            unmappedPostsToShow.push(post);
+          }
+        });
+        const mappedPostsToShow: Array<PostToShow> = unmappedPostsToShow.map(
+          (post) => ({
+            ...post,
+            postToShowUuid: `${uuidV4()}:${post.postUuid}`,
+          })
+        );
+        postsToShowToSet.push(...mappedPostsToShow);
+      } else {
         if (masterPosts.length <= postsToShowInRow) {
-          sessionStorageObj = {
-            postsToShow: masterPosts.map((post) => ({
+          const mappedPostsToShow: Array<PostToShow> = masterPosts.map(
+            (post) => ({
               ...post,
               postToShowUuid: `${uuidV4()}:${post.postUuid}`,
-            })),
+            })
+          );
+          postsToShowToSet.push(...mappedPostsToShow);
+          sessionStorageObj = {
+            postsToShowUuids: mappedPostsToShow.map((post) => post.postUuid),
             scrollLeft: 0,
           };
         } else {
           const postRowContentDivWidth = postRowContentDiv.clientWidth;
           const cardWidthPx =
             postRowContentDivWidth * (postCardWidthPercentage / 100);
-          const postsToShowToSet = new Array<PostToShow>();
+
           const lastPost = masterPosts[masterPosts.length - 1];
           postsToShowToSet.push({
             ...lastPost,
@@ -108,7 +130,7 @@ export default function useMovePostRow(
             }));
           postsToShowToSet.push(...postsToPush);
           sessionStorageObj = {
-            postsToShow: postsToShowToSet,
+            postsToShowUuids: postsToShowToSet.map((post) => post.postUuid),
             scrollLeft: cardWidthPx,
           };
         }
@@ -116,7 +138,7 @@ export default function useMovePostRow(
 
       updatePostsToShowAndScrollLeft(
         postRowContentDiv,
-        sessionStorageObj.postsToShow,
+        postsToShowToSet,
         sessionStorageObj.scrollLeft
       );
     }

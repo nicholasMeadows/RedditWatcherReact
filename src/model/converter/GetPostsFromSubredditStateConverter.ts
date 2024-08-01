@@ -30,6 +30,7 @@ export type GetPostsFromSubredditState = {
   subredditLists: Array<SubredditLists>;
   lastPostRowWasSortOrderNew: boolean;
   randomIterationSelectWeightOption: RandomIterationSelectWeightOptionsEnum;
+  useInMemoryImagesAndGifs: boolean;
 };
 
 export type GetPostsUpdatedValues = {

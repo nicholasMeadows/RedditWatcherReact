@@ -70,6 +70,9 @@ export default function useRedditService() {
   const appNotificationsDispatch = useContext(AppNotificationsDispatchContext);
   const redditCredentials = useContext(AppConfigStateContext).redditCredentials;
   const postsToShowInRow = useContext(AppConfigStateContext).postsToShowInRow;
+  const useInMemoryImagesAndGifs = useContext(
+    AppConfigStateContext
+  ).useInMemoryImagesAndGifs;
 
   const getPostRowsPausedRef = useRef<boolean>(false);
   const redditCredentialsRef = useRef(redditCredentials);
@@ -92,6 +95,7 @@ export default function useRedditService() {
     randomIterationSelectWeightOption
   );
   const postsToShowInRowRef = useRef(postsToShowInRow);
+  const useInMemoryImagesAndGifsRef = useRef(useInMemoryImagesAndGifs);
 
   useEffect(() => {
     getPostRowsPausedRef.current = getPostRowsPaused;
@@ -113,6 +117,7 @@ export default function useRedditService() {
     randomIterationSelectWeightOptionRef.current =
       randomIterationSelectWeightOption;
     postsToShowInRowRef.current = postsToShowInRow;
+    useInMemoryImagesAndGifsRef.current = useInMemoryImagesAndGifs;
   }, [
     concatRedditUrlMaxLength,
     contentFiltering,
@@ -131,36 +136,36 @@ export default function useRedditService() {
     subredditSourceOption,
     topTimeFrame,
     getAllSubredditsAtOnce,
+    useInMemoryImagesAndGifs,
   ]);
 
   const createCurrentStateObj = useCallback((): GetPostsFromSubredditState => {
-    return JSON.parse(
-      JSON.stringify({
-        postRows: postRowsRef.current,
-        subredditSourceOption: subredditSourceOptionRef.current,
-        subredditSortOrderOption: subredditSortOrderOptionRef.current,
-        getAllSubredditsAtOnce: getAllSubredditsAtOnceRef.current,
-        contentFiltering: contentFilteringRef.current,
-        subredditQueue: subredditQueueRef.current,
-        concatRedditUrlMaxLength: concatRedditUrlMaxLengthRef.current,
-        postSortOrder: postSortOrderRef.current,
-        topTimeFrame: topTimeFrameRef.current,
-        redditApiItemLimit: redditApiItemLimitRef.current,
-        selectSubredditIterationMethodOption:
-          selectSubredditIterationMethodOptionRef.current,
-        sortOrderDirection: sortOrderDirectionRef.current,
-        nsfwSubredditIndex:
-          redditServiceContextState.nsfwRedditListIndex.current,
-        masterSubredditList:
-          redditServiceContextState.masterSubscribedSubredditList.current,
-        subredditIndex: redditServiceContextState.subredditIndex.current,
-        subredditLists: subredditListsRef.current,
-        lastPostRowWasSortOrderNew:
-          redditServiceContextState.lastPostRowWasSortOrderNew.current,
-        randomIterationSelectWeightOption:
-          randomIterationSelectWeightOptionRef.current,
-      })
-    );
+    const stateObject: GetPostsFromSubredditState = {
+      postRows: postRowsRef.current,
+      subredditSourceOption: subredditSourceOptionRef.current,
+      subredditSortOrderOption: subredditSortOrderOptionRef.current,
+      getAllSubredditsAtOnce: getAllSubredditsAtOnceRef.current,
+      contentFiltering: contentFilteringRef.current,
+      subredditQueue: subredditQueueRef.current,
+      concatRedditUrlMaxLength: concatRedditUrlMaxLengthRef.current,
+      postSortOrder: postSortOrderRef.current,
+      topTimeFrame: topTimeFrameRef.current,
+      redditApiItemLimit: redditApiItemLimitRef.current,
+      selectSubredditIterationMethodOption:
+        selectSubredditIterationMethodOptionRef.current,
+      sortOrderDirection: sortOrderDirectionRef.current,
+      nsfwSubredditIndex: redditServiceContextState.nsfwRedditListIndex.current,
+      masterSubredditList:
+        redditServiceContextState.masterSubscribedSubredditList.current,
+      subredditIndex: redditServiceContextState.subredditIndex.current,
+      subredditLists: subredditListsRef.current,
+      lastPostRowWasSortOrderNew:
+        redditServiceContextState.lastPostRowWasSortOrderNew.current,
+      randomIterationSelectWeightOption:
+        randomIterationSelectWeightOptionRef.current,
+      useInMemoryImagesAndGifs: useInMemoryImagesAndGifsRef.current,
+    };
+    return JSON.parse(JSON.stringify(stateObject));
   }, [
     redditServiceContextState.lastPostRowWasSortOrderNew,
     redditServiceContextState.masterSubscribedSubredditList,

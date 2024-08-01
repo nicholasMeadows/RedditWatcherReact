@@ -8,6 +8,7 @@ import SubredditListItemContextMenuEvent from "../model/Events/SubredditListItem
 import SubredditListContextMenuEvent from "../model/Events/SubredditListContextMenuEvent.ts";
 import SideBarSubredditMenuEvent from "../model/Events/SideBarSubredditMenuEvent.ts";
 import { RedditSearchItemContextMenuEvent } from "../model/Events/RedditSearchItemContextMenuEvent.ts";
+import { MediaType } from "../model/Post/MediaTypeEnum.ts";
 
 interface ContextDataObjects {
   post?: Post | undefined;
@@ -37,7 +38,7 @@ export type ContextMenuState = {
   copyInfo:
     | {
         url: string;
-        mediaType: string;
+        mediaType: MediaType;
       }
     | undefined;
   updateSubredditListInfo:

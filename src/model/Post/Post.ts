@@ -7,7 +7,6 @@ export interface Post {
   randomSourceString: string;
   over18: boolean;
   domain: string;
-  url: string;
   attachments: Array<Attachment>;
   created: number;
   permaLink: string;

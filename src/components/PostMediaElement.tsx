@@ -1,6 +1,7 @@
 import React, {
   memo,
   MouseEventHandler,
+  ReactNode,
   TouchEventHandler,
   useEffect,
   useRef,
@@ -10,6 +11,7 @@ import React, {
 import { Post } from "../model/Post/Post.ts";
 import { v4 as uuidV4 } from "uuid";
 import { PostImageQualityEnum } from "../model/config/enums/PostImageQualityEnum.ts";
+import { MediaType } from "../model/Post/MediaTypeEnum.ts";
 import { AttachmentResolution } from "../model/Post/AttachmentResolution.ts";
 
 type Props = {
@@ -56,18 +58,18 @@ const PostMediaElement: React.FC<Props> = memo(
   }) => {
     const [carouselArrowLightDarkPart, setCarouselArrowLightDarkPart] =
       useState("light");
-    const [imageUrl, setImageUrl] = useState("");
+    const [mediaSrc, setMediaSrc] = useState("");
 
     useEffect(() => {
       if (
         post == undefined ||
         post.attachments.length <= 1 ||
-        imageUrl == undefined
+        mediaSrc == undefined
       ) {
         return;
       }
       const attachment = post.attachments[currentAttachmentIndex];
-      if (attachment.mediaType != "IMAGE") {
+      if (attachment.mediaType != MediaType.Image) {
         return;
       }
 
@@ -123,57 +125,74 @@ const PostMediaElement: React.FC<Props> = memo(
           setCarouselArrowLightDarkPart("light");
         }
       };
-      imgEl.src = imageUrl;
-    }, [post, imageUrl, currentAttachmentIndex]);
+      imgEl.src = mediaSrc;
+    }, [post, mediaSrc, currentAttachmentIndex]);
 
     const postElementRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
-      const attachment = post.attachments[currentAttachmentIndex];
-      let url = attachment.url;
-      const attachmentResolutions = attachment.attachmentResolutions;
-      if (attachmentResolutions.length > 0 && postElementRef.current !== null) {
-        const postElement = postElementRef.current;
-        const postElementPxCount =
-          postElement.clientWidth * postElement.clientHeight;
-        const sortedResolutions = [...attachmentResolutions];
-        sortedResolutions.sort((res1, res2) => {
-          const pxCount1 = res1.width * res1.height;
-          const pxCount2 = res2.width * res2.height;
-          if (pxCount1 > pxCount2) {
-            return 1;
-          } else if (pxCount1 < pxCount2) {
-            return -1;
-          }
-          return 0;
-        });
-        let attachmentResolution: AttachmentResolution | undefined = undefined;
-        if (postImageQuality == PostImageQualityEnum.High) {
-          attachmentResolution =
-            sortedResolutions[sortedResolutions.length - 1];
-        } else if (postImageQuality === PostImageQualityEnum.Medium) {
-          attachmentResolution =
-            sortedResolutions[Math.floor(sortedResolutions.length - 1)];
-        } else if (postImageQuality === PostImageQualityEnum.Low) {
-          attachmentResolution = sortedResolutions[0];
+      const currentAttachment = post.attachments[currentAttachmentIndex];
+      const mediaType = currentAttachment.mediaType;
+      if (mediaType === MediaType.Image || mediaType === MediaType.Gif) {
+        const attachmentResolutions = currentAttachment.attachmentResolutions;
+        if (
+          attachmentResolutions === undefined ||
+          attachmentResolutions.length === 0
+        ) {
+          setMediaSrc(
+            currentAttachment.base64Img === undefined
+              ? currentAttachment.url
+              : currentAttachment.base64Img
+          );
         } else {
-          for (const resolution of sortedResolutions) {
-            const pxCount = resolution.width * resolution.height;
-            if (pxCount >= postElementPxCount) {
-              attachmentResolution = resolution;
-              break;
+          const sortedResolutions = [...attachmentResolutions];
+          sortedResolutions.sort((res1, res2) => {
+            const pxCount1 = res1.width * res1.height;
+            const pxCount2 = res2.width * res2.height;
+            if (pxCount1 > pxCount2) {
+              return 1;
+            } else if (pxCount1 < pxCount2) {
+              return -1;
+            }
+            return 0;
+          });
+
+          let attachmentResolution: AttachmentResolution | undefined =
+            undefined;
+          if (postImageQuality == PostImageQualityEnum.High) {
+            attachmentResolution =
+              sortedResolutions[sortedResolutions.length - 1];
+          } else if (postImageQuality === PostImageQualityEnum.Medium) {
+            attachmentResolution =
+              sortedResolutions[Math.floor(sortedResolutions.length - 1)];
+          } else if (postImageQuality === PostImageQualityEnum.Low) {
+            attachmentResolution = sortedResolutions[0];
+          } else {
+            const postElement = postElementRef.current;
+            if (postElement !== null) {
+              const postElementPxCount =
+                postElement.clientWidth * postElement.clientHeight;
+              for (const resolution of sortedResolutions) {
+                const pxCount = resolution.width * resolution.height;
+                if (pxCount >= postElementPxCount) {
+                  attachmentResolution = resolution;
+                  break;
+                }
+              }
             }
           }
-        }
 
-        if (attachmentResolution === undefined) {
-          attachmentResolution =
-            sortedResolutions[sortedResolutions.length - 1];
+          if (attachmentResolution !== undefined) {
+            setMediaSrc(
+              attachmentResolution.base64Img === undefined
+                ? attachmentResolution.url
+                : attachmentResolution.base64Img
+            );
+          }
         }
-        const textAreaElement = document.createElement("textarea");
-        textAreaElement.innerHTML = attachmentResolution.url;
-        url = decodeURI(textAreaElement.value);
+      } else {
+        setMediaSrc(currentAttachment.url);
       }
-      setImageUrl(url);
     }, [
       post.attachments,
       currentAttachmentIndex,
@@ -214,55 +233,68 @@ const PostMediaElement: React.FC<Props> = memo(
           }}
         />
 
-        {(post.attachments[currentAttachmentIndex].mediaType == "IMAGE" ||
-          post.attachments[currentAttachmentIndex].mediaType == "GIF") && (
-          <div className="post-element-media-element">
-            <img
-              alt={""}
-              draggable={false}
-              src={imageUrl}
-              className="post-element-img-element"
-              onMouseOut={onMouseOut}
-              onMouseDown={onMouseDown}
-              onMouseUp={onMouseUp}
-              onMouseMove={onMouseMove}
-              onWheel={onWheel}
-              onTouchStart={onTouchStart}
-              onTouchMove={onTouchMove}
-              style={{
-                left: `${imgXPercent}%`,
-                top: `${imgYPercent}%`,
-                transform: `translate(-50%, -50%) scale(${scale})`,
-              }}
-            ></img>
-          </div>
-        )}
+        {(() => {
+          let mediaElement: ReactNode | null = null;
+          if (
+            post.attachments[currentAttachmentIndex].mediaType ==
+              MediaType.Image ||
+            post.attachments[currentAttachmentIndex].mediaType == MediaType.Gif
+          ) {
+            mediaElement = (
+              <div className="post-element-media-element">
+                <img
+                  alt={""}
+                  draggable={false}
+                  src={mediaSrc}
+                  className="post-element-img-element"
+                  onMouseOut={onMouseOut}
+                  onMouseDown={onMouseDown}
+                  onMouseUp={onMouseUp}
+                  onMouseMove={onMouseMove}
+                  onWheel={onWheel}
+                  onTouchStart={onTouchStart}
+                  onTouchMove={onTouchMove}
+                  style={{
+                    left: `${imgXPercent}%`,
+                    top: `${imgYPercent}%`,
+                    transform: `translate(-50%, -50%) scale(${scale})`,
+                  }}
+                ></img>
+              </div>
+            );
+          } else if (
+            post.attachments[currentAttachmentIndex].mediaType ==
+            MediaType.VideoMP4
+          ) {
+            mediaElement = (
+              <video className="post-element-media-element">
+                {" "}
+                <source src={mediaSrc} type="video/mp4" />{" "}
+              </video>
+            );
+          } else if (
+            post.attachments[currentAttachmentIndex].mediaType ==
+            MediaType.IFrame
+          ) {
+            mediaElement = (
+              <>
+                <div className={"post-element-media-element"}>
+                  <iframe
+                    src={mediaSrc}
+                    frameBorder="0"
+                    scrolling="no"
+                    width="100%"
+                    height="100%"
+                    style={{ position: "absolute", top: 0, left: 0 }}
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              </>
+            );
+          }
 
-        {post.attachments[currentAttachmentIndex].mediaType == "VIDEO-MP4" && (
-          <video className="post-element-media-element">
-            {" "}
-            <source
-              src={post.attachments[currentAttachmentIndex].url}
-              type="video/mp4"
-            />{" "}
-          </video>
-        )}
-        {post.attachments[currentAttachmentIndex].mediaType == "IFRAME" && (
-          <>
-            <div className={"post-element-media-element"}>
-              <iframe
-                src={post.attachments[currentAttachmentIndex].url}
-                frameBorder="0"
-                scrolling="no"
-                width="100%"
-                height="100%"
-                style={{ position: "absolute", top: 0, left: 0 }}
-                allowFullScreen
-              ></iframe>
-            </div>
-          </>
-        )}
-
+          return mediaElement;
+        })()}
         {post.attachments.length > 1 && (
           <div className={"attachment-indicator-box"}>
             {post.attachments.map((attachment, index) => {

@@ -41,6 +41,7 @@ const defaultRedditApiItemLimit = 25;
 const defaultPostsToShowInRow = 4;
 const defaultPostRowsToShowInView = 3;
 const defaultDarkMode = false;
+const defaultUseInMemoryImagesAndGifs = false;
 
 const initialState: AppConfigState = {
   redditCredentials: {
@@ -79,6 +80,7 @@ const initialState: AppConfigState = {
   postRowsToShowInViewValidationError: undefined,
   configLoaded: false,
   darkMode: defaultDarkMode,
+  useInMemoryImagesAndGifs: defaultUseInMemoryImagesAndGifs,
 };
 
 type Props = {

@@ -9,6 +9,8 @@ import {
   AppConfigStateContext,
 } from "../context/app-config-context.ts";
 import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
+import getPlatform from "../util/PlatformUtil.ts";
+import { Platform } from "../model/Platform.ts";
 
 const ApplicationSettings: React.FC = () => {
   const appConfigDispatch = useContext(AppConfigDispatchContext);
@@ -52,8 +54,34 @@ const ApplicationSettings: React.FC = () => {
     AppConfigStateContext
   ).postRowsToShowInViewValidationError;
 
+  const useInMemoryImagesAndGifs = useContext(
+    AppConfigStateContext
+  ).useInMemoryImagesAndGifs;
+
   return (
     <div className="reddit-watcher-settings">
+      {getPlatform() !== Platform.Web && getPlatform() !== Platform.Unknown && (
+        <>
+          <hr />
+          <div className="settings-item flex-row">
+            <label className="select-label-relative">
+              Download and use in memory images and gifs (May affect
+              performance)
+            </label>
+            <input
+              type={"checkbox"}
+              className={"settings-checkbox-input"}
+              checked={useInMemoryImagesAndGifs}
+              onChange={() => {
+                appConfigDispatch({
+                  type: AppConfigActionType.SET_USE_IN_MEMORY_IMAGES_AND_GIFS,
+                  payload: !useInMemoryImagesAndGifs,
+                });
+              }}
+            />
+          </div>
+        </>
+      )}
       <hr />
       <div className="settings-item flex-column">
         <label className="select-label">

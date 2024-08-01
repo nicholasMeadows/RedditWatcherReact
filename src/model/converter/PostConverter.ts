@@ -5,6 +5,7 @@ import { T3 } from "../RedditApiResponse/Types/T3/T3";
 import { Subreddit } from "../Subreddit/Subreddit";
 import { SubredditLists } from "../SubredditList/SubredditLists.ts";
 import { AttachmentResolution } from "../Post/AttachmentResolution.ts";
+import { MediaType } from "../Post/MediaTypeEnum.ts";
 
 const DOMAIN_REDGIFS = "redgifs.com";
 const DOMAIN_IMGUR1 = "i.imgur.com";
@@ -68,7 +69,6 @@ export function convertPost(
     postId: post.name,
     over18: post.over_18,
     domain: post.domain,
-    url: post.url,
     attachments: createAttachments(post),
     permaLink: post.permalink,
     randomSourceString: "",
@@ -76,6 +76,12 @@ export function convertPost(
     thumbnail: post.thumbnail,
   };
 }
+
+const unescapeUrl = (url: string) => {
+  const textAreaElement = document.createElement("textarea");
+  textAreaElement.innerHTML = url;
+  return decodeURI(textAreaElement.value);
+};
 
 function createAttachments(post: T3): Array<Attachment> {
   let postUrl: string = post.url;
@@ -116,7 +122,7 @@ function createAttachments(post: T3): Array<Attachment> {
 
             const attachmentBaseUrl = formattedUrl.split("?")[0];
             attachment.url = attachmentBaseUrl;
-            attachment.mediaType = "IMAGE";
+            attachment.mediaType = MediaType.Image;
             processedAttachments.push(attachment);
           }
         });
@@ -139,9 +145,10 @@ function createAttachments(post: T3): Array<Attachment> {
         const mappedResolutions: Array<AttachmentResolution> =
           previewImage.resolutions.map((resolution) => {
             return {
-              url: resolution.url,
+              url: unescapeUrl(resolution.url),
               width: resolution.width,
               height: resolution.height,
+              base64Img: undefined,
             };
           });
         attachmentResolutions.push(...mappedResolutions);
@@ -153,26 +160,29 @@ function createAttachments(post: T3): Array<Attachment> {
         baseUrl.endsWith(".png")
       ) {
         attachment = {
-          mediaType: "IMAGE",
-          url: postUrl,
+          mediaType: MediaType.Image,
+          url: unescapeUrl(postUrl),
           status: "VALID",
           attachmentResolutions: attachmentResolutions,
+          base64Img: undefined,
         };
         attachments.push(attachment);
       } else if (baseUrl.endsWith(".gif")) {
         attachment = {
-          mediaType: "GIF",
-          url: postUrl,
+          mediaType: MediaType.Gif,
+          url: unescapeUrl(postUrl),
           status: "VALID",
           attachmentResolutions: attachmentResolutions,
+          base64Img: undefined,
         };
         attachments.push(attachment);
       } else if (domain == DOMAIN_GIPHY) {
         attachment = {
-          mediaType: "IFRAME",
-          url: postUrl,
+          mediaType: MediaType.IFrame,
+          url: unescapeUrl(postUrl),
           status: "VALID",
           attachmentResolutions: attachmentResolutions,
+          base64Img: undefined,
         };
         attachments.push(attachment);
       } else if (
@@ -180,10 +190,11 @@ function createAttachments(post: T3): Array<Attachment> {
         postUrl == ".gifv"
       ) {
         attachment = {
-          mediaType: "VIDEO-MP4",
-          url: postUrl.substring(0, postUrl.length - 5) + ".mp4",
+          mediaType: MediaType.VideoMP4,
+          url: unescapeUrl(postUrl.substring(0, postUrl.length - 5) + ".mp4"),
           status: "VALID",
           attachmentResolutions: attachmentResolutions,
+          base64Img: undefined,
         };
         attachments.push(attachment);
       } else if (domain == DOMAIN_REDGIFS) {
@@ -201,10 +212,11 @@ function createAttachments(post: T3): Array<Attachment> {
         );
 
         attachment = {
-          mediaType: "IFRAME",
-          url: postUrl,
+          mediaType: MediaType.IFrame,
+          url: unescapeUrl(postUrl),
           status: "VALID",
           attachmentResolutions: [],
+          base64Img: undefined,
         };
         attachments.push(attachment);
       }
@@ -228,11 +240,14 @@ function convertMediaMetadata(post: T3): Array<Attachment> {
         const mediaMetadataResolutions = mediaMetadataObj.p;
 
         let url: string | undefined = undefined;
+        let mediaTypeEnum: MediaType | undefined = undefined;
         if (mediaType != null && mediaMetadataItem != null) {
           if (mediaType == "image/png" || mediaType == "image/jpg") {
             url = mediaMetadataItem.u;
+            mediaTypeEnum = MediaType.Image;
           } else if (mediaType == "image/gif") {
             url = mediaMetadataItem.gif;
+            mediaTypeEnum = MediaType.Gif;
           }
         }
 
@@ -241,20 +256,22 @@ function convertMediaMetadata(post: T3): Array<Attachment> {
           const resoltions = mediaMetadataResolutions.map(
             (mediaMetadataResolution) => {
               return {
-                url: mediaMetadataResolution.u,
+                url: unescapeUrl(mediaMetadataResolution.u),
                 width: mediaMetadataResolution.x,
                 height: mediaMetadataResolution.y,
+                base64Img: undefined,
               };
             }
           );
           attachmentResolutions.push(...resoltions);
         }
 
-        if (url != null) {
+        if (url != null && mediaTypeEnum != null) {
           const attachment: Attachment = {
             status: mediaMetadataObj.status,
-            url: url,
-            mediaType: mediaType,
+            url: unescapeUrl(url),
+            mediaType: mediaTypeEnum,
+            base64Img: undefined,
             attachmentResolutions: attachmentResolutions,
           };
           attachments.push(attachment);

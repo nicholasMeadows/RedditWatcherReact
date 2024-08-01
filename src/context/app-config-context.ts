@@ -4,8 +4,8 @@ import {
   AppConfigActionAppConfigPayload,
   AppConfigActionAutoScrollPostRowDirectionOptionEnumPayload,
   AppConfigActionAutoScrollPostRowOptionEnumPayload,
+  AppConfigActionBooleanPayload,
   AppConfigActionContentFilteringEnumPayload,
-  AppConfigActionGetAllSubredditsAtOnce,
   AppConfigActionNoPayload,
   AppConfigActionNumberPayload,
   AppConfigActionPostSortOrderOptionEnumPayload,
@@ -27,7 +27,7 @@ type dispatchType = Dispatch<
   | AppConfigActionStringPayload
   | AppConfigActionSubredditSourceOptionEnumPayload
   | AppConfigActionSubredditSortOrderOptionsEnumPayload
-  | AppConfigActionGetAllSubredditsAtOnce
+  | AppConfigActionBooleanPayload
   | AppConfigActionAutoScrollPostRowOptionEnumPayload
   | AppConfigActionAutoScrollPostRowDirectionOptionEnumPayload
   | AppConfigActionRandomIterationSelectWeightOptionEnumPayload

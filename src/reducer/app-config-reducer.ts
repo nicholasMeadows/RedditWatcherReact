@@ -57,6 +57,7 @@ export enum AppConfigActionType {
   RESET_CONFIG_LOADED = "RESET_CONFIG_LOADED",
   SET_APP_CONFIG = "SET_APP_CONFIG",
   CLEAR_REDDIT_API_ITEM_LIMIT_VALIDATION_ERROR = "CLEAR_REDDIT_API_ITEM_LIMIT_VALIDATION_ERROR",
+  SET_USE_IN_MEMORY_IMAGES_AND_GIFS = "SET_USE_IN_MEMORY_IMAGES_AND_GIFS",
 }
 
 export type AppConfigActionStringPayload = {
@@ -80,8 +81,10 @@ export type AppConfigActionSubredditSortOrderOptionsEnumPayload = {
   payload: SubredditSortOrderOptionsEnum;
 };
 
-export type AppConfigActionGetAllSubredditsAtOnce = {
-  type: AppConfigActionType.SET_GET_ALL_SUBREDDITS_AT_ONCE;
+export type AppConfigActionBooleanPayload = {
+  type:
+    | AppConfigActionType.SET_GET_ALL_SUBREDDITS_AT_ONCE
+    | AppConfigActionType.SET_USE_IN_MEMORY_IMAGES_AND_GIFS;
   payload: boolean;
 };
 
@@ -153,7 +156,7 @@ export default function AppConfigReducer(
     | AppConfigActionStringPayload
     | AppConfigActionSubredditSourceOptionEnumPayload
     | AppConfigActionSubredditSortOrderOptionsEnumPayload
-    | AppConfigActionGetAllSubredditsAtOnce
+    | AppConfigActionBooleanPayload
     | AppConfigActionAutoScrollPostRowOptionEnumPayload
     | AppConfigActionAutoScrollPostRowDirectionOptionEnumPayload
     | AppConfigActionRandomIterationSelectWeightOptionEnumPayload
@@ -229,6 +232,8 @@ export default function AppConfigReducer(
       return setAppConfig(action);
     case AppConfigActionType.CLEAR_REDDIT_API_ITEM_LIMIT_VALIDATION_ERROR:
       return clearRedditApiItemLimitValidationError(state);
+    case AppConfigActionType.SET_USE_IN_MEMORY_IMAGES_AND_GIFS:
+      return setUseInMemoryImagesAndGifs(state, action);
     default:
       return state;
   }
@@ -331,7 +336,7 @@ const setSubredditSortOrderOption = (
 
 const setGetAllSubredditsAtOnce = (
   state: AppConfigState,
-  action: AppConfigActionGetAllSubredditsAtOnce
+  action: AppConfigActionBooleanPayload
 ): AppConfigState => {
   const updatedState = {
     ...state,
@@ -521,6 +526,18 @@ const clearRedditApiItemLimitValidationError = (state: AppConfigState) => {
     ...state,
     redditApiItemLimitValidationError: undefined,
   };
+};
+
+const setUseInMemoryImagesAndGifs = (
+  state: AppConfigState,
+  action: AppConfigActionBooleanPayload
+): AppConfigState => {
+  const updatedState = {
+    ...state,
+    useInMemoryImagesAndGifs: action.payload,
+  };
+  saveConfig(updatedState);
+  return updatedState;
 };
 const setPostsToShowInRow = (
   state: AppConfigState,

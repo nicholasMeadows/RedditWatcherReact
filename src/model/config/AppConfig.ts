@@ -31,4 +31,5 @@ export interface AppConfig {
   postsToShowInRow: number;
   postRowsToShowInView: number;
   darkMode: boolean;
+  useInMemoryImagesAndGifs: boolean;
 }

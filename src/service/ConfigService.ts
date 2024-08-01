@@ -49,6 +49,7 @@ const REDDIT_API_ITEM_LIMIT = "redditApiItemLimit";
 const POSTS_TO_SHOW_IN_ROW = "postsToShowInRow";
 const POST_ROWS_TO_SHOW_IN_VIEW = "postRowsToShowInView";
 const DARK_MODE = "darkMode";
+const USE_IN_MEMORY_IMAGES_AND_GIFS = "useInMemoryImagesAndGifs";
 
 export async function loadSubredditListsFromFile() {
   await checkForOrCreateConfigFolder();
@@ -146,6 +147,11 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
   const postRowsToShowInView: number =
     configJsonObj[POST_ROWS_TO_SHOW_IN_VIEW] || 3;
   const darkMode: boolean = configJsonObj[DARK_MODE] || false;
+  let useInMemoryImagesAndGifs =
+    configJsonObj[USE_IN_MEMORY_IMAGES_AND_GIFS] || false;
+  if (useInMemoryImagesAndGifs && getPlatform() == Platform.Web) {
+    useInMemoryImagesAndGifs = false;
+  }
 
   const loadedConfig: AppConfig = {
     redditCredentials: {
@@ -173,6 +179,7 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
     postsToShowInRow: postsToShowInRow,
     postRowsToShowInView: postRowsToShowInView,
     darkMode: darkMode,
+    useInMemoryImagesAndGifs: useInMemoryImagesAndGifs,
   };
 
   return loadedConfig;
