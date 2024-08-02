@@ -1,93 +1,117 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { Post } from "../model/Post/Post.ts";
-import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
+import { useCallback, useContext, useEffect, useRef } from "react";
+import { Attachment } from "../model/Post/Attachment.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
+import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 
 export default function useIncrementAttachment(
+  currentAttachmentIndex: number | undefined,
+  attachments: Array<Attachment> | undefined,
+  postUuid: string | undefined,
   postRowUuid: string | undefined,
-  post: Post | undefined,
   autoIncrementAttachments?: boolean
 ) {
   const postRowsDispatch = useContext(PostRowsDispatchContext);
-  const [currentAttachmentIndex, setCurrentAttachmentIndex] = useState(0);
+  // const [currentAttachmentIndex, setCurrentAttachmentIndex] = useState(0);
   const autoIncrementPostAttachmentInterval = useRef<
     NodeJS.Timeout | undefined
   >();
 
   const incrementPostAttachment = useCallback(() => {
-    if (post === undefined || postRowUuid === undefined) {
+    if (
+      postUuid === undefined ||
+      postRowUuid === undefined ||
+      attachments === undefined ||
+      currentAttachmentIndex === undefined
+    ) {
       return;
     }
-    const attachments = post.attachments;
     let attachmentIndex: number;
     if (currentAttachmentIndex < attachments.length - 1) {
       attachmentIndex = currentAttachmentIndex + 1;
     } else {
       attachmentIndex = 0;
     }
-    setCurrentAttachmentIndex(attachmentIndex);
     postRowsDispatch({
       type: PostRowsActionType.SET_POST_ATTACHMENT_INDEX,
       payload: {
         postRowUuid: postRowUuid,
-        postUuid: post.postUuid,
+        postUuid: postUuid,
         index: attachmentIndex,
       },
     });
-  }, [currentAttachmentIndex, post, postRowUuid]);
+  }, [
+    attachments,
+    currentAttachmentIndex,
+    postRowUuid,
+    postRowsDispatch,
+    postUuid,
+  ]);
 
   const decrementPostAttachment = useCallback(() => {
-    if (post === undefined || postRowUuid === undefined) {
+    if (
+      postUuid === undefined ||
+      postRowUuid === undefined ||
+      attachments === undefined ||
+      currentAttachmentIndex === undefined
+    ) {
       return;
     }
-    const attachments = post.attachments;
     let attachmentIndex: number;
     if (currentAttachmentIndex <= 0) {
       attachmentIndex = attachments.length - 1;
     } else {
       attachmentIndex = currentAttachmentIndex - 1;
     }
-    setCurrentAttachmentIndex(attachmentIndex);
     postRowsDispatch({
       type: PostRowsActionType.SET_POST_ATTACHMENT_INDEX,
       payload: {
         postRowUuid: postRowUuid,
-        postUuid: post.postUuid,
+        postUuid: postUuid,
         index: attachmentIndex,
       },
     });
-  }, [currentAttachmentIndex, post, postRowUuid]);
+  }, [
+    attachments,
+    currentAttachmentIndex,
+    postRowUuid,
+    postRowsDispatch,
+    postUuid,
+  ]);
 
   const jumpToPostAttachment = useCallback(
     (index: number) => {
-      if (post === undefined || postRowUuid === undefined) {
+      if (
+        postUuid === undefined ||
+        postRowUuid === undefined ||
+        attachments === undefined
+      ) {
         return;
       }
-      const attachments = post.attachments;
       if (index >= 0 && index < attachments.length) {
-        setCurrentAttachmentIndex(index);
         postRowsDispatch({
           type: PostRowsActionType.SET_POST_ATTACHMENT_INDEX,
           payload: {
             postRowUuid: postRowUuid,
-            postUuid: post.postUuid,
+            postUuid: postUuid,
             index: index,
           },
         });
       }
     },
-    [post, postRowUuid]
+    [attachments, postRowUuid, postRowsDispatch, postUuid]
   );
+
   const setupAutoIncrementPostAttachmentInterval = useCallback(() => {
-    if (post === undefined) {
-      return;
-    }
-    if (post.attachments.length > 1 && autoIncrementAttachments) {
+    if (
+      attachments !== undefined &&
+      attachments.length > 1 &&
+      autoIncrementAttachments
+    ) {
       autoIncrementPostAttachmentInterval.current = setInterval(() => {
         incrementPostAttachment();
       }, 5000);
     }
-  }, [autoIncrementAttachments, incrementPostAttachment, post]);
+  }, [attachments, autoIncrementAttachments, incrementPostAttachment]);
 
   const clearAutoIncrementPostAttachmentInterval = useCallback(() => {
     if (autoIncrementPostAttachmentInterval.current != undefined) {
@@ -113,6 +137,5 @@ export default function useIncrementAttachment(
     incrementPostAttachment: incrementPostAttachment,
     decrementPostAttachment: decrementPostAttachment,
     jumpToPostAttachment: jumpToPostAttachment,
-    currentAttachmentIndex: currentAttachmentIndex,
   };
 }

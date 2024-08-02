@@ -12,11 +12,14 @@ import { AppConfigStateContext } from "../context/app-config-context.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import { v4 as uuidV4 } from "uuid";
 import { MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX } from "../RedditWatcherConstants.ts";
-import { PostToShow } from "../model/Post/PostToShow.ts";
 
 type MovePostRowStateSessionStorage = {
-  postsToShowUuids: Array<string>;
+  postsToShowUuids: Array<PostsToShowUuidsObj>;
   scrollLeft: number;
+};
+type PostsToShowUuidsObj = {
+  postUuid: string;
+  uiUuid: string;
 };
 export default function useMovePostRow(
   postRowUuid: string,
@@ -34,8 +37,9 @@ export default function useMovePostRow(
   const autoScrollPostRowDirectionOption = useContext(
     AppConfigStateContext
   ).autoScrollPostRowDirectionOption;
-  const [postsToShow, setPostsToShow] = useState<Array<PostToShow>>([]);
-
+  const [postsToShowUuids, setPostsToShowUuids] = useState<
+    Array<PostsToShowUuidsObj>
+  >([]);
   const lastPostRowScrollLeft = useRef<number>(0);
   const autoScrollInterval = useRef<NodeJS.Timeout>();
   const mouseDownOrTouchOnPostRow = useRef<boolean>(false);
@@ -44,13 +48,13 @@ export default function useMovePostRow(
   const updatePostsToShowAndScrollLeft = useCallback(
     (
       postRowContentDiv: HTMLDivElement,
-      postsToShow: Array<PostToShow>,
+      postsToShowUuids: Array<PostsToShowUuidsObj>,
       scrollLeft: number
     ) => {
-      setPostsToShow(postsToShow);
+      setPostsToShowUuids(postsToShowUuids);
       setTimeout(() => postRowContentDiv.scrollTo({ left: scrollLeft }), 0);
       const sessionStorageState: MovePostRowStateSessionStorage = {
-        postsToShowUuids: postsToShow.map((post) => post.postUuid),
+        postsToShowUuids: postsToShowUuids,
         scrollLeft: scrollLeft,
       };
       sessionStorage.setItem(
@@ -73,7 +77,7 @@ export default function useMovePostRow(
 
     let sessionStorageObj: MovePostRowStateSessionStorage | undefined;
 
-    const postsToShowToSet = new Array<PostToShow>();
+    const postsToShowUuidsToSet = new Array<PostsToShowUuidsObj>();
 
     try {
       if (
@@ -84,32 +88,17 @@ export default function useMovePostRow(
       }
     } finally {
       if (sessionStorageObj !== undefined) {
-        const postsToShowUuids = sessionStorageObj.postsToShowUuids;
-        const unmappedPostsToShow = new Array<Post>();
-        postsToShowUuids.forEach((uuid) => {
-          const post = masterPosts.find((post) => post.postUuid === uuid);
-          if (post !== undefined) {
-            unmappedPostsToShow.push(post);
-          }
-        });
-        const mappedPostsToShow: Array<PostToShow> = unmappedPostsToShow.map(
-          (post) => ({
-            ...post,
-            postToShowUuid: `${uuidV4()}:${post.postUuid}`,
-          })
-        );
-        postsToShowToSet.push(...mappedPostsToShow);
+        postsToShowUuidsToSet.push(...sessionStorageObj.postsToShowUuids);
       } else {
         if (masterPosts.length <= postsToShowInRow) {
-          const mappedPostsToShow: Array<PostToShow> = masterPosts.map(
-            (post) => ({
-              ...post,
-              postToShowUuid: `${uuidV4()}:${post.postUuid}`,
-            })
-          );
-          postsToShowToSet.push(...mappedPostsToShow);
+          const mappedPostsToShowUuids: Array<PostsToShowUuidsObj> =
+            masterPosts.map((post) => ({
+              uiUuid: `${uuidV4()}:${post.postUuid}`,
+              postUuid: post.postUuid,
+            }));
+          postsToShowUuidsToSet.push(...mappedPostsToShowUuids);
           sessionStorageObj = {
-            postsToShowUuids: mappedPostsToShow.map((post) => post.postUuid),
+            postsToShowUuids: mappedPostsToShowUuids,
             scrollLeft: 0,
           };
         } else {
@@ -118,19 +107,19 @@ export default function useMovePostRow(
             postRowContentDivWidth * (postCardWidthPercentage / 100);
 
           const lastPost = masterPosts[masterPosts.length - 1];
-          postsToShowToSet.push({
-            ...lastPost,
-            postToShowUuid: `${uuidV4()}:${lastPost.postUuid}`,
+          postsToShowUuidsToSet.push({
+            postUuid: lastPost.postUuid,
+            uiUuid: `${uuidV4()}:${lastPost.postUuid}`,
           });
-          const postsToPush = masterPosts
+          const postUuidsToPush = masterPosts
             .slice(0, postsToShowInRow + 1)
-            .map<PostToShow>((post) => ({
-              ...post,
-              postToShowUuid: `${uuidV4()}:${post.postUuid}`,
+            .map<PostsToShowUuidsObj>((post) => ({
+              postUuid: post.postUuid,
+              uiUuid: `${uuidV4()}:${post.postUuid}`,
             }));
-          postsToShowToSet.push(...postsToPush);
+          postsToShowUuidsToSet.push(...postUuidsToPush);
           sessionStorageObj = {
-            postsToShowUuids: postsToShowToSet.map((post) => post.postUuid),
+            postsToShowUuids: postsToShowUuidsToSet,
             scrollLeft: cardWidthPx,
           };
         }
@@ -138,7 +127,7 @@ export default function useMovePostRow(
 
       updatePostsToShowAndScrollLeft(
         postRowContentDiv,
-        postsToShowToSet,
+        postsToShowUuidsToSet,
         sessionStorageObj.scrollLeft
       );
     }
@@ -211,8 +200,8 @@ export default function useMovePostRow(
     const postRowContentDiv = postRowContentDivRef.current;
     if (
       postRowContentDiv === null ||
-      postsToShow.length === 0 ||
-      postsToShow.length <= postsToShowInRow
+      postsToShowUuids.length === 0 ||
+      postsToShowUuids.length <= postsToShowInRow
     ) {
       return;
     }
@@ -225,16 +214,17 @@ export default function useMovePostRow(
       postRowContentDivWidth * (postCardWidthPercentage / 100);
     const postRowContentDivScrollWidth = postRowContentDiv.scrollWidth;
 
-    const updatedPostsToShow = [...postsToShow];
+    const updatedPostsToShowUuids = [...postsToShowUuids];
 
     if (postRowContentDivScrollLeft > lastPostRowScrollLeft.current) {
       if (
         postRowContentDivScrollLeft + postRowContentDivWidth >=
         postRowContentDivScrollWidth
       ) {
-        const lastPostBeingShown = postsToShow[postsToShow.length - 1];
-        const lastPostBeingShownIndexInMaster = masterPosts.findIndex((post) =>
-          lastPostBeingShown.postUuid.endsWith(post.postUuid)
+        const lastPostBeingShownUuidObj =
+          postsToShowUuids[postsToShowUuids.length - 1];
+        const lastPostBeingShownIndexInMaster = masterPosts.findIndex(
+          (post) => post.postUuid === lastPostBeingShownUuidObj.postUuid
         );
         if (lastPostBeingShownIndexInMaster === -1) {
           return;
@@ -244,21 +234,21 @@ export default function useMovePostRow(
             ? 0
             : lastPostBeingShownIndexInMaster + 1;
         const masterPostToInsert = masterPosts[masterIndexToInsert];
-        const postToInsert = {
-          ...masterPostToInsert,
-          postToShowUuid: `${uuidV4()}:${masterPostToInsert.postUuid}`,
+        const uuidObjToInsert = {
+          postUuid: masterPostToInsert.postUuid,
+          uiUuid: `${uuidV4()}:${masterPostToInsert.postUuid}`,
         };
-        updatedPostsToShow.push(postToInsert);
+        updatedPostsToShowUuids.push(uuidObjToInsert);
       }
       if (postRowContentDivScrollLeft > postCardWidthPx) {
-        updatedPostsToShow.shift();
+        updatedPostsToShowUuids.shift();
         updatedScrollLeft = postRowContentDivScrollLeft - postCardWidthPx;
       }
     } else if (postRowContentDivScrollLeft < lastPostRowScrollLeft.current) {
       if (postRowContentDivScrollLeft === 0) {
-        const firstPostShowing = postsToShow[0];
-        const indexInMaster = masterPosts.findIndex((post) =>
-          firstPostShowing.postUuid.endsWith(post.postUuid)
+        const firstPostShowingUuidObj = postsToShowUuids[0];
+        const indexInMaster = masterPosts.findIndex(
+          (post) => post.postUuid === firstPostShowingUuidObj.postUuid
         );
         if (indexInMaster === -1) {
           return;
@@ -268,9 +258,9 @@ export default function useMovePostRow(
             indexInMaster === 0 ? masterPosts.length - 1 : indexInMaster - 1
           ];
 
-        updatedPostsToShow.unshift({
-          ...postToInsert,
-          postToShowUuid: `${uuidV4()}:${postToInsert.postUuid}`,
+        updatedPostsToShowUuids.unshift({
+          postUuid: postToInsert.postUuid,
+          uiUuid: `${uuidV4()}:${postToInsert.postUuid}`,
         });
         updatedScrollLeft = postCardWidthPx;
       }
@@ -281,13 +271,13 @@ export default function useMovePostRow(
             postRowContentDivScrollWidth
         ) > postCardWidthPx
       ) {
-        updatedPostsToShow.pop();
+        updatedPostsToShowUuids.pop();
       }
     }
 
     updatePostsToShowAndScrollLeft(
       postRowContentDiv,
-      updatedPostsToShow,
+      updatedPostsToShowUuids,
       updatedScrollLeft
     );
 
@@ -296,8 +286,8 @@ export default function useMovePostRow(
     masterPosts,
     postCardWidthPercentage,
     postRowContentDivRef,
-    postsToShow,
     postsToShowInRow,
+    postsToShowUuids,
     updatePostsToShowAndScrollLeft,
   ]);
 
@@ -413,5 +403,5 @@ export default function useMovePostRow(
     postRowContentDivRef,
   ]);
 
-  return postsToShow;
+  return postsToShowUuids;
 }

@@ -158,20 +158,31 @@ const setPostAttachmentIndex = (
   }
 ): PostRowsState => {
   const postRowUuid = action.payload.postRowUuid;
-  const postRow = state.postRows.find(
-    (postRow) => postRow.postRowUuid == postRowUuid
+  const postRowIndex = state.postRows.findIndex(
+    (postRow) => postRow.postRowUuid === postRowUuid
   );
-  if (postRow == undefined) {
+  if (postRowIndex === -1) {
     return state;
   }
+  const postRowsCopy = [...state.postRows];
+  const postRow = postRowsCopy[postRowIndex];
 
   const postUuid = action.payload.postUuid;
-  const post = postRow.posts.find((post) => post.postUuid == postUuid);
-  if (post == undefined) {
+  const postIndex = postRow.posts.findIndex(
+    (post) => post.postUuid === postUuid
+  );
+  if (postIndex === -1) {
     return state;
   }
-  post.currentAttachmentIndex = action.payload.index;
-  return state;
+  postRow.posts[postIndex] = {
+    ...postRow.posts[postIndex],
+    currentAttachmentIndex: action.payload.index,
+  };
+
+  return {
+    ...state,
+    postRows: postRowsCopy,
+  };
 };
 const clearPostRows = (state: PostRowsState): PostRowsState => {
   state.postRows.forEach((postRow) => {

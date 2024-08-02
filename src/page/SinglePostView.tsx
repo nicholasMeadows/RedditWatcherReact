@@ -132,8 +132,10 @@ const SinglePostView: FC = () => {
   }, [postRowUuid, postRows, postUuid]);
 
   const incrementAttachmentHook = useIncrementAttachment(
+    singlePostViewState.post?.currentAttachmentIndex,
+    singlePostViewState.post?.attachments,
+    singlePostViewState.post?.postUuid,
     postRowUuid,
-    singlePostViewState?.post,
     false
   );
 
@@ -171,7 +173,7 @@ const SinglePostView: FC = () => {
             <PostMediaElement
               post={singlePostViewState.post}
               currentAttachmentIndex={
-                incrementAttachmentHook.currentAttachmentIndex
+                singlePostViewState.post.currentAttachmentIndex
               }
               incrementPostAttachment={
                 incrementAttachmentHook.incrementPostAttachment

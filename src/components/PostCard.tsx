@@ -21,11 +21,20 @@ const PostCard: FC = memo(() => {
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const initialMouseDownOrTouchX = useRef(0);
 
-  const incrementAttachmentHook = useIncrementAttachment(
+  const {
+    clearAutoIncrementPostAttachmentInterval,
+    setupAutoIncrementPostAttachmentInterval,
+    incrementPostAttachment,
+    decrementPostAttachment,
+    jumpToPostAttachment,
+  } = useIncrementAttachment(
+    post.currentAttachmentIndex,
+    post.attachments,
+    post.postUuid,
     postRowUuid,
-    post,
     true
   );
+
   return (
     <div
       className={`post-card-outer`}
@@ -67,10 +76,10 @@ const PostCard: FC = memo(() => {
         });
       }}
       onMouseEnter={() => {
-        incrementAttachmentHook.clearAutoIncrementPostAttachmentInterval();
+        clearAutoIncrementPostAttachmentInterval();
       }}
       onMouseLeave={() => {
-        incrementAttachmentHook.setupAutoIncrementPostAttachmentInterval();
+        setupAutoIncrementPostAttachmentInterval();
       }}
     >
       <div className="postCardHeader">
@@ -97,16 +106,10 @@ const PostCard: FC = memo(() => {
       <div className="post-card-content">
         <PostMediaElement
           post={post}
-          incrementPostAttachment={
-            incrementAttachmentHook.incrementPostAttachment
-          }
-          decrementPostAttachment={
-            incrementAttachmentHook.decrementPostAttachment
-          }
-          jumpToPostAttachment={incrementAttachmentHook.jumpToPostAttachment}
-          currentAttachmentIndex={
-            incrementAttachmentHook.currentAttachmentIndex
-          }
+          incrementPostAttachment={incrementPostAttachment}
+          decrementPostAttachment={decrementPostAttachment}
+          jumpToPostAttachment={jumpToPostAttachment}
+          currentAttachmentIndex={post.currentAttachmentIndex}
         />
       </div>
     </div>

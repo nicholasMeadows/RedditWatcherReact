@@ -45,7 +45,7 @@ const PostRow: FC = memo(() => {
     }
   }, [postsToShowInRow]);
 
-  const postsToShow = useMovePostRow(
+  const postsToShowUuids = useMovePostRow(
     postRowUuid,
     posts,
     postRowContentDivRef,
@@ -54,6 +54,35 @@ const PostRow: FC = memo(() => {
     postsToShowInRow
   );
 
+  const createPostCardReactNode = useCallback(
+    (postUuid: string, uiUuid: string) => {
+      const post = posts.find((post) => post.postUuid === postUuid);
+      if (post === undefined) {
+        return <></>;
+      }
+
+      return (
+        <div
+          style={{
+            width: `${postCardWidthPercentage}%`,
+            minWidth: `calc(${postCardWidthPercentage}%)`,
+          }}
+          className={"post-card-wrapper"}
+          key={uiUuid}
+        >
+          <PostCardContext.Provider
+            value={{
+              postRowUuid: postRowUuid,
+              post: post,
+            }}
+          >
+            <PostCard />
+          </PostCardContext.Provider>
+        </div>
+      );
+    },
+    [postCardWidthPercentage, postRowUuid, posts]
+  );
   return (
     <div className="postRow">
       <div
@@ -61,7 +90,7 @@ const PostRow: FC = memo(() => {
         className="postRowScrollButton leftPostRowScrollButton"
         style={{
           visibility:
-            postsToShow.length > postsToShowInRow ? "visible" : "hidden",
+            postsToShowUuids.length > postsToShowInRow ? "visible" : "hidden",
         }}
       >
         <img
@@ -90,32 +119,16 @@ const PostRow: FC = memo(() => {
           });
         }}
       >
-        {postsToShow.map((post) => (
-          <div
-            style={{
-              width: `${postCardWidthPercentage}%`,
-              minWidth: `calc(${postCardWidthPercentage}%)`,
-            }}
-            className={"post-card-wrapper"}
-            key={post.postToShowUuid}
-          >
-            <PostCardContext.Provider
-              value={{
-                postRowUuid: postRowUuid,
-                post: post,
-              }}
-            >
-              <PostCard />
-            </PostCardContext.Provider>
-          </div>
-        ))}
+        {postsToShowUuids.map((uuidObj) =>
+          createPostCardReactNode(uuidObj.postUuid, uuidObj.uiUuid)
+        )}
       </div>
       <div
         hidden={hideScrollButtonDivs()}
         className="postRowScrollButton rightPostRowScrollButton"
         style={{
           visibility:
-            postsToShow.length > postsToShowInRow ? "visible" : "hidden",
+            postsToShowUuids.length > postsToShowInRow ? "visible" : "hidden",
         }}
       >
         <img
