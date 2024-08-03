@@ -1,12 +1,4 @@
-import {
-  FC,
-  memo,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { FC, memo, useCallback, useContext, useRef } from "react";
 import getPlatform from "../util/PlatformUtil.ts";
 import { Platform } from "../model/Platform.ts";
 import useMovePostRow from "../hook/use-move-post-row.ts";
@@ -20,30 +12,16 @@ import IndividualPostRowContext from "../context/individual-post-row-context.ts"
 
 const PostRow: FC = memo(() => {
   const darkMode = useContext(AppConfigStateContext).darkMode;
-  const postsToShowInRow = useContext(AppConfigStateContext).postsToShowInRow;
+  const { postsToShowInRow } = useContext(AppConfigStateContext);
   const postRowsDispatch = useContext(PostRowsDispatchContext);
-  const { postRowUuid, posts, shouldAutoScroll } = useContext(
-    IndividualPostRowContext
-  );
+  const { postCardWidthPercentage, postRowUuid, posts, shouldAutoScroll } =
+    useContext(IndividualPostRowContext);
 
   const postRowContentDivRef = useRef<HTMLDivElement>(null);
-  const [postCardWidthPercentage, setPostCardWidthPercentage] = useState(0);
 
   const hideScrollButtonDivs = useCallback(() => {
     return getPlatform() == Platform.Android || getPlatform() == Platform.Ios;
   }, []);
-
-  useEffect(() => {
-    const postRowContentDiv = postRowContentDivRef.current;
-    if (postRowContentDiv !== null) {
-      const postRowContentDivWidth =
-        postRowContentDiv.getBoundingClientRect().width;
-      const postCardWidthPx = postRowContentDivWidth / postsToShowInRow;
-      setPostCardWidthPercentage(
-        (postCardWidthPx / postRowContentDivWidth) * 100
-      );
-    }
-  }, [postsToShowInRow]);
 
   const postsToShowUuids = useMovePostRow(
     postRowUuid,
@@ -54,35 +32,6 @@ const PostRow: FC = memo(() => {
     postsToShowInRow
   );
 
-  const createPostCardReactNode = useCallback(
-    (postUuid: string, uiUuid: string) => {
-      const post = posts.find((post) => post.postUuid === postUuid);
-      if (post === undefined) {
-        return <></>;
-      }
-
-      return (
-        <div
-          style={{
-            width: `${postCardWidthPercentage}%`,
-            minWidth: `calc(${postCardWidthPercentage}%)`,
-          }}
-          className={"post-card-wrapper"}
-          key={uiUuid}
-        >
-          <PostCardContext.Provider
-            value={{
-              postRowUuid: postRowUuid,
-              post: post,
-            }}
-          >
-            <PostCard />
-          </PostCardContext.Provider>
-        </div>
-      );
-    },
-    [postCardWidthPercentage, postRowUuid, posts]
-  );
   return (
     <div className="postRow">
       <div
@@ -119,9 +68,36 @@ const PostRow: FC = memo(() => {
           });
         }}
       >
-        {postsToShowUuids.map((uuidObj) =>
-          createPostCardReactNode(uuidObj.postUuid, uuidObj.uiUuid)
-        )}
+        {(() => {
+          const mapOfPosts = new Map(
+            posts.map((post) => [post.postUuid, post])
+          );
+          return postsToShowUuids.map((uuidObj) => {
+            const post = mapOfPosts.get(uuidObj.postUuid);
+            if (post === undefined) {
+              return <></>;
+            }
+            return (
+              <div
+                style={{
+                  width: `${postCardWidthPercentage}%`,
+                  minWidth: `calc(${postCardWidthPercentage}%)`,
+                }}
+                className={"post-card-wrapper"}
+                key={uuidObj.uiUuid}
+              >
+                <PostCardContext.Provider
+                  value={{
+                    postRowUuid: postRowUuid,
+                    post: post,
+                  }}
+                >
+                  <PostCard />
+                </PostCardContext.Provider>
+              </div>
+            );
+          });
+        })()}
       </div>
       <div
         hidden={hideScrollButtonDivs()}

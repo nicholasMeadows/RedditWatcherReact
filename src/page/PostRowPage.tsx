@@ -22,20 +22,22 @@ import IndividualPostRowContext from "../context/individual-post-row-context.ts"
 
 const PostRowPage: FC = () => {
   const sideBarDispatch = useContext(SideBarDispatchContext);
-  const postRows = useContext(PostRowsContext).postRows;
-  const pauseGetPostsLoop = useContext(PostRowsContext).pauseGetPostsLoop;
+  const { postRows } = useContext(PostRowsContext);
+  const { pauseGetPostsLoop } = useContext(PostRowsContext);
   const postRowsDispatch = useContext(PostRowsDispatchContext);
-
-  const postRowsToShowInView = useContext(
+  const { postsToShowInRow, postRowsToShowInView } = useContext(
     AppConfigStateContext
-  ).postRowsToShowInView;
+  );
 
-  const postRowsDivRef = useRef(null);
+  const postRowsDivRef = useRef<HTMLDivElement>(null);
   const postRowPageRef = useRef<HTMLDivElement>(null);
-
   const redditSearchBarFocused = useRef(false);
+  const getPostsAbortController = useRef(new AbortController());
 
   const [scrollBarWidth, setScrollBarWidth] = useState(0);
+  const [postCardWidthPercentage, setPostCardWidthPercentage] = useState(0);
+
+  const { getPostRow } = useRedditService();
 
   useEffect(() => {
     const scrollDiv = postRowsDivRef.current as unknown as HTMLDivElement;
@@ -61,9 +63,6 @@ const PostRowPage: FC = () => {
       postRowPage.removeEventListener("keyup", documentKeyUpEvent);
     };
   }, [postRowsDispatch]);
-
-  const { getPostRow } = useRedditService();
-  const getPostsAbortController = useRef(new AbortController());
 
   const startLoopingForPosts = useCallback(
     async (abortController: AbortController) => {
@@ -98,6 +97,17 @@ const PostRowPage: FC = () => {
       abortController.abort();
     };
   }, [startLoopingForPosts]);
+
+  useEffect(() => {
+    const postRowsDiv = postRowsDivRef.current;
+    if (postRowsDiv !== null) {
+      const postRowContentDivWidth = postRowsDiv.getBoundingClientRect().width;
+      const postCardWidthPx = postRowContentDivWidth / postsToShowInRow;
+      setPostCardWidthPercentage(
+        (postCardWidthPx / postRowContentDivWidth) * 100
+      );
+    }
+  }, [postsToShowInRow]);
 
   return (
     <div className="post-row-page" ref={postRowPageRef}>
@@ -136,6 +146,7 @@ const PostRowPage: FC = () => {
                 posts: postRow.posts,
                 postRowUuid: postRow.postRowUuid,
                 shouldAutoScroll: postRow.shouldAutoScroll,
+                postCardWidthPercentage: postCardWidthPercentage,
               }}
             >
               <PostRow />

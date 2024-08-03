@@ -21,6 +21,7 @@ import { PostImageQualityEnum } from "../model/config/enums/PostImageQualityEnum
 import { PostRow } from "../model/PostRow.ts";
 import useSinglePostPageZoom from "../hook/use-single-post-page-zoom.ts";
 import { SinglePostPageActionType } from "../reducer/single-post-page-reducer.ts";
+import PostMediaElementContext from "../context/post-media-element-context.ts";
 
 type SinglePostViewState = {
   post: Post | undefined;
@@ -170,39 +171,37 @@ const SinglePostView: FC = () => {
             }}
             className="flex flex-column max-width-height-percentage single-post-view-post-element"
           >
-            <PostMediaElement
-              post={singlePostViewState.post}
-              currentAttachmentIndex={
-                singlePostViewState.post.currentAttachmentIndex
-              }
-              incrementPostAttachment={
-                incrementAttachmentHook.incrementPostAttachment
-              }
-              decrementPostAttachment={
-                incrementAttachmentHook.decrementPostAttachment
-              }
-              jumpToPostAttachment={
-                incrementAttachmentHook.jumpToPostAttachment
-              }
-              autoIncrementAttachments={false}
-              scale={singlePostPageZoom.imgScale}
-              imgXPercent={singlePostPageZoom.imgXPercent}
-              imgYPercent={singlePostPageZoom.imgYPercent}
-              onMouseOut={singlePostPageZoom.postMediaElementOnMouseOUt}
-              onMouseDown={singlePostPageZoom.postMediaElementOnMouseDown}
-              onMouseUp={singlePostPageZoom.postMediaElementOnMouseUp}
-              onMouseMove={singlePostPageZoom.postMediaElementOnMouseMove}
-              onWheel={singlePostPageZoom.postMediaElementOnWheel}
-              onTouchStart={singlePostPageZoom.postMediaElementOnTouchStart}
-              onTouchMove={singlePostPageZoom.postMediaElementOnTouchMove}
-              carouselLeftButtonClick={
-                singlePostPageZoom.resetImgPositionAndScale
-              }
-              carouselRightButtonClick={
-                singlePostPageZoom.resetImgPositionAndScale
-              }
-              postImageQuality={PostImageQualityEnum.High}
-            />
+            <PostMediaElementContext.Provider
+              value={{
+                post: singlePostViewState.post,
+                currentAttachmentIndex:
+                  singlePostViewState.post.currentAttachmentIndex,
+                incrementPostAttachment:
+                  incrementAttachmentHook.incrementPostAttachment,
+                decrementPostAttachment:
+                  incrementAttachmentHook.decrementPostAttachment,
+                jumpToPostAttachment:
+                  incrementAttachmentHook.jumpToPostAttachment,
+                autoIncrementAttachments: false,
+                scale: singlePostPageZoom.imgScale,
+                imgXPercent: singlePostPageZoom.imgXPercent,
+                imgYPercent: singlePostPageZoom.imgYPercent,
+                onMouseOut: singlePostPageZoom.postMediaElementOnMouseOUt,
+                onMouseDown: singlePostPageZoom.postMediaElementOnMouseDown,
+                onMouseUp: singlePostPageZoom.postMediaElementOnMouseUp,
+                onMouseMove: singlePostPageZoom.postMediaElementOnMouseMove,
+                onWheel: singlePostPageZoom.postMediaElementOnWheel,
+                onTouchStart: singlePostPageZoom.postMediaElementOnTouchStart,
+                onTouchMove: singlePostPageZoom.postMediaElementOnTouchMove,
+                carouselLeftButtonClick:
+                  singlePostPageZoom.resetImgPositionAndScale,
+                carouselRightButtonClick:
+                  singlePostPageZoom.resetImgPositionAndScale,
+                postImageQuality: PostImageQualityEnum.High,
+              }}
+            >
+              <PostMediaElement />
+            </PostMediaElementContext.Provider>
           </div>
           {singlePostViewState.postRow !== undefined &&
             singlePostViewState.postRow.posts.length > 1 && (

@@ -12,6 +12,7 @@ import { SinglePostPageDispatchContext } from "../context/single-post-page-conte
 import { SinglePostPageActionType } from "../reducer/single-post-page-reducer.ts";
 import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
+import PostMediaElementContext from "../context/post-media-element-context.ts";
 
 const PostCard: FC = memo(() => {
   const navigate = useNavigate();
@@ -104,13 +105,17 @@ const PostCard: FC = memo(() => {
         <p className="postCardHeaderText">{post.randomSourceString}</p>
       </div>
       <div className="post-card-content">
-        <PostMediaElement
-          post={post}
-          incrementPostAttachment={incrementPostAttachment}
-          decrementPostAttachment={decrementPostAttachment}
-          jumpToPostAttachment={jumpToPostAttachment}
-          currentAttachmentIndex={post.currentAttachmentIndex}
-        />
+        <PostMediaElementContext.Provider
+          value={{
+            post: post,
+            incrementPostAttachment: incrementPostAttachment,
+            decrementPostAttachment: decrementPostAttachment,
+            jumpToPostAttachment: jumpToPostAttachment,
+            currentAttachmentIndex: post.currentAttachmentIndex,
+          }}
+        >
+          <PostMediaElement />
+        </PostMediaElementContext.Provider>
       </div>
     </div>
   );
