@@ -137,7 +137,8 @@ const PostMediaElement: React.FC<Props> = memo(
         const attachmentResolutions = currentAttachment.attachmentResolutions;
         if (
           attachmentResolutions === undefined ||
-          attachmentResolutions.length === 0
+          attachmentResolutions.length === 0 ||
+          mediaType === MediaType.Gif
         ) {
           setMediaSrc(
             currentAttachment.base64Img === undefined

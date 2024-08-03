@@ -456,7 +456,10 @@ export default class RedditService {
 
     posts.forEach((post) => {
       post.attachments.forEach((attachment) => {
-        if (attachment.mediaType === MediaType.Image) {
+        if (
+          attachment.mediaType === MediaType.Image ||
+          attachment.mediaType === MediaType.Gif
+        ) {
           const prom = this.getBase64ForImgUrl(attachment.url);
           prom
             .then((res) => {
@@ -466,20 +469,24 @@ export default class RedditService {
               console.log("Caught error while fetching base64 img", err);
             });
           promiseArr.push(prom);
-          const resolutions = attachment.attachmentResolutions;
-          if (resolutions !== undefined) {
-            resolutions.forEach((resolution) => {
-              const resolutionPromise = this.getBase64ForImgUrl(resolution.url);
-              resolutionPromise
-                .then((res) => (resolution.base64Img = res))
-                .catch((err) => {
-                  console.log(
-                    "Caught error while fetching base64 attachment",
-                    err
-                  );
-                });
-              promiseArr.push(resolutionPromise);
-            });
+          if (attachment.mediaType === MediaType.Image) {
+            const resolutions = attachment.attachmentResolutions;
+            if (resolutions !== undefined) {
+              resolutions.forEach((resolution) => {
+                const resolutionPromise = this.getBase64ForImgUrl(
+                  resolution.url
+                );
+                resolutionPromise
+                  .then((res) => (resolution.base64Img = res))
+                  .catch((err) => {
+                    console.log(
+                      "Caught error while fetching base64 attachment",
+                      err
+                    );
+                  });
+                promiseArr.push(resolutionPromise);
+              });
+            }
           }
         }
       });
