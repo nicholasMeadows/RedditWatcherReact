@@ -6,6 +6,7 @@ import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import { Dispatch } from "react";
 
 export type RedditListState = {
+  subredditListsLoaded: boolean;
   subredditLists: Array<SubredditLists>;
   modifyListMode: ModifySubredditListMode | undefined;
   showModifyListBox: boolean;
@@ -334,6 +335,7 @@ const setSubredditLists = (
   return {
     ...state,
     subredditLists: action.payload,
+    subredditListsLoaded: true,
   };
 };
 

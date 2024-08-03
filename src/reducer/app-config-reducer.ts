@@ -615,7 +615,7 @@ const resetConfigLoaded = (state: AppConfigState): AppConfigState => {
 const setAppConfig = (
   action: AppConfigActionAppConfigPayload
 ): AppConfigState => {
-  return { ...(action.payload as AppConfigState) };
+  return { ...(action.payload as AppConfigState), configLoaded: true };
 };
 
 const validateAutoScrollPostRowRateSecondsForSinglePostCardField = (

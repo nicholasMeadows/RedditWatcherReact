@@ -16,6 +16,7 @@ const initialState: RedditListState = {
   createUpdateInputValidationError: "",
   createUpdateButtonText: "",
   updatingListUuid: undefined,
+  subredditListsLoaded: false,
 };
 type Props = {
   children: ReactNode;
