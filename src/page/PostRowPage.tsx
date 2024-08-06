@@ -1,11 +1,4 @@
-import {
-  FC,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { FC, useContext, useEffect, useRef, useState } from "react";
 import SideBar from "../components/SideBar.tsx";
 import PostRow from "../components/PostRow.tsx";
 import "../theme/post-row-page.scss";
@@ -15,29 +8,30 @@ import {
   PostRowsDispatchContext,
 } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
-import { SideBarDispatchContext } from "../context/side-bar-context.ts";
-import useRedditService from "../hook/use-reddit-service.ts";
-import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
 import IndividualPostRowContext from "../context/individual-post-row-context.ts";
+import useRedditService from "../hook/use-reddit-service.ts";
+import { SideBarDispatchContext } from "../context/side-bar-context.ts";
+import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
 
 const PostRowPage: FC = () => {
-  const sideBarDispatch = useContext(SideBarDispatchContext);
-  const { postRows } = useContext(PostRowsContext);
+  const { postRows, mouseOverAPostRow, scrollY } = useContext(PostRowsContext);
   const { pauseGetPostsLoop } = useContext(PostRowsContext);
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const { postsToShowInRow, postRowsToShowInView } = useContext(
     AppConfigStateContext
   );
-
+  const sideBarDispatch = useContext(SideBarDispatchContext);
   const postRowsDivRef = useRef<HTMLDivElement>(null);
   const postRowPageRef = useRef<HTMLDivElement>(null);
   const redditSearchBarFocused = useRef(false);
-  const getPostsAbortController = useRef(new AbortController());
 
   const [scrollBarWidth, setScrollBarWidth] = useState(0);
   const [postCardWidthPercentage, setPostCardWidthPercentage] = useState(0);
+  const redditService = useRedditService();
 
-  const { getPostRow } = useRedditService();
+  const loopForPostIntervalRef = useRef<NodeJS.Timeout>();
+  const mouseOverAPostRowRef = useRef(mouseOverAPostRow);
+  const scrollYRef = useRef(scrollY);
 
   useEffect(() => {
     const scrollDiv = postRowsDivRef.current as unknown as HTMLDivElement;
@@ -64,40 +58,6 @@ const PostRowPage: FC = () => {
     };
   }, [postRowsDispatch]);
 
-  const startLoopingForPosts = useCallback(
-    async (abortController: AbortController) => {
-      while (!abortController.signal.aborted) {
-        await new Promise<void>((resolve) => {
-          if (abortController.signal.aborted) resolve();
-          const timeout = setTimeout(() => resolve(), 10000);
-          abortController.signal.onabort = () => {
-            clearTimeout(timeout);
-            resolve();
-          };
-        });
-        if (abortController.signal.aborted) break;
-        await getPostRow(abortController);
-        sideBarDispatch({
-          type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
-          payload: 10,
-        });
-      }
-    },
-    [getPostRow, sideBarDispatch]
-  );
-
-  useEffect(() => {
-    if (!getPostsAbortController.current.signal.aborted) {
-      getPostsAbortController.current.abort();
-    }
-    const abortController = new AbortController();
-    getPostsAbortController.current = abortController;
-    startLoopingForPosts(getPostsAbortController.current);
-    return () => {
-      abortController.abort();
-    };
-  }, [startLoopingForPosts]);
-
   useEffect(() => {
     const postRowsDiv = postRowsDivRef.current;
     if (postRowsDiv !== null) {
@@ -108,6 +68,59 @@ const PostRowPage: FC = () => {
       );
     }
   }, [postsToShowInRow]);
+
+  useEffect(() => {
+    if (loopForPostIntervalRef.current !== undefined) {
+      return;
+    }
+    sideBarDispatch({
+      type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
+      payload: 10,
+    });
+    loopForPostIntervalRef.current = setInterval(async () => {
+      try {
+        const {
+          posts,
+          fromSubreddits,
+          getPostsFromSubredditState,
+          getPostsUpdatedValues,
+        } = await redditService.getPostsForPostRow();
+
+        while (mouseOverAPostRowRef.current || scrollYRef.current !== 0) {
+          await new Promise<void>((resolve) =>
+            setTimeout(() => resolve(), 100)
+          );
+        }
+
+        await redditService.handleGottenPosts(
+          posts,
+          fromSubreddits,
+          getPostsFromSubredditState,
+          getPostsUpdatedValues
+        );
+      } catch (e) {
+        console.log("Caught error while fetching posts for first post row", e);
+      }
+      sideBarDispatch({
+        type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
+        payload: 10,
+      });
+    }, 10000);
+  }, [redditService, sideBarDispatch]);
+
+  useEffect(() => {
+    return () => {
+      if (loopForPostIntervalRef.current !== undefined) {
+        clearInterval(loopForPostIntervalRef.current);
+      }
+      loopForPostIntervalRef.current = undefined;
+    };
+  }, []);
+
+  useEffect(() => {
+    mouseOverAPostRowRef.current = mouseOverAPostRow;
+    scrollYRef.current = scrollY;
+  }, [mouseOverAPostRow, scrollY]);
 
   return (
     <div className="post-row-page" ref={postRowPageRef}>

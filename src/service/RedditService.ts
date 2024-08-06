@@ -1,10 +1,22 @@
-import { Post } from "../model/Post/Post.ts";
-import { Subreddit } from "../model/Subreddit/Subreddit.ts";
+import RedditClient from "../client/RedditClient.ts";
+import { RedditCredentials } from "../model/config/RedditCredentials.ts";
 import {
   GetPostsFromSubredditState,
   GetPostsUpdatedValues,
 } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
-import RedditClient from "../client/RedditClient.ts";
+import { Subreddit } from "../model/Subreddit/Subreddit.ts";
+import { Post } from "../model/Post/Post.ts";
+import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
+import { MAX_POSTS_PER_ROW } from "../RedditWatcherConstants.ts";
+import { GetPostsForSubredditUrlConverter } from "../model/converter/GetPostsForSubredditUrlConverter.ts";
+import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum.ts";
+import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEnum.ts";
+import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
+import { MediaType } from "../model/Post/MediaTypeEnum.ts";
+import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum.ts";
+import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum.ts";
+import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
+import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum.ts";
 import {
   filterSubredditsListByUsersOnly,
   sortByDisplayName,
@@ -12,37 +24,29 @@ import {
   sortPostsByCreate,
   sortSubredditsBySubscribers,
 } from "../util/RedditServiceUtil.ts";
-import { Dispatch, MutableRefObject } from "react";
+import { RedditListDotComConverter } from "../model/converter/RedditListDotComConverter.ts";
+import { getSubredditsFromRedditListDotCom } from "./RedditListDotComClient.ts";
+import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum.ts";
+import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
+import {
+  SideBarActionType,
+  SideBarDispatch,
+} from "../reducer/side-bar-reducer.ts";
+import {
+  SubredditQueueAction,
+  SubredditQueueActionType,
+} from "../reducer/sub-reddit-queue-reducer.ts";
+import { PostRowsDispatch } from "../context/post-rows-context.ts";
+import { Dispatch } from "react";
 import {
   AppNotificationsAction,
   AppNotificationsActionType,
 } from "../reducer/app-notifications-reducer.ts";
 import { v4 as uuidV4 } from "uuid";
 import {
-  SubredditQueueAction,
-  SubredditQueueActionType,
-} from "../reducer/sub-reddit-queue-reducer.ts";
-import { RedditCredentials } from "../model/config/RedditCredentials.ts";
-import { PostRowsDispatch } from "../context/post-rows-context.ts";
-import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
-import {
-  SideBarActionType,
-  SideBarDispatch,
-} from "../reducer/side-bar-reducer.ts";
-import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
-import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum.ts";
-import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
-import { RedditListDotComConverter } from "../model/converter/RedditListDotComConverter.ts";
-import { getSubredditsFromRedditListDotCom } from "./RedditListDotComClient.ts";
-import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum.ts";
-import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum.ts";
-import { GetPostsForSubredditUrlConverter } from "../model/converter/GetPostsForSubredditUrlConverter.ts";
-import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEnum.ts";
-import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum.ts";
-import { MAX_POSTS_PER_ROW } from "../RedditWatcherConstants.ts";
-import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
-import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum.ts";
-import { MediaType } from "../model/Post/MediaTypeEnum.ts";
+  RedditServiceActions,
+  RedditServiceDispatch,
+} from "../reducer/reddit-service-reducer.ts";
 
 export default class RedditService {
   declare redditClient: RedditClient;
@@ -51,38 +55,10 @@ export default class RedditService {
     this.redditClient = new RedditClient(redditCredentials);
   }
 
-  async loadSubscribedSubreddits(
-    masterSubscribedSubredditListRef: MutableRefObject<Array<Subreddit>>,
-    redditApiItemLimit: number,
-    async: boolean = true
-  ) {
-    let subscribedSubreddits = new Array<Subreddit>();
-    let results = await this.redditClient.getSubscribedSubReddits(
-      redditApiItemLimit,
-      undefined
-    );
-    subscribedSubreddits.push(...results.subreddits);
-    masterSubscribedSubredditListRef.current = subscribedSubreddits;
-    const asyncLoopForRemainingSubreddits = async () => {
-      while (results.after != undefined) {
-        results = await this.redditClient.getSubscribedSubReddits(
-          redditApiItemLimit,
-          results.after
-        );
-        subscribedSubreddits = [...subscribedSubreddits, ...results.subreddits];
-        masterSubscribedSubredditListRef.current = subscribedSubreddits;
-      }
-    };
-    if (async) {
-      asyncLoopForRemainingSubreddits();
-    } else {
-      await asyncLoopForRemainingSubreddits();
-    }
-  }
-
   async getPostsForPostRow(
     getPostsFromSubredditsState: GetPostsFromSubredditState,
-    getPostsUpdatedValues: GetPostsUpdatedValues
+    getPostsUpdatedValues: GetPostsUpdatedValues,
+    abortSignal: AbortSignal
   ): Promise<{
     posts: Array<Post>;
     fromSubreddits: Array<Subreddit>;
@@ -104,6 +80,9 @@ export default class RedditService {
         getPostsFromSubredditsState.subredditLists,
         getPostsFromSubredditsState.useInMemoryImagesAndGifs
       );
+      if (abortSignal.aborted) {
+        throw new Error("Aborted");
+      }
       getPostsUpdatedValues.mostRecentSubredditGotten = subreddit;
     } else if (
       getPostsFromSubredditsState.subredditSourceOption ===
@@ -116,6 +95,9 @@ export default class RedditService {
         getPostsFromSubredditsState.masterSubredditList,
         getPostsFromSubredditsState.subredditLists
       );
+      if (abortSignal.aborted) {
+        throw new Error("Aborted");
+      }
       getPostsUpdatedValues.subredditsToShowInSideBar =
         getPostsFromSubredditsState.masterSubredditList;
     } else {
@@ -137,6 +119,9 @@ export default class RedditService {
         getPostsFromSubredditsState.getAllSubredditsAtOnce,
         getPostsFromSubredditsState.useInMemoryImagesAndGifs
       );
+      if (abortSignal.aborted) {
+        throw new Error("Aborted");
+      }
       postsFromSubreddit = posts;
       fromSubreddits.push(...fromSubreddits);
     }
@@ -610,15 +595,13 @@ export default class RedditService {
 
   applyUpdatedStateValues(
     updatedValues: GetPostsUpdatedValues,
-    subredditIndexRef: MutableRefObject<number>,
-    nsfwRedditListIndex: MutableRefObject<number>,
-    lastPostRowWasSortOrderNewRef: MutableRefObject<boolean>,
     subredditQueueDispatch: Dispatch<SubredditQueueAction>,
     currentPostsToShowInRow: number,
     postRowsDispatch: PostRowsDispatch,
     sideBarDispatch: SideBarDispatch,
     subredditLists: Array<SubredditLists>,
-    subredditSourceOption: SubredditSourceOptionsEnum
+    subredditSourceOption: SubredditSourceOptionsEnum,
+    redditServiceDispatch: RedditServiceDispatch
   ) {
     if (updatedValues.subredditQueueItemToRemove != undefined) {
       subredditQueueDispatch({
@@ -648,14 +631,22 @@ export default class RedditService {
       });
     }
     if (updatedValues.subredditIndex != undefined) {
-      subredditIndexRef.current = updatedValues.subredditIndex;
+      redditServiceDispatch({
+        type: RedditServiceActions.SET_SUBREDDIT_INDEX,
+        payload: updatedValues.subredditIndex,
+      });
     }
     if (updatedValues.nsfwRedditListIndex != undefined) {
-      nsfwRedditListIndex.current = updatedValues.nsfwRedditListIndex;
+      redditServiceDispatch({
+        type: RedditServiceActions.SET_NSFW_SUBREDDIT_INDEX,
+        payload: updatedValues.nsfwRedditListIndex,
+      });
     }
     if (updatedValues.lastPostRowWasSortOrderNew != undefined) {
-      lastPostRowWasSortOrderNewRef.current =
-        updatedValues.lastPostRowWasSortOrderNew;
+      redditServiceDispatch({
+        type: RedditServiceActions.SET_LAST_POST_ROW_WAS_SORT_ORDER_NEW,
+        payload: updatedValues.lastPostRowWasSortOrderNew,
+      });
     }
     if (updatedValues.createPostRowAndInsertAtBeginning != undefined) {
       postRowsDispatch({

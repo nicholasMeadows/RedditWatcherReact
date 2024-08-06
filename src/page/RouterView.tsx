@@ -27,10 +27,6 @@ import ApplicationSettings from "./ApplicationSettings.tsx";
 import { RootFontSizeContext } from "../context/root-font-size-context.ts";
 import AppNotificationsContextProvider from "../context/provider/app-notifications-context-provider.tsx";
 import AppNotifications from "../components/AppNotifications.tsx";
-import RedditServiceContext, {
-  RedditServiceContextState,
-} from "../context/reddit-service-context.ts";
-import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import SubredditQueueContextProvider from "../context/provider/sub-reddit-queue-context-provider.tsx";
 import {
   AppConfigDispatchContext,
@@ -44,6 +40,7 @@ import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import SideBarContextProvider from "../context/provider/side-bar-context-provider.tsx";
 import RedditListContextProvider from "../context/provider/reddit-list-context-provider.tsx";
+import RedditServiceContextProvider from "../context/provider/reddit-service-context-provider.tsx";
 
 export type SecondsTillGettingNextPostContextData = {
   secondsTillGettingNextPosts: number;
@@ -168,19 +165,13 @@ const RouterView: React.FC = () => {
     }
   }, [currentPostsToShowInRow, setRootFontSize]);
 
-  const redditServiceContextState: RedditServiceContextState = {
-    lastPostRowWasSortOrderNew: useRef(false),
-    subredditIndex: useRef(0),
-    nsfwRedditListIndex: useRef(0),
-    masterSubscribedSubredditList: useRef(new Array<Subreddit>()),
-  };
   return (
     <AppNotificationsContextProvider>
       <SubredditQueueContextProvider>
-        <RedditServiceContext.Provider value={redditServiceContextState}>
-          <SinglePostPageContextProvider>
-            <SideBarContextProvider>
-              <RedditListContextProvider>
+        <SinglePostPageContextProvider>
+          <SideBarContextProvider>
+            <RedditListContextProvider>
+              <RedditServiceContextProvider>
                 <div className="root-app" ref={rootDivRef}>
                   <NavigationHamburgerMenu />
                   <AppNotifications />
@@ -236,10 +227,10 @@ const RouterView: React.FC = () => {
                     </Routes>
                   </div>
                 </div>
-              </RedditListContextProvider>
-            </SideBarContextProvider>
-          </SinglePostPageContextProvider>
-        </RedditServiceContext.Provider>
+              </RedditServiceContextProvider>
+            </RedditListContextProvider>
+          </SideBarContextProvider>
+        </SinglePostPageContextProvider>
       </SubredditQueueContextProvider>
     </AppNotificationsContextProvider>
   );
