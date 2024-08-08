@@ -8,10 +8,9 @@ import {
 import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import {
+  GetPostsFromSubredditResponse,
   GetPostsFromSubredditState,
-  GetPostsUpdatedValues,
 } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
-import RedditService from "../service/RedditService.ts";
 import {
   PostRowsContext,
   PostRowsDispatchContext,
@@ -21,9 +20,15 @@ import {
   SubredditQueueDispatchContext,
   SubredditQueueStateContext,
 } from "../context/sub-reddit-queue-context.ts";
-import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
 import { SideBarDispatchContext } from "../context/side-bar-context.ts";
-import { Post } from "../model/Post/Post.ts";
+import RedditService from "../service/RedditService.ts";
+import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
+import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum.ts";
+import { sortPostsByCreate } from "../util/RedditServiceUtil.ts";
+import { SubredditQueueActionType } from "../reducer/sub-reddit-queue-reducer.ts";
+import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
+import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
+import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
 import { AppNotificationsActionType } from "../reducer/app-notifications-reducer.ts";
 import { v4 as uuidV4 } from "uuid";
 
@@ -54,11 +59,11 @@ export default function useRedditService() {
   } = useContext(RedditServiceStateContext);
 
   const redditServiceDispatch = useContext(RedditServiceDispatchContext);
-  const appNotificationsDispatch = useContext(AppNotificationsDispatchContext);
 
   const subredditQueueDispatch = useContext(SubredditQueueDispatchContext);
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const sideBarDispatch = useContext(SideBarDispatchContext);
+  const appNotificationDispatch = useContext(AppNotificationsDispatchContext);
   const { postRows } = useContext(PostRowsContext);
   const getPostsForPostRowAbortControllerRef = useRef<AbortController>();
 
@@ -150,99 +155,202 @@ export default function useRedditService() {
     [redditCredentials, redditServiceDispatch]
   );
 
-  const getPostsForPostRow = useCallback(async () => {
+  const getPostsForPostRow = useCallback(async (): Promise<{
+    getPostsFromSubredditResponse: GetPostsFromSubredditResponse;
+    getPostsFromSubredditState: GetPostsFromSubredditState;
+  }> => {
     if (getPostsForPostRowAbortControllerRef.current !== undefined) {
       getPostsForPostRowAbortControllerRef.current.abort();
     }
     const abortController = new AbortController();
     getPostsForPostRowAbortControllerRef.current = abortController;
-
     const getPostsFromSubredditState: GetPostsFromSubredditState = JSON.parse(
       JSON.stringify(currentGetPostsFromSubredditValues.current)
     );
-    const getPostsUpdatedValues: GetPostsUpdatedValues =
-      {} as GetPostsUpdatedValues;
     const redditService = new RedditService(redditCredentials);
-    const { posts, fromSubreddits } = await redditService.getPostsForPostRow(
-      getPostsFromSubredditState,
-      getPostsUpdatedValues,
-      abortController.signal
-    );
-    return {
-      posts: posts,
-      fromSubreddits: fromSubreddits,
-      getPostsFromSubredditState: getPostsFromSubredditState,
-      getPostsUpdatedValues: getPostsUpdatedValues,
-    };
+    return new Promise<{
+      getPostsFromSubredditResponse: GetPostsFromSubredditResponse;
+      getPostsFromSubredditState: GetPostsFromSubredditState;
+    }>((resolve, reject) => {
+      abortController.signal.addEventListener("abort", () => reject());
+      redditService
+        .getPostsForPostRow(getPostsFromSubredditState)
+        .then((response) => {
+          resolve({
+            getPostsFromSubredditResponse: response,
+            getPostsFromSubredditState: getPostsFromSubredditState,
+          });
+        })
+        .catch((err) => reject(err));
+    });
   }, [redditCredentials]);
 
-  const handleGottenPosts = useCallback(
-    async (
-      posts: Array<Post>,
-      fromSubreddits: Array<Subreddit>,
+  const applyUpdatedStateValues = useCallback(
+    (
       getPostsFromSubredditState: GetPostsFromSubredditState,
-      getPostsUpdatedValues: GetPostsUpdatedValues
+      getPostsResponse: GetPostsFromSubredditResponse
     ) => {
-      const redditService = new RedditService(redditCredentials);
-      try {
-        if (posts.length != 0) {
-          if (getPostsFromSubredditState.postRows.length == 10) {
-            getPostsUpdatedValues.postRowRemoveAt =
-              getPostsFromSubredditState.postRows.length - 1;
-          }
-          redditService.addPostRow(
-            posts,
-            fromSubreddits,
-            getPostsFromSubredditState,
-            getPostsUpdatedValues,
-            appNotificationsDispatch
-          );
-        } else {
-          let msg = `Got 0 posts. Trying again in a little bit.`;
-          if (fromSubreddits.length == 1) {
-            msg = `Got 0 posts from ${fromSubreddits[0].displayNamePrefixed}. Trying again in a little bit.`;
-          }
-          appNotificationsDispatch({
-            type: AppNotificationsActionType.SUBMIT_APP_NOTIFICATION,
-            payload: {
-              notificationUuid: uuidV4(),
-              message: msg,
-            },
-          });
-        }
-      } catch (e) {
-        appNotificationsDispatch({
-          type: AppNotificationsActionType.SUBMIT_APP_NOTIFICATION,
+      if (getPostsResponse.subredditQueueItemToRemove != undefined) {
+        subredditQueueDispatch({
+          type: SubredditQueueActionType.REMOVE_SUBREDDIT_QUEUE_ITEM,
+          payload: getPostsResponse.subredditQueueItemToRemove,
+        });
+      }
+      if (getPostsResponse.mostRecentSubredditGotten != undefined) {
+        sideBarDispatch({
+          type: SideBarActionType.SET_MOST_RECENT_SUBREDDIT_GOTTEN,
+          payload: getPostsResponse.mostRecentSubredditGotten,
+        });
+      }
+      if (getPostsResponse.postRowRemoveAt != undefined) {
+        postRowsDispatch({
+          type: PostRowsActionType.POST_ROW_REMOVE_AT,
+          payload: getPostsResponse.postRowRemoveAt,
+        });
+      }
+      if (getPostsResponse.subredditsToShowInSideBar != undefined) {
+        sideBarDispatch({
+          type: SideBarActionType.SET_SUBREDDITS_TO_SHOW_IN_SIDEBAR,
           payload: {
-            notificationUuid: uuidV4(),
-            message: `Got exception while trying to get post. ${
-              (e as DOMException).message
-            }`,
+            subreddits: getPostsResponse.subredditsToShowInSideBar,
+            subredditLists: subredditLists,
           },
         });
-        console.log("Caught exception while getPosts ", e);
       }
-      redditService.applyUpdatedStateValues(
-        getPostsUpdatedValues,
-        subredditQueueDispatch,
-        postsToShowInRow,
-        postRowsDispatch,
-        sideBarDispatch,
-        subredditLists,
-        getPostsFromSubredditState.subredditSourceOption,
-        redditServiceDispatch
-      );
+      if (getPostsResponse.subredditIndex != undefined) {
+        redditServiceDispatch({
+          type: RedditServiceActions.SET_SUBREDDIT_INDEX,
+          payload: getPostsResponse.subredditIndex,
+        });
+      }
+      if (getPostsResponse.nsfwRedditListIndex != undefined) {
+        redditServiceDispatch({
+          type: RedditServiceActions.SET_NSFW_SUBREDDIT_INDEX,
+          payload: getPostsResponse.nsfwRedditListIndex,
+        });
+      }
+      if (getPostsResponse.lastPostRowWasSortOrderNew != undefined) {
+        redditServiceDispatch({
+          type: RedditServiceActions.SET_LAST_POST_ROW_WAS_SORT_ORDER_NEW,
+          payload: getPostsResponse.lastPostRowWasSortOrderNew,
+        });
+      }
+      if (getPostsResponse.createPostRowAndInsertAtBeginning != undefined) {
+        postRowsDispatch({
+          type: PostRowsActionType.CREATE_POST_ROW_AND_INSERT_AT_BEGINNING,
+          payload: {
+            posts: getPostsResponse.createPostRowAndInsertAtBeginning,
+            postsToShowInRow: postsToShowInRow,
+            subredditSourceOption:
+              getPostsFromSubredditState.subredditSourceOption,
+          },
+        });
+      }
+      if (getPostsResponse.shiftPostsAndUiPosts != undefined) {
+        postRowsDispatch({
+          type: PostRowsActionType.ADD_POSTS_TO_FRONT_OF_ROW,
+          payload: {
+            postRowUuid: getPostsResponse.shiftPostsAndUiPosts.postRowUuid,
+            posts: getPostsResponse.shiftPostsAndUiPosts.posts,
+            postsToShowInRow: postsToShowInRow,
+            subredditSourceOption:
+              getPostsFromSubredditState.subredditSourceOption,
+          },
+        });
+      }
     },
     [
-      appNotificationsDispatch,
       postRowsDispatch,
       postsToShowInRow,
-      redditCredentials,
       redditServiceDispatch,
       sideBarDispatch,
       subredditLists,
       subredditQueueDispatch,
     ]
+  );
+
+  const addPostRow = useCallback(
+    (
+      getPostsResponse: GetPostsFromSubredditResponse,
+      getPostsFromSubredditsState: GetPostsFromSubredditState
+    ) => {
+      const postRows = getPostsFromSubredditsState.postRows;
+      const lastPostRowWasSortOrderNew =
+        getPostsFromSubredditsState.lastPostRowWasSortOrderNew;
+
+      let posts = getPostsResponse.posts;
+
+      if (posts.length == 0) {
+        return;
+      }
+      if (
+        getPostsFromSubredditsState.subredditSourceOption ===
+          SubredditSourceOptionsEnum.FrontPage &&
+        getPostsFromSubredditsState.postSortOrder ===
+          PostSortOrderOptionsEnum.New
+      ) {
+        posts = sortPostsByCreate(posts);
+        if (postRows.length === 0) {
+          getPostsResponse.createPostRowAndInsertAtBeginning = posts;
+          getPostsResponse.lastPostRowWasSortOrderNew = true;
+        } else {
+          const firstPostRow = postRows[0];
+          const mostRecentPost = firstPostRow.posts[0];
+          const mostRecentPostCreated = mostRecentPost.created;
+          const postsToAddToViewModel = posts.filter((post) => {
+            return post.created > mostRecentPostCreated;
+          });
+          if (lastPostRowWasSortOrderNew) {
+            getPostsResponse.shiftPostsAndUiPosts = {
+              postRowUuid: firstPostRow.postRowUuid,
+              posts: postsToAddToViewModel,
+            };
+          } else {
+            getPostsResponse.createPostRowAndInsertAtBeginning =
+              postsToAddToViewModel;
+          }
+          getPostsResponse.lastPostRowWasSortOrderNew = true;
+        }
+      } else {
+        getPostsResponse.createPostRowAndInsertAtBeginning = posts;
+        getPostsResponse.lastPostRowWasSortOrderNew = false;
+      }
+    },
+    []
+  );
+
+  const handleGottenPosts = useCallback(
+    async (
+      getPostsFromSubredditState: GetPostsFromSubredditState,
+      getPostsResponse: GetPostsFromSubredditResponse
+    ) => {
+      const posts = getPostsResponse.posts;
+      const fromSubreddits = getPostsResponse.fromSubreddits;
+      if (posts.length > 0) {
+        if (getPostsFromSubredditState.postRows.length == 10) {
+          getPostsResponse.postRowRemoveAt =
+            getPostsFromSubredditState.postRows.length - 1;
+        }
+        addPostRow(getPostsResponse, getPostsFromSubredditState);
+      } else {
+        let msg = `Got 0 posts. Trying again in a little bit.`;
+        if (getPostsResponse.fromSubreddits.length == 1) {
+          msg = `Got 0 posts from ${fromSubreddits[0].displayNamePrefixed}. Trying again in a little bit.`;
+        }
+        appNotificationDispatch({
+          type: AppNotificationsActionType.SUBMIT_APP_NOTIFICATION,
+          payload: {
+            message: msg,
+            displayTimeMS: 10000,
+            notificationUuid: uuidV4(),
+          },
+        });
+        console.log(msg);
+      }
+
+      applyUpdatedStateValues(getPostsFromSubredditState, getPostsResponse);
+    },
+    [addPostRow, appNotificationDispatch, applyUpdatedStateValues]
   );
 
   return {

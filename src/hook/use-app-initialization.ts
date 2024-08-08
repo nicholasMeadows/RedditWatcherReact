@@ -27,11 +27,9 @@ import RedditClient from "../client/RedditClient.ts";
 import useRedditService from "./use-reddit-service.ts";
 import { RedditServiceStateContext } from "../context/reddit-service-context.ts";
 import { PostRowsContext } from "../context/post-rows-context.ts";
-import { Post } from "../model/Post/Post.ts";
-import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import {
+  GetPostsFromSubredditResponse,
   GetPostsFromSubredditState,
-  GetPostsUpdatedValues,
 } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
 
 enum AppInitializationStepEnum {
@@ -183,45 +181,36 @@ export function useAppInitialization() {
 
   const getFirstPosts = useCallback(async () => {
     console.log("App Initialization - getFirstPosts");
-    let postsGotten: Array<Post> = new Array<Post>();
-    let fromSubredditsGotten: Array<Subreddit> | undefined;
-    let getPostsFromSubredditStateGotten:
-      | GetPostsFromSubredditState
-      | undefined;
-    let getPostsUpdatedValuesGotten: GetPostsUpdatedValues | undefined;
+    let getPostsResponse: GetPostsFromSubredditResponse | undefined = undefined;
+    let initialState: GetPostsFromSubredditState | undefined = undefined;
     do {
       try {
-        const {
-          posts,
-          fromSubreddits,
-          getPostsFromSubredditState,
-          getPostsUpdatedValues,
-        } = await redditService.getPostsForPostRow();
-        postsGotten = posts;
-        fromSubredditsGotten = fromSubreddits;
-        getPostsFromSubredditStateGotten = getPostsFromSubredditState;
-        getPostsUpdatedValuesGotten = getPostsUpdatedValues;
+        const { getPostsFromSubredditResponse, getPostsFromSubredditState } =
+          await redditService.getPostsForPostRow();
+        getPostsResponse = getPostsFromSubredditResponse;
+        initialState = getPostsFromSubredditState;
       } catch (e) {
         console.log("Caught error while fetching posts for first post row", e);
       }
-      if (postsGotten.length === 0) {
+      if (
+        getPostsResponse === undefined ||
+        getPostsResponse.posts.length === 0
+      ) {
         console.log(
           "Got 0 posts while trying to get first post row. Pausing for 5 second then trying again."
         );
         await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
       }
-    } while (postsGotten.length === 0);
+    } while (
+      getPostsResponse === undefined ||
+      getPostsResponse.posts.length === 0
+    );
+
     if (
-      getPostsFromSubredditStateGotten !== undefined &&
-      fromSubredditsGotten !== undefined &&
-      getPostsUpdatedValuesGotten !== undefined
+      getPostsResponse.fromSubreddits !== undefined &&
+      initialState !== undefined
     ) {
-      redditService.handleGottenPosts(
-        postsGotten,
-        fromSubredditsGotten,
-        getPostsFromSubredditStateGotten,
-        getPostsUpdatedValuesGotten
-      );
+      redditService.handleGottenPosts(initialState, getPostsResponse);
     }
   }, [redditService]);
 

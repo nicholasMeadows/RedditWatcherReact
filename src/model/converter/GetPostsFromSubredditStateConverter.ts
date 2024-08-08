@@ -33,8 +33,10 @@ export type GetPostsFromSubredditState = {
   useInMemoryImagesAndGifs: boolean;
 };
 
-export type GetPostsUpdatedValues = {
-  subredditQueueItemToRemove: Subreddit;
+export type GetPostsFromSubredditResponse = {
+  posts: Array<Post>;
+  fromSubreddits: Array<Subreddit>;
+  subredditQueueItemToRemove: Subreddit | undefined;
   mostRecentSubredditGotten: Subreddit | undefined;
   postRowRemoveAt: number | undefined;
   subredditsToShowInSideBar: Array<Subreddit> | undefined;
