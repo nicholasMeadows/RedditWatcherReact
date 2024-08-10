@@ -1,5 +1,6 @@
-import { AppNotification } from "../model/AppNotification.ts";
 import { AppNotificationsState } from "../model/state/AppNotificationState.ts";
+import { AppNotification } from "../model/AppNotification.ts";
+import { v4 as uuidV4 } from "uuid";
 
 export enum AppNotificationsActionType {
   SUBMIT_APP_NOTIFICATION = "SUBMIT_APP_NOTIFICATION",
@@ -7,14 +8,24 @@ export enum AppNotificationsActionType {
   DELETE_APP_NOTIFICATION = "DELETE_APP_NOTIFICATION",
 }
 
-export type AppNotificationsAction = {
-  type: AppNotificationsActionType;
-  payload: AppNotification;
+export type AppNotificationSubmitAction = {
+  type: AppNotificationsActionType.SUBMIT_APP_NOTIFICATION;
+  payload: {
+    displayTimeMS?: number;
+    message: string;
+  };
+};
+
+export type AppNotificationUuidPayloadAction = {
+  type:
+    | AppNotificationsActionType.HIDE_APP_NOTIFICATION
+    | AppNotificationsActionType.DELETE_APP_NOTIFICATION;
+  notificationUuid: string;
 };
 
 export default function AppNotificationsReducer(
   state: AppNotificationsState,
-  action: AppNotificationsAction
+  action: AppNotificationSubmitAction | AppNotificationUuidPayloadAction
 ) {
   switch (action.type) {
     case AppNotificationsActionType.SUBMIT_APP_NOTIFICATION:
@@ -30,57 +41,62 @@ export default function AppNotificationsReducer(
 
 const handleSubmitAppNotification = (
   state: AppNotificationsState,
-  action: AppNotificationsAction
+  action: AppNotificationSubmitAction
 ): AppNotificationsState => {
-  const appNotification = action.payload;
-  appNotification.showNotification = true;
-  if (appNotification.displayTimeMS == undefined) {
-    appNotification.displayTimeMS = 10000;
-  }
-  const updatedState = { ...state };
-  const existingAppNotificationIndex = updatedState.appNotifications.findIndex(
-    (notification) =>
-      notification.notificationUuid === appNotification.notificationUuid
-  );
-  if (existingAppNotificationIndex === -1) {
-    updatedState.appNotifications.push(appNotification);
-  } else {
-    updatedState.appNotifications[existingAppNotificationIndex] =
-      appNotification;
-  }
-  return updatedState;
+  const appNotification: AppNotification = {
+    displayTimeMS:
+      action.payload.displayTimeMS === undefined
+        ? 10000
+        : action.payload.displayTimeMS,
+    message: action.payload.message,
+    showNotification: true,
+    notificationUuid: uuidV4(),
+  };
+  return {
+    ...state,
+    appNotifications: [appNotification, ...state.appNotifications],
+  };
 };
 
 const handleHideNotification = (
   state: AppNotificationsState,
-  action: AppNotificationsAction
+  action: AppNotificationUuidPayloadAction
 ) => {
-  const appNotification = action.payload;
-  const updatedState = { ...state };
-  const foundAppNotification = updatedState.appNotifications.find(
-    (notification) =>
-      notification.notificationUuid === appNotification.notificationUuid
-  );
-  if (foundAppNotification === undefined) {
-    return state;
-  }
-  foundAppNotification.showNotification = false;
-  return updatedState;
-};
-
-const handleDeleteNotification = (
-  state: AppNotificationsState,
-  action: AppNotificationsAction
-) => {
-  const appNotification = action.payload;
+  const appNotificationUuid = action.notificationUuid;
   const notificationIndex = state.appNotifications.findIndex(
-    (notification) =>
-      notification.notificationUuid === appNotification.notificationUuid
+    (notification) => notification.notificationUuid === appNotificationUuid
   );
   if (notificationIndex === -1) {
     return state;
   }
-  const updatedState = { ...state };
-  updatedState.appNotifications.splice(notificationIndex, 1);
-  return updatedState;
+  const updatedNotification: AppNotification = {
+    ...state.appNotifications[notificationIndex],
+    showNotification: false,
+  };
+
+  const updatedNotificationArr = [...state.appNotifications];
+  updatedNotificationArr[notificationIndex] = updatedNotification;
+  return {
+    ...state,
+    appNotifications: updatedNotificationArr,
+  };
+};
+
+const handleDeleteNotification = (
+  state: AppNotificationsState,
+  action: AppNotificationUuidPayloadAction
+) => {
+  const appNotificationUuid = action.notificationUuid;
+  const notificationIndex = state.appNotifications.findIndex(
+    (notification) => notification.notificationUuid === appNotificationUuid
+  );
+  if (notificationIndex === -1) {
+    return state;
+  }
+  const updatedNotificationArr = [...state.appNotifications];
+  updatedNotificationArr.splice(notificationIndex, 1);
+  return {
+    ...state,
+    appNotifications: updatedNotificationArr,
+  };
 };
