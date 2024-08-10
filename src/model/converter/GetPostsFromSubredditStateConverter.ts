@@ -38,12 +38,8 @@ export type GetPostsFromSubredditResponse = {
   fromSubreddits: Array<Subreddit>;
   subredditQueueItemToRemove: Subreddit | undefined;
   mostRecentSubredditGotten: Subreddit | undefined;
-  postRowRemoveAt: number | undefined;
   subredditsToShowInSideBar: Array<Subreddit> | undefined;
   masterSubscribedSubredditList: Array<Subreddit> | undefined;
   subredditIndex: number | undefined;
   nsfwRedditListIndex: number | undefined;
-  lastPostRowWasSortOrderNew: boolean | undefined;
-  createPostRowAndInsertAtBeginning: Array<Post> | undefined;
-  shiftPostsAndUiPosts: { postRowUuid: string; posts: Array<Post> } | undefined;
 };

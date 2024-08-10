@@ -74,12 +74,7 @@ export default class RedditService {
             nsfwRedditListIndex: res.nsfwRedditListIndex,
             subredditIndex: res.subredditIndex,
             mostRecentSubredditGotten: res.mostRecentSubredditGotten,
-            postRowRemoveAt: res.postRowRemoveAt,
             masterSubscribedSubredditList: res.masterSubscribedSubredditList,
-            lastPostRowWasSortOrderNew: res.lastPostRowWasSortOrderNew,
-            createPostRowAndInsertAtBeginning:
-              res.createPostRowAndInsertAtBeginning,
-            shiftPostsAndUiPosts: res.shiftPostsAndUiPosts,
             subredditQueueItemToRemove: res.subredditQueueItemToRemove,
           });
         })
@@ -108,10 +103,6 @@ export default class RedditService {
             subredditQueueItemToRemove: firstQueuedSubreddit,
             fromSubreddits: [firstQueuedSubreddit],
             posts: posts,
-            shiftPostsAndUiPosts: undefined,
-            createPostRowAndInsertAtBeginning: undefined,
-            postRowRemoveAt: undefined,
-            lastPostRowWasSortOrderNew: undefined,
             masterSubscribedSubredditList: undefined,
             mostRecentSubredditGotten: firstQueuedSubreddit,
             subredditIndex: undefined,
@@ -145,10 +136,6 @@ export default class RedditService {
             subredditIndex: undefined,
             mostRecentSubredditGotten: undefined,
             masterSubscribedSubredditList: undefined,
-            lastPostRowWasSortOrderNew: undefined,
-            postRowRemoveAt: undefined,
-            shiftPostsAndUiPosts: undefined,
-            createPostRowAndInsertAtBeginning: undefined,
             subredditQueueItemToRemove: undefined,
           });
         })
@@ -178,11 +165,7 @@ export default class RedditService {
         .then((res) => {
           resolve({
             posts: res.posts,
-            shiftPostsAndUiPosts: undefined,
             subredditQueueItemToRemove: undefined,
-            createPostRowAndInsertAtBeginning: undefined,
-            postRowRemoveAt: undefined,
-            lastPostRowWasSortOrderNew: undefined,
             masterSubscribedSubredditList: undefined,
             mostRecentSubredditGotten: res.mostRecentSubredditGotten,
             subredditIndex: res.subredditIndex,

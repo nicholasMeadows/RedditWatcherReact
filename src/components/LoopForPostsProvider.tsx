@@ -21,52 +21,78 @@ const LoopForPostsProvider: FC<Props> = ({ children }) => {
 
   const redditService = useRedditService();
 
-  const loopingForPostRow = useRef(false);
-
   const scrollYRef = useRef(scrollY);
   const mouseOverAPostRowRef = useRef(mouseOverAPostRow);
+  const loopForPostsAbortControllerRef = useRef<AbortController>();
 
   useEffect(() => {
     scrollYRef.current = scrollY;
     mouseOverAPostRowRef.current = mouseOverAPostRow;
   }, [mouseOverAPostRow, scrollY]);
 
-  const loopForPosts = useCallback(async () => {
-    if (loopingForPostRow.current) {
-      return;
-    }
-    loopingForPostRow.current = true;
-
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      sideBarDispatch({
-        type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
-        payload: 10,
-      });
-      await new Promise<void>((resolve) => setTimeout(() => resolve(), 10000));
-      try {
-        const getPostsResposne = await redditService.getPostsForPostRow();
-        while (scrollYRef.current !== 0 || mouseOverAPostRowRef.current) {
-          await new Promise<void>((resolve) =>
-            setTimeout(() => resolve(), 100)
+  const loopForPosts = useCallback(
+    async (abortSignal: AbortSignal) => {
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        if (abortSignal.aborted) {
+          break;
+        }
+        sideBarDispatch({
+          type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
+          payload: 10,
+        });
+        await new Promise<void>((resolve) =>
+          setTimeout(() => resolve(), 10000)
+        );
+        if (abortSignal.aborted) {
+          break;
+        }
+        try {
+          const getPostsResponse = await redditService.getPostsForPostRow(
+            abortSignal
+          );
+          while (scrollYRef.current !== 0 || mouseOverAPostRowRef.current) {
+            await new Promise<void>((resolve) =>
+              setTimeout(() => resolve(), 100)
+            );
+          }
+          if (abortSignal.aborted) {
+            break;
+          }
+          redditService.handleGottenPosts(
+            getPostsResponse.getPostsFromSubredditState,
+            getPostsResponse.getPostsFromSubredditResponse
+          );
+        } catch (error) {
+          console.log(
+            "Caught error while fetching posts for first post row",
+            error
           );
         }
-        redditService.handleGottenPosts(
-          getPostsResposne.getPostsFromSubredditState,
-          getPostsResposne.getPostsFromSubredditResponse
-        );
-      } catch (error) {
-        console.log(
-          "Caught error while fetching posts for first post row",
-          error
-        );
       }
-    }
-  }, [redditService]);
+    },
+    [redditService, sideBarDispatch]
+  );
 
   useEffect(() => {
-    loopForPosts();
+    let abortController = loopForPostsAbortControllerRef.current;
+    if (abortController !== undefined) {
+      return;
+    }
+    abortController = new AbortController();
+    loopForPostsAbortControllerRef.current = abortController;
+    loopForPosts(abortController.signal);
   }, [loopForPosts]);
+
+  useEffect(() => {
+    const loopForPostsAbortController = loopForPostsAbortControllerRef.current;
+    return () => {
+      if (loopForPostsAbortController !== undefined) {
+        loopForPostsAbortController.abort();
+        loopForPostsAbortControllerRef.current = undefined;
+      }
+    };
+  }, []);
   return <>{children}</>;
 };
 export default LoopForPostsProvider;
