@@ -5,6 +5,7 @@ import {
 } from "../reddit-service-context.ts";
 import { RedditServiceState } from "../../model/state/RedditServiceState.ts";
 import RedditServiceReducer from "../../reducer/reddit-service-reducer.ts";
+import { RedditAuthenticationStatus } from "../../model/RedditAuthenticationState.ts";
 
 type Props = {
   children: ReactNode;
@@ -16,6 +17,8 @@ const RedditServiceContextProvider: FC<Props> = ({ children }) => {
     nsfwSubredditIndex: 0,
     subredditIndex: 0,
     lastPostRowWasSortOrderNew: false,
+    redditAuthenticationStatus: RedditAuthenticationStatus.NOT_YET_AUTHED,
+    subredditQueue: [],
   };
   const [redditServiceState, dispatch] = useReducer(
     RedditServiceReducer,

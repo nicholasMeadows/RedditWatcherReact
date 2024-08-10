@@ -29,14 +29,14 @@ const AppNotification: FC<Props> = ({ appNotification }) => {
   const hideNotification = useCallback(() => {
     appNotificationsDispatch({
       type: AppNotificationsActionType.HIDE_APP_NOTIFICATION,
-      payload: appNotification,
+      notificationUuid: appNotification.notificationUuid,
     });
   }, [appNotification, appNotificationsDispatch]);
 
   const deleteNotification = useCallback(() => {
     appNotificationsDispatch({
       type: AppNotificationsActionType.DELETE_APP_NOTIFICATION,
-      payload: appNotification,
+      notificationUuid: appNotification.notificationUuid,
     });
   }, [appNotification, appNotificationsDispatch]);
 

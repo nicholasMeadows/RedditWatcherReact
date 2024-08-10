@@ -12,7 +12,6 @@ import {
   SINGPLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
-import { RedditClientContext } from "../context/reddit-client-context.ts";
 import packageJson from "../../package.json";
 import {
   AppConfigDispatchContext,
@@ -33,16 +32,21 @@ import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import { RedditListStateContext } from "../context/reddit-list-context.ts";
+import {
+  RedditServiceDispatchContext,
+  RedditServiceStateContext,
+} from "../context/reddit-service-context.ts";
+import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const appConfigDispatch = useContext(AppConfigDispatchContext);
   const appConfigState = useContext(AppConfigStateContext);
+  const { redditAuthenticationStatus } = useContext(RedditServiceStateContext);
+  const redditServiceDispatch = useContext(RedditServiceDispatchContext);
   const navigate = useNavigate();
   const location = useLocation();
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
-  const { redditClientState, redditClientDispatch } =
-    useContext(RedditClientContext);
   const redditListsState = useContext(RedditListStateContext);
   const [pageName, setPageName] = useState("");
   const [showBackButton, setShowBackButton] = useState(false);
@@ -94,15 +98,14 @@ const NavigationHamburgerMenu: React.FC = () => {
     }
 
     const showBackButton =
-      redditClientState.redditAuthenticationStatus ==
-        RedditAuthenticationStatus.AUTHENTICATED &&
+      redditAuthenticationStatus == RedditAuthenticationStatus.AUTHENTICATED &&
       pathname != POST_ROW_ROUTE &&
       pathname != APP_INITIALIZATION_ROUTE;
 
     setPageName(pageName);
     setShowBackButton(showBackButton);
     contextMenuDispatch({ type: ContextMenuActionType.CLOSE_CONTEXT_MENU });
-  }, [location, redditClientState.redditAuthenticationStatus]);
+  }, [location, redditAuthenticationStatus]);
   const navigateTo = (pathName: string) => {
     setPopoutDrawerOpen(false);
     if (window.location.href.endsWith(POST_ROW_ROUTE)) {
@@ -280,7 +283,7 @@ const NavigationHamburgerMenu: React.FC = () => {
             top: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
           }}
         >
-          {redditClientState.redditAuthenticationStatus ==
+          {redditAuthenticationStatus ==
             RedditAuthenticationStatus.AUTHENTICATED && (
             <div className="drawer-popout-main">
               <div
@@ -375,12 +378,12 @@ const NavigationHamburgerMenu: React.FC = () => {
                   if (input.files != undefined) {
                     setImportClicked(true);
                     importAppConfig(input.files[0]);
-                    redditClientDispatch((prevState) => {
-                      return {
-                        ...prevState,
-                        redditAuthenticationStatus:
+                    redditServiceDispatch({
+                      type: RedditServiceActions.SET_REDDIT_AUTHENTICATION_STATUS,
+                      payload: {
+                        authenticationStatus:
                           RedditAuthenticationStatus.NOT_YET_AUTHED,
-                      };
+                      },
                     });
                   }
                 }}

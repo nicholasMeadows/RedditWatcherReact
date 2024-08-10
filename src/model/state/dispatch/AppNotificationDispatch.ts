@@ -1,5 +1,10 @@
 import { Dispatch } from "react";
-import { AppNotificationsAction } from "../../../reducer/app-notifications-reducer.ts";
+import {
+  AppNotificationSubmitAction,
+  AppNotificationUuidPayloadAction,
+} from "../../../reducer/app-notifications-reducer.ts";
 
-type AppNotificationDispatch = Dispatch<AppNotificationsAction>;
+type AppNotificationDispatch = Dispatch<
+  AppNotificationSubmitAction | AppNotificationUuidPayloadAction
+>;
 export default AppNotificationDispatch;

@@ -16,18 +16,12 @@ import {
   PostRowsDispatchContext,
 } from "../context/post-rows-context.ts";
 import { RedditListStateContext } from "../context/reddit-list-context.ts";
-import {
-  SubredditQueueDispatchContext,
-  SubredditQueueStateContext,
-} from "../context/sub-reddit-queue-context.ts";
 import { SideBarDispatchContext } from "../context/side-bar-context.ts";
 import RedditService from "../service/RedditService.ts";
-import { SubredditQueueActionType } from "../reducer/sub-reddit-queue-reducer.ts";
 import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
 import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
 import { AppNotificationsActionType } from "../reducer/app-notifications-reducer.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
-import { v4 as uuidV4 } from "uuid";
 
 export default function useRedditService() {
   const {
@@ -47,17 +41,16 @@ export default function useRedditService() {
     postsToShowInRow,
   } = useContext(AppConfigStateContext);
   const { subredditLists } = useContext(RedditListStateContext);
-  const { subredditQueue } = useContext(SubredditQueueStateContext);
   const {
     masterSubscribedSubredditList,
     subredditIndex,
     nsfwSubredditIndex,
     lastPostRowWasSortOrderNew,
+    subredditQueue,
   } = useContext(RedditServiceStateContext);
 
   const redditServiceDispatch = useContext(RedditServiceDispatchContext);
 
-  const subredditQueueDispatch = useContext(SubredditQueueDispatchContext);
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const sideBarDispatch = useContext(SideBarDispatchContext);
   const appNotificationDispatch = useContext(AppNotificationsDispatchContext);
@@ -187,8 +180,8 @@ export default function useRedditService() {
       getPostsResponse: GetPostsFromSubredditResponse
     ) => {
       if (getPostsResponse.subredditQueueItemToRemove != undefined) {
-        subredditQueueDispatch({
-          type: SubredditQueueActionType.REMOVE_SUBREDDIT_QUEUE_ITEM,
+        redditServiceDispatch({
+          type: RedditServiceActions.REMOVE_SUBREDDIT_QUEUE_ITEM,
           payload: getPostsResponse.subredditQueueItemToRemove,
         });
       }
@@ -237,7 +230,7 @@ export default function useRedditService() {
       redditServiceDispatch,
       sideBarDispatch,
       subredditLists,
-      subredditQueueDispatch,
+      redditServiceDispatch,
     ]
   );
 
@@ -258,7 +251,6 @@ export default function useRedditService() {
           payload: {
             message: msg,
             displayTimeMS: 10000,
-            notificationUuid: uuidV4(),
           },
         });
       }

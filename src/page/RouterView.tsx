@@ -27,7 +27,6 @@ import ApplicationSettings from "./ApplicationSettings.tsx";
 import { RootFontSizeContext } from "../context/root-font-size-context.ts";
 import AppNotificationsContextProvider from "../context/provider/app-notifications-context-provider.tsx";
 import AppNotifications from "../components/AppNotifications.tsx";
-import SubredditQueueContextProvider from "../context/provider/sub-reddit-queue-context-provider.tsx";
 import {
   AppConfigDispatchContext,
   AppConfigStateContext,
@@ -163,71 +162,69 @@ const RouterView: React.FC = () => {
 
   return (
     <AppNotificationsContextProvider>
-      <SubredditQueueContextProvider>
-        <SinglePostPageContextProvider>
-          <SideBarContextProvider>
-            <RedditListContextProvider>
-              <RedditServiceContextProvider>
-                <div className="root-app" ref={rootDivRef}>
-                  <NavigationHamburgerMenu />
-                  <AppNotifications />
-                  <ContextMenu />
-                  <div
-                    style={{
-                      marginTop: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
-                      height: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
-                      maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
-                    }}
-                    className="app-body"
-                  >
-                    <Routes>
-                      <Route
-                        path="/"
-                        element={
-                          <Navigate
-                            to={APP_INITIALIZATION_ROUTE}
-                            replace={true}
-                          />
-                        }
-                      />
-                      <Route
-                        index
-                        path={APP_INITIALIZATION_ROUTE}
-                        element={<AppInitialization />}
-                      />
-                      <Route
-                        path={REDDIT_SIGN_IN_ROUTE}
-                        element={<RedditSignIn />}
-                      />
-                      <Route path={POST_ROW_ROUTE} element={<PostRowPage />} />
-                      <Route
-                        path={REDDIT_SOURCE_SETTINGS_ROUTE}
-                        element={<RedditSourceSettings />}
-                      />
-                      <Route
-                        path={APPLICATION_SETTINGS_ROUTE}
-                        element={<ApplicationSettings />}
-                      />
-                      <Route
-                        path={SINGPLE_POST_ROUTE}
-                        element={<SinglePostView />}
-                      />
-                      <Route
-                        path={MODIFY_SUBREDDIT_LISTS_ROUTE}
-                        element={<ModifySubredditLists />}
-                      />
-                      <Route
-                        path={MODIFY_SUBREDDIT_QUEUE_ROUTE}
-                        element={<ModifySubredditQueue />}
-                      />
-                    </Routes>
-                  </div>
+      <SinglePostPageContextProvider>
+        <SideBarContextProvider>
+          <RedditListContextProvider>
+            <RedditServiceContextProvider>
+              <div className="root-app" ref={rootDivRef}>
+                <NavigationHamburgerMenu />
+                <AppNotifications />
+                <ContextMenu />
+                <div
+                  style={{
+                    marginTop: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
+                    height: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+                    maxHeight: `calc( 100vh - ${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT})`,
+                  }}
+                  className="app-body"
+                >
+                  <Routes>
+                    <Route
+                      path="/"
+                      element={
+                        <Navigate
+                          to={APP_INITIALIZATION_ROUTE}
+                          replace={true}
+                        />
+                      }
+                    />
+                    <Route
+                      index
+                      path={APP_INITIALIZATION_ROUTE}
+                      element={<AppInitialization />}
+                    />
+                    <Route
+                      path={REDDIT_SIGN_IN_ROUTE}
+                      element={<RedditSignIn />}
+                    />
+                    <Route path={POST_ROW_ROUTE} element={<PostRowPage />} />
+                    <Route
+                      path={REDDIT_SOURCE_SETTINGS_ROUTE}
+                      element={<RedditSourceSettings />}
+                    />
+                    <Route
+                      path={APPLICATION_SETTINGS_ROUTE}
+                      element={<ApplicationSettings />}
+                    />
+                    <Route
+                      path={SINGPLE_POST_ROUTE}
+                      element={<SinglePostView />}
+                    />
+                    <Route
+                      path={MODIFY_SUBREDDIT_LISTS_ROUTE}
+                      element={<ModifySubredditLists />}
+                    />
+                    <Route
+                      path={MODIFY_SUBREDDIT_QUEUE_ROUTE}
+                      element={<ModifySubredditQueue />}
+                    />
+                  </Routes>
                 </div>
-              </RedditServiceContextProvider>
-            </RedditListContextProvider>
-          </SideBarContextProvider>
-        </SinglePostPageContextProvider>
-      </SubredditQueueContextProvider>
+              </div>
+            </RedditServiceContextProvider>
+          </RedditListContextProvider>
+        </SideBarContextProvider>
+      </SinglePostPageContextProvider>
     </AppNotificationsContextProvider>
   );
 };

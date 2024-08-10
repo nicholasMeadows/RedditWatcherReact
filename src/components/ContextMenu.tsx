@@ -1,8 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { SubredditLists } from "../model/SubredditList/SubredditLists";
 import { useCopy } from "../hook/use-copy.ts";
-import { SubredditQueueDispatchContext } from "../context/sub-reddit-queue-context.ts";
-import { SubredditQueueActionType } from "../reducer/sub-reddit-queue-reducer.ts";
+
 import {
   ContextMenuDispatchContext,
   ContextMenuStateContext,
@@ -13,10 +12,12 @@ import {
   RedditListStateContext,
 } from "../context/reddit-list-context.ts";
 import { RedditListActionType } from "../reducer/reddit-list-reducer.ts";
+import { RedditServiceDispatchContext } from "../context/reddit-service-context.ts";
+import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
 
 const ContextMenu: React.FC = () => {
   const copyHook = useCopy();
-  const subredditQueueDispatch = useContext(SubredditQueueDispatchContext);
+  const redditServiceDispatch = useContext(RedditServiceDispatchContext);
   const contextMenuState = useContext(ContextMenuStateContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const redditListState = useContext(RedditListStateContext);
@@ -186,8 +187,8 @@ const ContextMenu: React.FC = () => {
           hidden={!contextMenuState.showButtonControls.showSkipToSubreddit}
           onClick={() => {
             if (contextMenuState.subreddit != undefined) {
-              subredditQueueDispatch({
-                type: SubredditQueueActionType.ADD_SUBREDDIT_TO_QUEUE,
+              redditServiceDispatch({
+                type: RedditServiceActions.ADD_SUBREDDIT_TO_QUEUE,
                 payload: contextMenuState.subreddit,
               });
             }
