@@ -1,4 +1,3 @@
-import { AppConfigState } from "../model/config/AppConfigState.ts";
 import { ValidationUtil } from "../util/ValidationUtil.ts";
 import {
   MAX_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD,
@@ -25,6 +24,7 @@ import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/Random
 import { saveConfig } from "../service/ConfigService.ts";
 import { AppConfig } from "../model/config/AppConfig.ts";
 import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
+import { AppConfigState } from "../model/state/AppConfigState.ts";
 
 export enum AppConfigActionType {
   SET_USERNAME = "SET_USERNAME",

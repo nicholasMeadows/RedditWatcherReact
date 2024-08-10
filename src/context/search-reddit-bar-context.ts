@@ -1,14 +1,7 @@
 import { createContext } from "react";
+import { SearchRedditBarState } from "../model/state/SearchRedditBarState.ts";
 
-export type SearchRedditBarContextData = {
-  searchResultsOpen: boolean;
-  setSearchResultsOpen: (isOpen: boolean) => void;
-  darkmodeOverride?: boolean | undefined;
-  onFocus?: () => void;
-  onBlur?: () => void;
-};
-
-const SearchRedditBarContext = createContext<SearchRedditBarContextData>(
-  {} as SearchRedditBarContextData
+const SearchRedditBarContext = createContext<SearchRedditBarState>(
+  {} as SearchRedditBarState
 );
 export default SearchRedditBarContext;

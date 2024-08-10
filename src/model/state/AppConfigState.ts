@@ -1,5 +1,5 @@
-import { AppConfig } from "./AppConfig";
 import { RedditCredentialsState } from "./RedditCredentialsState";
+import { AppConfig } from "../config/AppConfig.ts";
 
 export interface AppConfigState extends AppConfig {
   redditCredentials: RedditCredentialsState;

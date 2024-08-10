@@ -1,11 +1,9 @@
+import { SinglePostPageState } from "../model/state/SinglePostPageState.ts";
+
 export enum SinglePostPageActionType {
   SET_SINGLE_POST_PAGE_UUIDS = "SET_SINGLE_POST_PAGE_UUIDS",
 }
 
-export type SinglePostPageState = {
-  postRowUuid: string | undefined;
-  postUuid: string | undefined;
-};
 export type SetSinglePostPageUuidsAction = {
   type: SinglePostPageActionType;
   payload: {

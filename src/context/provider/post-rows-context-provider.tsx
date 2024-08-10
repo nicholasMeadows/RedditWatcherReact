@@ -3,10 +3,9 @@ import {
   PostRowsContext,
   PostRowsDispatchContext,
 } from "../post-rows-context.ts";
-import PostRowsReducer, {
-  PostRowsState,
-} from "../../reducer/post-rows-reducer.ts";
 import { PostRow } from "../../model/PostRow.ts";
+import { PostRowsState } from "../../model/state/PostRowsState.ts";
+import PostRowsReducer from "../../reducer/post-rows-reducer.ts";
 
 type Props = {
   children: ReactNode;

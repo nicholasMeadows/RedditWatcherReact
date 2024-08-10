@@ -1,11 +1,10 @@
 import { FC, ReactNode, useReducer } from "react";
-import RedditServiceReducer, {
-  RedditServiceState,
-} from "../../reducer/reddit-service-reducer.ts";
 import {
   RedditServiceDispatchContext,
   RedditServiceStateContext,
 } from "../reddit-service-context.ts";
+import { RedditServiceState } from "../../model/state/RedditServiceState.ts";
+import RedditServiceReducer from "../../reducer/reddit-service-reducer.ts";
 
 type Props = {
   children: ReactNode;

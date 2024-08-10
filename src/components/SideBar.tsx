@@ -131,7 +131,7 @@ const SideBar: React.FC<SideBarProps> = ({
     sideBarButtonMoved.current = false;
   };
 
-  const searchRedditBarContextData = useSearchRedditBar();
+  const searchRedditBarState = useSearchRedditBar();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -184,7 +184,7 @@ const SideBar: React.FC<SideBarProps> = ({
         <div className="side-bar-search-bar">
           <SearchRedditBarContext.Provider
             value={{
-              ...searchRedditBarContextData,
+              ...searchRedditBarState,
               onFocus: onRedditSearchBarFocus,
               onBlur: onRedditSearchBarBlur,
             }}

@@ -8,15 +8,7 @@ import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOpt
 import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum.ts";
 import { v4 as uuidV4 } from "uuid";
 import { sortPostsByCreate } from "../util/RedditServiceUtil.ts";
-
-export type PostRowsState = {
-  currentPath: string;
-  scrollY: number;
-  playPauseButtonIsPaused: boolean;
-  postRows: Array<PostRow>;
-  pauseGetPostsLoop: boolean;
-  mouseOverAPostRow: boolean;
-};
+import { PostRowsState } from "../model/state/PostRowsState.ts";
 
 export enum PostRowsActionType {
   SET_CURRENT_LOCATION = "SET_CURRENT_LOCATION",

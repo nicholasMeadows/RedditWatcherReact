@@ -3,9 +3,8 @@ import {
   ContextMenuStateContext,
 } from "../context-menu-context.ts";
 import { FC, ReactNode, useReducer } from "react";
-import ContextMenuReducer, {
-  ContextMenuState,
-} from "../../reducer/context-menu-reducer.ts";
+import { ContextMenuState } from "../../model/state/ContextMenuState.ts";
+import ContextMenuReducer from "../../reducer/context-menu-reducer.ts";
 
 type Props = {
   children: ReactNode;

@@ -55,7 +55,7 @@ export function useAppInitialization() {
   const appConfigDispatch = useContext(AppConfigDispatchContext);
   const redditListDispatch = useContext(RedditListDispatchContext);
   const appConfig = useContext(AppConfigStateContext);
-  const { redditClientContextData, setRedditClientContextData } =
+  const { redditClientState, redditClientDispatch } =
     useContext(RedditClientContext);
   const navigate = useNavigate();
   const { subredditListsLoaded } = useContext(RedditListStateContext);
@@ -128,7 +128,7 @@ export function useAppInitialization() {
     }
 
     if (
-      redditClientContextData.redditAuthenticationStatus ==
+      redditClientState.redditAuthenticationStatus ==
       RedditAuthenticationStatus.NOT_YET_AUTHED
     ) {
       console.log("Authenticating Reddit");
@@ -141,7 +141,7 @@ export function useAppInitialization() {
         ) {
           await new RedditClient(redditCredentials).authenticate();
           saveConfig(appConfig);
-          setRedditClientContextData((state) => ({
+          redditClientDispatch((state) => ({
             ...state,
             redditAuthenticationStatus:
               RedditAuthenticationStatus.AUTHENTICATED,
@@ -154,13 +154,13 @@ export function useAppInitialization() {
         console.log("Could not log into reddit.", e);
       }
       console.log("Reddit credentials were undefined");
-      setRedditClientContextData((state) => ({
+      redditClientDispatch((state) => ({
         ...state,
         redditAuthenticationStatus:
           RedditAuthenticationStatus.AUTHENTICATION_DENIED,
       }));
     } else if (
-      redditClientContextData.redditAuthenticationStatus ==
+      redditClientState.redditAuthenticationStatus ==
       RedditAuthenticationStatus.AUTHENTICATION_DENIED
     ) {
       navigate(REDDIT_SIGN_IN_ROUTE);
@@ -168,8 +168,8 @@ export function useAppInitialization() {
   }, [
     appConfig,
     navigate,
-    redditClientContextData.redditAuthenticationStatus,
-    setRedditClientContextData,
+    redditClientState.redditAuthenticationStatus,
+    redditClientDispatch,
   ]);
 
   const fetchSubscribedSubreddits = useCallback(async () => {
@@ -231,7 +231,7 @@ export function useAppInitialization() {
         AppInitializationStepEnum.LOADING_SUBREDDIT_LISTS;
       loadSubredditListsAsync();
     } else if (
-      redditClientContextData.redditAuthenticationStatus ===
+      redditClientState.redditAuthenticationStatus ===
         RedditAuthenticationStatus.NOT_YET_AUTHED &&
       step === AppInitializationStepEnum.SUBREDDIT_LISTS_LOADED
     ) {
@@ -265,7 +265,7 @@ export function useAppInitialization() {
     masterSubscribedSubredditList.length,
     navigate,
     postRows.length,
-    redditClientContextData.redditAuthenticationStatus,
+    redditClientState.redditAuthenticationStatus,
     redditService,
     subredditListsLoaded,
   ]);

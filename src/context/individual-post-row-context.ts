@@ -1,14 +1,5 @@
 import { createContext } from "react";
-import { Post } from "../model/Post/Post.ts";
+import { IndividualPostRowState } from "../model/state/IndividualPostRowState.ts";
 
-type IndividualPostRowContextState = {
-  postCardWidthPercentage: number;
-  posts: Array<Post>;
-  postRowUuid: string;
-  shouldAutoScroll: boolean;
-};
-
-const IndividualPostRowContext = createContext(
-  {} as IndividualPostRowContextState
-);
+const IndividualPostRowContext = createContext({} as IndividualPostRowState);
 export default IndividualPostRowContext;

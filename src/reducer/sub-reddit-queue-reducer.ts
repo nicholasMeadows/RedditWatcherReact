@@ -1,6 +1,7 @@
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import { SubredditQueueItem } from "../model/Subreddit/SubredditQueueItem.ts";
 import { v4 as uuidV4 } from "uuid";
+import { SubredditQueueState } from "../model/state/SubredditQueueState.ts";
 
 export enum SubredditQueueActionType {
   ADD_SUBREDDIT_TO_QUEUE = "ADD_SUBREDDIT_TO_QUEUE",
@@ -12,10 +13,6 @@ export enum SubredditQueueActionType {
 export type SubredditQueueAction = {
   type: SubredditQueueActionType;
   payload: Subreddit;
-};
-
-export type SubredditQueueState = {
-  subredditQueue: Array<SubredditQueueItem>;
 };
 
 export default function SubredditQueueReducer(

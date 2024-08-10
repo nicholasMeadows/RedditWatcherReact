@@ -1,7 +1,7 @@
-import { SearchRedditBarContextData } from "../context/search-reddit-bar-context.ts";
 import { useState } from "react";
+import { SearchRedditBarState } from "../model/state/SearchRedditBarState.ts";
 
-export default function useSearchRedditBar(): SearchRedditBarContextData {
+export default function useSearchRedditBar(): SearchRedditBarState {
   const [searchResultsOpen, setSearchResultsOpen] = useState<boolean>(false);
 
   return {

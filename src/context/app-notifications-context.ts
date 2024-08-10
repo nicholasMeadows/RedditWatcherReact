@@ -1,11 +1,8 @@
-import { createContext, Dispatch } from "react";
-import {
-  AppNotificationsAction,
-  AppNotificationsState,
-} from "../reducer/app-notifications-reducer.ts";
+import { createContext } from "react";
+import { AppNotificationsState } from "../model/state/AppNotificationState.ts";
+import AppNotificationDispatch from "../model/state/dispatch/AppNotificationDispatch.ts";
 
 export const AppNotificationsStateContext =
   createContext<AppNotificationsState>({} as AppNotificationsState);
-export const AppNotificationsDispatchContext = createContext<
-  Dispatch<AppNotificationsAction>
->({} as Dispatch<AppNotificationsAction>);
+export const AppNotificationsDispatchContext =
+  createContext<AppNotificationDispatch>({} as AppNotificationDispatch);

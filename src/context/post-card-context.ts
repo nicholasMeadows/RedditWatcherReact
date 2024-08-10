@@ -1,8 +1,4 @@
 import { createContext } from "react";
-import { Post } from "../model/Post/Post.ts";
+import { PostCardState } from "../model/state/PostCardState.ts";
 
-type PostCardContextObj = {
-  postRowUuid: string;
-  post: Post;
-};
-export const PostCardContext = createContext({} as PostCardContextObj);
+export const PostCardContext = createContext({} as PostCardState);

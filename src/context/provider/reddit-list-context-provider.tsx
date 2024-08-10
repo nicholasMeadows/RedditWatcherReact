@@ -1,11 +1,10 @@
 import { FC, ReactNode, useReducer } from "react";
-import RedditListReducer, {
-  RedditListState,
-} from "../../reducer/reddit-list-reducer.ts";
 import {
   RedditListDispatchContext,
   RedditListStateContext,
 } from "../reddit-list-context.ts";
+import { RedditListState } from "../../model/state/RedditListState.ts";
+import RedditListReducer from "../../reducer/reddit-list-reducer.ts";
 
 const initialState: RedditListState = {
   subredditLists: [],

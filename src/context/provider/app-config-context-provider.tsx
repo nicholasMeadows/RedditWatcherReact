@@ -1,6 +1,5 @@
 import { FC, ReactNode, useReducer } from "react";
 import AppConfigReducer from "../../reducer/app-config-reducer.ts";
-import { AppConfigState } from "../../model/config/AppConfigState.ts";
 import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import SubredditSortOrderOptionsEnum from "../../model/config/enums/SubredditSortOrderOptionsEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
@@ -16,6 +15,7 @@ import {
   AppConfigStateContext,
 } from "../app-config-context.ts";
 import SubredditSourceOptionsEnum from "../../model/config/enums/SubredditSourceOptionsEnum.ts";
+import { AppConfigState } from "../../model/state/AppConfigState.ts";
 
 const defaultSubredditSourceOption = SubredditSourceOptionsEnum.FrontPage;
 const defaultSubredditSortOrderOption =

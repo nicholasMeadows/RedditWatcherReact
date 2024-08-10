@@ -41,7 +41,7 @@ const NavigationHamburgerMenu: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
-  const { redditClientContextData, setRedditClientContextData } =
+  const { redditClientState, redditClientDispatch } =
     useContext(RedditClientContext);
   const redditListsState = useContext(RedditListStateContext);
   const [pageName, setPageName] = useState("");
@@ -94,7 +94,7 @@ const NavigationHamburgerMenu: React.FC = () => {
     }
 
     const showBackButton =
-      redditClientContextData.redditAuthenticationStatus ==
+      redditClientState.redditAuthenticationStatus ==
         RedditAuthenticationStatus.AUTHENTICATED &&
       pathname != POST_ROW_ROUTE &&
       pathname != APP_INITIALIZATION_ROUTE;
@@ -102,7 +102,7 @@ const NavigationHamburgerMenu: React.FC = () => {
     setPageName(pageName);
     setShowBackButton(showBackButton);
     contextMenuDispatch({ type: ContextMenuActionType.CLOSE_CONTEXT_MENU });
-  }, [location, redditClientContextData.redditAuthenticationStatus]);
+  }, [location, redditClientState.redditAuthenticationStatus]);
   const navigateTo = (pathName: string) => {
     setPopoutDrawerOpen(false);
     if (window.location.href.endsWith(POST_ROW_ROUTE)) {
@@ -280,7 +280,7 @@ const NavigationHamburgerMenu: React.FC = () => {
             top: `${NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT}`,
           }}
         >
-          {redditClientContextData.redditAuthenticationStatus ==
+          {redditClientState.redditAuthenticationStatus ==
             RedditAuthenticationStatus.AUTHENTICATED && (
             <div className="drawer-popout-main">
               <div
@@ -375,7 +375,7 @@ const NavigationHamburgerMenu: React.FC = () => {
                   if (input.files != undefined) {
                     setImportClicked(true);
                     importAppConfig(input.files[0]);
-                    setRedditClientContextData((prevState) => {
+                    redditClientDispatch((prevState) => {
                       return {
                         ...prevState,
                         redditAuthenticationStatus:

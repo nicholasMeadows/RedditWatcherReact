@@ -3,19 +3,7 @@ import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { ModifySubredditListMode } from "../model/ModifySubredditListMode.ts";
 import { v4 as uuidV4 } from "uuid";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
-import { Dispatch } from "react";
-
-export type RedditListState = {
-  subredditListsLoaded: boolean;
-  subredditLists: Array<SubredditLists>;
-  modifyListMode: ModifySubredditListMode | undefined;
-  showModifyListBox: boolean;
-  modifyListBoxTitle: string;
-  createUpdateInputValue: string;
-  createUpdateInputValidationError: string;
-  createUpdateButtonText: string;
-  updatingListUuid: string | undefined;
-};
+import { RedditListState } from "../model/state/RedditListState.ts";
 
 export enum RedditListActionType {
   SELECT_RANDOM_LISTS = "SELECT_RANDOM_LISTS",
@@ -71,13 +59,6 @@ export type RedditListAddOrRemoveToListAction = {
   };
 };
 
-export type RedditListDispatch = Dispatch<
-  | RedditListNoPayloadAction
-  | RedditListSubredditListsPayloadAction
-  | RedditListSetSubredditListsAction
-  | RedditListSetCreateUpdateInputValueAction
-  | RedditListAddOrRemoveToListAction
->;
 export default function RedditListReducer(
   state: RedditListState,
   action:

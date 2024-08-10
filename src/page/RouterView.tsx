@@ -42,14 +42,10 @@ import SideBarContextProvider from "../context/provider/side-bar-context-provide
 import RedditListContextProvider from "../context/provider/reddit-list-context-provider.tsx";
 import RedditServiceContextProvider from "../context/provider/reddit-service-context-provider.tsx";
 
-export type SecondsTillGettingNextPostContextData = {
-  secondsTillGettingNextPosts: number;
-  setSecondsTillGettingNextPosts: (seconds: number) => void;
-};
 const RouterView: React.FC = () => {
   const location = useLocation();
   const postRowsDispatch = useContext(PostRowsDispatchContext);
-  const { setRootFontSize } = useContext(RootFontSizeContext);
+  const { rootFontSizeDispatch } = useContext(RootFontSizeContext);
   const appConfigDispatch = useContext(AppConfigDispatchContext);
   const darkmode = useContext(AppConfigStateContext).darkMode;
   const currentPostRowsToShowInView = useContext(
@@ -156,14 +152,14 @@ const RouterView: React.FC = () => {
         const div = rootDivRef.current as unknown as HTMLDivElement;
 
         const baseFontSize = parseFloat(getComputedStyle(div).fontSize);
-        setRootFontSize(baseFontSize);
+        rootFontSizeDispatch(baseFontSize);
       }
     });
     const div = rootDivRef.current;
     if (div != undefined) {
       contentResizeObserver.observe(div);
     }
-  }, [currentPostsToShowInRow, setRootFontSize]);
+  }, [currentPostsToShowInRow, rootFontSizeDispatch]);
 
   return (
     <AppNotificationsContextProvider>

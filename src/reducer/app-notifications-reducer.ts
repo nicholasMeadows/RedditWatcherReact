@@ -1,4 +1,5 @@
 import { AppNotification } from "../model/AppNotification.ts";
+import { AppNotificationsState } from "../model/state/AppNotificationState.ts";
 
 export enum AppNotificationsActionType {
   SUBMIT_APP_NOTIFICATION = "SUBMIT_APP_NOTIFICATION",
@@ -9,10 +10,6 @@ export enum AppNotificationsActionType {
 export type AppNotificationsAction = {
   type: AppNotificationsActionType;
   payload: AppNotification;
-};
-
-export type AppNotificationsState = {
-  appNotifications: AppNotification[];
 };
 
 export default function AppNotificationsReducer(

@@ -1,7 +1,7 @@
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
-import { Dispatch } from "react";
 import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../RedditWatcherConstants.ts";
+import { SideBarState } from "../model/state/SideBarState.ts";
 
 export enum SideBarActionType {
   SET_SUBREDDITS_TO_SHOW_IN_SIDEBAR = "SET_SUBREDDITS_TO_SHOW_IN_SIDEBAR",
@@ -13,17 +13,6 @@ export enum SideBarActionType {
   SET_SECONDS_TILL_GETTING_NEXT_POSTS = "SET_SECONDS_TILL_GETTING_NEXT_POSTS",
 }
 
-export type SideBarState = {
-  subredditsToShowInSideBar: Array<Subreddit>;
-  subredditsToShow: Array<Subreddit>;
-  mostRecentSubredditGotten: Subreddit | undefined;
-  availableSubredditListsForFilter: Array<SubredditLists>;
-  listToFilterByUuid: string;
-  searchInput: string;
-  sideBarOpen: boolean;
-  openSidebarButtonTopPercent: number;
-  secondsTillGettingNextPosts: number;
-};
 type SideBarUpdateFieldsObj = {
   subredditsToShowInSideBar: Array<Subreddit>;
   listsToShowInDropDown: Array<SubredditLists>;
@@ -69,14 +58,6 @@ export type SetMostRecentSubredditGottenAction = {
   payload: Subreddit | undefined;
 };
 
-export type SideBarDispatch = Dispatch<
-  | SetSubredditsToShowInSideBarAction
-  | SetListToFilterByUuidAction
-  | SetSearchInputAction
-  | SubredditListsUpdatedAction
-  | SetOpenNumberPayloadAction
-  | SetMostRecentSubredditGottenAction
->;
 export default function SideBarReducer(
   state: SideBarState,
   action:

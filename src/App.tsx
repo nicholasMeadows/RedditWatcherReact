@@ -21,20 +21,19 @@ import RouterView from "./page/RouterView";
 import { useState } from "react";
 import { RootFontSizeContext } from "./context/root-font-size-context.ts";
 import { RedditAuthenticationStatus } from "./model/RedditAuthenticationState.ts";
-import {
-  RedditClientContext,
-  RedditClientContextData,
-} from "./context/reddit-client-context.ts";
+import { RedditClientContext } from "./context/reddit-client-context.ts";
 import AppConfigContextProvider from "./context/provider/app-config-context-provider.tsx";
 import ContextMenuContextProvider from "./context/provider/context-menu-context-provider.tsx";
 import { PostRowsContextProvider } from "./context/provider/post-rows-context-provider.tsx";
+import { RedditClientState } from "./model/state/RedditClientState.ts";
 
 const App: React.FC = () => {
-  const [rootFontSize, setRootFontSize] = useState(0);
-  const [redditClientContextData, setRedditClientContextData] =
-    useState<RedditClientContextData>({
+  const [rootFontSize, rootFontSizeDispatch] = useState(0);
+  const [redditClientState, redditClientDispatch] = useState<RedditClientState>(
+    {
       redditAuthenticationStatus: RedditAuthenticationStatus.NOT_YET_AUTHED,
-    });
+    }
+  );
   return (
     <HashRouter>
       <AppConfigContextProvider>
@@ -43,13 +42,13 @@ const App: React.FC = () => {
             <RootFontSizeContext.Provider
               value={{
                 fontSize: rootFontSize,
-                setRootFontSize: setRootFontSize,
+                rootFontSizeDispatch: rootFontSizeDispatch,
               }}
             >
               <RedditClientContext.Provider
                 value={{
-                  redditClientContextData: redditClientContextData,
-                  setRedditClientContextData: setRedditClientContextData,
+                  redditClientState: redditClientState,
+                  redditClientDispatch: redditClientDispatch,
                 }}
               >
                 <RouterView />

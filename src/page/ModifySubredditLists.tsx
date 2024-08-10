@@ -95,7 +95,7 @@ const ModifySubredditLists: React.FC = () => {
     string | undefined
   >(undefined);
 
-  const searchRedditBarContextData = useSearchRedditBar();
+  const searchRedditBarState = useSearchRedditBar();
   return (
     <>
       {redditListsState.showModifyListBox && (
@@ -187,7 +187,7 @@ const ModifySubredditLists: React.FC = () => {
           position: "relative",
         }}
       >
-        <SearchRedditBarContext.Provider value={searchRedditBarContextData}>
+        <SearchRedditBarContext.Provider value={searchRedditBarState}>
           <SearchRedditBar />
         </SearchRedditBarContext.Provider>
         <div className="subredditListsExpander">

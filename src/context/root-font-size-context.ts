@@ -1,9 +1,6 @@
 import { createContext } from "react";
+import RootFontSizeContextObj from "../model/state/RootFontSizeState.ts";
 
-type RootFontSizeContextObj = {
-  fontSize: number;
-  setRootFontSize: React.Dispatch<React.SetStateAction<number>>;
-};
 export const RootFontSizeContext = createContext<RootFontSizeContextObj>(
   {} as RootFontSizeContextObj
 );

@@ -1,8 +1,6 @@
 import { createContext } from "react";
-import {
-  RedditServiceDispatch,
-  RedditServiceState,
-} from "../reducer/reddit-service-reducer.ts";
+import { RedditServiceState } from "../model/state/RedditServiceState.ts";
+import RedditServiceDispatch from "../model/state/dispatch/RedditServiceDispatch.ts";
 
 export const RedditServiceStateContext = createContext<RedditServiceState>(
   {} as RedditServiceState

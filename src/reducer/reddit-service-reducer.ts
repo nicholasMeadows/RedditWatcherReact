@@ -1,18 +1,11 @@
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
-import { Dispatch } from "react";
+import { RedditServiceState } from "../model/state/RedditServiceState.ts";
 
 export enum RedditServiceActions {
   ADD_TO_MASTER_SUBSCRIBED_SUBREDDIT_LIST = "ADD_TO_MASTER_SUBSCRIBED_SUBREDDIT_LIST",
   SET_NSFW_SUBREDDIT_INDEX = "SET_NSFW_SUBREDDIT_INDEX",
   SET_SUBREDDIT_INDEX = "SET_SUBREDDIT_INDEX",
 }
-
-export type RedditServiceState = {
-  masterSubscribedSubredditList: Array<Subreddit>;
-  nsfwSubredditIndex: number;
-  subredditIndex: number;
-  lastPostRowWasSortOrderNew: boolean;
-};
 
 export type RedditServiceAddSubredditsToMasterSubscribedList = {
   type: RedditServiceActions.ADD_TO_MASTER_SUBSCRIBED_SUBREDDIT_LIST;
@@ -26,10 +19,7 @@ export type RedditServiceActionNumberPayload = {
     | RedditServiceActions.SET_SUBREDDIT_INDEX;
   payload: number;
 };
-export type RedditServiceDispatch = Dispatch<
-  | RedditServiceAddSubredditsToMasterSubscribedList
-  | RedditServiceActionNumberPayload
->;
+
 export default function RedditServiceReducer(
   state: RedditServiceState,
   action:

@@ -8,7 +8,7 @@ import SubredditListItemContextMenuEvent from "../model/Events/SubredditListItem
 import SubredditListContextMenuEvent from "../model/Events/SubredditListContextMenuEvent.ts";
 import SideBarSubredditMenuEvent from "../model/Events/SideBarSubredditMenuEvent.ts";
 import { RedditSearchItemContextMenuEvent } from "../model/Events/RedditSearchItemContextMenuEvent.ts";
-import { MediaType } from "../model/Post/MediaTypeEnum.ts";
+import { ContextMenuState } from "../model/state/ContextMenuState.ts";
 
 interface ContextDataObjects {
   post?: Post | undefined;
@@ -16,41 +16,6 @@ interface ContextDataObjects {
   subredditLists?: SubredditLists | undefined;
   subreddit?: Subreddit | undefined;
 }
-
-type ShowButtonControls = {
-  showOpenPost: boolean;
-  showOpenImageInNewTab: boolean;
-  showOpenSubreddit: boolean;
-  showCopy: boolean;
-  showSkipToSubreddit: boolean;
-  showAddToList: boolean;
-  expandAddToList: boolean;
-  showRemoveFromList: boolean;
-  expandRemoveFromList: boolean;
-  showUpdateListName: boolean;
-  showDeleteList: boolean;
-};
-
-export type ContextMenuState = {
-  showContextMenu: boolean;
-  x: number;
-  y: number;
-  copyInfo:
-    | {
-        url: string;
-        mediaType: MediaType;
-      }
-    | undefined;
-  updateSubredditListInfo:
-    | {
-        subredditList: SubredditLists;
-      }
-    | undefined;
-  subreddit: Subreddit | undefined;
-  openPostPermaLink: string | undefined;
-  openSubredditLink: string | undefined;
-  showButtonControls: ShowButtonControls;
-};
 
 interface ShowButtonControlsOptional {
   showOpenPost?: boolean | undefined;
