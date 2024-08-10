@@ -3,7 +3,6 @@ import {
   MutableRefObject,
   TouchEvent,
   useCallback,
-  useEffect,
   useState,
   WheelEvent,
 } from "react";
@@ -38,25 +37,6 @@ export default function useSinglePostPageZoom(
     setImgYPercentage(50);
     setImgScale(1);
   }, []);
-
-  useEffect(() => {
-    const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
-      const key = keyboardEvent.key;
-      if (key === "ArrowRight" || key === "ArrowLeft") {
-        resetImgPositionAndScale();
-        if (key == "ArrowRight") {
-          goToNextPostClicked();
-        } else if (key == "ArrowLeft") {
-          goToPrevPostClicked();
-        }
-      }
-    };
-
-    document.body.addEventListener("keyup", documentKeyUpEvent);
-    return () => {
-      document.body.removeEventListener("keyup", documentKeyUpEvent);
-    };
-  }, [goToNextPostClicked, goToPrevPostClicked]);
 
   const handleDragImage = useCallback(
     (
@@ -324,8 +304,6 @@ export default function useSinglePostPageZoom(
         }
       }
     },
-    goToPrevPostClicked: goToPrevPostClicked,
-    goToNextPostClicked: goToNextPostClicked,
     resetImgPositionAndScale: resetImgPositionAndScale,
   };
 }

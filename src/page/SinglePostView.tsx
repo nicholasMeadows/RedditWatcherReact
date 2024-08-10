@@ -1,113 +1,91 @@
-import {
-  FC,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import { Post } from "../model/Post/Post.ts";
-import {
-  SinglePostPageContext,
-  SinglePostPageDispatchContext,
-} from "../context/single-post-page-context.ts";
+import { FC, useCallback, useContext, useEffect, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { PostRowsContext } from "../context/post-rows-context.ts";
+import useSinglePostPageZoom from "../hook/use-single-post-page-zoom.ts";
+import { Post } from "../model/Post/Post.ts";
 import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
-import PostMediaElement from "../components/PostMediaElement.tsx";
-import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
-import { PostImageQualityEnum } from "../model/config/enums/PostImageQualityEnum.ts";
-import { PostRow } from "../model/PostRow.ts";
-import useSinglePostPageZoom from "../hook/use-single-post-page-zoom.ts";
-import { SinglePostPageActionType } from "../reducer/single-post-page-reducer.ts";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
+import { PostImageQualityEnum } from "../model/config/enums/PostImageQualityEnum.ts";
+import PostMediaElement from "../components/PostMediaElement.tsx";
+import { PostRow } from "../model/PostRow.ts";
+import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
+import {
+  SINGLE_POST_PAGE_POST_ROW_UUID_KEY,
+  SINGLE_POST_PAGE_POST_UUID_KEY,
+  SINGLE_POST_ROUTE,
+} from "../RedditWatcherConstants.ts";
 
-type SinglePostViewState = {
-  post: Post | undefined;
-  postRow: PostRow | undefined;
-};
 const SinglePostView: FC = () => {
-  const { postRowUuid, postUuid } = useContext(SinglePostPageContext);
+  const navigate = useNavigate();
+  const [queryParams] = useSearchParams();
+  const postRowUuid = queryParams.get("postRowUuid");
+  const postUuid = queryParams.get("postUuid");
   const { postRows } = useContext(PostRowsContext);
-  const singlePostPageDispatch = useContext(SinglePostPageDispatchContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
-  const [singlePostViewState, setSinglePostViewState] =
-    useState<SinglePostViewState>({ post: undefined, postRow: undefined });
   const postElementDivWrapperRef = useRef(null);
 
+  let post: Post | undefined;
+  let postRow: PostRow | undefined;
+  if (postRowUuid !== null && postUuid !== null) {
+    postRow = postRows.find((postRow) => postRow.postRowUuid === postRowUuid);
+    if (postRow !== undefined) {
+      post = postRow.posts.find((post) => post.postUuid === postUuid);
+    }
+  }
+
   const findPostIndexFromState = useCallback(() => {
-    const postRow = singlePostViewState.postRow;
-    const post = singlePostViewState.post;
     if (postRow === undefined || post === undefined) {
       return;
     }
     return postRow.posts.findIndex((post) => post.postUuid === postUuid);
-  }, [postUuid, singlePostViewState.post, singlePostViewState.postRow]);
+  }, [post, postRow, postUuid]);
 
   const goToNextPostClicked = useCallback(() => {
     const postIndex = findPostIndexFromState();
     if (
-      postRowUuid === undefined ||
       postIndex === undefined ||
-      postIndex === -1 ||
-      singlePostViewState.postRow === undefined
+      postRow === undefined ||
+      postRowUuid === null
     ) {
       return;
     }
 
-    let postUuidToSet: string;
-    if (postIndex < singlePostViewState.postRow.posts.length - 1) {
-      postUuidToSet = singlePostViewState.postRow.posts[postIndex + 1].postUuid;
+    let postUuid: string;
+    if (postIndex < postRow.posts.length - 1) {
+      postUuid = postRow.posts[postIndex + 1].postUuid;
     } else {
-      postUuidToSet = singlePostViewState.postRow.posts[0].postUuid;
+      postUuid = postRow.posts[0].postUuid;
     }
-    singlePostPageDispatch({
-      type: SinglePostPageActionType.SET_SINGLE_POST_PAGE_UUIDS,
-      payload: {
-        postRowUuid: postRowUuid,
-        postUuid: postUuidToSet,
-      },
-    });
-  }, [
-    findPostIndexFromState,
-    postRowUuid,
-    singlePostPageDispatch,
-    singlePostViewState.postRow,
-  ]);
+
+    navigate(
+      `${SINGLE_POST_ROUTE}?${SINGLE_POST_PAGE_POST_ROW_UUID_KEY}=${postRowUuid}&${SINGLE_POST_PAGE_POST_UUID_KEY}=${postUuid}`,
+      { replace: true }
+    );
+  }, [findPostIndexFromState, navigate, postRow, postRowUuid]);
 
   const goToPrevPostClicked = useCallback(() => {
     const postIndex = findPostIndexFromState();
     if (
-      postRowUuid === undefined ||
       postIndex === undefined ||
-      postIndex === -1 ||
-      singlePostViewState.postRow === undefined
+      postRow === undefined ||
+      postRowUuid === null
     ) {
       return;
     }
+
     let postUuid: string;
     if (postIndex == 0) {
-      postUuid =
-        singlePostViewState.postRow.posts[
-          singlePostViewState.postRow.posts.length - 1
-        ].postUuid;
+      postUuid = postRow.posts[postRow.posts.length - 1].postUuid;
     } else {
-      postUuid = singlePostViewState.postRow.posts[postIndex - 1].postUuid;
+      postUuid = postRow.posts[postIndex - 1].postUuid;
     }
-    singlePostPageDispatch({
-      type: SinglePostPageActionType.SET_SINGLE_POST_PAGE_UUIDS,
-      payload: {
-        postRowUuid: postRowUuid,
-        postUuid: postUuid,
-      },
-    });
-  }, [
-    findPostIndexFromState,
-    postRowUuid,
-    singlePostPageDispatch,
-    singlePostViewState.postRow,
-  ]);
+    navigate(
+      `${SINGLE_POST_ROUTE}?${SINGLE_POST_PAGE_POST_ROW_UUID_KEY}=${postRowUuid}&${SINGLE_POST_PAGE_POST_UUID_KEY}=${postUuid}`,
+      { replace: true }
+    );
+  }, [findPostIndexFromState, navigate, postRow, postRowUuid]);
 
   const singlePostPageZoom = useSinglePostPageZoom(
     postElementDivWrapperRef,
@@ -115,34 +93,34 @@ const SinglePostView: FC = () => {
     goToPrevPostClicked
   );
 
-  useEffect(() => {
-    if (postRowUuid === undefined || postUuid === undefined) {
-      return;
-    }
-    const postRow = postRows.find(
-      (postRow) => postRow.postRowUuid === postRowUuid
-    );
-    if (postRow === undefined) {
-      return;
-    }
-    const post = postRow.posts.find((post) => post.postUuid === postUuid);
-    if (post === undefined) {
-      return;
-    }
-    setSinglePostViewState({ post: post, postRow: postRow });
-  }, [postRowUuid, postRows, postUuid]);
-
   const incrementAttachmentHook = useIncrementAttachment(
-    singlePostViewState.post?.currentAttachmentIndex,
-    singlePostViewState.post?.attachments,
-    singlePostViewState.post?.postUuid,
+    post,
     postRowUuid,
     false
   );
 
+  useEffect(() => {
+    const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
+      const key = keyboardEvent.key;
+      if (key === "ArrowRight" || key === "ArrowLeft") {
+        singlePostPageZoom.resetImgPositionAndScale();
+        if (key == "ArrowRight") {
+          goToNextPostClicked();
+        } else if (key == "ArrowLeft") {
+          goToPrevPostClicked();
+        }
+      }
+    };
+
+    document.body.addEventListener("keyup", documentKeyUpEvent);
+    return () => {
+      document.body.removeEventListener("keyup", documentKeyUpEvent);
+    };
+  }, [goToNextPostClicked, goToPrevPostClicked, singlePostPageZoom]);
+
   return (
     <>
-      {singlePostViewState.post != undefined && (
+      {post != undefined && (
         <div
           className="single-post-view flex flex-column max-width-height-percentage"
           onTouchStart={singlePostPageZoom.onTouchStart}
@@ -150,17 +128,17 @@ const SinglePostView: FC = () => {
           onTouchEnd={singlePostPageZoom.onTouchEnd}
         >
           <h4 className="text-align-center text-color">
-            {singlePostViewState.post.subreddit.displayNamePrefixed}
+            {post.subreddit.displayNamePrefixed}
           </h4>
 
           <div
             ref={postElementDivWrapperRef}
             onContextMenu={(event) => {
-              if (singlePostViewState.post === undefined) return;
+              if (post === undefined) return;
               event.preventDefault();
               event.stopPropagation();
               const postContextMenuEvent: PostContextMenuEvent = {
-                post: singlePostViewState.post,
+                post: post,
                 x: event.clientX,
                 y: event.clientY,
               };
@@ -173,9 +151,8 @@ const SinglePostView: FC = () => {
           >
             <PostMediaElementContext.Provider
               value={{
-                post: singlePostViewState.post,
-                currentAttachmentIndex:
-                  singlePostViewState.post.currentAttachmentIndex,
+                post: post,
+                currentAttachmentIndex: post.currentAttachmentIndex,
                 incrementPostAttachment:
                   incrementAttachmentHook.incrementPostAttachment,
                 decrementPostAttachment:
@@ -203,27 +180,26 @@ const SinglePostView: FC = () => {
               <PostMediaElement />
             </PostMediaElementContext.Provider>
           </div>
-          {singlePostViewState.postRow !== undefined &&
-            singlePostViewState.postRow.posts.length > 1 && (
-              <div className="post-control-button-box">
-                <div className="post-control-button-wrapper">
-                  <button
-                    className="post-control-button"
-                    onClick={singlePostPageZoom.goToPrevPostClicked}
-                  >
-                    Previous
-                  </button>
-                </div>
-                <div className="post-control-button-wrapper">
-                  <button
-                    className="post-control-button"
-                    onClick={singlePostPageZoom.goToNextPostClicked}
-                  >
-                    Next
-                  </button>
-                </div>
+          {postRow !== undefined && postRow.posts.length > 1 && (
+            <div className="post-control-button-box">
+              <div className="post-control-button-wrapper">
+                <button
+                  className="post-control-button"
+                  onClick={goToPrevPostClicked}
+                >
+                  Previous
+                </button>
               </div>
-            )}
+              <div className="post-control-button-wrapper">
+                <button
+                  className="post-control-button"
+                  onClick={goToNextPostClicked}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>

@@ -9,7 +9,7 @@ import {
   POST_ROW_ROUTE,
   REDDIT_SIGN_IN_ROUTE,
   REDDIT_SOURCE_SETTINGS_ROUTE,
-  SINGPLE_POST_ROUTE,
+  SINGLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
 import packageJson from "../../package.json";
@@ -86,7 +86,7 @@ const NavigationHamburgerMenu: React.FC = () => {
       case APPLICATION_SETTINGS_ROUTE:
         pageName = "App Settings";
         break;
-      case SINGPLE_POST_ROUTE:
+      case SINGLE_POST_ROUTE:
         pageName = "Single Post";
         break;
       case MODIFY_SUBREDDIT_LISTS_ROUTE:
