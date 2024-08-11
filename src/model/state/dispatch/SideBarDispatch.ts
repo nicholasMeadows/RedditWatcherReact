@@ -1,20 +1,15 @@
 import { Dispatch } from "react";
 import {
-  SetListToFilterByUuidAction,
   SetMostRecentSubredditGottenAction,
-  SetOpenNumberPayloadAction,
-  SetSearchInputAction,
   SetSubredditsToShowInSideBarAction,
-  SubredditListsUpdatedAction,
+  SideBarActionBooleanPayload,
+  SideBarActionNumberPayload,
 } from "../../../reducer/side-bar-reducer.ts";
 
 type SideBarDispatch = Dispatch<
+  | SideBarActionBooleanPayload
+  | SideBarActionNumberPayload
   | SetSubredditsToShowInSideBarAction
-  | SetListToFilterByUuidAction
-  | SetSearchInputAction
-  | SubredditListsUpdatedAction
-  | SetOpenNumberPayloadAction
   | SetMostRecentSubredditGottenAction
 >;
-
 export default SideBarDispatch;

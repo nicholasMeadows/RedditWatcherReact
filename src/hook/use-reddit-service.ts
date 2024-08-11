@@ -18,10 +18,10 @@ import {
 import { RedditListStateContext } from "../context/reddit-list-context.ts";
 import { SideBarDispatchContext } from "../context/side-bar-context.ts";
 import RedditService from "../service/RedditService.ts";
-import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
 import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
 import { AppNotificationsActionType } from "../reducer/app-notifications-reducer.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
+import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
 
 export default function useRedditService() {
   const {
@@ -196,7 +196,6 @@ export default function useRedditService() {
           type: SideBarActionType.SET_SUBREDDITS_TO_SHOW_IN_SIDEBAR,
           payload: {
             subreddits: getPostsResponse.subredditsToShowInSideBar,
-            subredditLists: subredditLists,
           },
         });
       }

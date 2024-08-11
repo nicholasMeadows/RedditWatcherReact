@@ -19,6 +19,7 @@ const RedditServiceContextProvider: FC<Props> = ({ children }) => {
     lastPostRowWasSortOrderNew: false,
     redditAuthenticationStatus: RedditAuthenticationStatus.NOT_YET_AUTHED,
     subredditQueue: [],
+    secondsTillGettingNextPosts: 0,
   };
   const [redditServiceState, dispatch] = useReducer(
     RedditServiceReducer,

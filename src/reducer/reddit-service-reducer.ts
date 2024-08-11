@@ -13,6 +13,7 @@ export enum RedditServiceActions {
   MOVE_SUBREDDIT_QUEUE_ITEM_FORWARD = "MOVE_SUBREDDIT_QUEUE_ITEM_FORWARD",
   MOVE_SUBREDDIT_QUEUE_ITEM_BACKWARD = "MOVE_SUBREDDIT_QUEUE_ITEM_BACKWARD",
   REMOVE_SUBREDDIT_QUEUE_ITEM = "REMOVE_SUBREDDIT_QUEUE_ITEM",
+  SET_SECONDS_TILL_GETTING_NEXT_POSTS = "SET_SECONDS_TILL_GETTING_NEXT_POSTS",
 }
 
 export type RedditServiceAddSubredditsToMasterSubscribedList = {
@@ -24,7 +25,8 @@ export type RedditServiceAddSubredditsToMasterSubscribedList = {
 export type RedditServiceActionNumberPayload = {
   type:
     | RedditServiceActions.SET_NSFW_SUBREDDIT_INDEX
-    | RedditServiceActions.SET_SUBREDDIT_INDEX;
+    | RedditServiceActions.SET_SUBREDDIT_INDEX
+    | RedditServiceActions.SET_SECONDS_TILL_GETTING_NEXT_POSTS;
   payload: number;
 };
 export type RedditServiceSetAuthenticationStatus = {
@@ -68,6 +70,8 @@ export default function RedditServiceReducer(
       return moveSubredditQueueItemBack(state, action);
     case RedditServiceActions.REMOVE_SUBREDDIT_QUEUE_ITEM:
       return removeSubredditQueueItem(state, action);
+    case RedditServiceActions.SET_SECONDS_TILL_GETTING_NEXT_POSTS:
+      return setSecondsTillGettingNextPosts(state, action);
     default:
       return state;
   }
@@ -191,5 +195,14 @@ const removeSubredditQueueItem = (
   return {
     ...state,
     subredditQueue: updatedQueue,
+  };
+};
+const setSecondsTillGettingNextPosts = (
+  state: RedditServiceState,
+  action: RedditServiceActionNumberPayload
+): RedditServiceState => {
+  return {
+    ...state,
+    secondsTillGettingNextPosts: action.payload,
   };
 };

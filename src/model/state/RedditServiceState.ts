@@ -9,4 +9,5 @@ export type RedditServiceState = {
   subredditIndex: number;
   lastPostRowWasSortOrderNew: boolean;
   subredditQueue: Array<SubredditQueueItem>;
+  secondsTillGettingNextPosts: number;
 };

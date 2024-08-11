@@ -8,8 +8,8 @@ import {
 } from "react";
 import useRedditService from "../hook/use-reddit-service.ts";
 import { PostRowsContext } from "../context/post-rows-context.ts";
-import { SideBarDispatchContext } from "../context/side-bar-context.ts";
-import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
+import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
+import { RedditServiceDispatchContext } from "../context/reddit-service-context.ts";
 
 type Props = {
   children: ReactNode;
@@ -17,7 +17,7 @@ type Props = {
 
 const LoopForPostsProvider: FC<Props> = ({ children }) => {
   const { scrollY, mouseOverAPostRow } = useContext(PostRowsContext);
-  const sideBarDispatch = useContext(SideBarDispatchContext);
+  const redditServiceDispatch = useContext(RedditServiceDispatchContext);
 
   const redditService = useRedditService();
 
@@ -37,8 +37,8 @@ const LoopForPostsProvider: FC<Props> = ({ children }) => {
         if (abortSignal.aborted) {
           break;
         }
-        sideBarDispatch({
-          type: SideBarActionType.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
+        redditServiceDispatch({
+          type: RedditServiceActions.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
           payload: 10,
         });
         await new Promise<void>((resolve) =>
@@ -71,7 +71,7 @@ const LoopForPostsProvider: FC<Props> = ({ children }) => {
         }
       }
     },
-    [redditService, sideBarDispatch]
+    [redditService, redditServiceDispatch]
   );
 
   useEffect(() => {
