@@ -16,7 +16,14 @@ import {
 import { RedditListActionType } from "../reducer/reddit-list-reducer.ts";
 
 const ModifySubredditLists: React.FC = () => {
-  const redditListsState = useContext(RedditListStateContext);
+  const {
+    subredditLists,
+    showModifyListBox,
+    modifyListMode,
+    createUpdateInputValue,
+    createUpdateInputValidationError,
+    updatingListUuid,
+  } = useContext(RedditListStateContext);
   const redditListDispatch = useContext(RedditListDispatchContext);
   const selectSubredditListMenuSortOption = useContext(
     AppConfigStateContext
@@ -38,78 +45,93 @@ const ModifySubredditLists: React.FC = () => {
       selectSubredditListMenuSortOption ===
       SelectSubredditListMenuSortOptionEnum.Alphabetically
     ) {
-      const sorted = [...redditListsState.subredditLists].sort(
-        (list1, list2) => {
-          const name1 = list1.listName;
-          const name2 = list2.listName;
-          let normalSortValue = 0;
-          if (name1.toLowerCase() > name2.toLowerCase()) {
-            normalSortValue = 1;
-          } else if (name1.toLowerCase() < name2.toLowerCase()) {
-            normalSortValue = -1;
-          }
-          if (sortOrderDirection == SortOrderDirectionOptionsEnum.Normal) {
-            return normalSortValue;
-          } else if (
-            sortOrderDirection == SortOrderDirectionOptionsEnum.Reversed
-          ) {
-            return normalSortValue * -1;
-          }
-          return 0;
+      const sorted = [...subredditLists].sort((list1, list2) => {
+        const name1 = list1.listName;
+        const name2 = list2.listName;
+        let normalSortValue = 0;
+        if (name1.toLowerCase() > name2.toLowerCase()) {
+          normalSortValue = 1;
+        } else if (name1.toLowerCase() < name2.toLowerCase()) {
+          normalSortValue = -1;
         }
-      );
+        if (sortOrderDirection == SortOrderDirectionOptionsEnum.Normal) {
+          return normalSortValue;
+        } else if (
+          sortOrderDirection == SortOrderDirectionOptionsEnum.Reversed
+        ) {
+          return normalSortValue * -1;
+        }
+        return 0;
+      });
       setSortedSubredditLists(sorted);
     } else if (
       selectSubredditListMenuSortOption ==
       SelectSubredditListMenuSortOptionEnum.ListSize
     ) {
-      const sorted = [...redditListsState.subredditLists].sort(
-        (list1, list2) => {
-          const size1 = list1.subreddits.length;
-          const size2 = list2.subreddits.length;
-          let normalSortValue = 0;
-          if (size1 < size2) {
-            normalSortValue = 1;
-          } else if (size1 > size2) {
-            normalSortValue = -1;
-          }
-          if (sortOrderDirection == SortOrderDirectionOptionsEnum.Normal) {
-            return normalSortValue;
-          } else if (
-            sortOrderDirection == SortOrderDirectionOptionsEnum.Reversed
-          ) {
-            return normalSortValue * -1;
-          }
-          return 0;
+      const sorted = [...subredditLists].sort((list1, list2) => {
+        const size1 = list1.subreddits.length;
+        const size2 = list2.subreddits.length;
+        let normalSortValue = 0;
+        if (size1 < size2) {
+          normalSortValue = 1;
+        } else if (size1 > size2) {
+          normalSortValue = -1;
         }
-      );
+        if (sortOrderDirection == SortOrderDirectionOptionsEnum.Normal) {
+          return normalSortValue;
+        } else if (
+          sortOrderDirection == SortOrderDirectionOptionsEnum.Reversed
+        ) {
+          return normalSortValue * -1;
+        }
+        return 0;
+      });
       setSortedSubredditLists(sorted);
     }
-  }, [
-    redditListsState.subredditLists,
-    selectSubredditListMenuSortOption,
-    sortOrderDirection,
-  ]);
+  }, [subredditLists, selectSubredditListMenuSortOption, sortOrderDirection]);
 
   const [subredditListUuidClicked, setSubredditListUuidClicked] = useState<
     string | undefined
   >(undefined);
 
   const searchRedditBarState = useSearchRedditBar();
+
+  let modifyListBoxTitle: string = "";
+  let createUpdateButtonText = "";
+  switch (modifyListMode) {
+    case ModifySubredditListMode.CREATE:
+      {
+        modifyListBoxTitle = "Create New List";
+        createUpdateButtonText = "Create";
+      }
+      break;
+    case ModifySubredditListMode.UPDATE:
+      {
+        modifyListBoxTitle = "Update List";
+        createUpdateButtonText = "Update";
+      }
+      break;
+    case ModifySubredditListMode.DELETE:
+      {
+        const list = subredditLists.find(
+          (list) => list.subredditListUuid === updatingListUuid
+        );
+        if (list !== undefined) {
+          modifyListBoxTitle = `Are you sure you want to delete list with name "${list.listName}"?`;
+        }
+      }
+      break;
+  }
   return (
     <>
-      {redditListsState.showModifyListBox && (
+      {showModifyListBox && (
         <>
           <div className="create-update-list-grayed-out-background"></div>
           <div className="modify-list-box">
-            <h4 className="modify-list-header">
-              {redditListsState.modifyListBoxTitle}
-            </h4>
+            <h4 className="modify-list-header">{modifyListBoxTitle}</h4>
 
-            {(redditListsState.modifyListMode ==
-              ModifySubredditListMode.CREATE ||
-              redditListsState.modifyListMode ==
-                ModifySubredditListMode.UPDATE) && (
+            {(modifyListMode == ModifySubredditListMode.CREATE ||
+              modifyListMode == ModifySubredditListMode.UPDATE) && (
               <>
                 <input
                   type="text"
@@ -120,16 +142,16 @@ const ModifySubredditLists: React.FC = () => {
                       payload: (event.target as HTMLInputElement).value,
                     })
                   }
-                  value={redditListsState.createUpdateInputValue}
+                  value={createUpdateInputValue}
                 />
                 <p className="create-update-list-input-error">
-                  {redditListsState.createUpdateInputValidationError}
+                  {createUpdateInputValidationError}
                 </p>
                 <div className="flex flex-row create-update-button-box">
                   <button
                     disabled={
-                      redditListsState.createUpdateInputValue.length == 0 ||
-                      redditListsState.createUpdateInputValidationError != ""
+                      createUpdateInputValue.length == 0 ||
+                      createUpdateInputValidationError != ""
                     }
                     onClick={() =>
                       redditListDispatch({
@@ -137,7 +159,7 @@ const ModifySubredditLists: React.FC = () => {
                       })
                     }
                   >
-                    {redditListsState.createUpdateButtonText}
+                    {createUpdateButtonText}
                   </button>
                   <button
                     onClick={() =>
@@ -151,8 +173,7 @@ const ModifySubredditLists: React.FC = () => {
                 </div>
               </>
             )}
-            {redditListsState.modifyListMode ==
-              ModifySubredditListMode.DELETE && (
+            {modifyListMode == ModifySubredditListMode.DELETE && (
               <>
                 <div className="flex flex-row create-update-button-box">
                   <button

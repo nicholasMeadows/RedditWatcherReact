@@ -63,8 +63,11 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
           }}
           onChange={() => {
             redditListDispatch({
-              type: RedditListActionType.TOGGLE_SUBREDDIT_LIST_SELECTED,
-              payload: subredditList,
+              type: RedditListActionType.SET_SUBREDDIT_LIST_SELECTED,
+              payload: {
+                subredditListUuid: subredditList.subredditListUuid,
+                isSelected: !subredditList.selected,
+              },
             });
           }}
         />

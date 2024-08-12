@@ -1,13 +1,13 @@
-import { saveSubredditLists } from "../service/ConfigService.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
+import { RedditListState } from "../model/state/RedditListState.ts";
+import { Subreddit } from "../model/Subreddit/Subreddit.ts";
+import { saveSubredditLists } from "../service/ConfigService.ts";
 import { ModifySubredditListMode } from "../model/ModifySubredditListMode.ts";
 import { v4 as uuidV4 } from "uuid";
-import { Subreddit } from "../model/Subreddit/Subreddit.ts";
-import { RedditListState } from "../model/state/RedditListState.ts";
 
 export enum RedditListActionType {
   SELECT_RANDOM_LISTS = "SELECT_RANDOM_LISTS",
-  TOGGLE_SUBREDDIT_LIST_SELECTED = "TOGGLE_SUBREDDIT_LIST_SELECTED",
+  SET_SUBREDDIT_LIST_SELECTED = "SET_SUBREDDIT_LIST_SELECTED",
   SELECT_ALL_LISTS = "SELECT_ALL_LISTS",
   DESELECT_ALL_LISTS = "DESELECT_ALL_LISTS",
   SHOW_CREATE_LIST_BOX = "SHOW_CREATE_LIST_BOX",
@@ -35,7 +35,6 @@ export type RedditListNoPayloadAction = {
 
 export type RedditListSubredditListsPayloadAction = {
   type:
-    | RedditListActionType.TOGGLE_SUBREDDIT_LIST_SELECTED
     | RedditListActionType.SHOW_UPDATE_LIST_BOX
     | RedditListActionType.SHOW_DELETE_LIST_CONFIRMATION;
   payload: SubredditLists;
@@ -59,6 +58,14 @@ export type RedditListAddOrRemoveToListAction = {
   };
 };
 
+export type RedditListSetSubredditListSelected = {
+  type: RedditListActionType.SET_SUBREDDIT_LIST_SELECTED;
+  payload: {
+    subredditListUuid: string;
+    isSelected: boolean;
+  };
+};
+
 export default function RedditListReducer(
   state: RedditListState,
   action:
@@ -67,6 +74,7 @@ export default function RedditListReducer(
     | RedditListSetSubredditListsAction
     | RedditListSetCreateUpdateInputValueAction
     | RedditListAddOrRemoveToListAction
+    | RedditListSetSubredditListSelected
 ) {
   switch (action.type) {
     case RedditListActionType.SELECT_RANDOM_LISTS:
@@ -83,8 +91,6 @@ export default function RedditListReducer(
       return deleteList(state);
     case RedditListActionType.CREATE_OR_MODIFY_LIST:
       return createOrModifyList(state);
-    case RedditListActionType.TOGGLE_SUBREDDIT_LIST_SELECTED:
-      return toggleSubredditListSelected(state, action);
     case RedditListActionType.SET_CREATE_UPDATE_INPUT_VALUE:
       return setCreateUpdateInputValue(state, action);
     case RedditListActionType.ADD_SUBREDDIT_TO_LIST:
@@ -97,6 +103,8 @@ export default function RedditListReducer(
       return setSubredditLists(state, action);
     case RedditListActionType.SHOW_UPDATE_LIST_BOX:
       return showUpdateListBox(state, action);
+    case RedditListActionType.SET_SUBREDDIT_LIST_SELECTED:
+      return setSubredditListSelected(state, action);
     default:
       return state;
   }
@@ -118,29 +126,6 @@ const selectRandomLists = (state: RedditListState): RedditListState => {
   updatedSubredditLists.forEach((list) => {
     list.selected = subredditUuidsToSelect.includes(list.subredditListUuid);
   });
-  saveSubredditLists(updatedSubredditLists);
-  return {
-    ...state,
-    subredditLists: updatedSubredditLists,
-  };
-};
-const toggleSubredditListSelected = (
-  state: RedditListState,
-  action: { type: string; payload: SubredditLists }
-): RedditListState => {
-  const updatedSubredditLists = [...state.subredditLists];
-  const subredditListUuid = action.payload.subredditListUuid;
-  const foundSubredditListIndex = updatedSubredditLists.findIndex(
-    (subredditList) => subredditList.subredditListUuid === subredditListUuid
-  );
-  if (foundSubredditListIndex === -1) {
-    return state;
-  }
-  const foundSubreddit = updatedSubredditLists[foundSubredditListIndex];
-  updatedSubredditLists[foundSubredditListIndex] = {
-    ...foundSubreddit,
-    selected: !foundSubreddit.selected,
-  };
   saveSubredditLists(updatedSubredditLists);
   return {
     ...state,
@@ -174,9 +159,9 @@ const showCreateListBox = (state: RedditListState): RedditListState => {
     ...state,
     modifyListMode: ModifySubredditListMode.CREATE,
     showModifyListBox: true,
-    modifyListBoxTitle: "Create New List",
-    createUpdateInputValidationError: "",
-    createUpdateButtonText: "Create",
+    // modifyListBoxTitle: "Create New List",
+    // createUpdateInputValidationError: "",
+    // createUpdateButtonText: "Create",
   };
 };
 const showUpdateListBox = (
@@ -188,13 +173,11 @@ const showUpdateListBox = (
     ...state,
     modifyListMode: ModifySubredditListMode.UPDATE,
     showModifyListBox: true,
-    modifyListBoxTitle: "Update List",
     createUpdateInputValue: subredditList.listName,
     createUpdateInputValidationError:
       subredditList.listName == state.createUpdateInputValue
         ? "List name already Exists"
         : "",
-    createUpdateButtonText: "Update",
     updatingListUuid: subredditList.subredditListUuid,
   };
 };
@@ -294,7 +277,6 @@ const showDeleteListConfirmationBox = (
     ...state,
     modifyListMode: ModifySubredditListMode.DELETE,
     showModifyListBox: true,
-    modifyListBoxTitle: `Are you sure you want to delete list with name "${action.payload.listName}"?`,
     updatingListUuid: action.payload.subredditListUuid,
   };
 };
@@ -317,6 +299,30 @@ const setSubredditLists = (
     ...state,
     subredditLists: action.payload,
     subredditListsLoaded: true,
+  };
+};
+
+const setSubredditListSelected = (
+  state: RedditListState,
+  action: RedditListSetSubredditListSelected
+): RedditListState => {
+  const subredditListUuid = action.payload.subredditListUuid;
+  const foundListIndex = state.subredditLists.findIndex(
+    (list) => list.subredditListUuid === subredditListUuid
+  );
+  if (foundListIndex === -1) {
+    return {
+      ...state,
+    };
+  }
+  const updatedList = { ...state.subredditLists[foundListIndex] };
+  updatedList.selected = action.payload.isSelected;
+
+  const updatedLists = [...state.subredditLists];
+  updatedLists[foundListIndex] = updatedList;
+  return {
+    ...state,
+    subredditLists: updatedLists,
   };
 };
 

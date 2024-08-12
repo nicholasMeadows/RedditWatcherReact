@@ -10,10 +10,8 @@ const initialState: RedditListState = {
   subredditLists: [],
   modifyListMode: undefined,
   showModifyListBox: false,
-  modifyListBoxTitle: "",
   createUpdateInputValue: "",
   createUpdateInputValidationError: "",
-  createUpdateButtonText: "",
   updatingListUuid: undefined,
   subredditListsLoaded: false,
 };
