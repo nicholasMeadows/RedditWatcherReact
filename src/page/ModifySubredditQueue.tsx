@@ -1,13 +1,17 @@
 import { useContext } from "react";
-import {
-  RedditServiceDispatchContext,
-  RedditServiceStateContext,
-} from "../context/reddit-service-context.ts";
-import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
+import { RedditServiceStateContext } from "../context/reddit-service-context.ts";
+import useRedditQueue from "../hook/use-reddit-queue.ts";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
 
 const ModifySubredditQueue: React.FC = () => {
+  const { darkMode } = useContext(AppConfigStateContext);
   const { subredditQueue } = useContext(RedditServiceStateContext);
-  const redditServiceDispatch = useContext(RedditServiceDispatchContext);
+
+  const {
+    removeSubredditFromQueue,
+    moveSubredditQueueItemForward,
+    moveSubredditQueueItemBackwards,
+  } = useRedditQueue();
 
   return (
     <>
@@ -31,43 +35,33 @@ const ModifySubredditQueue: React.FC = () => {
                   </h1>
 
                   <div className="subreddit-queue-item-controls">
-                    <span
-                      className="queue-item-control-delete"
+                    <img
+                      src={`assets/x_close_${
+                        darkMode ? "dark" : "light"
+                      }_mode.png`}
+                      className={"queue-item-control"}
                       onClick={() =>
-                        redditServiceDispatch({
-                          type: RedditServiceActions.REMOVE_SUBREDDIT_QUEUE_ITEM,
-                          payload: subredditQueueItem,
-                        })
+                        removeSubredditFromQueue(subredditQueueItem)
                       }
-                    >
-                      {" "}
-                      &#10006;{" "}
-                    </span>
-                    <span
-                      className="queue-item-control-move-up-down"
+                    />
+                    <img
+                      src={`assets/arrow_up_${
+                        darkMode ? "dark" : "light"
+                      }_mode.png`}
+                      className={"queue-item-control"}
                       onClick={() => {
-                        redditServiceDispatch({
-                          type: RedditServiceActions.MOVE_SUBREDDIT_QUEUE_ITEM_FORWARD,
-                          payload: subredditQueueItem,
-                        });
+                        moveSubredditQueueItemForward(subredditQueueItem);
                       }}
-                    >
-                      {" "}
-                      &#10094;{" "}
-                    </span>
-
-                    <span
-                      className="queue-item-control-move-up-down queue-item-control-move-down-margin-left"
-                      onClick={() =>
-                        redditServiceDispatch({
-                          type: RedditServiceActions.MOVE_SUBREDDIT_QUEUE_ITEM_BACKWARD,
-                          payload: subredditQueueItem,
-                        })
-                      }
-                    >
-                      {" "}
-                      &#10095;{" "}
-                    </span>
+                    />
+                    <img
+                      src={`assets/arrow_down_${
+                        darkMode ? "dark" : "light"
+                      }_mode.png`}
+                      className={"queue-item-control"}
+                      onClick={() => {
+                        moveSubredditQueueItemBackwards(subredditQueueItem);
+                      }}
+                    />
                   </div>
                 </div>
               ))}

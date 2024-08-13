@@ -12,12 +12,10 @@ import {
   RedditListStateContext,
 } from "../context/reddit-list-context.ts";
 import { RedditListActionType } from "../reducer/reddit-list-reducer.ts";
-import { RedditServiceDispatchContext } from "../context/reddit-service-context.ts";
-import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
+import useRedditQueue from "../hook/use-reddit-queue.ts";
 
 const ContextMenu: React.FC = () => {
   const copyHook = useCopy();
-  const redditServiceDispatch = useContext(RedditServiceDispatchContext);
   const contextMenuState = useContext(ContextMenuStateContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const redditListState = useContext(RedditListStateContext);
@@ -37,6 +35,8 @@ const ContextMenu: React.FC = () => {
   const removeFromListNamesDivRef = useRef(null);
 
   const [contextMenuMaxHeight, setContextMenuMaxHeight] = useState(0);
+
+  const { addSubredditToQueue } = useRedditQueue();
   useEffect(() => {
     if (contextMenuState.subreddit !== undefined) {
       const subreddit = contextMenuState.subreddit;
@@ -187,10 +187,7 @@ const ContextMenu: React.FC = () => {
           hidden={!contextMenuState.showButtonControls.showSkipToSubreddit}
           onClick={() => {
             if (contextMenuState.subreddit != undefined) {
-              redditServiceDispatch({
-                type: RedditServiceActions.ADD_SUBREDDIT_TO_QUEUE,
-                payload: contextMenuState.subreddit,
-              });
+              addSubredditToQueue(contextMenuState.subreddit);
             }
             contextMenuDispatch({
               type: ContextMenuActionType.CLOSE_CONTEXT_MENU,

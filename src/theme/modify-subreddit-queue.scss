@@ -29,26 +29,18 @@
 
 .subreddit-queue-item-label {
   margin-left: 1em;
+  align-self: center;
 }
 
 .subreddit-queue-item-controls {
+  margin-left: auto;
   display: flex;
   flex-direction: row;
-  margin-left: auto;
-  margin-right: 2em;
 }
 
-.queue-item-control-delete {
+.queue-item-control {
   align-self: center;
-  font-size: 2.5em;
-  margin-right: 0.5em;
-}
-
-.queue-item-control-move-up-down {
-  font-size: 3em;
-  rotate: 90deg;
-}
-
-.queue-item-control-move-down-margin-left {
-  margin-left: 0.5em;
+  height: 60%;
+  width: 4em;
+  object-fit: contain;
 }

@@ -22,6 +22,7 @@ import { AppNotificationsDispatchContext } from "../context/app-notifications-co
 import { AppNotificationsActionType } from "../reducer/app-notifications-reducer.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
+import useRedditQueue from "./use-reddit-queue.ts";
 
 export default function useRedditService() {
   const {
@@ -58,6 +59,8 @@ export default function useRedditService() {
 
   const currentGetPostsFromSubredditValues =
     useRef<GetPostsFromSubredditState>();
+
+  const { removeSubredditFromQueue } = useRedditQueue();
 
   useEffect(() => {
     currentGetPostsFromSubredditValues.current = {
@@ -180,10 +183,7 @@ export default function useRedditService() {
       getPostsResponse: GetPostsFromSubredditResponse
     ) => {
       if (getPostsResponse.subredditQueueItemToRemove != undefined) {
-        redditServiceDispatch({
-          type: RedditServiceActions.REMOVE_SUBREDDIT_QUEUE_ITEM,
-          payload: getPostsResponse.subredditQueueItemToRemove,
-        });
+        removeSubredditFromQueue(getPostsResponse.subredditQueueItemToRemove);
       }
       if (getPostsResponse.mostRecentSubredditGotten != undefined) {
         sideBarDispatch({

@@ -10,6 +10,7 @@ import ContentFilteringOptionEnum from "../config/enums/ContentFilteringOptionEn
 import { PostRow } from "../PostRow.ts";
 import SelectSubredditIterationMethodOptionsEnum from "../config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
 import RandomIterationSelectWeightOptionsEnum from "../config/enums/RandomIterationSelectWeightOptionsEnum.ts";
+import { SubredditQueueItem } from "../Subreddit/SubredditQueueItem.ts";
 
 export type GetPostsFromSubredditState = {
   postRows: Array<PostRow>;
@@ -17,7 +18,7 @@ export type GetPostsFromSubredditState = {
   subredditSortOrderOption: SubredditSortOrderOptionsEnum;
   getAllSubredditsAtOnce: boolean;
   contentFiltering: ContentFilteringOptionEnum;
-  subredditQueue: Array<Subreddit>;
+  subredditQueue: Array<SubredditQueueItem>;
   concatRedditUrlMaxLength: number;
   postSortOrder: PostSortOrderOptionsEnum;
   topTimeFrame: TopTimeFrameOptionsEnum;
@@ -36,7 +37,7 @@ export type GetPostsFromSubredditState = {
 export type GetPostsFromSubredditResponse = {
   posts: Array<Post>;
   fromSubreddits: Array<Subreddit>;
-  subredditQueueItemToRemove: Subreddit | undefined;
+  subredditQueueItemToRemove: SubredditQueueItem | undefined;
   mostRecentSubredditGotten: Subreddit | undefined;
   subredditsToShowInSideBar: Array<Subreddit> | undefined;
   masterSubscribedSubredditList: Array<Subreddit> | undefined;
