@@ -45,41 +45,41 @@ const RouterView: React.FC = () => {
   const { rootFontSizeDispatch } = useContext(RootFontSizeContext);
   const appConfigDispatch = useContext(AppConfigDispatchContext);
   const darkmode = useContext(AppConfigStateContext).darkMode;
-  const currentPostRowsToShowInView = useContext(
+  const { postRowsToShowInView, postsToShowInRow } = useContext(
     AppConfigStateContext
-  ).postRowsToShowInView;
-  const currentPostsToShowInRow = useContext(
-    AppConfigStateContext
-  ).postsToShowInRow;
+  );
   const { closeContextMenu } = useContextMenu();
 
-  const wheelEventHandler = useCallback((event: WheelEvent) => {
-    const ctrlKeyPressed = event.ctrlKey;
-    if (ctrlKeyPressed) {
-      event.preventDefault();
+  const wheelEventHandler = useCallback(
+    (event: WheelEvent) => {
+      const ctrlKeyPressed = event.ctrlKey;
+      if (ctrlKeyPressed) {
+        event.preventDefault();
 
-      const deltaY = event.deltaY;
-      if (deltaY > 0) {
-        appConfigDispatch({
-          type: AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW,
-          payload: currentPostsToShowInRow + 0.1,
-        });
-        appConfigDispatch({
-          type: AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW,
-          payload: currentPostRowsToShowInView + 0.1,
-        });
-      } else if (deltaY < 0) {
-        appConfigDispatch({
-          type: AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW,
-          payload: currentPostsToShowInRow - 0.1,
-        });
-        appConfigDispatch({
-          type: AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW,
-          payload: currentPostRowsToShowInView - 0.1,
-        });
+        const deltaY = event.deltaY;
+        if (deltaY > 0) {
+          appConfigDispatch({
+            type: AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW,
+            payload: postsToShowInRow + 0.1,
+          });
+          appConfigDispatch({
+            type: AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW,
+            payload: postRowsToShowInView + 0.1,
+          });
+        } else if (deltaY < 0) {
+          appConfigDispatch({
+            type: AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW,
+            payload: postsToShowInRow - 0.1,
+          });
+          appConfigDispatch({
+            type: AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW,
+            payload: postRowsToShowInView - 0.1,
+          });
+        }
       }
-    }
-  }, []);
+    },
+    [appConfigDispatch, postRowsToShowInView, postsToShowInRow]
+  );
 
   useEffect(() => {
     document.addEventListener("wheel", wheelEventHandler, { passive: false });
@@ -105,7 +105,7 @@ const RouterView: React.FC = () => {
       type: PostRowsActionType.SET_CURRENT_LOCATION,
       payload: location.pathname,
     });
-  }, [location]);
+  }, [location, postRowsDispatch]);
 
   useEffect(() => {
     let background = "white";
@@ -157,7 +157,7 @@ const RouterView: React.FC = () => {
     if (div != undefined) {
       contentResizeObserver.observe(div);
     }
-  }, [currentPostsToShowInRow, rootFontSizeDispatch]);
+  }, [postsToShowInRow, rootFontSizeDispatch]);
 
   return (
     <AppNotificationsContextProvider>

@@ -14,29 +14,17 @@ import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/Sel
 
 const RedditSourceSettings: React.FC = () => {
   const appConfigDispatch = useContext(AppConfigDispatchContext);
-  const subredditSourceOption = useContext(
-    AppConfigStateContext
-  ).subredditSourceOption;
-  const subredditSortOrderOption = useContext(
-    AppConfigStateContext
-  ).subredditSortOrderOption;
-  const getAllSubredditsAtOnce = useContext(
-    AppConfigStateContext
-  ).getAllSubredditsAtOnce;
-  const selectSubredditIterationMethodOption = useContext(
-    AppConfigStateContext
-  ).selectSubredditIterationMethodOption;
-  const postSortOrder = useContext(AppConfigStateContext).postSortOrderOption;
-  const topTimeFrameOption = useContext(
-    AppConfigStateContext
-  ).topTimeFrameOption;
-  const redditApiItemLimit = useContext(
-    AppConfigStateContext
-  ).redditApiItemLimit;
-  const contentFiltering = useContext(AppConfigStateContext).contentFiltering;
-  const redditApiLimitValidationError = useContext(
-    AppConfigStateContext
-  ).redditApiItemLimitValidationError;
+  const {
+    subredditSourceOption,
+    subredditSortOrderOption,
+    getAllSubredditsAtOnce,
+    selectSubredditIterationMethodOption,
+    postSortOrderOption,
+    topTimeFrameOption,
+    redditApiItemLimit,
+    contentFiltering,
+    redditApiItemLimitValidationError,
+  } = useContext(AppConfigStateContext);
 
   const disableSubredditSortOrderSelect = useCallback(() => {
     return (
@@ -155,7 +143,7 @@ const RedditSourceSettings: React.FC = () => {
         <div className="settings-item">
           <label className="select-label">Post Sort Order</label>
           <select
-            value={postSortOrder}
+            value={postSortOrderOption}
             onChange={(event) =>
               appConfigDispatch({
                 type: AppConfigActionType.SET_POST_SORT_ORDER_OPTION,
@@ -215,7 +203,9 @@ const RedditSourceSettings: React.FC = () => {
               });
             }}
           />
-          <p className="settings-item-error">{redditApiLimitValidationError}</p>
+          <p className="settings-item-error">
+            {redditApiItemLimitValidationError}
+          </p>
         </div>
 
         <hr />

@@ -31,16 +31,12 @@ const SinglePostView: FC = () => {
       post = postRow.posts.find((post) => post.postUuid === postUuid);
     }
   }
-
-  const findPostIndexFromState = useCallback(() => {
-    if (postRow === undefined || post === undefined) {
-      return;
-    }
-    return postRow.posts.findIndex((post) => post.postUuid === postUuid);
-  }, [post, postRow, postUuid]);
+  let postIndex: number | undefined;
+  if (postRow !== undefined) {
+    postIndex = postRow.posts.findIndex((post) => post.postUuid === postUuid);
+  }
 
   const goToNextPostClicked = useCallback(() => {
-    const postIndex = findPostIndexFromState();
     if (
       postIndex === undefined ||
       postRow === undefined ||
@@ -60,10 +56,9 @@ const SinglePostView: FC = () => {
       `${SINGLE_POST_ROUTE}?${SINGLE_POST_PAGE_POST_ROW_UUID_KEY}=${postRowUuid}&${SINGLE_POST_PAGE_POST_UUID_KEY}=${postUuid}`,
       { replace: true }
     );
-  }, [findPostIndexFromState, navigate, postRow, postRowUuid]);
+  }, [navigate, postIndex, postRow, postRowUuid]);
 
   const goToPrevPostClicked = useCallback(() => {
-    const postIndex = findPostIndexFromState();
     if (
       postIndex === undefined ||
       postRow === undefined ||
@@ -82,7 +77,7 @@ const SinglePostView: FC = () => {
       `${SINGLE_POST_ROUTE}?${SINGLE_POST_PAGE_POST_ROW_UUID_KEY}=${postRowUuid}&${SINGLE_POST_PAGE_POST_UUID_KEY}=${postUuid}`,
       { replace: true }
     );
-  }, [findPostIndexFromState, navigate, postRow, postRowUuid]);
+  }, [navigate, postIndex, postRow, postRowUuid]);
 
   const singlePostPageZoom = useSinglePostPageZoom(
     postElementDivWrapperRef,

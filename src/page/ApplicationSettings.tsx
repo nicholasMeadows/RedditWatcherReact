@@ -14,49 +14,22 @@ import { Platform } from "../model/Platform.ts";
 
 const ApplicationSettings: React.FC = () => {
   const appConfigDispatch = useContext(AppConfigDispatchContext);
-  const autoScrollPostRowOption = useContext(
-    AppConfigStateContext
-  ).autoScrollPostRowOption;
-  const autoScrollPostRowOptionDirection = useContext(
-    AppConfigStateContext
-  ).autoScrollPostRowDirectionOption;
-  const autoScrollPostRowRateSecondsForSinglePostCard = useContext(
-    AppConfigStateContext
-  ).autoScrollPostRowRateSecondsForSinglePostCard;
-  const autoScrollPostRowRateSecondsForSinglePostCardValidationError =
-    useContext(
-      AppConfigStateContext
-    ).autoScrollPostRowRateSecondsForSinglePostCardValidationError;
-  const randomIterationSelectWeightOption = useContext(
-    AppConfigStateContext
-  ).randomIterationSelectWeightOption;
-  const selectSubredditListMenuSortOption = useContext(
-    AppConfigStateContext
-  ).selectSubredditListMenuSortOption;
-  const sortOrderDirectionOption = useContext(
-    AppConfigStateContext
-  ).sortOrderDirectionOption;
-
-  const concatRedditUrlMaxLength = useContext(
-    AppConfigStateContext
-  ).concatRedditUrlMaxLength;
-  const concatRedditUrlMaxLengthValidationError = useContext(
-    AppConfigStateContext
-  ).concatRedditUrlMaxLengthValidationError;
-  const postsToShowInRow = useContext(AppConfigStateContext).postsToShowInRow;
-  const postsToShowInRowValidationError = useContext(
-    AppConfigStateContext
-  ).postsToShowInRowValidationError;
-  const postRowsToShowInView = useContext(
-    AppConfigStateContext
-  ).postRowsToShowInView;
-  const postRowsToShowInViewValidationError = useContext(
-    AppConfigStateContext
-  ).postRowsToShowInViewValidationError;
-
-  const useInMemoryImagesAndGifs = useContext(
-    AppConfigStateContext
-  ).useInMemoryImagesAndGifs;
+  const {
+    autoScrollPostRowOption,
+    autoScrollPostRowDirectionOption,
+    autoScrollPostRowRateSecondsForSinglePostCard,
+    autoScrollPostRowRateSecondsForSinglePostCardValidationError,
+    randomIterationSelectWeightOption,
+    selectSubredditListMenuSortOption,
+    sortOrderDirectionOption,
+    concatRedditUrlMaxLength,
+    concatRedditUrlMaxLengthValidationError,
+    postsToShowInRow,
+    postsToShowInRowValidationError,
+    postRowsToShowInView,
+    postRowsToShowInViewValidationError,
+    useInMemoryImagesAndGifs,
+  } = useContext(AppConfigStateContext);
 
   return (
     <div className="reddit-watcher-settings">
@@ -181,7 +154,7 @@ const ApplicationSettings: React.FC = () => {
       <div className="settings-item flex-column">
         <label className="select-label">Auto Scroll Post Row Direction</label>
         <select
-          value={autoScrollPostRowOptionDirection}
+          value={autoScrollPostRowDirectionOption}
           onChange={(event) =>
             appConfigDispatch({
               type: AppConfigActionType.SET_AUTO_SCROLL_POST_ROW_DIRECTION_OPTION,

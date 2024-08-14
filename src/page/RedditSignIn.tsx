@@ -11,22 +11,17 @@ const RedditSignIn: React.FC = () => {
   const appConfigDispatch = useContext(AppConfigDispatchContext);
   const navigate = useNavigate();
 
-  const username = useContext(AppConfigStateContext).redditCredentials.username;
-  const usernameValidationError = useContext(AppConfigStateContext)
-    .redditCredentials.usernameValidationError;
-
-  const password = useContext(AppConfigStateContext).redditCredentials.password;
-  const passwordValidationError = useContext(AppConfigStateContext)
-    .redditCredentials.passwordValidationError;
-
-  const clientId = useContext(AppConfigStateContext).redditCredentials.clientId;
-  const clientIdValidationError = useContext(AppConfigStateContext)
-    .redditCredentials.clientIdValidationError;
-
-  const clientSecret = useContext(AppConfigStateContext).redditCredentials
-    .clientSecret;
-  const clientSecretValidationError = useContext(AppConfigStateContext)
-    .redditCredentials.clientSecretValidationError;
+  const { redditCredentials } = useContext(AppConfigStateContext);
+  const {
+    username,
+    password,
+    clientId,
+    clientSecret,
+    clientSecretValidationError,
+    usernameValidationError,
+    passwordValidationError,
+    clientIdValidationError,
+  } = redditCredentials;
 
   return (
     <div className="sign-in-page">

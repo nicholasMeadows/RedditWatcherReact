@@ -25,15 +25,13 @@ const ModifySubredditLists: React.FC = () => {
     updatingListUuid,
   } = useContext(RedditListStateContext);
   const redditListDispatch = useContext(RedditListDispatchContext);
-  const selectSubredditListMenuSortOption = useContext(
-    AppConfigStateContext
-  ).selectSubredditListMenuSortOption;
-  const sortOrderDirection = useContext(
-    AppConfigStateContext
-  ).sortOrderDirectionOption;
+  const { selectSubredditListMenuSortOption, sortOrderDirectionOption } =
+    useContext(AppConfigStateContext);
+
   const [sortedSubredditLists, setSortedSubredditLists] = useState<
     Array<SubredditLists>
   >([]);
+
   useEffect(() => {
     redditListDispatch({
       type: RedditListActionType.RESET_MODIFY_LIST_BOX,
@@ -54,10 +52,10 @@ const ModifySubredditLists: React.FC = () => {
         } else if (name1.toLowerCase() < name2.toLowerCase()) {
           normalSortValue = -1;
         }
-        if (sortOrderDirection == SortOrderDirectionOptionsEnum.Normal) {
+        if (sortOrderDirectionOption == SortOrderDirectionOptionsEnum.Normal) {
           return normalSortValue;
         } else if (
-          sortOrderDirection == SortOrderDirectionOptionsEnum.Reversed
+          sortOrderDirectionOption == SortOrderDirectionOptionsEnum.Reversed
         ) {
           return normalSortValue * -1;
         }
@@ -77,10 +75,10 @@ const ModifySubredditLists: React.FC = () => {
         } else if (size1 > size2) {
           normalSortValue = -1;
         }
-        if (sortOrderDirection == SortOrderDirectionOptionsEnum.Normal) {
+        if (sortOrderDirectionOption == SortOrderDirectionOptionsEnum.Normal) {
           return normalSortValue;
         } else if (
-          sortOrderDirection == SortOrderDirectionOptionsEnum.Reversed
+          sortOrderDirectionOption == SortOrderDirectionOptionsEnum.Reversed
         ) {
           return normalSortValue * -1;
         }
@@ -88,7 +86,11 @@ const ModifySubredditLists: React.FC = () => {
       });
       setSortedSubredditLists(sorted);
     }
-  }, [subredditLists, selectSubredditListMenuSortOption, sortOrderDirection]);
+  }, [
+    subredditLists,
+    selectSubredditListMenuSortOption,
+    sortOrderDirectionOption,
+  ]);
 
   const [subredditListUuidClicked, setSubredditListUuidClicked] = useState<
     string | undefined
