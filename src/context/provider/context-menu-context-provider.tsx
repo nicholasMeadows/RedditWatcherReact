@@ -15,7 +15,7 @@ const initialState: ContextMenuState = {
   y: 0,
   copyInfo: undefined,
   subreddit: undefined,
-  updateSubredditListInfo: undefined,
+  subredditList: undefined,
   openPostPermaLink: undefined,
   openSubredditLink: undefined,
   showButtonControls: {

@@ -1,22 +1,11 @@
 import { Dispatch } from "react";
 import {
-  CloseContextMenuAction,
-  SetExpandAddOrRemoveToListAction,
-  SetPostContextMenuAction,
-  SetRedditSearchItemContextMenuAction,
-  SetSideBarSubredditMenuAction,
-  SetSubredditListContextMenuAction,
-  SetSubredditListItemContextMenuAction,
+  ContextMenuBooleanPayloadAction,
+  SetContextMenuAction,
 } from "../../../reducer/context-menu-reducer.ts";
 
 type ContextMenuDispatch = Dispatch<
-  | SetPostContextMenuAction
-  | SetSubredditListItemContextMenuAction
-  | SetSubredditListContextMenuAction
-  | SetSideBarSubredditMenuAction
-  | CloseContextMenuAction
-  | SetRedditSearchItemContextMenuAction
-  | SetExpandAddOrRemoveToListAction
+  SetContextMenuAction | ContextMenuBooleanPayloadAction
 >;
 
 export default ContextMenuDispatch;

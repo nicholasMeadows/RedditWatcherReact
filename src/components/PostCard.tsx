@@ -6,23 +6,21 @@ import {
   SINGLE_POST_PAGE_POST_UUID_KEY,
   SINGLE_POST_ROUTE,
 } from "../RedditWatcherConstants.ts";
-import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
 import { useNavigate } from "react-router-dom";
 import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
-import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
-import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
+import useContextMenu from "../hook/use-context-menu.ts";
 
 const PostCard: FC = memo(() => {
   const navigate = useNavigate();
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const { postRowUuid, post } = useContext(PostCardContext);
-  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const initialMouseDownOrTouchX = useRef(0);
 
+  const { openContextMenuForPost } = useContextMenu();
   const {
     clearAutoIncrementPostAttachmentInterval,
     setupAutoIncrementPostAttachmentInterval,
@@ -40,15 +38,7 @@ const PostCard: FC = memo(() => {
       onContextMenu={(event) => {
         event.preventDefault();
         event.stopPropagation();
-        const postContextMenuEvent: PostContextMenuEvent = {
-          post: post,
-          x: event.clientX,
-          y: event.clientY,
-        };
-        contextMenuDispatch({
-          type: ContextMenuActionType.SET_POST_CONTEXT_MENU_EVENT,
-          payload: { event: postContextMenuEvent },
-        });
+        openContextMenuForPost(post, event.clientX, event.clientY);
       }}
       onClickCapture={(event) => {
         if (Math.abs(initialMouseDownOrTouchX.current - event.clientX) >= 50) {

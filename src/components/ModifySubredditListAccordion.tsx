@@ -1,11 +1,8 @@
 import { MouseEvent, useContext, useRef } from "react";
-import SubredditListContextMenuEvent from "../model/Events/SubredditListContextMenuEvent";
-import SubredditListItemContextMenuEvent from "../model/Events/SubredditListItemContextMenuEvent";
 import { SubredditLists } from "../model/SubredditList/SubredditLists";
-import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
-import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 import { RedditListDispatchContext } from "../context/reddit-list-context.ts";
 import { RedditListActionType } from "../reducer/reddit-list-reducer.ts";
+import useContextMenu from "../hook/use-context-menu.ts";
 
 type Props = {
   subredditList: SubredditLists;
@@ -18,8 +15,11 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
   accordionOnClick,
 }) => {
   const redditListDispatch = useContext(RedditListDispatchContext);
-  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const panelDivRef = useRef(null);
+  const {
+    openContextMenuForSubredditList,
+    openContextMenuForSubredditListItem,
+  } = useContextMenu();
   return (
     <>
       <div
@@ -39,17 +39,11 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
         onContextMenu={(event) => {
           event.preventDefault();
           event.stopPropagation();
-          const subredditListContextMenuEvent: SubredditListContextMenuEvent = {
-            subredditList: subredditList,
-            x: event.clientX,
-            y: event.clientY,
-          };
-          contextMenuDispatch({
-            type: ContextMenuActionType.SET_SUBREDDIT_LIST_CONTEXT_MENU_EVENT,
-            payload: {
-              event: subredditListContextMenuEvent,
-            },
-          });
+          openContextMenuForSubredditList(
+            subredditList,
+            event.clientX,
+            event.clientY
+          );
         }}
       >
         <input
@@ -91,18 +85,11 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
             onContextMenu={(event) => {
               event.preventDefault();
               event.stopPropagation();
-              const subredditListItemContextMenuEvent: SubredditListItemContextMenuEvent =
-                {
-                  subreddit: subreddit,
-                  x: event.clientX,
-                  y: event.clientY,
-                };
-              contextMenuDispatch({
-                type: ContextMenuActionType.SET_SUBREDDIT_LIST_ITEM_CONTEXT_MENU_EVENT,
-                payload: {
-                  event: subredditListItemContextMenuEvent,
-                },
-              });
+              openContextMenuForSubredditListItem(
+                subreddit,
+                event.clientX,
+                event.clientY
+              );
             }}
           >
             {subreddit.displayName}

@@ -32,13 +32,12 @@ import {
   AppConfigStateContext,
 } from "../context/app-config-context.ts";
 import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
-import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
-import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import SideBarContextProvider from "../context/provider/side-bar-context-provider.tsx";
 import RedditListContextProvider from "../context/provider/reddit-list-context-provider.tsx";
 import RedditServiceContextProvider from "../context/provider/reddit-service-context-provider.tsx";
+import useContextMenu from "../hook/use-context-menu.ts";
 
 const RouterView: React.FC = () => {
   const location = useLocation();
@@ -52,7 +51,8 @@ const RouterView: React.FC = () => {
   const currentPostsToShowInRow = useContext(
     AppConfigStateContext
   ).postsToShowInRow;
-  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
+  const { closeContextMenu } = useContextMenu();
+
   const wheelEventHandler = useCallback((event: WheelEvent) => {
     const ctrlKeyPressed = event.ctrlKey;
     if (ctrlKeyPressed) {
@@ -92,13 +92,13 @@ const RouterView: React.FC = () => {
 
   useEffect(() => {
     const documentClickedEvent = () => {
-      contextMenuDispatch({ type: ContextMenuActionType.CLOSE_CONTEXT_MENU });
+      closeContextMenu();
     };
     document.addEventListener("click", documentClickedEvent);
     return () => {
       document.removeEventListener("click", documentClickedEvent);
     };
-  }, []);
+  }, [closeContextMenu]);
 
   useEffect(() => {
     postRowsDispatch({

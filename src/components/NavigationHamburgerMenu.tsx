@@ -27,8 +27,6 @@ import {
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import ImportExportConfig from "../model/ImportExportConfig.ts";
-import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
-import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import { RedditListStateContext } from "../context/reddit-list-context.ts";
@@ -37,6 +35,7 @@ import {
   RedditServiceStateContext,
 } from "../context/reddit-service-context.ts";
 import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
+import useContextMenu from "../hook/use-context-menu.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
   const postRowsDispatch = useContext(PostRowsDispatchContext);
@@ -46,7 +45,6 @@ const NavigationHamburgerMenu: React.FC = () => {
   const redditServiceDispatch = useContext(RedditServiceDispatchContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const redditListsState = useContext(RedditListStateContext);
   const [pageName, setPageName] = useState("");
   const [showBackButton, setShowBackButton] = useState(false);
@@ -57,6 +55,8 @@ const NavigationHamburgerMenu: React.FC = () => {
 
   const [importClicked, setImportClicked] = useState(false);
   const configLoaded = useContext(AppConfigStateContext).configLoaded;
+  const { closeContextMenu } = useContextMenu();
+
   useEffect(() => {
     if (!configLoaded && importClicked) {
       setImportClicked(false);
@@ -104,7 +104,7 @@ const NavigationHamburgerMenu: React.FC = () => {
 
     setPageName(pageName);
     setShowBackButton(showBackButton);
-    contextMenuDispatch({ type: ContextMenuActionType.CLOSE_CONTEXT_MENU });
+    closeContextMenu();
   }, [location, redditAuthenticationStatus]);
   const navigateTo = (pathName: string) => {
     setPopoutDrawerOpen(false);

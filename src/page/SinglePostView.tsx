@@ -3,9 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { PostRowsContext } from "../context/post-rows-context.ts";
 import useSinglePostPageZoom from "../hook/use-single-post-page-zoom.ts";
 import { Post } from "../model/Post/Post.ts";
-import PostContextMenuEvent from "../model/Events/PostContextMenuEvent.ts";
-import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
-import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
 import { PostImageQualityEnum } from "../model/config/enums/PostImageQualityEnum.ts";
 import PostMediaElement from "../components/PostMediaElement.tsx";
@@ -16,6 +13,7 @@ import {
   SINGLE_POST_PAGE_POST_UUID_KEY,
   SINGLE_POST_ROUTE,
 } from "../RedditWatcherConstants.ts";
+import useContextMenu from "../hook/use-context-menu.ts";
 
 const SinglePostView: FC = () => {
   const navigate = useNavigate();
@@ -23,9 +21,8 @@ const SinglePostView: FC = () => {
   const postRowUuid = queryParams.get("postRowUuid");
   const postUuid = queryParams.get("postUuid");
   const { postRows } = useContext(PostRowsContext);
-  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const postElementDivWrapperRef = useRef(null);
-
+  const { openContextMenuForPost } = useContextMenu();
   let post: Post | undefined;
   let postRow: PostRow | undefined;
   if (postRowUuid !== null && postUuid !== null) {
@@ -137,15 +134,7 @@ const SinglePostView: FC = () => {
               if (post === undefined) return;
               event.preventDefault();
               event.stopPropagation();
-              const postContextMenuEvent: PostContextMenuEvent = {
-                post: post,
-                x: event.clientX,
-                y: event.clientY,
-              };
-              contextMenuDispatch({
-                type: ContextMenuActionType.SET_POST_CONTEXT_MENU_EVENT,
-                payload: { event: postContextMenuEvent },
-              });
+              openContextMenuForPost(post, event.clientX, event.clientY);
             }}
             className="flex flex-column max-width-height-percentage single-post-view-post-element"
           >

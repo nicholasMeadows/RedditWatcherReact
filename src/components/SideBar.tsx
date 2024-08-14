@@ -21,15 +21,11 @@ import SearchRedditBar from "./SearchRedditBar.tsx";
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
-import SideBarSubredditMenuEvent from "../model/Events/SideBarSubredditMenuEvent.ts";
-import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
-import {
-  ContextMenuDispatchContext,
-  ContextMenuStateContext,
-} from "../context/context-menu-context.ts";
+import { ContextMenuStateContext } from "../context/context-menu-context.ts";
 import { RedditListStateContext } from "../context/reddit-list-context.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../RedditWatcherConstants.ts";
+import useContextMenu from "../hook/use-context-menu.ts";
 
 type SideBarProps = {
   onRedditSearchBarFocus: () => void;
@@ -49,7 +45,6 @@ const SideBar: React.FC<SideBarProps> = ({
   const sideBarDispatch = useContext(SideBarDispatchContext);
   const { secondsTillGettingNextPosts } = useContext(RedditServiceStateContext);
   const redditServiceDispatch = useContext(RedditServiceDispatchContext);
-  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const { darkMode } = useContext(AppConfigStateContext);
   const { showContextMenu } = useContext(ContextMenuStateContext);
 
@@ -75,6 +70,7 @@ const SideBar: React.FC<SideBarProps> = ({
   const mouseOverSubredditListRef = useRef(false);
   const showContextMenuRef = useRef(false);
 
+  const { openContextMenuForSideBar } = useContextMenu();
   useEffect(() => {
     showContextMenuRef.current = showContextMenu;
   }, [showContextMenu]);
@@ -318,17 +314,11 @@ const SideBar: React.FC<SideBarProps> = ({
               onContextMenu={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                const subredditContextMenuEvent: SideBarSubredditMenuEvent = {
-                  subreddit: subreddit,
-                  x: event.clientX,
-                  y: event.clientY,
-                };
-                contextMenuDispatch({
-                  type: ContextMenuActionType.SET_SIDE_BAR_SUB_REDDIT_MENU_EVENT,
-                  payload: {
-                    event: subredditContextMenuEvent,
-                  },
-                });
+                openContextMenuForSideBar(
+                  subreddit,
+                  event.clientX,
+                  event.clientY
+                );
               }}
               key={subreddit.subredditUuid}
               className={`subreddit-list-item ${

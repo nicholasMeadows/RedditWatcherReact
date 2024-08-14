@@ -12,11 +12,7 @@ export type ContextMenuState = {
         mediaType: MediaType;
       }
     | undefined;
-  updateSubredditListInfo:
-    | {
-        subredditList: SubredditLists;
-      }
-    | undefined;
+  subredditList: SubredditLists | undefined;
   subreddit: Subreddit | undefined;
   openPostPermaLink: string | undefined;
   openSubredditLink: string | undefined;

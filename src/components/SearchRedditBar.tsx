@@ -1,10 +1,8 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { RedditSearchItemContextMenuEvent } from "../model/Events/RedditSearchItemContextMenuEvent";
 import useSearchReddit from "../hook/use-search-reddit.ts";
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
-import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
-import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
+import useContextMenu from "../hook/use-context-menu.ts";
 
 const SearchRedditBar: React.FC = () => {
   const darkmode = useContext(AppConfigStateContext).darkMode;
@@ -15,7 +13,6 @@ const SearchRedditBar: React.FC = () => {
     onFocus,
     onBlur,
   } = useContext(SearchRedditBarContext);
-  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { searchResults, clearSearchResults, subOrUnSubFromSubreddit } =
     useSearchReddit(searchInputRef);
@@ -24,6 +21,8 @@ const SearchRedditBar: React.FC = () => {
     setExpandCollapseSearchResultsImgSrc,
   ] = useState("");
   const [clearSearchInputImgSrc, setClearSearchInputImgSrc] = useState("");
+
+  const { openContextMenuForRedditSearchItem } = useContextMenu();
 
   useEffect(() => {
     let useDarkVersion = false;
@@ -114,15 +113,11 @@ const SearchRedditBar: React.FC = () => {
             onContextMenu={(event) => {
               event.stopPropagation();
               event.preventDefault();
-              const customEvent: RedditSearchItemContextMenuEvent = {
-                x: event.clientX,
-                y: event.clientY,
-                searchResultItem: searchResult,
-              };
-              contextMenuDispatch({
-                type: ContextMenuActionType.SET_REDDIT_SEARCH_ITEM_CONTEXT_MENU_EVENT,
-                payload: { event: customEvent },
-              });
+              openContextMenuForRedditSearchItem(
+                searchResult,
+                event.clientX,
+                event.clientY
+              );
             }}
           >
             <p className="search-result-p">
