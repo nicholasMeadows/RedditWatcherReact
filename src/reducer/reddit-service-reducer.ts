@@ -2,14 +2,17 @@ import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import { RedditServiceState } from "../model/state/RedditServiceState.ts";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState.ts";
 import { SubredditQueueItem } from "../model/Subreddit/SubredditQueueItem.ts";
+import { v4 as uuidV4 } from "uuid";
 
 export enum RedditServiceActions {
   ADD_TO_MASTER_SUBSCRIBED_SUBREDDIT_LIST = "ADD_TO_MASTER_SUBSCRIBED_SUBREDDIT_LIST",
   SET_NSFW_SUBREDDIT_INDEX = "SET_NSFW_SUBREDDIT_INDEX",
   SET_SUBREDDIT_INDEX = "SET_SUBREDDIT_INDEX",
   SET_REDDIT_AUTHENTICATION_STATUS = "SET_REDDIT_AUTHENTICATION_STATUS",
-  SET_SUBREDDIT_QUEUE = "SET_SUBREDDIT_QUEUE",
+  ADD_ITEM_TO_SUBREDDIT_QUEUE = "ADD_ITEM_TO_SUBREDDIT_QUEUE",
   REMOVE_SUBREDDIT_QUEUE_ITEM = "REMOVE_SUBREDDIT_QUEUE_ITEM",
+  MOVE_SUBREDDIT_QUEUE_ITEM_FORWARD = "MOVE_SUBREDDIT_QUEUE_ITEM_FORWARD",
+  MOVE_SUBREDDIT_QUEUE_ITEM_BACKWARD = "MOVE_SUBREDDIT_QUEUE_ITEM_BACKWARD",
   SET_SECONDS_TILL_GETTING_NEXT_POSTS = "SET_SECONDS_TILL_GETTING_NEXT_POSTS",
 }
 
@@ -33,13 +36,20 @@ export type RedditServiceSetAuthenticationStatus = {
   };
 };
 
-export type SetSubredditQueueAction = {
-  type: RedditServiceActions.SET_SUBREDDIT_QUEUE;
-  payload: Array<SubredditQueueItem>;
+export type AddItemToSubredditQueueAction = {
+  type: RedditServiceActions.ADD_ITEM_TO_SUBREDDIT_QUEUE;
+  payload: Subreddit;
 };
 
 export type RemoveSubredditQueueItemActionAction = {
   type: RedditServiceActions.REMOVE_SUBREDDIT_QUEUE_ITEM;
+  payload: SubredditQueueItem;
+};
+
+export type MoveSubredditQueueItemAction = {
+  type:
+    | RedditServiceActions.MOVE_SUBREDDIT_QUEUE_ITEM_BACKWARD
+    | RedditServiceActions.MOVE_SUBREDDIT_QUEUE_ITEM_FORWARD;
   payload: SubredditQueueItem;
 };
 export default function RedditServiceReducer(
@@ -48,8 +58,9 @@ export default function RedditServiceReducer(
     | RedditServiceAddSubredditsToMasterSubscribedList
     | RedditServiceActionNumberPayload
     | RedditServiceSetAuthenticationStatus
-    | SetSubredditQueueAction
+    | AddItemToSubredditQueueAction
     | RemoveSubredditQueueItemActionAction
+    | MoveSubredditQueueItemAction
 ) {
   switch (action.type) {
     case RedditServiceActions.ADD_TO_MASTER_SUBSCRIBED_SUBREDDIT_LIST:
@@ -60,12 +71,16 @@ export default function RedditServiceReducer(
       return setSubredditIndex(state, action);
     case RedditServiceActions.SET_REDDIT_AUTHENTICATION_STATUS:
       return setRedditAuthenticationStatus(state, action);
-    case RedditServiceActions.SET_SUBREDDIT_QUEUE:
-      return setSubredditQueue(state, action);
+    case RedditServiceActions.ADD_ITEM_TO_SUBREDDIT_QUEUE:
+      return addItemToSubredditQueue(state, action);
     case RedditServiceActions.SET_SECONDS_TILL_GETTING_NEXT_POSTS:
       return setSecondsTillGettingNextPosts(state, action);
     case RedditServiceActions.REMOVE_SUBREDDIT_QUEUE_ITEM:
       return removeSubredditQueueItem(state, action);
+    case RedditServiceActions.MOVE_SUBREDDIT_QUEUE_ITEM_FORWARD:
+      return moveSubredditQueueItemForward(state, action);
+    case RedditServiceActions.MOVE_SUBREDDIT_QUEUE_ITEM_BACKWARD:
+      return moveSubredditQueueItemBackwards(state, action);
     default:
       return state;
   }
@@ -112,13 +127,19 @@ const setRedditAuthenticationStatus = (
   };
 };
 
-const setSubredditQueue = (
+const addItemToSubredditQueue = (
   state: RedditServiceState,
-  action: SetSubredditQueueAction
+  action: AddItemToSubredditQueueAction
 ): RedditServiceState => {
+  const queueItem: SubredditQueueItem = {
+    ...action.payload,
+    subredditQueueItemUuid: uuidV4(),
+  };
+  const updatedQueue = [...state.subredditQueue];
+  updatedQueue.push(queueItem);
   return {
     ...state,
-    subredditQueue: action.payload,
+    subredditQueue: updatedQueue,
   };
 };
 const setSecondsTillGettingNextPosts = (
@@ -144,6 +165,50 @@ const removeSubredditQueueItem = (
     return state;
   }
   updatedQueue.splice(indexToRemove, 1);
+  return {
+    ...state,
+    subredditQueue: updatedQueue,
+  };
+};
+
+const moveSubredditQueueItemForward = (
+  state: RedditServiceState,
+  action: MoveSubredditQueueItemAction
+): RedditServiceState => {
+  const queueItem = action.payload;
+  const updatedQueue = [...state.subredditQueue];
+  const foundIndex = updatedQueue.findIndex(
+    (item) => item.subredditQueueItemUuid === queueItem.subredditQueueItemUuid
+  );
+  if (foundIndex === -1) {
+    return state;
+  }
+
+  const queueItemToMove = updatedQueue[foundIndex];
+  updatedQueue[foundIndex] = updatedQueue[foundIndex - 1];
+  updatedQueue[foundIndex - 1] = queueItemToMove;
+  return {
+    ...state,
+    subredditQueue: updatedQueue,
+  };
+};
+
+const moveSubredditQueueItemBackwards = (
+  state: RedditServiceState,
+  action: MoveSubredditQueueItemAction
+): RedditServiceState => {
+  const queueItem = action.payload;
+  const updatedQueue = [...state.subredditQueue];
+  const foundIndex = updatedQueue.findIndex(
+    (item) => item.subredditQueueItemUuid === queueItem.subredditQueueItemUuid
+  );
+
+  if (foundIndex === -1 || foundIndex >= updatedQueue.length) {
+    return state;
+  }
+  const queueItemToMove = updatedQueue[foundIndex];
+  updatedQueue[foundIndex] = updatedQueue[foundIndex + 1];
+  updatedQueue[foundIndex + 1] = queueItemToMove;
   return {
     ...state,
     subredditQueue: updatedQueue,

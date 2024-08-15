@@ -35,7 +35,8 @@ import {
   RedditServiceStateContext,
 } from "../context/reddit-service-context.ts";
 import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
-import useContextMenu from "../hook/use-context-menu.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
   const postRowsDispatch = useContext(PostRowsDispatchContext);
@@ -55,7 +56,7 @@ const NavigationHamburgerMenu: React.FC = () => {
 
   const [importClicked, setImportClicked] = useState(false);
   const configLoaded = useContext(AppConfigStateContext).configLoaded;
-  const { closeContextMenu } = useContextMenu();
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
 
   useEffect(() => {
     if (!configLoaded && importClicked) {
@@ -104,8 +105,10 @@ const NavigationHamburgerMenu: React.FC = () => {
 
     setPageName(pageName);
     setShowBackButton(showBackButton);
-    closeContextMenu();
-  }, [location, redditAuthenticationStatus]);
+    contextMenuDispatch({
+      type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
+    });
+  }, [contextMenuDispatch, location, redditAuthenticationStatus]);
   const navigateTo = (pathName: string) => {
     setPopoutDrawerOpen(false);
     if (window.location.href.endsWith(POST_ROW_ROUTE)) {

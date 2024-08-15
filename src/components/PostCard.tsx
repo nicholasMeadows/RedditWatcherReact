@@ -12,15 +12,15 @@ import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
 import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
-import useContextMenu from "../hook/use-context-menu.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
 const PostCard: FC = memo(() => {
   const navigate = useNavigate();
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const { postRowUuid, post } = useContext(PostCardContext);
   const initialMouseDownOrTouchX = useRef(0);
-
-  const { openContextMenuForPost } = useContextMenu();
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const {
     clearAutoIncrementPostAttachmentInterval,
     setupAutoIncrementPostAttachmentInterval,
@@ -38,7 +38,14 @@ const PostCard: FC = memo(() => {
       onContextMenu={(event) => {
         event.preventDefault();
         event.stopPropagation();
-        openContextMenuForPost(post, event.clientX, event.clientY);
+        contextMenuDispatch({
+          type: ContextMenuActionType.OPEN_CONTEXT_MENU_FOR_POST,
+          payload: {
+            post: post,
+            x: event.clientX,
+            y: event.clientY,
+          },
+        });
       }}
       onClickCapture={(event) => {
         if (Math.abs(initialMouseDownOrTouchX.current - event.clientX) >= 50) {

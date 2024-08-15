@@ -13,7 +13,8 @@ import {
   SINGLE_POST_PAGE_POST_UUID_KEY,
   SINGLE_POST_ROUTE,
 } from "../RedditWatcherConstants.ts";
-import useContextMenu from "../hook/use-context-menu.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
 const SinglePostView: FC = () => {
   const navigate = useNavigate();
@@ -22,7 +23,8 @@ const SinglePostView: FC = () => {
   const postUuid = queryParams.get("postUuid");
   const { postRows } = useContext(PostRowsContext);
   const postElementDivWrapperRef = useRef(null);
-  const { openContextMenuForPost } = useContextMenu();
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
+
   let post: Post | undefined;
   let postRow: PostRow | undefined;
   if (postRowUuid !== null && postUuid !== null) {
@@ -129,7 +131,14 @@ const SinglePostView: FC = () => {
               if (post === undefined) return;
               event.preventDefault();
               event.stopPropagation();
-              openContextMenuForPost(post, event.clientX, event.clientY);
+              contextMenuDispatch({
+                type: ContextMenuActionType.OPEN_CONTEXT_MENU_FOR_POST,
+                payload: {
+                  post: post,
+                  x: event.clientX,
+                  y: event.clientY,
+                },
+              });
             }}
             className="flex flex-column max-width-height-percentage single-post-view-post-element"
           >

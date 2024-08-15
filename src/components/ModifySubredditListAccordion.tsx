@@ -2,7 +2,8 @@ import { MouseEvent, useContext, useRef } from "react";
 import { SubredditLists } from "../model/SubredditList/SubredditLists";
 import { RedditListDispatchContext } from "../context/reddit-list-context.ts";
 import { RedditListActionType } from "../reducer/reddit-list-reducer.ts";
-import useContextMenu from "../hook/use-context-menu.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
 type Props = {
   subredditList: SubredditLists;
@@ -16,10 +17,8 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
 }) => {
   const redditListDispatch = useContext(RedditListDispatchContext);
   const panelDivRef = useRef(null);
-  const {
-    openContextMenuForSubredditList,
-    openContextMenuForSubredditListItem,
-  } = useContextMenu();
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
+
   return (
     <>
       <div
@@ -39,11 +38,14 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
         onContextMenu={(event) => {
           event.preventDefault();
           event.stopPropagation();
-          openContextMenuForSubredditList(
-            subredditList,
-            event.clientX,
-            event.clientY
-          );
+          contextMenuDispatch({
+            type: ContextMenuActionType.OPEN_CONTEXT_MENU_FOR_SUBREDDIT_LIST,
+            payload: {
+              subredditList: subredditList,
+              x: event.clientX,
+              y: event.clientY,
+            },
+          });
         }}
       >
         <input
@@ -85,11 +87,14 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
             onContextMenu={(event) => {
               event.preventDefault();
               event.stopPropagation();
-              openContextMenuForSubredditListItem(
-                subreddit,
-                event.clientX,
-                event.clientY
-              );
+              contextMenuDispatch({
+                type: ContextMenuActionType.OPEN_CONTEXT_MENU_FOR_SUBREDDIT_LIST_ITEM,
+                payload: {
+                  subredditListItem: subreddit,
+                  x: event.clientX,
+                  y: event.clientY,
+                },
+              });
             }}
           >
             {subreddit.displayName}

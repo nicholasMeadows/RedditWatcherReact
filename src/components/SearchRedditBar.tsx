@@ -2,7 +2,8 @@ import { useContext, useEffect, useRef, useState } from "react";
 import useSearchReddit from "../hook/use-search-reddit.ts";
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
-import useContextMenu from "../hook/use-context-menu.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
 const SearchRedditBar: React.FC = () => {
   const darkmode = useContext(AppConfigStateContext).darkMode;
@@ -22,7 +23,7 @@ const SearchRedditBar: React.FC = () => {
   ] = useState("");
   const [clearSearchInputImgSrc, setClearSearchInputImgSrc] = useState("");
 
-  const { openContextMenuForRedditSearchItem } = useContextMenu();
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
 
   useEffect(() => {
     let useDarkVersion = false;
@@ -113,11 +114,14 @@ const SearchRedditBar: React.FC = () => {
             onContextMenu={(event) => {
               event.stopPropagation();
               event.preventDefault();
-              openContextMenuForRedditSearchItem(
-                searchResult,
-                event.clientX,
-                event.clientY
-              );
+              contextMenuDispatch({
+                type: ContextMenuActionType.OPEN_CONTEXT_MENU_FOR_REDDIT_SEARCH_ITEM,
+                payload: {
+                  redditSearchItem: searchResult,
+                  x: event.clientX,
+                  y: event.clientY,
+                },
+              });
             }}
           >
             <p className="search-result-p">

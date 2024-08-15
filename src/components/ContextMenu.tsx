@@ -1,15 +1,19 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { SubredditLists } from "../model/SubredditList/SubredditLists";
 
-import { ContextMenuStateContext } from "../context/context-menu-context.ts";
-import useContextMenu from "../hook/use-context-menu.ts";
+import {
+  ContextMenuDispatchContext,
+  ContextMenuStateContext,
+} from "../context/context-menu-context.ts";
 import { useCopy } from "../hook/use-copy.ts";
 import {
   RedditListDispatchContext,
   RedditListStateContext,
 } from "../context/reddit-list-context.ts";
 import { RedditListActionType } from "../reducer/reddit-list-reducer.ts";
-import useRedditQueue from "../hook/use-reddit-queue.ts";
+import { RedditServiceDispatchContext } from "../context/reddit-service-context.ts";
+import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
 const ContextMenu: React.FC = () => {
   const copyHook = useCopy();
@@ -26,6 +30,8 @@ const ContextMenu: React.FC = () => {
   } = useContext(ContextMenuStateContext);
   const redditListState = useContext(RedditListStateContext);
   const redditListDispatch = useContext(RedditListDispatchContext);
+  const redditServiceDispatch = useContext(RedditServiceDispatchContext);
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const [contextMenuX, setContextMenuX] = useState(0);
   const [contextMenuY, setContextMenuY] = useState(0);
 
@@ -42,12 +48,6 @@ const ContextMenu: React.FC = () => {
 
   const [contextMenuMaxHeight, setContextMenuMaxHeight] = useState(0);
 
-  const {
-    closeContextMenu,
-    toggleExpandRemoveFromList,
-    toggleExpandAddToList,
-  } = useContextMenu();
-  const { addSubredditToQueue } = useRedditQueue();
   useEffect(() => {
     if (subreddit !== undefined) {
       const isIn = redditListState.subredditLists.filter((list) => {
@@ -156,7 +156,9 @@ const ContextMenu: React.FC = () => {
           hidden={!showButtonControls.showOpenPost}
           onClick={() => {
             window.open(openPostPermaLink);
-            closeContextMenu();
+            contextMenuDispatch({
+              type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
+            });
           }}
         >
           <p className="context-menu-button-label">Open Post</p>
@@ -167,7 +169,9 @@ const ContextMenu: React.FC = () => {
           hidden={!showButtonControls.showOpenSubreddit}
           onClick={() => {
             window.open(openSubredditLink);
-            closeContextMenu();
+            contextMenuDispatch({
+              type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
+            });
           }}
         >
           <p className="context-menu-button-label">Open Subreddit</p>
@@ -180,7 +184,9 @@ const ContextMenu: React.FC = () => {
             if (copyInfo != undefined) {
               copyHook.copy(copyInfo);
             }
-            closeContextMenu();
+            contextMenuDispatch({
+              type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
+            });
           }}
         >
           <p className="context-menu-button-label">Copy</p>
@@ -191,9 +197,14 @@ const ContextMenu: React.FC = () => {
           hidden={!showButtonControls.showSkipToSubreddit}
           onClick={() => {
             if (subreddit != undefined) {
-              addSubredditToQueue(subreddit);
+              redditServiceDispatch({
+                type: RedditServiceActions.ADD_ITEM_TO_SUBREDDIT_QUEUE,
+                payload: subreddit,
+              });
             }
-            closeContextMenu();
+            contextMenuDispatch({
+              type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
+            });
           }}
         >
           <p className="context-menu-button-label">Skip to Subreddit</p>
@@ -215,7 +226,10 @@ const ContextMenu: React.FC = () => {
                 : ""
             }`}
             onClick={() => {
-              toggleExpandAddToList();
+              contextMenuDispatch({
+                type: ContextMenuActionType.SET_EXPAND_ADD_TO_LIST,
+                payload: !showButtonControls.expandAddToList,
+              });
               const div =
                 addToListNamesDivRef.current as unknown as HTMLDivElement;
               div.style.setProperty(
@@ -278,7 +292,10 @@ const ContextMenu: React.FC = () => {
                 : ""
             }`}
             onClick={() => {
-              toggleExpandRemoveFromList();
+              contextMenuDispatch({
+                type: ContextMenuActionType.SET_EXPAND_REMOVE_TO_LIST,
+                payload: !showButtonControls.expandRemoveFromList,
+              });
               const div =
                 removeFromListNamesDivRef.current as unknown as HTMLDivElement;
               div.style.setProperty(
@@ -337,7 +354,9 @@ const ContextMenu: React.FC = () => {
                 payload: subredditList,
               });
             }
-            closeContextMenu();
+            contextMenuDispatch({
+              type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
+            });
           }}
         >
           <p className="context-menu-button-label">Update List Name</p>
@@ -353,7 +372,9 @@ const ContextMenu: React.FC = () => {
                 payload: subredditList,
               });
             }
-            closeContextMenu();
+            contextMenuDispatch({
+              type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
+            });
           }}
         >
           <p className="context-menu-button-label">Delete List</p>

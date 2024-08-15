@@ -3,7 +3,6 @@ import {
   RedditServiceDispatchContext,
   RedditServiceStateContext,
 } from "../context/reddit-service-context.ts";
-import useRedditQueue from "../hook/use-reddit-queue.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
 import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
 
@@ -11,8 +10,6 @@ const ModifySubredditQueue: React.FC = () => {
   const { darkMode } = useContext(AppConfigStateContext);
   const { subredditQueue } = useContext(RedditServiceStateContext);
   const redditServiceDispatch = useContext(RedditServiceDispatchContext);
-  const { moveSubredditQueueItemForward, moveSubredditQueueItemBackwards } =
-    useRedditQueue();
 
   return (
     <>
@@ -54,7 +51,10 @@ const ModifySubredditQueue: React.FC = () => {
                       }_mode.png`}
                       className={"queue-item-control"}
                       onClick={() => {
-                        moveSubredditQueueItemForward(subredditQueueItem);
+                        redditServiceDispatch({
+                          type: RedditServiceActions.MOVE_SUBREDDIT_QUEUE_ITEM_FORWARD,
+                          payload: subredditQueueItem,
+                        });
                       }}
                     />
                     <img
@@ -63,7 +63,10 @@ const ModifySubredditQueue: React.FC = () => {
                       }_mode.png`}
                       className={"queue-item-control"}
                       onClick={() => {
-                        moveSubredditQueueItemBackwards(subredditQueueItem);
+                        redditServiceDispatch({
+                          type: RedditServiceActions.MOVE_SUBREDDIT_QUEUE_ITEM_BACKWARD,
+                          payload: subredditQueueItem,
+                        });
                       }}
                     />
                   </div>
