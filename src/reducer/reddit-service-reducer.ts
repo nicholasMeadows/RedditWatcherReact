@@ -9,6 +9,7 @@ export enum RedditServiceActions {
   SET_SUBREDDIT_INDEX = "SET_SUBREDDIT_INDEX",
   SET_REDDIT_AUTHENTICATION_STATUS = "SET_REDDIT_AUTHENTICATION_STATUS",
   SET_SUBREDDIT_QUEUE = "SET_SUBREDDIT_QUEUE",
+  REMOVE_SUBREDDIT_QUEUE_ITEM = "REMOVE_SUBREDDIT_QUEUE_ITEM",
   SET_SECONDS_TILL_GETTING_NEXT_POSTS = "SET_SECONDS_TILL_GETTING_NEXT_POSTS",
 }
 
@@ -36,6 +37,11 @@ export type SetSubredditQueueAction = {
   type: RedditServiceActions.SET_SUBREDDIT_QUEUE;
   payload: Array<SubredditQueueItem>;
 };
+
+export type RemoveSubredditQueueItemActionAction = {
+  type: RedditServiceActions.REMOVE_SUBREDDIT_QUEUE_ITEM;
+  payload: SubredditQueueItem;
+};
 export default function RedditServiceReducer(
   state: RedditServiceState,
   action:
@@ -43,6 +49,7 @@ export default function RedditServiceReducer(
     | RedditServiceActionNumberPayload
     | RedditServiceSetAuthenticationStatus
     | SetSubredditQueueAction
+    | RemoveSubredditQueueItemActionAction
 ) {
   switch (action.type) {
     case RedditServiceActions.ADD_TO_MASTER_SUBSCRIBED_SUBREDDIT_LIST:
@@ -57,6 +64,8 @@ export default function RedditServiceReducer(
       return setSubredditQueue(state, action);
     case RedditServiceActions.SET_SECONDS_TILL_GETTING_NEXT_POSTS:
       return setSecondsTillGettingNextPosts(state, action);
+    case RedditServiceActions.REMOVE_SUBREDDIT_QUEUE_ITEM:
+      return removeSubredditQueueItem(state, action);
     default:
       return state;
   }
@@ -119,5 +128,24 @@ const setSecondsTillGettingNextPosts = (
   return {
     ...state,
     secondsTillGettingNextPosts: action.payload,
+  };
+};
+
+const removeSubredditQueueItem = (
+  state: RedditServiceState,
+  action: RemoveSubredditQueueItemActionAction
+): RedditServiceState => {
+  const updatedQueue = [...state.subredditQueue];
+  const indexToRemove = updatedQueue.findIndex(
+    (queueItem) =>
+      queueItem.subredditQueueItemUuid === action.payload.subredditQueueItemUuid
+  );
+  if (indexToRemove === -1) {
+    return state;
+  }
+  updatedQueue.splice(indexToRemove, 1);
+  return {
+    ...state,
+    subredditQueue: updatedQueue,
   };
 };

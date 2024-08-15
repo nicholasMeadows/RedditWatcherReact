@@ -25,25 +25,7 @@ export default function useRedditQueue() {
     },
     [redditServiceDispatch, subredditQueue]
   );
-  const removeSubredditFromQueue = useCallback(
-    (subredditQueueItem: SubredditQueueItem) => {
-      const updatedQueue = [...subredditQueue];
-      const indexToRemove = updatedQueue.findIndex(
-        (queueItem) =>
-          queueItem.subredditQueueItemUuid ===
-          subredditQueueItem.subredditQueueItemUuid
-      );
-      if (indexToRemove === -1) {
-        return;
-      }
-      updatedQueue.splice(indexToRemove, 1);
-      redditServiceDispatch({
-        type: RedditServiceActions.SET_SUBREDDIT_QUEUE,
-        payload: updatedQueue,
-      });
-    },
-    [redditServiceDispatch, subredditQueue]
-  );
+
   const moveSubredditQueueItemForward = useCallback(
     (subredditQueueItem: SubredditQueueItem) => {
       const updatedQueue = [...subredditQueue];
@@ -91,7 +73,6 @@ export default function useRedditQueue() {
 
   return {
     addSubredditToQueue,
-    removeSubredditFromQueue,
     moveSubredditQueueItemForward,
     moveSubredditQueueItemBackwards,
   };

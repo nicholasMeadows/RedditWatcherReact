@@ -1,17 +1,18 @@
 import { useContext } from "react";
-import { RedditServiceStateContext } from "../context/reddit-service-context.ts";
+import {
+  RedditServiceDispatchContext,
+  RedditServiceStateContext,
+} from "../context/reddit-service-context.ts";
 import useRedditQueue from "../hook/use-reddit-queue.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
+import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
 
 const ModifySubredditQueue: React.FC = () => {
   const { darkMode } = useContext(AppConfigStateContext);
   const { subredditQueue } = useContext(RedditServiceStateContext);
-
-  const {
-    removeSubredditFromQueue,
-    moveSubredditQueueItemForward,
-    moveSubredditQueueItemBackwards,
-  } = useRedditQueue();
+  const redditServiceDispatch = useContext(RedditServiceDispatchContext);
+  const { moveSubredditQueueItemForward, moveSubredditQueueItemBackwards } =
+    useRedditQueue();
 
   return (
     <>
@@ -40,9 +41,12 @@ const ModifySubredditQueue: React.FC = () => {
                         darkMode ? "dark" : "light"
                       }_mode.png`}
                       className={"queue-item-control"}
-                      onClick={() =>
-                        removeSubredditFromQueue(subredditQueueItem)
-                      }
+                      onClick={() => {
+                        redditServiceDispatch({
+                          type: RedditServiceActions.REMOVE_SUBREDDIT_QUEUE_ITEM,
+                          payload: subredditQueueItem,
+                        });
+                      }}
                     />
                     <img
                       src={`assets/arrow_up_${
