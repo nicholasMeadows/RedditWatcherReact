@@ -12,7 +12,10 @@ import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
 import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
-import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import {
+  ContextMenuDispatchContext,
+  ContextMenuStateContext,
+} from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
 const PostCard: FC = memo(() => {
@@ -20,6 +23,7 @@ const PostCard: FC = memo(() => {
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const { postRowUuid, post } = useContext(PostCardContext);
   const initialMouseDownOrTouchX = useRef(0);
+  const { showContextMenu } = useContext(ContextMenuStateContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const {
     clearAutoIncrementPostAttachmentInterval,
@@ -55,6 +59,9 @@ const PostCard: FC = memo(() => {
         initialMouseDownOrTouchX.current = 0;
       }}
       onClick={() => {
+        if (showContextMenu) {
+          return;
+        }
         navigate(
           `${SINGLE_POST_ROUTE}?${SINGLE_POST_PAGE_POST_ROW_UUID_KEY}=${postRowUuid}&${SINGLE_POST_PAGE_POST_UUID_KEY}=${post.postUuid}`
         );

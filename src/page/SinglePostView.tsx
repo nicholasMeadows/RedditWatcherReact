@@ -27,15 +27,16 @@ const SinglePostView: FC = () => {
 
   let post: Post | undefined;
   let postRow: PostRow | undefined;
+  let postIndex: number | undefined;
+
   if (postRowUuid !== null && postUuid !== null) {
     postRow = postRows.find((postRow) => postRow.postRowUuid === postRowUuid);
     if (postRow !== undefined) {
-      post = postRow.posts.find((post) => post.postUuid === postUuid);
+      postIndex = postRow.posts.findIndex((post) => post.postUuid === postUuid);
+      if (postIndex !== -1) {
+        post = postRow.posts[postIndex];
+      }
     }
-  }
-  let postIndex: number | undefined;
-  if (postRow !== undefined) {
-    postIndex = postRow.posts.findIndex((post) => post.postUuid === postUuid);
   }
 
   const goToNextPostClicked = useCallback(() => {
@@ -95,14 +96,25 @@ const SinglePostView: FC = () => {
 
   useEffect(() => {
     const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
+      if (post === undefined) {
+        return;
+      }
       const key = keyboardEvent.key;
-      if (key === "ArrowRight" || key === "ArrowLeft") {
-        singlePostPageZoom.resetImgPositionAndScale();
-        if (key == "ArrowRight") {
-          goToNextPostClicked();
-        } else if (key == "ArrowLeft") {
-          goToPrevPostClicked();
-        }
+
+      singlePostPageZoom.resetImgPositionAndScale();
+      const attachmentsLength = post.attachments.length;
+      const currentAttachmentIndex = post.currentAttachmentIndex;
+      if (currentAttachmentIndex === 0 && key === "ArrowLeft") {
+        goToPrevPostClicked();
+      } else if (
+        currentAttachmentIndex === attachmentsLength - 1 &&
+        key === "ArrowRight"
+      ) {
+        goToNextPostClicked();
+      } else if (key === "ArrowLeft") {
+        incrementAttachmentHook.decrementPostAttachment();
+      } else if (key === "ArrowRight") {
+        incrementAttachmentHook.incrementPostAttachment();
       }
     };
 
@@ -110,7 +122,13 @@ const SinglePostView: FC = () => {
     return () => {
       document.body.removeEventListener("keyup", documentKeyUpEvent);
     };
-  }, [goToNextPostClicked, goToPrevPostClicked, singlePostPageZoom]);
+  }, [
+    goToNextPostClicked,
+    goToPrevPostClicked,
+    incrementAttachmentHook,
+    post,
+    singlePostPageZoom,
+  ]);
 
   return (
     <>

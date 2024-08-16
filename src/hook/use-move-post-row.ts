@@ -12,6 +12,7 @@ import { AppConfigStateContext } from "../context/app-config-context.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import { v4 as uuidV4 } from "uuid";
 import { MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX } from "../RedditWatcherConstants.ts";
+import { ContextMenuStateContext } from "../context/context-menu-context.ts";
 
 type MovePostRowStateSessionStorage = {
   postsToShowUuids: Array<PostsToShowUuidsObj>;
@@ -31,12 +32,12 @@ export default function useMovePostRow(
 ) {
   const POST_ROW_STATE_SESSION_STORAGE_KEY = `${postRowUuid}${MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX}`;
 
-  const autoScrollPostRowRateSecondsForSinglePostCard = useContext(
-    AppConfigStateContext
-  ).autoScrollPostRowRateSecondsForSinglePostCard;
-  const autoScrollPostRowDirectionOption = useContext(
-    AppConfigStateContext
-  ).autoScrollPostRowDirectionOption;
+  const {
+    autoScrollPostRowRateSecondsForSinglePostCard,
+    autoScrollPostRowDirectionOption,
+  } = useContext(AppConfigStateContext);
+
+  const { showContextMenu } = useContext(ContextMenuStateContext);
   const [postsToShowUuids, setPostsToShowUuids] = useState<
     Array<PostsToShowUuidsObj>
   >([]);
@@ -181,6 +182,7 @@ export default function useMovePostRow(
   const clearAutoScrollInterval = useCallback(() => {
     if (autoScrollInterval.current !== null) {
       clearInterval(autoScrollInterval.current);
+      autoScrollInterval.current = undefined;
     }
   }, []);
 
@@ -316,9 +318,11 @@ export default function useMovePostRow(
       clearAutoScrollInterval();
     };
     const mouseLeave = () => {
-      mouseDownOrTouchOnPostRow.current = false;
-      clearAutoScrollInterval();
-      createAutoScrollInterval();
+      if (!showContextMenu) {
+        mouseDownOrTouchOnPostRow.current = false;
+        clearAutoScrollInterval();
+        createAutoScrollInterval();
+      }
     };
     const mouseDownTouchStart = (event: MouseEvent | TouchEvent) => {
       mouseDownOrTouchOnPostRow.current = true;
@@ -337,6 +341,9 @@ export default function useMovePostRow(
       }
     };
     const mouseUpTouchEnd = (event: MouseEvent | TouchEvent) => {
+      if (showContextMenu) {
+        return;
+      }
       if (event instanceof MouseEvent) {
         mouseDownOrTouchOnPostRow.current = false;
         lastMouseDownOrTouchX.current = 0;
@@ -401,7 +408,13 @@ export default function useMovePostRow(
     movePostRow,
     onPostRowContentScroll,
     postRowContentDivRef,
+    showContextMenu,
   ]);
 
+  useEffect(() => {
+    if (!showContextMenu && autoScrollInterval.current === undefined) {
+      createAutoScrollInterval();
+    }
+  }, [createAutoScrollInterval, showContextMenu]);
   return postsToShowUuids;
 }
