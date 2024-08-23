@@ -8,16 +8,17 @@ import {
   useState,
 } from "react";
 import { Post } from "../model/Post/Post.ts";
+import { v4 as uuidV4 } from "uuid";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
-import { v4 as uuidV4 } from "uuid";
-import { MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX } from "../RedditWatcherConstants.ts";
 import { ContextMenuStateContext } from "../context/context-menu-context.ts";
+import { MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX } from "../RedditWatcherConstants.ts";
 
 type MovePostRowStateSessionStorage = {
   postsToShowUuids: Array<PostsToShowUuidsObj>;
-  scrollLeft: number;
+  postSliderLeft: number;
 };
+
 type PostsToShowUuidsObj = {
   postUuid: string;
   uiUuid: string;
@@ -26,7 +27,7 @@ export default function useMovePostRow(
   postRowUuid: string,
   masterPosts: Array<Post>,
   postRowContentDivRef: RefObject<HTMLDivElement>,
-  shouldAutoScroll: boolean,
+  // shouldAutoScroll: boolean,
   postCardWidthPercentage: number,
   postsToShowInRow: number
 ) {
@@ -36,276 +37,372 @@ export default function useMovePostRow(
     autoScrollPostRowRateSecondsForSinglePostCard,
     autoScrollPostRowDirectionOption,
   } = useContext(AppConfigStateContext);
+  const { menuOpenOnPostRowUuid } = useContext(ContextMenuStateContext);
 
-  const { showContextMenu } = useContext(ContextMenuStateContext);
   const [postsToShowUuids, setPostsToShowUuids] = useState<
     Array<PostsToShowUuidsObj>
   >([]);
-  const lastPostRowScrollLeft = useRef<number>(0);
-  const autoScrollInterval = useRef<NodeJS.Timeout>();
-  const mouseDownOrTouchOnPostRow = useRef<boolean>(false);
-  const lastMouseDownOrTouchX = useRef<number>(0);
 
-  const updatePostsToShowAndScrollLeft = useCallback(
-    (
-      postRowContentDiv: HTMLDivElement,
-      postsToShowUuids: Array<PostsToShowUuidsObj>,
-      scrollLeft: number
-    ) => {
-      setPostsToShowUuids(postsToShowUuids);
-      setTimeout(() => postRowContentDiv.scrollTo({ left: scrollLeft }), 0);
-      const sessionStorageState: MovePostRowStateSessionStorage = {
-        postsToShowUuids: postsToShowUuids,
-        scrollLeft: scrollLeft,
-      };
-      sessionStorage.setItem(
-        POST_ROW_STATE_SESSION_STORAGE_KEY,
-        JSON.stringify(sessionStorageState)
+  const [postSliderLeft, setPostSliderLeft] = useState(0);
+  const [postSliderLeftTransitionTime, setPostSliderLeftTransitionTime] =
+    useState(0);
+
+  const postSliderLeftOnNextRenderRef = useRef<number | undefined>(undefined);
+  const postSliderLeftTransitionTimeOnNextRenderRef = useRef<
+    number | undefined
+  >(undefined);
+
+  const contextMenuOpenOnPostRowRef = useRef(false);
+  const mouseDownOnPostRow = useRef(false);
+  const lastMouseDownX = useRef(0);
+  const makePostsToShowUuidObj = (post: Post): PostsToShowUuidsObj => {
+    return {
+      uiUuid: `${uuidV4()}:${post.postUuid}`,
+      postUuid: post.postUuid,
+    };
+  };
+
+  // const setPostRowAutoScrollParams = useCallback(
+  //   (
+  //     postsToShowUuidsToSet: Array<PostsToShowUuidsObj>,
+  //     postSliderLeftToSet: number,
+  //     postSliderLeftTransitionTimeToSet: number
+  //   ) => {
+  //     setPostsToShowUuids(postsToShowUuidsToSet);
+  //     setPostSliderLeft(postSliderLeftToSet);
+  //     setPostSliderLeftTransitionTime(postSliderLeftTransitionTimeToSet);
+  //
+  //     const storageObj: MovePostRowStateSessionStorage = {
+  //       postsToShowUuids: postsToShowUuids,
+  //       postSliderLeft: postSliderLeft,
+  //     };
+  //     sessionStorage.setItem(
+  //       POST_ROW_STATE_SESSION_STORAGE_KEY,
+  //       JSON.stringify(storageObj)
+  //     );
+  //   },
+  //   [POST_ROW_STATE_SESSION_STORAGE_KEY, postSliderLeft, postsToShowUuids]
+  // );
+
+  // const getSavedStateFromSession = useCallback(():
+  //   | MovePostRowStateSessionStorage
+  //   | undefined => {
+  //   const sessionStorageString = sessionStorage.getItem(
+  //     POST_ROW_STATE_SESSION_STORAGE_KEY
+  //   );
+  //   if (sessionStorageString === null) {
+  //     return undefined;
+  //   }
+  //   try {
+  //     return JSON.parse(sessionStorageString);
+  //   } catch (e) {
+  //     return undefined;
+  //   }
+  // }, [POST_ROW_STATE_SESSION_STORAGE_KEY]);
+
+  useEffect(() => {
+    if (postSliderLeftOnNextRenderRef.current !== undefined) {
+      setPostSliderLeft(postSliderLeftOnNextRenderRef.current);
+      postSliderLeftOnNextRenderRef.current = undefined;
+    }
+    if (postSliderLeftTransitionTimeOnNextRenderRef.current !== undefined) {
+      setPostSliderLeftTransitionTime(
+        postSliderLeftTransitionTimeOnNextRenderRef.current
       );
-    },
-    [POST_ROW_STATE_SESSION_STORAGE_KEY]
-  );
+      postSliderLeftTransitionTimeOnNextRenderRef.current = undefined;
+    }
+  }, [postSliderLeft, postSliderLeftTransitionTime]);
 
   useLayoutEffect(() => {
-    const postRowContentDiv = postRowContentDivRef.current;
-    if (postRowContentDiv === null || postCardWidthPercentage === 0) {
-      return;
-    }
-
-    const sessionStorageStateString = sessionStorage.getItem(
-      POST_ROW_STATE_SESSION_STORAGE_KEY
-    );
-
-    let sessionStorageObj: MovePostRowStateSessionStorage | undefined;
-
-    const postsToShowUuidsToSet = new Array<PostsToShowUuidsObj>();
-
-    try {
-      if (
-        sessionStorageStateString !== null &&
-        sessionStorageStateString !== ""
-      ) {
-        sessionStorageObj = JSON.parse(sessionStorageStateString);
-      }
-    } finally {
-      if (sessionStorageObj !== undefined) {
-        postsToShowUuidsToSet.push(...sessionStorageObj.postsToShowUuids);
-      } else {
-        if (masterPosts.length <= postsToShowInRow) {
-          const mappedPostsToShowUuids: Array<PostsToShowUuidsObj> =
-            masterPosts.map((post) => ({
-              uiUuid: `${uuidV4()}:${post.postUuid}`,
-              postUuid: post.postUuid,
-            }));
-          postsToShowUuidsToSet.push(...mappedPostsToShowUuids);
-          sessionStorageObj = {
-            postsToShowUuids: mappedPostsToShowUuids,
-            scrollLeft: 0,
-          };
-        } else {
-          const postRowContentDivWidth = postRowContentDiv.clientWidth;
-          const cardWidthPx =
-            postRowContentDivWidth * (postCardWidthPercentage / 100);
-
-          const lastPost = masterPosts[masterPosts.length - 1];
-          postsToShowUuidsToSet.push({
-            postUuid: lastPost.postUuid,
-            uiUuid: `${uuidV4()}:${lastPost.postUuid}`,
-          });
-          const postUuidsToPush = masterPosts
-            .slice(0, postsToShowInRow + 1)
-            .map<PostsToShowUuidsObj>((post) => ({
-              postUuid: post.postUuid,
-              uiUuid: `${uuidV4()}:${post.postUuid}`,
-            }));
-          postsToShowUuidsToSet.push(...postUuidsToPush);
-          sessionStorageObj = {
-            postsToShowUuids: postsToShowUuidsToSet,
-            scrollLeft: cardWidthPx,
-          };
-        }
-      }
-
-      updatePostsToShowAndScrollLeft(
-        postRowContentDiv,
-        postsToShowUuidsToSet,
-        sessionStorageObj.scrollLeft
+    if (masterPosts.length <= postsToShowInRow) {
+      const postsToShowUuidsToSet = masterPosts.map((post) =>
+        makePostsToShowUuidObj(post)
       );
+      setPostsToShowUuids(postsToShowUuidsToSet);
+      setPostSliderLeft(0);
+      setPostSliderLeftTransitionTime(0);
+    } else if (
+      autoScrollPostRowDirectionOption ===
+      AutoScrollPostRowDirectionOptionEnum.Left
+    ) {
+      const postUuidsToPush = masterPosts
+        .slice(0, postsToShowInRow + 1)
+        .map<PostsToShowUuidsObj>((post) => makePostsToShowUuidObj(post));
+      setPostsToShowUuids(postUuidsToPush);
+      setPostSliderLeft(0);
+      setPostSliderLeftTransitionTime(0);
+      postSliderLeftOnNextRenderRef.current = postCardWidthPercentage * -1;
+      postSliderLeftTransitionTimeOnNextRenderRef.current =
+        autoScrollPostRowRateSecondsForSinglePostCard;
+    } else if (
+      autoScrollPostRowDirectionOption ===
+      AutoScrollPostRowDirectionOptionEnum.Right
+    ) {
+      const firstPostUuidObj = makePostsToShowUuidObj(
+        masterPosts[masterPosts.length - 1]
+      );
+      const postUuidObjsToPush = masterPosts
+        .slice(0, postsToShowInRow)
+        .map<PostsToShowUuidsObj>((post) => makePostsToShowUuidObj(post));
+      setPostsToShowUuids([firstPostUuidObj, ...postUuidObjsToPush]);
+      setPostSliderLeft(postCardWidthPercentage * -1);
+      setPostSliderLeftTransitionTime(0);
+      postSliderLeftOnNextRenderRef.current = 0;
+      postSliderLeftTransitionTimeOnNextRenderRef.current =
+        autoScrollPostRowRateSecondsForSinglePostCard;
     }
-  }, [
-    POST_ROW_STATE_SESSION_STORAGE_KEY,
-    masterPosts,
-    postCardWidthPercentage,
-    postRowContentDivRef,
-    postsToShowInRow,
-    updatePostsToShowAndScrollLeft,
-  ]);
-
-  const createAutoScrollInterval = useCallback(() => {
-    const postRowContentDiv = postRowContentDivRef.current;
-    if (postRowContentDiv === null || !shouldAutoScroll) {
-      return;
-    }
-    const scrollPxPerStep = 1;
-    const postCardWidthPx =
-      postRowContentDiv.getBoundingClientRect().width *
-      (postCardWidthPercentage / 100);
-    const steps = postCardWidthPx / scrollPxPerStep;
-    const intervalMs =
-      (autoScrollPostRowRateSecondsForSinglePostCard * 1000) / steps;
-
-    autoScrollInterval.current = setInterval(() => {
-      if (
-        autoScrollPostRowDirectionOption ===
-        AutoScrollPostRowDirectionOptionEnum.Left
-      ) {
-        postRowContentDiv.scroll({
-          left: postRowContentDiv.scrollLeft + scrollPxPerStep,
-        });
-      } else if (
-        autoScrollPostRowDirectionOption ===
-        AutoScrollPostRowDirectionOptionEnum.Right
-      ) {
-        postRowContentDiv.scroll({
-          left: postRowContentDiv.scrollLeft - scrollPxPerStep,
-        });
-      }
-    }, intervalMs);
   }, [
     autoScrollPostRowDirectionOption,
     autoScrollPostRowRateSecondsForSinglePostCard,
-    postCardWidthPercentage,
-    postRowContentDivRef,
-    shouldAutoScroll,
-  ]);
-
-  const clearAutoScrollInterval = useCallback(() => {
-    if (autoScrollInterval.current !== null) {
-      clearInterval(autoScrollInterval.current);
-      autoScrollInterval.current = undefined;
-    }
-  }, []);
-
-  useEffect(() => {
-    createAutoScrollInterval();
-    return () => {
-      clearAutoScrollInterval();
-    };
-  }, [
-    autoScrollPostRowRateSecondsForSinglePostCard,
-    clearAutoScrollInterval,
-    createAutoScrollInterval,
-    postCardWidthPercentage,
-  ]);
-
-  const onPostRowContentScroll = useCallback(() => {
-    const postRowContentDiv = postRowContentDivRef.current;
-    if (
-      postRowContentDiv === null ||
-      postsToShowUuids.length === 0 ||
-      postsToShowUuids.length <= postsToShowInRow
-    ) {
-      return;
-    }
-
-    const postRowContentDivScrollLeft = postRowContentDiv.scrollLeft;
-    let updatedScrollLeft = postRowContentDivScrollLeft;
-
-    const postRowContentDivWidth = postRowContentDiv.clientWidth;
-    const postCardWidthPx =
-      postRowContentDivWidth * (postCardWidthPercentage / 100);
-    const postRowContentDivScrollWidth = postRowContentDiv.scrollWidth;
-
-    const updatedPostsToShowUuids = [...postsToShowUuids];
-
-    if (postRowContentDivScrollLeft > lastPostRowScrollLeft.current) {
-      if (
-        postRowContentDivScrollLeft + postRowContentDivWidth >=
-        postRowContentDivScrollWidth
-      ) {
-        const lastPostBeingShownUuidObj =
-          postsToShowUuids[postsToShowUuids.length - 1];
-        const lastPostBeingShownIndexInMaster = masterPosts.findIndex(
-          (post) => post.postUuid === lastPostBeingShownUuidObj.postUuid
-        );
-        if (lastPostBeingShownIndexInMaster === -1) {
-          return;
-        }
-        const masterIndexToInsert =
-          lastPostBeingShownIndexInMaster === masterPosts.length - 1
-            ? 0
-            : lastPostBeingShownIndexInMaster + 1;
-        const masterPostToInsert = masterPosts[masterIndexToInsert];
-        const uuidObjToInsert = {
-          postUuid: masterPostToInsert.postUuid,
-          uiUuid: `${uuidV4()}:${masterPostToInsert.postUuid}`,
-        };
-        updatedPostsToShowUuids.push(uuidObjToInsert);
-      }
-      if (postRowContentDivScrollLeft > postCardWidthPx) {
-        updatedPostsToShowUuids.shift();
-        updatedScrollLeft = postRowContentDivScrollLeft - postCardWidthPx;
-      }
-    } else if (postRowContentDivScrollLeft < lastPostRowScrollLeft.current) {
-      if (postRowContentDivScrollLeft === 0) {
-        const firstPostShowingUuidObj = postsToShowUuids[0];
-        const indexInMaster = masterPosts.findIndex(
-          (post) => post.postUuid === firstPostShowingUuidObj.postUuid
-        );
-        if (indexInMaster === -1) {
-          return;
-        }
-        const postToInsert =
-          masterPosts[
-            indexInMaster === 0 ? masterPosts.length - 1 : indexInMaster - 1
-          ];
-
-        updatedPostsToShowUuids.unshift({
-          postUuid: postToInsert.postUuid,
-          uiUuid: `${uuidV4()}:${postToInsert.postUuid}`,
-        });
-        updatedScrollLeft = postCardWidthPx;
-      }
-      if (
-        Math.abs(
-          postRowContentDivScrollLeft +
-            postRowContentDivWidth -
-            postRowContentDivScrollWidth
-        ) > postCardWidthPx
-      ) {
-        updatedPostsToShowUuids.pop();
-      }
-    }
-
-    updatePostsToShowAndScrollLeft(
-      postRowContentDiv,
-      updatedPostsToShowUuids,
-      updatedScrollLeft
-    );
-
-    lastPostRowScrollLeft.current = updatedScrollLeft;
-  }, [
     masterPosts,
     postCardWidthPercentage,
-    postRowContentDivRef,
     postsToShowInRow,
-    postsToShowUuids,
-    updatePostsToShowAndScrollLeft,
   ]);
 
-  const movePostRow = useCallback(
-    (updatedX: number) => {
-      if (!mouseDownOrTouchOnPostRow.current) {
+  const handleShiftUIPostsAndResetLeft = useCallback(
+    (leftPercentage: number) => {
+      const postRowContentDiv = postRowContentDivRef.current;
+      if (postRowContentDiv === null) {
         return;
       }
-      const postRowContentDiv = postRowContentDivRef.current;
-      if (postRowContentDiv !== null) {
-        const deltaX = lastMouseDownOrTouchX.current - updatedX;
-        postRowContentDiv.scrollBy({ left: deltaX });
-        lastMouseDownOrTouchX.current = updatedX;
+
+      if (leftPercentage <= postCardWidthPercentage * -1) {
+        const lastPostShowingUuidObj =
+          postsToShowUuids[postsToShowUuids.length - 1];
+        const masterPostIndex = masterPosts.findIndex(
+          (post) => post.postUuid === lastPostShowingUuidObj.postUuid
+        );
+        if (masterPostIndex === -1) {
+          return;
+        }
+        let postUuidObjToPush: PostsToShowUuidsObj;
+        if (masterPostIndex === masterPosts.length - 1) {
+          postUuidObjToPush = makePostsToShowUuidObj(masterPosts[0]);
+        } else {
+          postUuidObjToPush = makePostsToShowUuidObj(
+            masterPosts[masterPostIndex + 1]
+          );
+        }
+        const updatedPostsUuidsToShow = [...postsToShowUuids];
+        updatedPostsUuidsToShow.push(postUuidObjToPush);
+        updatedPostsUuidsToShow.shift();
+        setPostsToShowUuids(updatedPostsUuidsToShow);
+        setPostSliderLeft(0);
+        setPostSliderLeftTransitionTime(0);
+      } else if (leftPercentage >= 0) {
+        const firstPostShowingUuidObj = postsToShowUuids[0];
+        const masterPostIndex = masterPosts.findIndex(
+          (post) => post.postUuid === firstPostShowingUuidObj.postUuid
+        );
+        if (masterPostIndex === -1) {
+          return;
+        }
+        let postUuidObjToUnshift: PostsToShowUuidsObj;
+        if (masterPostIndex === 0) {
+          postUuidObjToUnshift = makePostsToShowUuidObj(
+            masterPosts[masterPosts.length - 1]
+          );
+        } else {
+          postUuidObjToUnshift = makePostsToShowUuidObj(
+            masterPosts[masterPostIndex - 1]
+          );
+        }
+        const updatedPostsUuidsToShow = [...postsToShowUuids];
+        updatedPostsUuidsToShow.unshift(postUuidObjToUnshift);
+        updatedPostsUuidsToShow.pop();
+        setPostsToShowUuids(updatedPostsUuidsToShow);
+        setPostSliderLeft(postCardWidthPercentage * -1);
+        setPostSliderLeftTransitionTime(0);
       }
     },
-    [postRowContentDivRef]
+    [
+      masterPosts,
+      postCardWidthPercentage,
+      postRowContentDivRef,
+      postsToShowUuids,
+    ]
+  );
+
+  const handleTransitionEnd = useCallback(() => {
+    handleShiftUIPostsAndResetLeft(postSliderLeft);
+    if (
+      autoScrollPostRowDirectionOption ===
+      AutoScrollPostRowDirectionOptionEnum.Right
+    ) {
+      setTimeout(() => {
+        setPostSliderLeft(0);
+        setPostSliderLeftTransitionTime(
+          autoScrollPostRowRateSecondsForSinglePostCard
+        );
+      }, 0);
+    } else if (
+      autoScrollPostRowDirectionOption ===
+      AutoScrollPostRowDirectionOptionEnum.Left
+    ) {
+      setTimeout(() => {
+        setPostSliderLeft(postCardWidthPercentage * -1);
+        setPostSliderLeftTransitionTime(
+          autoScrollPostRowRateSecondsForSinglePostCard
+        );
+      }, 0);
+    }
+  }, [
+    autoScrollPostRowDirectionOption,
+    autoScrollPostRowRateSecondsForSinglePostCard,
+    handleShiftUIPostsAndResetLeft,
+    postCardWidthPercentage,
+    postSliderLeft,
+  ]);
+
+  const handleMouseEnter = useCallback(() => {
+    const postRowContentDiv = postRowContentDivRef.current;
+    if (postRowContentDiv === null) {
+      return;
+    }
+    const postRowContentDivBoundingRect =
+      postRowContentDiv.getBoundingClientRect();
+    const leftPercentage =
+      (postRowContentDivBoundingRect.left /
+        postRowContentDivBoundingRect.width) *
+      100;
+    setPostSliderLeft(leftPercentage);
+    setPostSliderLeftTransitionTime(0);
+  }, [postRowContentDivRef]);
+
+  const handleMouseLeave = useCallback(() => {
+    mouseDownOnPostRow.current = false;
+    const postRowContentDiv = postRowContentDivRef.current;
+    if (postRowContentDiv === null || menuOpenOnPostRowUuid === postRowUuid) {
+      return;
+    }
+    const postCardWidthPx =
+      (postCardWidthPercentage / 100) * postRowContentDiv.clientWidth;
+    const rect = postRowContentDiv.getBoundingClientRect();
+    if (
+      autoScrollPostRowDirectionOption ===
+      AutoScrollPostRowDirectionOptionEnum.Right
+    ) {
+      const distanceLeftToTravelPx = Math.abs(rect.left);
+      setPostSliderLeft(0);
+      setPostSliderLeftTransitionTime(
+        (distanceLeftToTravelPx *
+          autoScrollPostRowRateSecondsForSinglePostCard) /
+          postCardWidthPx
+      );
+    } else if (
+      autoScrollPostRowDirectionOption ===
+      AutoScrollPostRowDirectionOptionEnum.Left
+    ) {
+      const distanceLeftToTravelPx = postCardWidthPx - Math.abs(rect.left);
+      setPostSliderLeft(postCardWidthPercentage * -1);
+      setPostSliderLeftTransitionTime(
+        (distanceLeftToTravelPx *
+          autoScrollPostRowRateSecondsForSinglePostCard) /
+          postCardWidthPx
+      );
+    }
+  }, [
+    autoScrollPostRowDirectionOption,
+    autoScrollPostRowRateSecondsForSinglePostCard,
+    menuOpenOnPostRowUuid,
+    postCardWidthPercentage,
+    postRowContentDivRef,
+    postRowUuid,
+  ]);
+
+  const handleMouseDownOrTouchStart = useCallback(
+    (event: MouseEvent | TouchEvent) => {
+      mouseDownOnPostRow.current = true;
+      if (event instanceof MouseEvent) {
+        lastMouseDownX.current = event.x;
+      } else if (event instanceof TouchEvent) {
+        const touches = event.touches;
+        if (touches.length == 1) {
+          lastMouseDownX.current = touches[0].clientX;
+        } else if (touches.length == 2) {
+          const touch1 = touches[0];
+          const touch2 = touches[1];
+          lastMouseDownX.current = (touch1.clientX + touch2.clientX) / 2;
+        }
+      }
+    },
+    []
+  );
+  const handleMouseUpTouchEnd = useCallback(
+    (event: MouseEvent | TouchEvent) => {
+      if (event instanceof MouseEvent) {
+        mouseDownOnPostRow.current = false;
+        lastMouseDownX.current = 0;
+      } else if (event instanceof TouchEvent) {
+        const touches = event.touches;
+        if (touches.length === 0) {
+          mouseDownOnPostRow.current = false;
+          lastMouseDownX.current = 0;
+        } else if (touches.length === 1) {
+          mouseDownOnPostRow.current = true;
+          lastMouseDownX.current = touches[0].clientX;
+        } else if (touches.length == 2) {
+          mouseDownOnPostRow.current = true;
+          const touch1 = touches[0];
+          const touch2 = touches[1];
+          lastMouseDownX.current = (touch1.clientX + touch2.clientX) / 2;
+        }
+      }
+    },
+    []
+  );
+
+  const handleMouseOrTouchMove = useCallback(
+    (event: MouseEvent | TouchEvent) => {
+      const postRowContentDiv = postRowContentDivRef.current;
+      if (postRowContentDiv === null || !mouseDownOnPostRow.current) {
+        return;
+      }
+
+      let eventX: number;
+      if (event instanceof MouseEvent) {
+        eventX = event.clientX;
+      } else if (event instanceof TouchEvent) {
+        const touches = event.touches;
+        if (touches.length === 1) {
+          eventX = touches[0].clientX;
+        } else if (touches.length === 2) {
+          const touch1 = touches[0];
+          const touch2 = touches[1];
+          eventX = (touch1.clientX + touch2.clientX) / 2;
+        } else {
+          return;
+        }
+      } else {
+        return;
+      }
+
+      const deltaX = eventX - lastMouseDownX.current;
+      const deltaXPercentage =
+        (Math.abs(deltaX) / postRowContentDiv.clientWidth) * 100;
+      let leftToSet: number | undefined = undefined;
+      if (deltaX < 0) {
+        leftToSet = postSliderLeft - deltaXPercentage;
+      } else if (deltaX > 0) {
+        leftToSet = postSliderLeft + deltaXPercentage;
+      }
+
+      if (leftToSet !== undefined) {
+        if (leftToSet <= postCardWidthPercentage * -1 || leftToSet >= 0) {
+          handleShiftUIPostsAndResetLeft(leftToSet);
+        } else {
+          setPostSliderLeft(leftToSet);
+          setPostSliderLeftTransitionTime(0);
+        }
+      }
+      lastMouseDownX.current = eventX;
+    },
+    [
+      handleShiftUIPostsAndResetLeft,
+      postCardWidthPercentage,
+      postRowContentDivRef,
+      postSliderLeft,
+    ]
   );
 
   useEffect(() => {
@@ -313,108 +410,75 @@ export default function useMovePostRow(
     if (postRowContentDiv === null) {
       return;
     }
+    postRowContentDiv.addEventListener("transitionend", handleTransitionEnd);
+    postRowContentDiv.addEventListener("mouseenter", handleMouseEnter);
+    postRowContentDiv.addEventListener("mouseover", handleMouseEnter);
+    postRowContentDiv.addEventListener("mouseleave", handleMouseLeave);
+    postRowContentDiv.addEventListener(
+      "mousedown",
+      handleMouseDownOrTouchStart
+    );
+    postRowContentDiv.addEventListener("mouseup", handleMouseUpTouchEnd);
+    postRowContentDiv.addEventListener("mousemove", handleMouseOrTouchMove);
 
-    const mouseEnter = () => {
-      clearAutoScrollInterval();
-    };
-    const mouseLeave = () => {
-      if (!showContextMenu) {
-        mouseDownOrTouchOnPostRow.current = false;
-        clearAutoScrollInterval();
-        createAutoScrollInterval();
-      }
-    };
-    const mouseDownTouchStart = (event: MouseEvent | TouchEvent) => {
-      mouseDownOrTouchOnPostRow.current = true;
-      clearAutoScrollInterval();
-      if (event instanceof MouseEvent) {
-        lastMouseDownOrTouchX.current = event.clientX;
-      } else if (event instanceof TouchEvent) {
-        const touches = event.touches;
-        if (touches.length == 1) {
-          lastMouseDownOrTouchX.current = touches[0].clientX;
-        } else if (touches.length == 2) {
-          const touch1 = touches[0];
-          const touch2 = touches[1];
-          lastMouseDownOrTouchX.current = (touch1.clientX + touch2.clientX) / 2;
-        }
-      }
-    };
-    const mouseUpTouchEnd = (event: MouseEvent | TouchEvent) => {
-      if (showContextMenu) {
-        return;
-      }
-      if (event instanceof MouseEvent) {
-        mouseDownOrTouchOnPostRow.current = false;
-        lastMouseDownOrTouchX.current = 0;
-        clearAutoScrollInterval();
-      } else if (event instanceof TouchEvent) {
-        const touches = event.touches;
-        if (touches.length === 0) {
-          mouseDownOrTouchOnPostRow.current = false;
-          lastMouseDownOrTouchX.current = 0;
-          clearAutoScrollInterval();
-          createAutoScrollInterval();
-        } else if (touches.length === 1) {
-          mouseDownOrTouchOnPostRow.current = true;
-          lastMouseDownOrTouchX.current = touches[0].clientX;
-        } else if (touches.length == 2) {
-          mouseDownOrTouchOnPostRow.current = true;
-          const touch1 = touches[0];
-          const touch2 = touches[1];
-          lastMouseDownOrTouchX.current = (touch1.clientX + touch2.clientX) / 2;
-        }
-      }
-    };
+    postRowContentDiv.addEventListener(
+      "touchstart",
+      handleMouseDownOrTouchStart
+    );
+    postRowContentDiv.addEventListener("touchend", handleMouseUpTouchEnd);
+    postRowContentDiv.addEventListener("touchmove", handleMouseOrTouchMove);
 
-    const mouseMoveTouchMove = (event: MouseEvent | TouchEvent) => {
-      if (event instanceof MouseEvent) {
-        movePostRow(event.clientX);
-      } else if (event instanceof TouchEvent) {
-        const touches = event.touches;
-        if (touches.length === 1) {
-          movePostRow(touches[0].clientX);
-        } else if (touches.length === 2) {
-          const touch1 = touches[0];
-          const touch2 = touches[1];
-          movePostRow((touch1.clientX + touch2.clientX) / 2);
-        }
-      }
-    };
-
-    postRowContentDiv.addEventListener("scroll", onPostRowContentScroll);
-    postRowContentDiv.addEventListener("mouseenter", mouseEnter);
-    postRowContentDiv.addEventListener("mouseleave", mouseLeave);
-    postRowContentDiv.addEventListener("mousedown", mouseDownTouchStart);
-    postRowContentDiv.addEventListener("touchstart", mouseDownTouchStart);
-    postRowContentDiv.addEventListener("mouseup", mouseUpTouchEnd);
-    postRowContentDiv.addEventListener("touchend", mouseUpTouchEnd);
-    postRowContentDiv.addEventListener("mousemove", mouseMoveTouchMove);
-    postRowContentDiv.addEventListener("touchmove", mouseMoveTouchMove);
     return () => {
-      postRowContentDiv.removeEventListener("scroll", onPostRowContentScroll);
-      postRowContentDiv.removeEventListener("mouseenter", mouseEnter);
-      postRowContentDiv.removeEventListener("mouseleave", mouseLeave);
-      postRowContentDiv.removeEventListener("mousedown", mouseDownTouchStart);
-      postRowContentDiv.removeEventListener("touchstart", mouseDownTouchStart);
-      postRowContentDiv.removeEventListener("mouseup", mouseUpTouchEnd);
-      postRowContentDiv.removeEventListener("touchend", mouseUpTouchEnd);
-      postRowContentDiv.removeEventListener("mousemove", mouseMoveTouchMove);
-      postRowContentDiv.removeEventListener("touchmove", mouseMoveTouchMove);
+      postRowContentDiv.removeEventListener(
+        "transitionend",
+        handleTransitionEnd
+      );
+      postRowContentDiv.removeEventListener("mouseenter", handleMouseEnter);
+      postRowContentDiv.removeEventListener("mouseover", handleMouseEnter);
+      postRowContentDiv.removeEventListener("mouseleave", handleMouseLeave);
+      postRowContentDiv.removeEventListener(
+        "mousedown",
+        handleMouseDownOrTouchStart
+      );
+      postRowContentDiv.removeEventListener("mouseup", handleMouseUpTouchEnd);
+      postRowContentDiv.removeEventListener(
+        "mousemove",
+        handleMouseOrTouchMove
+      );
+
+      postRowContentDiv.removeEventListener(
+        "touchstart",
+        handleMouseDownOrTouchStart
+      );
+      postRowContentDiv.removeEventListener("touchend", handleMouseUpTouchEnd);
+      postRowContentDiv.removeEventListener(
+        "touchmove",
+        handleMouseOrTouchMove
+      );
     };
   }, [
-    clearAutoScrollInterval,
-    createAutoScrollInterval,
-    movePostRow,
-    onPostRowContentScroll,
+    handleMouseDownOrTouchStart,
+    handleMouseEnter,
+    handleMouseLeave,
+    handleMouseOrTouchMove,
+    handleMouseUpTouchEnd,
+    handleTransitionEnd,
     postRowContentDivRef,
-    showContextMenu,
   ]);
 
   useEffect(() => {
-    if (!showContextMenu && autoScrollInterval.current === undefined) {
-      createAutoScrollInterval();
+    if (
+      menuOpenOnPostRowUuid === undefined &&
+      contextMenuOpenOnPostRowRef.current
+    ) {
+      handleMouseLeave();
     }
-  }, [createAutoScrollInterval, showContextMenu]);
-  return postsToShowUuids;
+    contextMenuOpenOnPostRowRef.current = menuOpenOnPostRowUuid === postRowUuid;
+  }, [handleMouseLeave, menuOpenOnPostRowUuid, postRowUuid]);
+
+  return {
+    postsToShowUuids,
+    postSliderLeft,
+    postSliderLeftTransitionTime,
+  };
 }

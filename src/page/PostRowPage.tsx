@@ -7,13 +7,13 @@ import {
   PostRowsContext,
   PostRowsDispatchContext,
 } from "../context/post-rows-context.ts";
-import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import IndividualPostRowContext from "../context/individual-post-row-context.ts";
 import LoopForPostsProvider from "../components/LoopForPostsProvider.tsx";
+import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
+import useGetPostLoopPaused from "../hook/use-get-post-loop-paused.ts";
 
 const PostRowPage: FC = () => {
-  const { postRows } = useContext(PostRowsContext);
-  const { pauseGetPostsLoop } = useContext(PostRowsContext);
+  const { postRows, playPauseButtonIsClicked } = useContext(PostRowsContext);
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const { postsToShowInRow, postRowsToShowInView } = useContext(
     AppConfigStateContext
@@ -24,6 +24,7 @@ const PostRowPage: FC = () => {
 
   const [scrollBarWidth, setScrollBarWidth] = useState(0);
   const [postCardWidthPercentage, setPostCardWidthPercentage] = useState(0);
+  const { isGetPostLoopPaused } = useGetPostLoopPaused();
 
   useEffect(() => {
     const scrollDiv = postRowsDivRef.current as unknown as HTMLDivElement;
@@ -39,7 +40,8 @@ const PostRowPage: FC = () => {
       const key = keyboardEvent.key;
       if (key == " " && !redditSearchBarFocused.current) {
         postRowsDispatch({
-          type: PostRowsActionType.TOGGLE_PLAY_PAUSE_BUTTON,
+          type: PostRowsActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED,
+          payload: !playPauseButtonIsClicked,
         });
       }
     };
@@ -48,7 +50,7 @@ const PostRowPage: FC = () => {
     return () => {
       postRowPage.removeEventListener("keyup", documentKeyUpEvent);
     };
-  }, [postRowsDispatch]);
+  }, [playPauseButtonIsClicked, postRowsDispatch]);
 
   useEffect(() => {
     const postRowsDiv = postRowsDivRef.current;
@@ -116,12 +118,13 @@ const PostRowPage: FC = () => {
           className={"play-pause-button-div"}
           onClick={() => {
             postRowsDispatch({
-              type: PostRowsActionType.TOGGLE_PLAY_PAUSE_BUTTON,
+              type: PostRowsActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED,
+              payload: !playPauseButtonIsClicked,
             });
           }}
         >
           <img
-            src={`assets/${pauseGetPostsLoop ? "pause" : "play"}_black.png`}
+            src={`assets/${isGetPostLoopPaused ? "pause" : "play"}_black.png`}
             className={"play-pause-button-img"}
           />
         </div>

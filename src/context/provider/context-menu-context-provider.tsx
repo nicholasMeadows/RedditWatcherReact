@@ -31,6 +31,7 @@ const initialState: ContextMenuState = {
     showUpdateListName: false,
     showDeleteList: false,
   },
+  menuOpenOnPostRowUuid: undefined,
 };
 const ContextMenuContextProvider: FC<Props> = ({ children }) => {
   const [contextMenuState, dispatch] = useReducer(

@@ -12,11 +12,11 @@ import { PostRowsState } from "../model/state/PostRowsState.ts";
 
 export enum PostRowsActionType {
   SET_CURRENT_LOCATION = "SET_CURRENT_LOCATION",
-  TOGGLE_PLAY_PAUSE_BUTTON = "TOGGLE_PLAY_PAUSE_BUTTON",
+  SET_PLAY_PAUSE_BUTTON_IS_CLICKED = "SET_PLAY_PAUSE_BUTTON_IS_CLICKED",
   SET_POST_ATTACHMENT_INDEX = "SET_POST_ATTACHMENT_INDEX",
   CLEAR_POST_ROWS = "CLEAR_POST_ROWS",
   SET_SCROLL_Y = "SET_SCROLL_Y",
-  SET_MOUSE_OVER_A_POST_ROW = "SET_MOUSE_OVER_A_POST_ROW",
+  SET_MOUSE_OVER_POST_ROW_UUID = "SET_MOUSE_OVER_POST_ROW_UUID",
   ADD_POST_ROW = "ADD_POST_ROW",
 }
 
@@ -29,15 +29,16 @@ export type PostRowsNumberPayloadAction = {
   payload: number;
 };
 export type PostRowsBooleanPayloadAction = {
-  type: PostRowsActionType.SET_MOUSE_OVER_A_POST_ROW;
+  type: PostRowsActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED;
   payload: boolean;
 };
 export type PostRowsNoPayloadAction = {
-  type:
-    | PostRowsActionType.TOGGLE_PLAY_PAUSE_BUTTON
-    | PostRowsActionType.CLEAR_POST_ROWS;
+  type: PostRowsActionType.CLEAR_POST_ROWS;
 };
-
+export type PostRowsSetMouseOverPostRowUuidAction = {
+  type: PostRowsActionType.SET_MOUSE_OVER_POST_ROW_UUID;
+  payload: string | undefined;
+};
 export type SetPostAttachmentIndexAction = {
   type: PostRowsActionType.SET_POST_ATTACHMENT_INDEX;
   payload: { postRowUuid: string; postUuid: string; index: number };
@@ -51,6 +52,7 @@ export type AddPostRowAction = {
     gottenWithPostSortOrderOption: PostSortOrderOptionsEnum;
   };
 };
+
 export default function PostRowsReducer(
   state: PostRowsState,
   action:
@@ -60,20 +62,21 @@ export default function PostRowsReducer(
     | SetPostAttachmentIndexAction
     | PostRowsBooleanPayloadAction
     | AddPostRowAction
+    | PostRowsSetMouseOverPostRowUuidAction
 ) {
   switch (action.type) {
     case PostRowsActionType.SET_CURRENT_LOCATION:
       return setCurrentLocation(state, action);
-    case PostRowsActionType.TOGGLE_PLAY_PAUSE_BUTTON:
-      return togglePlayPauseButton(state);
+    case PostRowsActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED:
+      return setPlayPauseButtonIsClicked(state, action);
     case PostRowsActionType.SET_POST_ATTACHMENT_INDEX:
       return setPostAttachmentIndex(state, action);
     case PostRowsActionType.CLEAR_POST_ROWS:
       return clearPostRows(state);
     case PostRowsActionType.SET_SCROLL_Y:
       return setScrollY(state, action);
-    case PostRowsActionType.SET_MOUSE_OVER_A_POST_ROW:
-      return setMouseOverAPostRow(state, action);
+    case PostRowsActionType.SET_MOUSE_OVER_POST_ROW_UUID:
+      return setMouseOverPostRowUuid(state, action);
     case PostRowsActionType.ADD_POST_ROW:
       return addPostRow(state, action);
     default:
@@ -139,43 +142,30 @@ const clearPostRows = (state: PostRowsState): PostRowsState => {
 const setScrollY = (
   state: PostRowsState,
   action: PostRowsNumberPayloadAction
-) => {
+): PostRowsState => {
   return {
     ...state,
     scrollY: action.payload,
-    pauseGetPostsLoop: shouldPause(
-      action.payload,
-      state.playPauseButtonIsPaused,
-      state.mouseOverAPostRow
-    ),
   };
 };
-const togglePlayPauseButton = (state: PostRowsState): PostRowsState => {
-  return {
-    ...state,
-    playPauseButtonIsPaused: !state.playPauseButtonIsPaused,
-    pauseGetPostsLoop: shouldPause(
-      state.scrollY,
-      !state.playPauseButtonIsPaused,
-      state.mouseOverAPostRow
-    ),
-  };
-};
-const setMouseOverAPostRow = (
+const setPlayPauseButtonIsClicked = (
   state: PostRowsState,
   action: PostRowsBooleanPayloadAction
 ): PostRowsState => {
   return {
     ...state,
-    mouseOverAPostRow: action.payload,
-    pauseGetPostsLoop: shouldPause(
-      state.scrollY,
-      state.playPauseButtonIsPaused,
-      action.payload
-    ),
+    playPauseButtonIsClicked: action.payload,
   };
 };
-
+const setMouseOverPostRowUuid = (
+  state: PostRowsState,
+  action: PostRowsSetMouseOverPostRowUuidAction
+): PostRowsState => {
+  return {
+    ...state,
+    mouseOverPostRowUuid: action.payload,
+  };
+};
 const addPostRow = (
   state: PostRowsState,
   action: AddPostRowAction
@@ -251,18 +241,10 @@ const addPostRow = (
     }
   }
 };
-
 const trimPostsToMaxLength = (posts: Array<Post>) => {
   if (posts.length > MAX_POSTS_PER_ROW) {
     posts.splice(MAX_POSTS_PER_ROW - 1);
   }
-};
-const shouldPause = (
-  scrollY: number,
-  playPauseButtonIsPaused: boolean,
-  mouseOverAPostRow: boolean
-) => {
-  return scrollY !== 0 || playPauseButtonIsPaused || mouseOverAPostRow;
 };
 const createPostRow = (
   posts: Array<Post>,

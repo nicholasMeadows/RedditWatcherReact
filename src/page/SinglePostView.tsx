@@ -146,7 +146,7 @@ const SinglePostView: FC = () => {
           <div
             ref={postElementDivWrapperRef}
             onContextMenu={(event) => {
-              if (post === undefined) return;
+              if (post === undefined || postRowUuid === null) return;
               event.preventDefault();
               event.stopPropagation();
               contextMenuDispatch({
@@ -155,6 +155,7 @@ const SinglePostView: FC = () => {
                   post: post,
                   x: event.clientX,
                   y: event.clientY,
+                  postRowUuid: postRowUuid,
                 },
               });
             }}

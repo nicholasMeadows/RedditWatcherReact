@@ -4,6 +4,7 @@ import {
   PostRowsBooleanPayloadAction,
   PostRowsNoPayloadAction,
   PostRowsNumberPayloadAction,
+  PostRowsSetMouseOverPostRowUuidAction,
   PostRowsStringPayloadAction,
   SetPostAttachmentIndexAction,
 } from "../../../reducer/post-rows-reducer.ts";
@@ -15,5 +16,6 @@ type PostRowsDispatch = Dispatch<
   | PostRowsNoPayloadAction
   | SetPostAttachmentIndexAction
   | AddPostRowAction
+  | PostRowsSetMouseOverPostRowUuidAction
 >;
 export default PostRowsDispatch;

@@ -17,6 +17,7 @@ export type ContextMenuState = {
   openPostPermaLink: string | undefined;
   openSubredditLink: string | undefined;
   showButtonControls: ShowButtonControls;
+  menuOpenOnPostRowUuid: string | undefined;
 };
 
 type ShowButtonControls = {

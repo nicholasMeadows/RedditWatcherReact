@@ -38,7 +38,6 @@
   flex-direction: row;
   flex-wrap: nowrap;
   flex-grow: 1;
-  overflow: hidden;
   position: relative;
   margin-top: 5px;
   margin-bottom: 5px;
@@ -48,6 +47,7 @@
   padding-left: calc((1em * var(--post-card-gap-em)) / 2);
   padding-right: calc((1em * var(--post-card-gap-em)) / 2);
   box-sizing: border-box;
+  position: relative;
 }
 
 .postRow:focus {

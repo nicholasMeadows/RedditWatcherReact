@@ -32,6 +32,7 @@ export type OpenContextMenuForPostAction = {
     post: Post;
     x: number;
     y: number;
+    postRowUuid: string;
   };
 };
 export type OpenContextMenuForSideBarAction = {
@@ -128,6 +129,7 @@ const openContextMenuForPost = (
   const post = action.payload.post;
   const x = action.payload.x;
   const y = action.payload.y;
+  const postRowUuid = action.payload.postRowUuid;
 
   const base = makeBaseContextState(true, x, y);
   base.copyInfo = {
@@ -140,6 +142,7 @@ const openContextMenuForPost = (
   );
   base.openPostPermaLink = buildOpenPostPermaLink(post.permaLink);
   setButtonControls(base, { post: post });
+  base.menuOpenOnPostRowUuid = postRowUuid;
   return base;
 };
 
@@ -233,6 +236,7 @@ const makeBaseContextState = (
       expandRemoveFromList: false,
       showOpenImageInNewTab: false,
     },
+    menuOpenOnPostRowUuid: undefined,
   };
 };
 

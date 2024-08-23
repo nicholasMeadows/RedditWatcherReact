@@ -9,14 +9,14 @@ import {
 import PostMediaElement from "./PostMediaElement.tsx";
 import { useNavigate } from "react-router-dom";
 import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
-import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
-import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
 import {
   ContextMenuDispatchContext,
   ContextMenuStateContext,
 } from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
+import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
+import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 
 const PostCard: FC = memo(() => {
   const navigate = useNavigate();
@@ -48,6 +48,7 @@ const PostCard: FC = memo(() => {
             post: post,
             x: event.clientX,
             y: event.clientY,
+            postRowUuid: postRowUuid,
           },
         });
       }}
@@ -66,8 +67,8 @@ const PostCard: FC = memo(() => {
           `${SINGLE_POST_ROUTE}?${SINGLE_POST_PAGE_POST_ROW_UUID_KEY}=${postRowUuid}&${SINGLE_POST_PAGE_POST_UUID_KEY}=${post.postUuid}`
         );
         postRowsDispatch({
-          type: PostRowsActionType.SET_MOUSE_OVER_A_POST_ROW,
-          payload: false,
+          type: PostRowsActionType.SET_MOUSE_OVER_POST_ROW_UUID,
+          payload: undefined,
         });
       }}
       onMouseEnter={() => {

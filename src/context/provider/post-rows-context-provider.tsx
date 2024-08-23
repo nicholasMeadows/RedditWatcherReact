@@ -15,10 +15,9 @@ export const PostRowsContextProvider: FC<Props> = ({ children }) => {
   const initialState: PostRowsState = {
     currentPath: "",
     scrollY: 0,
-    playPauseButtonIsPaused: false,
+    playPauseButtonIsClicked: false,
     postRows: new Array<PostRow>(),
-    pauseGetPostsLoop: false,
-    mouseOverAPostRow: false,
+    mouseOverPostRowUuid: undefined,
   };
   const [postRowsState, dispatch] = useReducer(PostRowsReducer, initialState);
   return (

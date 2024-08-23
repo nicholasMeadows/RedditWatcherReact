@@ -7,28 +7,26 @@ import {
   useRef,
 } from "react";
 import useRedditService from "../hook/use-reddit-service.ts";
-import { PostRowsContext } from "../context/post-rows-context.ts";
 import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
 import { RedditServiceDispatchContext } from "../context/reddit-service-context.ts";
+import useGetPostLoopPaused from "../hook/use-get-post-loop-paused.ts";
 
 type Props = {
   children: ReactNode;
 };
 
 const LoopForPostsProvider: FC<Props> = ({ children }) => {
-  const { scrollY, mouseOverAPostRow } = useContext(PostRowsContext);
   const redditServiceDispatch = useContext(RedditServiceDispatchContext);
 
   const redditService = useRedditService();
+  const { isGetPostLoopPaused } = useGetPostLoopPaused();
 
-  const scrollYRef = useRef(scrollY);
-  const mouseOverAPostRowRef = useRef(mouseOverAPostRow);
   const loopForPostsAbortControllerRef = useRef<AbortController>();
+  const isGetPostLoopPausedRef = useRef(isGetPostLoopPaused);
 
   useEffect(() => {
-    scrollYRef.current = scrollY;
-    mouseOverAPostRowRef.current = mouseOverAPostRow;
-  }, [mouseOverAPostRow, scrollY]);
+    isGetPostLoopPausedRef.current = isGetPostLoopPaused;
+  }, [isGetPostLoopPaused]);
 
   const loopForPosts = useCallback(
     async (abortSignal: AbortSignal) => {
@@ -51,7 +49,7 @@ const LoopForPostsProvider: FC<Props> = ({ children }) => {
           const getPostsResponse = await redditService.getPostsForPostRow(
             abortSignal
           );
-          while (scrollYRef.current !== 0 || mouseOverAPostRowRef.current) {
+          while (isGetPostLoopPausedRef.current) {
             await new Promise<void>((resolve) =>
               setTimeout(() => resolve(), 100)
             );
