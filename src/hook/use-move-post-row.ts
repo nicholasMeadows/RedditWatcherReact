@@ -14,7 +14,6 @@ import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
 import { ContextMenuStateContext } from "../context/context-menu-context.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
-import { AutoScrollPostRowOptionEnum } from "../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
 
 export default function useMovePostRow(
@@ -31,7 +30,7 @@ export default function useMovePostRow(
   const {
     autoScrollPostRowRateSecondsForSinglePostCard,
     autoScrollPostRowDirectionOption,
-    autoScrollPostRowOption,
+    autoScrollPostRow,
   } = useContext(AppConfigStateContext);
   const { menuOpenOnPostRowUuid } = useContext(ContextMenuStateContext);
 
@@ -42,10 +41,7 @@ export default function useMovePostRow(
 
   const shouldAutoScroll =
     gottenWithSubredditSourceOption !== SubredditSourceOptionsEnum.FrontPage &&
-    (autoScrollPostRowOption ===
-      AutoScrollPostRowOptionEnum.SmoothContinuousScroll ||
-      autoScrollPostRowOption ===
-        AutoScrollPostRowOptionEnum.ScrollByPostWidth);
+    autoScrollPostRow;
 
   useLayoutEffect(() => {
     const postRowContentDiv = postRowContentDivRef.current;

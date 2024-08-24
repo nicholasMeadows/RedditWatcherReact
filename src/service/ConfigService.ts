@@ -16,7 +16,6 @@ import SelectSubredditListMenuSortOptionEnum from "../model/config/enums/SelectS
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum";
 import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEnum";
 import getPlatform from "../util/PlatformUtil";
-import { AutoScrollPostRowOptionEnum } from "../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import { WindowElectronAPI } from "../model/WindowElectronAPI.ts";
 import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
@@ -30,7 +29,7 @@ const REDDIT_CLIENT_SECRET_KEY = "clientSecret";
 const SUBREDDIT_SOURCE_OPTION_KEY = "subredditSourceOption";
 const SUBREDDIT_SORT_ORDER_OPTION_KEY = "subredditSortOrderOption";
 const GET_ALL_SUBREDDITS_AT_ONCE = "getAllSubredditsAtOnce";
-const AUTO_SCROLL_POST_ROW = "autoScrollPostRowOption";
+const AUTO_SCROLL_POST_ROW = "autoScrollPostRow";
 const AUTO_SCROLL_POST_ROW_DIRECTION = "autoScrollPostRowDirectionOption";
 const AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD =
   "autoScrollPostRowRateSecondsForSinglePostCard";
@@ -114,9 +113,7 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
     SubredditSortOrderOptionsEnum.Alphabetically;
   const getAllSubredditsAtOnce =
     configJsonObj[GET_ALL_SUBREDDITS_AT_ONCE] || false;
-  const autoScrollPostRowOption =
-    configJsonObj[AUTO_SCROLL_POST_ROW] ||
-    AutoScrollPostRowOptionEnum.SmoothContinuousScroll;
+  const autoScrollPostRow = configJsonObj[AUTO_SCROLL_POST_ROW] || true;
   const autoScrollPostRowDirectionOption =
     configJsonObj[AUTO_SCROLL_POST_ROW_DIRECTION] ||
     AutoScrollPostRowDirectionOptionEnum.Left;
@@ -163,7 +160,7 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
     subredditSourceOption: subredditSourceOptionsEnum,
     subredditSortOrderOption: subredditSortOrderOption,
     getAllSubredditsAtOnce: getAllSubredditsAtOnce,
-    autoScrollPostRowOption: autoScrollPostRowOption,
+    autoScrollPostRow: autoScrollPostRow,
     autoScrollPostRowDirectionOption: autoScrollPostRowDirectionOption,
     autoScrollPostRowRateSecondsForSinglePostCard:
       autoScrollPostRowRateSecondsForSinglePostCard,

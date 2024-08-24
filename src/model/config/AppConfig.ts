@@ -7,7 +7,6 @@ import SelectSubredditListMenuSortOptionEnum from "./enums/SelectSubredditListMe
 import SortOrderDirectionOptionsEnum from "./enums/SortOrderDirectionOptionsEnum";
 import SubredditSortOrderOptionsEnum from "./enums/SubredditSortOrderOptionsEnum";
 import TopTimeFrameOptionsEnum from "./enums/TopTimeFrameOptionsEnum";
-import { AutoScrollPostRowOptionEnum } from "./enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "./enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import SubredditSourceOptionsEnum from "./enums/SubredditSourceOptionsEnum.ts";
 
@@ -16,7 +15,7 @@ export interface AppConfig {
   subredditSourceOption: SubredditSourceOptionsEnum;
   subredditSortOrderOption: SubredditSortOrderOptionsEnum;
   getAllSubredditsAtOnce: boolean;
-  autoScrollPostRowOption: AutoScrollPostRowOptionEnum;
+  autoScrollPostRow: boolean;
   autoScrollPostRowDirectionOption: AutoScrollPostRowDirectionOptionEnum;
   autoScrollPostRowRateSecondsForSinglePostCard: number;
   randomIterationSelectWeightOption: RandomIterationSelectWeightOptionsEnum;

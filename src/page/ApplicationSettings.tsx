@@ -1,4 +1,3 @@
-import { AutoScrollPostRowOptionEnum } from "../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum.ts";
 import SelectSubredditListMenuSortOptionEnum from "../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
@@ -15,7 +14,7 @@ import { Platform } from "../model/Platform.ts";
 const ApplicationSettings: React.FC = () => {
   const appConfigDispatch = useContext(AppConfigDispatchContext);
   const {
-    autoScrollPostRowOption,
+    autoScrollPostRow,
     autoScrollPostRowDirectionOption,
     autoScrollPostRowRateSecondsForSinglePostCard,
     autoScrollPostRowRateSecondsForSinglePostCardValidationError,
@@ -128,28 +127,21 @@ const ApplicationSettings: React.FC = () => {
         </select>
       </div>
       <hr />
-      <div className="settings-item flex-column">
-        <label className="select-label">Auto Scroll Post Row</label>
-        <select
-          value={autoScrollPostRowOption}
-          onChange={(event) =>
-            appConfigDispatch({
-              type: AppConfigActionType.SET_AUTO_SCROLL_POST_ROW_OPTION,
-              payload: event.target.value as AutoScrollPostRowOptionEnum,
-            })
-          }
-          className="select"
-        >
-          {Object.entries(AutoScrollPostRowOptionEnum).map((key) => {
-            return (
-              <option key={key[0]} value={key[1]}>
-                {key[1]}
-              </option>
-            );
-          })}
-        </select>
-      </div>
 
+      <div className="settings-item flex-row">
+        <label className="select-label-relative">Autoscroll Post Row</label>
+        <input
+          type={"checkbox"}
+          className={"settings-checkbox-input"}
+          checked={autoScrollPostRow}
+          onChange={() => {
+            appConfigDispatch({
+              type: AppConfigActionType.SET_AUTO_SCROLL_POST_ROW,
+              payload: !autoScrollPostRow,
+            });
+          }}
+        />
+      </div>
       <hr />
       <div className="settings-item flex-column">
         <label className="select-label">Auto Scroll Post Row Direction</label>

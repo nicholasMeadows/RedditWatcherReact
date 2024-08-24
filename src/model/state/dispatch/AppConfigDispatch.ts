@@ -2,7 +2,6 @@ import { Dispatch } from "react";
 import {
   AppConfigActionAppConfigPayload,
   AppConfigActionAutoScrollPostRowDirectionOptionEnumPayload,
-  AppConfigActionAutoScrollPostRowOptionEnumPayload,
   AppConfigActionBooleanPayload,
   AppConfigActionContentFilteringEnumPayload,
   AppConfigActionNoPayload,
@@ -23,7 +22,6 @@ type AppConfigDispatch = Dispatch<
   | AppConfigActionSubredditSourceOptionEnumPayload
   | AppConfigActionSubredditSortOrderOptionsEnumPayload
   | AppConfigActionBooleanPayload
-  | AppConfigActionAutoScrollPostRowOptionEnumPayload
   | AppConfigActionAutoScrollPostRowDirectionOptionEnumPayload
   | AppConfigActionRandomIterationSelectWeightOptionEnumPayload
   | AppConfigActionSelectSubredditListMenuSortOptionEnumPayload

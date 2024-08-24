@@ -1,6 +1,5 @@
 import { FC, ReactNode, useReducer } from "react";
 import AppConfigReducer from "../../reducer/app-config-reducer.ts";
-import { AutoScrollPostRowOptionEnum } from "../../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import SubredditSortOrderOptionsEnum from "../../model/config/enums/SubredditSortOrderOptionsEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import RandomIterationSelectWeightOptionsEnum from "../../model/config/enums/RandomIterationSelectWeightOptionsEnum.ts";
@@ -21,8 +20,7 @@ const defaultSubredditSourceOption = SubredditSourceOptionsEnum.FrontPage;
 const defaultSubredditSortOrderOption =
   SubredditSortOrderOptionsEnum.Alphabetically;
 const defaultGetAllSubredditsAtOnce = false;
-const defaultAutoScrollPostRowOption =
-  AutoScrollPostRowOptionEnum.SmoothContinuousScroll;
+const defaultAutoScrollPostRow = true;
 const defaultAutoScrollPostRowDirectionOption =
   AutoScrollPostRowDirectionOptionEnum.Left;
 const defaultAutoScrollPostRowRateSecondsForSinglePostCard = 5;
@@ -57,7 +55,7 @@ const initialState: AppConfigState = {
   subredditSourceOption: defaultSubredditSourceOption,
   subredditSortOrderOption: defaultSubredditSortOrderOption,
   getAllSubredditsAtOnce: defaultGetAllSubredditsAtOnce,
-  autoScrollPostRowOption: defaultAutoScrollPostRowOption,
+  autoScrollPostRow: defaultAutoScrollPostRow,
   autoScrollPostRowDirectionOption: defaultAutoScrollPostRowDirectionOption,
   autoScrollPostRowRateSecondsForSinglePostCard:
     defaultAutoScrollPostRowRateSecondsForSinglePostCard,

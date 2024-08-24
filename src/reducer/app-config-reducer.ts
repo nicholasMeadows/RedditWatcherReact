@@ -12,7 +12,6 @@ import {
   MIN_REDDIT_API_ITEM_LIMIT,
 } from "../RedditWatcherConstants.ts";
 import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum.ts";
-import { AutoScrollPostRowOptionEnum } from "../model/config/enums/AutoScrollPostRowOptionEnum.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum.ts";
 import SelectSubredditIterationMethodOptionsEnum from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
@@ -34,7 +33,7 @@ export enum AppConfigActionType {
   SET_SUBREDDIT_SOURCE_OPTION = "SET_SUBREDDIT_SOURCE_OPTION",
   SET_SUBREDDIT_SORT_ORDER_OPTION = "SET_SUBREDDIT_SORT_ORDER_OPTION",
   SET_GET_ALL_SUBREDDITS_AT_ONCE = "SET_GET_ALL_SUBREDDITS_AT_ONCE",
-  SET_AUTO_SCROLL_POST_ROW_OPTION = "SET_AUTO_SCROLL_POST_ROW_OPTION",
+  SET_AUTO_SCROLL_POST_ROW = "SET_AUTO_SCROLL_POST_ROW",
   SET_AUTO_SCROLL_POST_ROW_DIRECTION_OPTION = "SET_AUTO_SCROLL_POST_ROW_DIRECTION_OPTION",
   SET_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD = "SET_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD",
   CLEAR_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD_VALIDATION_ERROR = "CLEAR_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD_VALIDATION_ERROR",
@@ -84,14 +83,11 @@ export type AppConfigActionSubredditSortOrderOptionsEnumPayload = {
 export type AppConfigActionBooleanPayload = {
   type:
     | AppConfigActionType.SET_GET_ALL_SUBREDDITS_AT_ONCE
-    | AppConfigActionType.SET_USE_IN_MEMORY_IMAGES_AND_GIFS;
+    | AppConfigActionType.SET_USE_IN_MEMORY_IMAGES_AND_GIFS
+    | AppConfigActionType.SET_AUTO_SCROLL_POST_ROW;
   payload: boolean;
 };
 
-export type AppConfigActionAutoScrollPostRowOptionEnumPayload = {
-  type: AppConfigActionType.SET_AUTO_SCROLL_POST_ROW_OPTION;
-  payload: AutoScrollPostRowOptionEnum;
-};
 export type AppConfigActionAutoScrollPostRowDirectionOptionEnumPayload = {
   type: AppConfigActionType.SET_AUTO_SCROLL_POST_ROW_DIRECTION_OPTION;
   payload: AutoScrollPostRowDirectionOptionEnum;
@@ -157,7 +153,6 @@ export default function AppConfigReducer(
     | AppConfigActionSubredditSourceOptionEnumPayload
     | AppConfigActionSubredditSortOrderOptionsEnumPayload
     | AppConfigActionBooleanPayload
-    | AppConfigActionAutoScrollPostRowOptionEnumPayload
     | AppConfigActionAutoScrollPostRowDirectionOptionEnumPayload
     | AppConfigActionRandomIterationSelectWeightOptionEnumPayload
     | AppConfigActionSelectSubredditListMenuSortOptionEnumPayload
@@ -185,8 +180,8 @@ export default function AppConfigReducer(
       return setSubredditSortOrderOption(state, action);
     case AppConfigActionType.SET_GET_ALL_SUBREDDITS_AT_ONCE:
       return setGetAllSubredditsAtOnce(state, action);
-    case AppConfigActionType.SET_AUTO_SCROLL_POST_ROW_OPTION:
-      return setAutoScrollPostRowOption(state, action);
+    case AppConfigActionType.SET_AUTO_SCROLL_POST_ROW:
+      return setAutoScrollPostRow(state, action);
     case AppConfigActionType.SET_AUTO_SCROLL_POST_ROW_DIRECTION_OPTION:
       return setAutoScrollPostRowDirectionOption(state, action);
     case AppConfigActionType.SET_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD:
@@ -345,12 +340,12 @@ const setGetAllSubredditsAtOnce = (
   saveConfig(updatedState);
   return updatedState;
 };
-const setAutoScrollPostRowOption = (
+const setAutoScrollPostRow = (
   state: AppConfigState,
-  action: AppConfigActionAutoScrollPostRowOptionEnumPayload
+  action: AppConfigActionBooleanPayload
 ): AppConfigState => {
   const updatedState = { ...state };
-  updatedState.autoScrollPostRowOption = action.payload;
+  updatedState.autoScrollPostRow = action.payload;
   saveConfig(updatedState);
   return updatedState;
 };
