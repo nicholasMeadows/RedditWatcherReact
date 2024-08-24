@@ -195,7 +195,8 @@ export default function useMovePostRow(
     if (
       postRowContentDiv === null ||
       menuOpenOnPostRowUuid === postRowUuid ||
-      !shouldAutoScroll
+      !shouldAutoScroll ||
+      postsToShowUuids.length <= postsToShowInRow
     ) {
       return;
     }
@@ -294,7 +295,11 @@ export default function useMovePostRow(
   const handleMouseOrTouchMove = useCallback(
     (event: MouseEvent | TouchEvent) => {
       const postRowContentDiv = postRowContentDivRef.current;
-      if (postRowContentDiv === null || !mouseDownOnPostRow.current) {
+      if (
+        postRowContentDiv === null ||
+        !mouseDownOnPostRow.current ||
+        postsToShowUuids.length <= postsToShowInRow
+      ) {
         return;
       }
 
