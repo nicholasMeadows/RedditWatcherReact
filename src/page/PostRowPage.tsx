@@ -104,8 +104,13 @@ const PostRowPage: FC = () => {
                 value={{
                   posts: postRow.posts,
                   postRowUuid: postRow.postRowUuid,
-                  shouldAutoScroll: postRow.shouldAutoScroll,
                   postCardWidthPercentage: postCardWidthPercentage,
+                  postSliderLeft: postRow.postSliderLeft,
+                  postSliderLeftTransitionTime:
+                    postRow.postSliderLeftTransitionTime,
+                  postsToShowUuids: postRow.postsToShowUuids,
+                  gottenWithSubredditSourceOption:
+                    postRow.gottenWithSubredditSourceOption,
                 }}
               >
                 <PostRow />

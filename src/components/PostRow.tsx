@@ -11,12 +11,17 @@ import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 
 const PostRow: FC = memo(() => {
-  const { darkMode } = useContext(AppConfigStateContext);
-  const { postsToShowInRow } = useContext(AppConfigStateContext);
+  const { darkMode, postsToShowInRow } = useContext(AppConfigStateContext);
   const postRowsDispatch = useContext(PostRowsDispatchContext);
-  const { postCardWidthPercentage, postRowUuid, posts } = useContext(
-    IndividualPostRowContext
-  );
+  const {
+    postCardWidthPercentage,
+    postRowUuid,
+    posts,
+    postSliderLeft,
+    postSliderLeftTransitionTime,
+    postsToShowUuids,
+    gottenWithSubredditSourceOption,
+  } = useContext(IndividualPostRowContext);
 
   const postRowContentDivRef = useRef<HTMLDivElement>(null);
 
@@ -24,14 +29,16 @@ const PostRow: FC = memo(() => {
     return getPlatform() == Platform.Android || getPlatform() == Platform.Ios;
   }, []);
 
-  const { postsToShowUuids, postSliderLeft, postSliderLeftTransitionTime } =
-    useMovePostRow(
-      postRowUuid,
-      posts,
-      postRowContentDivRef,
-      postCardWidthPercentage,
-      postsToShowInRow
-    );
+  useMovePostRow(
+    postRowUuid,
+    posts,
+    postRowContentDivRef,
+    postCardWidthPercentage,
+    postsToShowInRow,
+    postSliderLeft,
+    postsToShowUuids,
+    gottenWithSubredditSourceOption
+  );
 
   return (
     <div className="postRow">

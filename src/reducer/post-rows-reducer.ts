@@ -1,4 +1,4 @@
-import { PostRow } from "../model/PostRow.ts";
+import { PostRow, PostsToShowUuidsObj } from "../model/PostRow.ts";
 import {
   MAX_POSTS_PER_ROW,
   MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX,
@@ -18,6 +18,7 @@ export enum PostRowsActionType {
   SET_SCROLL_Y = "SET_SCROLL_Y",
   SET_MOUSE_OVER_POST_ROW_UUID = "SET_MOUSE_OVER_POST_ROW_UUID",
   ADD_POST_ROW = "ADD_POST_ROW",
+  SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME = "SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME",
 }
 
 export type PostRowsStringPayloadAction = {
@@ -53,6 +54,16 @@ export type AddPostRowAction = {
   };
 };
 
+export type SetPostsToShowAndPostSliderLeftAndTransitionTimeAction = {
+  type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME;
+  payload: {
+    postRowUuid: string;
+    postLeft: number;
+    transitionTime: number;
+    postsToShowUuids: Array<PostsToShowUuidsObj>;
+  };
+};
+
 export default function PostRowsReducer(
   state: PostRowsState,
   action:
@@ -63,6 +74,7 @@ export default function PostRowsReducer(
     | PostRowsBooleanPayloadAction
     | AddPostRowAction
     | PostRowsSetMouseOverPostRowUuidAction
+    | SetPostsToShowAndPostSliderLeftAndTransitionTimeAction
 ) {
   switch (action.type) {
     case PostRowsActionType.SET_CURRENT_LOCATION:
@@ -79,6 +91,8 @@ export default function PostRowsReducer(
       return setMouseOverPostRowUuid(state, action);
     case PostRowsActionType.ADD_POST_ROW:
       return addPostRow(state, action);
+    case PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME:
+      return setPostsToShowAndSliderLeftAndTransitionTime(state, action);
     default:
       return state;
   }
@@ -241,6 +255,32 @@ const addPostRow = (
     }
   }
 };
+
+const setPostsToShowAndSliderLeftAndTransitionTime = (
+  state: PostRowsState,
+  action: SetPostsToShowAndPostSliderLeftAndTransitionTimeAction
+): PostRowsState => {
+  const postRowUuid = action.payload.postRowUuid;
+  const postRowIndex = state.postRows.findIndex(
+    (postRow) => postRow.postRowUuid === postRowUuid
+  );
+  if (postRowIndex === -1) {
+    return state;
+  }
+  const updatedPostRows = [...state.postRows];
+  updatedPostRows[postRowIndex] = {
+    ...updatedPostRows[postRowIndex],
+    postSliderLeft: action.payload.postLeft,
+    postSliderLeftTransitionTime: action.payload.transitionTime,
+    postsToShowUuids: action.payload.postsToShowUuids,
+  };
+
+  return {
+    ...state,
+    postRows: updatedPostRows,
+  };
+};
+
 const trimPostsToMaxLength = (posts: Array<Post>) => {
   if (posts.length > MAX_POSTS_PER_ROW) {
     posts.splice(MAX_POSTS_PER_ROW - 1);
@@ -255,9 +295,10 @@ const createPostRow = (
   return {
     postRowUuid: postRowUuid,
     posts: posts,
-    shouldAutoScroll:
-      gottenWithSubredditSourceOption !== SubredditSourceOptionsEnum.FrontPage,
     gottenWithSubredditSourceOption: gottenWithSubredditSourceOption,
     gottenWithPostSortOrderOption: gottenWithPostSortOrderOption,
+    postSliderLeftTransitionTime: 0,
+    postSliderLeft: 0,
+    postsToShowUuids: [],
   };
 };
