@@ -1,5 +1,6 @@
 import { PostRow, PostsToShowUuidsObj } from "../model/PostRow.ts";
 import {
+  MAX_POST_ROWS_TO_SHOW_IN_VIEW,
   MAX_POSTS_PER_ROW,
   MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX,
 } from "../RedditWatcherConstants.ts";
@@ -198,6 +199,7 @@ const addPostRow = (
     gottenWithSubredditSourceOption === SubredditSourceOptionsEnum.FrontPage;
   const postRows = state.postRows;
 
+  const updatedPostRows = [...state.postRows];
   if (postRows.length === 0) {
     if (isFrontPageAndNew) {
       sortPostsByCreate(posts);
@@ -208,10 +210,7 @@ const addPostRow = (
       gottenWithSubredditSourceOption,
       gottenWithPostSortOrderOption
     );
-    return {
-      ...state,
-      postRows: [postRow],
-    };
+    updatedPostRows.push(postRow);
   } else {
     const mostRecentPostRow = postRows[0];
     const mostRecentPostRowPostNewAndFrontPage =
@@ -228,16 +227,11 @@ const addPostRow = (
       const updatedPosts = [...postsToAddToViewModel, ...posts];
       trimPostsToMaxLength(updatedPosts);
 
-      const updatedPostRows = [...state.postRows];
       updatedPostRows[0] = createPostRow(
         updatedPosts,
         gottenWithSubredditSourceOption,
         gottenWithPostSortOrderOption
       );
-      return {
-        ...state,
-        postRows: updatedPostRows,
-      };
     } else {
       if (isFrontPageAndNew) {
         sortPostsByCreate(posts);
@@ -248,12 +242,17 @@ const addPostRow = (
         gottenWithSubredditSourceOption,
         gottenWithPostSortOrderOption
       );
-      return {
-        ...state,
-        postRows: [postRow, ...state.postRows],
-      };
+      updatedPostRows.unshift(postRow);
     }
   }
+
+  if (updatedPostRows.length > MAX_POST_ROWS_TO_SHOW_IN_VIEW) {
+    updatedPostRows.splice(MAX_POST_ROWS_TO_SHOW_IN_VIEW);
+  }
+  return {
+    ...state,
+    postRows: updatedPostRows,
+  };
 };
 
 const setPostsToShowAndSliderLeftAndTransitionTime = (
