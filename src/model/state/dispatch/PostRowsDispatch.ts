@@ -7,7 +7,8 @@ import {
   PostRowsSetMouseOverPostRowUuidAction,
   PostRowsStringPayloadAction,
   SetPostAttachmentIndexAction,
-  SetPostsToShowAndPostSliderLeftAndTransitionTimeAction,
+  SetPostSliderLeftOrTransitionTimeAction,
+  SetPostsToShowUuidsAction,
 } from "../../../reducer/post-rows-reducer.ts";
 
 type PostRowsDispatch = Dispatch<
@@ -18,6 +19,7 @@ type PostRowsDispatch = Dispatch<
   | SetPostAttachmentIndexAction
   | AddPostRowAction
   | PostRowsSetMouseOverPostRowUuidAction
-  | SetPostsToShowAndPostSliderLeftAndTransitionTimeAction
+  | SetPostsToShowUuidsAction
+  | SetPostSliderLeftOrTransitionTimeAction
 >;
 export default PostRowsDispatch;

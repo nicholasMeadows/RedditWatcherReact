@@ -19,7 +19,9 @@ export enum PostRowsActionType {
   SET_SCROLL_Y = "SET_SCROLL_Y",
   SET_MOUSE_OVER_POST_ROW_UUID = "SET_MOUSE_OVER_POST_ROW_UUID",
   ADD_POST_ROW = "ADD_POST_ROW",
-  SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME = "SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME",
+  SET_POSTS_TO_SHOW_UUIDS = "SET_POSTS_TO_SHOW_UUIDS",
+  SET_POST_SLIDER_LEFT = "SET_POST_SLIDER_LEFT",
+  SET_POST_SLIDER_TRANSITION_TIME = "SET_POST_SLIDER_TRANSITION_TIME",
 }
 
 export type PostRowsStringPayloadAction = {
@@ -55,12 +57,19 @@ export type AddPostRowAction = {
   };
 };
 
-export type SetPostsToShowAndPostSliderLeftAndTransitionTimeAction = {
-  type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME;
+export type SetPostSliderLeftOrTransitionTimeAction = {
+  type:
+    | PostRowsActionType.SET_POST_SLIDER_LEFT
+    | PostRowsActionType.SET_POST_SLIDER_TRANSITION_TIME;
   payload: {
     postRowUuid: string;
-    postLeft: number;
-    transitionTime: number;
+    value: number;
+  };
+};
+export type SetPostsToShowUuidsAction = {
+  type: PostRowsActionType.SET_POSTS_TO_SHOW_UUIDS;
+  payload: {
+    postRowUuid: string;
     postsToShowUuids: Array<PostsToShowUuidsObj>;
   };
 };
@@ -75,7 +84,8 @@ export default function PostRowsReducer(
     | PostRowsBooleanPayloadAction
     | AddPostRowAction
     | PostRowsSetMouseOverPostRowUuidAction
-    | SetPostsToShowAndPostSliderLeftAndTransitionTimeAction
+    | SetPostSliderLeftOrTransitionTimeAction
+    | SetPostsToShowUuidsAction
 ) {
   switch (action.type) {
     case PostRowsActionType.SET_CURRENT_LOCATION:
@@ -92,8 +102,12 @@ export default function PostRowsReducer(
       return setMouseOverPostRowUuid(state, action);
     case PostRowsActionType.ADD_POST_ROW:
       return addPostRow(state, action);
-    case PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME:
-      return setPostsToShowAndSliderLeftAndTransitionTime(state, action);
+    case PostRowsActionType.SET_POSTS_TO_SHOW_UUIDS:
+      return setPostsToShowUuids(state, action);
+    case PostRowsActionType.SET_POST_SLIDER_LEFT:
+      return setPostSliderLeft(state, action);
+    case PostRowsActionType.SET_POST_SLIDER_TRANSITION_TIME:
+      return setPostSliderTransitionTime(state, action);
     default:
       return state;
   }
@@ -255,25 +269,55 @@ const addPostRow = (
   };
 };
 
-const setPostsToShowAndSliderLeftAndTransitionTime = (
+const setPostsToShowUuids = (
   state: PostRowsState,
-  action: SetPostsToShowAndPostSliderLeftAndTransitionTimeAction
+  action: SetPostsToShowUuidsAction
 ): PostRowsState => {
   const postRowUuid = action.payload.postRowUuid;
-  const postRowIndex = state.postRows.findIndex(
+  const updatedPostRows = [...state.postRows];
+  const postRow = updatedPostRows.find(
     (postRow) => postRow.postRowUuid === postRowUuid
   );
-  if (postRowIndex === -1) {
+  if (postRow === undefined) {
     return state;
   }
-  const updatedPostRows = [...state.postRows];
-  updatedPostRows[postRowIndex] = {
-    ...updatedPostRows[postRowIndex],
-    postSliderLeft: action.payload.postLeft,
-    postSliderLeftTransitionTime: action.payload.transitionTime,
-    postsToShowUuids: action.payload.postsToShowUuids,
+  postRow.postsToShowUuids = action.payload.postsToShowUuids;
+  return {
+    ...state,
+    postRows: updatedPostRows,
   };
-
+};
+const setPostSliderLeft = (
+  state: PostRowsState,
+  action: SetPostSliderLeftOrTransitionTimeAction
+): PostRowsState => {
+  const postRowUuid = action.payload.postRowUuid;
+  const updatedPostRows = [...state.postRows];
+  const postRow = updatedPostRows.find(
+    (postRow) => postRow.postRowUuid === postRowUuid
+  );
+  if (postRow === undefined) {
+    return state;
+  }
+  postRow.postSliderLeft = action.payload.value;
+  return {
+    ...state,
+    postRows: updatedPostRows,
+  };
+};
+const setPostSliderTransitionTime = (
+  state: PostRowsState,
+  action: SetPostSliderLeftOrTransitionTimeAction
+): PostRowsState => {
+  const postRowUuid = action.payload.postRowUuid;
+  const updatedPostRows = [...state.postRows];
+  const postRow = updatedPostRows.find(
+    (postRow) => postRow.postRowUuid === postRowUuid
+  );
+  if (postRow === undefined) {
+    return state;
+  }
+  postRow.postSliderLeftTransitionTime = action.payload.value;
   return {
     ...state,
     postRows: updatedPostRows,

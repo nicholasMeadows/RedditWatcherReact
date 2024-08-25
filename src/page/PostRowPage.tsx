@@ -23,7 +23,9 @@ const PostRowPage: FC = () => {
   const redditSearchBarFocused = useRef(false);
 
   const [scrollBarWidth, setScrollBarWidth] = useState(0);
-  const [postCardWidthPercentage, setPostCardWidthPercentage] = useState(0);
+  const [postCardWidthPercentage, setPostCardWidthPercentage] = useState<
+    number | undefined
+  >(undefined);
   const { isGetPostLoopPaused } = useGetPostLoopPaused();
 
   useEffect(() => {
@@ -92,31 +94,35 @@ const PostRowPage: FC = () => {
             });
           }}
         >
-          {postRows.map((postRow) => (
-            <div
-              key={"post-row-" + postRow.postRowUuid}
-              style={{
-                height: `calc(100%/${postRowsToShowInView})`,
-                maxHeight: `calc(100%/${postRowsToShowInView})`,
-              }}
-            >
-              <IndividualPostRowContext.Provider
-                value={{
-                  posts: postRow.posts,
-                  postRowUuid: postRow.postRowUuid,
-                  postCardWidthPercentage: postCardWidthPercentage,
-                  postSliderLeft: postRow.postSliderLeft,
-                  postSliderLeftTransitionTime:
-                    postRow.postSliderLeftTransitionTime,
-                  postsToShowUuids: postRow.postsToShowUuids,
-                  gottenWithSubredditSourceOption:
-                    postRow.gottenWithSubredditSourceOption,
-                }}
-              >
-                <PostRow />
-              </IndividualPostRowContext.Provider>
-            </div>
-          ))}
+          {postCardWidthPercentage !== undefined && (
+            <>
+              {postRows.map((postRow) => (
+                <div
+                  key={"post-row-" + postRow.postRowUuid}
+                  style={{
+                    height: `calc(100%/${postRowsToShowInView})`,
+                    maxHeight: `calc(100%/${postRowsToShowInView})`,
+                  }}
+                >
+                  <IndividualPostRowContext.Provider
+                    value={{
+                      posts: postRow.posts,
+                      postRowUuid: postRow.postRowUuid,
+                      postCardWidthPercentage: postCardWidthPercentage,
+                      postSliderLeft: postRow.postSliderLeft,
+                      postSliderLeftTransitionTime:
+                        postRow.postSliderLeftTransitionTime,
+                      postsToShowUuids: postRow.postsToShowUuids,
+                      gottenWithSubredditSourceOption:
+                        postRow.gottenWithSubredditSourceOption,
+                    }}
+                  >
+                    <PostRow />
+                  </IndividualPostRowContext.Provider>
+                </div>
+              ))}
+            </>
+          )}
         </div>
 
         <div

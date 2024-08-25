@@ -43,25 +43,55 @@ export default function useMovePostRow(
     gottenWithSubredditSourceOption !== SubredditSourceOptionsEnum.FrontPage &&
     autoScrollPostRow;
 
+  const updatePostRowLayoutParams = useCallback(
+    (
+      postsToShowUuids: Array<PostsToShowUuidsObj> | undefined,
+      postSliderLeft: number | undefined,
+      postSliderTransitionTime: number | undefined
+    ) => {
+      if (postsToShowUuids !== undefined) {
+        postRowsDispatch({
+          type: PostRowsActionType.SET_POSTS_TO_SHOW_UUIDS,
+          payload: {
+            postRowUuid,
+            postsToShowUuids: postsToShowUuids,
+          },
+        });
+      }
+
+      if (postSliderLeft !== undefined) {
+        postRowsDispatch({
+          type: PostRowsActionType.SET_POST_SLIDER_LEFT,
+          payload: {
+            postRowUuid,
+            value: postSliderLeft,
+          },
+        });
+      }
+      if (postSliderTransitionTime !== undefined) {
+        postRowsDispatch({
+          type: PostRowsActionType.SET_POST_SLIDER_TRANSITION_TIME,
+          payload: {
+            postRowUuid,
+            value: postSliderTransitionTime,
+          },
+        });
+      }
+    },
+    [postRowUuid, postRowsDispatch]
+  );
   useLayoutEffect(() => {
     const postRowContentDiv = postRowContentDivRef.current;
-    if (postRowContentDiv === null || !postRowInitialized.current) {
+    // || !postRowInitialized.current
+    if (postRowContentDiv === null) {
       return;
     }
     return () => {
       const rect = postRowContentDiv.getBoundingClientRect();
-      postRowsDispatch({
-        type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME,
-        payload: {
-          postRowUuid: postRowUuid,
-          postsToShowUuids: postsToShowUuids,
-          postLeft: (rect.left / rect.width) * 100,
-          transitionTime: 0,
-        },
-      });
+      updatePostRowLayoutParams(undefined, (rect.left / rect.width) * 100, 0);
     };
     //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [postsToShowUuids]);
 
   const makePostsToShowUuidObj = (post: Post): PostsToShowUuidsObj => {
     return {
@@ -92,25 +122,13 @@ export default function useMovePostRow(
         );
       }
       updatedPostsToShowUuid.shift();
-      postRowsDispatch({
-        type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME,
-        payload: {
-          postRowUuid: postRowUuid,
-          transitionTime: 0,
-          postLeft: 0,
-          postsToShowUuids: updatedPostsToShowUuid,
-        },
-      });
+      updatePostRowLayoutParams(updatedPostsToShowUuid, 0, 0);
       setTimeout(() => {
-        postRowsDispatch({
-          type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME,
-          payload: {
-            postRowUuid: postRowUuid,
-            transitionTime: autoScrollPostRowRateSecondsForSinglePostCard,
-            postLeft: postCardWidthPercentage * -1,
-            postsToShowUuids: updatedPostsToShowUuid,
-          },
-        });
+        updatePostRowLayoutParams(
+          updatedPostsToShowUuid,
+          postCardWidthPercentage * -1,
+          autoScrollPostRowRateSecondsForSinglePostCard
+        );
       }, 0);
     } else if (
       autoScrollPostRowDirectionOption ===
@@ -135,25 +153,17 @@ export default function useMovePostRow(
         );
       }
       updatedPostsToShowUuid.pop();
-      postRowsDispatch({
-        type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME,
-        payload: {
-          postRowUuid: postRowUuid,
-          transitionTime: 0,
-          postLeft: postCardWidthPercentage * -1,
-          postsToShowUuids: updatedPostsToShowUuid,
-        },
-      });
+      updatePostRowLayoutParams(
+        updatedPostsToShowUuid,
+        postCardWidthPercentage * -1,
+        0
+      );
       setTimeout(() => {
-        postRowsDispatch({
-          type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME,
-          payload: {
-            postRowUuid: postRowUuid,
-            transitionTime: autoScrollPostRowRateSecondsForSinglePostCard,
-            postLeft: 0,
-            postsToShowUuids: updatedPostsToShowUuid,
-          },
-        });
+        updatePostRowLayoutParams(
+          undefined,
+          0,
+          autoScrollPostRowRateSecondsForSinglePostCard
+        );
       }, 0);
     }
   }, [
@@ -161,10 +171,9 @@ export default function useMovePostRow(
     autoScrollPostRowRateSecondsForSinglePostCard,
     masterPosts,
     postCardWidthPercentage,
-    postRowUuid,
-    postRowsDispatch,
     postsToShowInRow,
     postsToShowUuids,
+    updatePostRowLayoutParams,
   ]);
 
   const handleMouseEnter = useCallback(() => {
@@ -178,16 +187,8 @@ export default function useMovePostRow(
       (postRowContentDivBoundingRect.left /
         postRowContentDivBoundingRect.width) *
       100;
-    postRowsDispatch({
-      type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME,
-      payload: {
-        postRowUuid: postRowUuid,
-        postLeft: leftPercentage,
-        transitionTime: 0,
-        postsToShowUuids: postsToShowUuids,
-      },
-    });
-  }, [postRowContentDivRef, postRowUuid, postRowsDispatch, postsToShowUuids]);
+    updatePostRowLayoutParams(undefined, leftPercentage, 0);
+  }, [postRowContentDivRef, updatePostRowLayoutParams]);
 
   const handleMouseLeave = useCallback(() => {
     mouseDownOnPostRow.current = false;
@@ -208,35 +209,25 @@ export default function useMovePostRow(
       AutoScrollPostRowDirectionOptionEnum.Right
     ) {
       const distanceLeftToTravelPx = Math.abs(rect.left);
-      postRowsDispatch({
-        type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME,
-        payload: {
-          postRowUuid: postRowUuid,
-          postLeft: 0,
-          transitionTime:
-            (distanceLeftToTravelPx *
-              autoScrollPostRowRateSecondsForSinglePostCard) /
-            postCardWidthPx,
-          postsToShowUuids: postsToShowUuids,
-        },
-      });
+      const transitionTimeToSet =
+        (distanceLeftToTravelPx *
+          autoScrollPostRowRateSecondsForSinglePostCard) /
+        postCardWidthPx;
+      updatePostRowLayoutParams(undefined, 0, transitionTimeToSet);
     } else if (
       autoScrollPostRowDirectionOption ===
       AutoScrollPostRowDirectionOptionEnum.Left
     ) {
       const distanceLeftToTravelPx = postCardWidthPx - Math.abs(rect.left);
-      postRowsDispatch({
-        type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME,
-        payload: {
-          postRowUuid: postRowUuid,
-          postLeft: postCardWidthPercentage * -1,
-          transitionTime:
-            (distanceLeftToTravelPx *
-              autoScrollPostRowRateSecondsForSinglePostCard) /
-            postCardWidthPx,
-          postsToShowUuids: postsToShowUuids,
-        },
-      });
+      const transitionTime =
+        (distanceLeftToTravelPx *
+          autoScrollPostRowRateSecondsForSinglePostCard) /
+        postCardWidthPx;
+      updatePostRowLayoutParams(
+        undefined,
+        postCardWidthPercentage * -1,
+        transitionTime
+      );
     }
   }, [
     autoScrollPostRowDirectionOption,
@@ -245,9 +236,10 @@ export default function useMovePostRow(
     postCardWidthPercentage,
     postRowContentDivRef,
     postRowUuid,
-    postRowsDispatch,
-    postsToShowUuids,
+    postsToShowInRow,
+    postsToShowUuids.length,
     shouldAutoScroll,
+    updatePostRowLayoutParams,
   ]);
 
   const handleMouseDownOrTouchStart = useCallback(
@@ -354,15 +346,11 @@ export default function useMovePostRow(
           );
         }
         updatedPostsToShowUuids.pop();
-        postRowsDispatch({
-          type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME,
-          payload: {
-            postRowUuid: postRowUuid,
-            postsToShowUuids: updatedPostsToShowUuids,
-            postLeft: postCardWidthPercentage * -1,
-            transitionTime: 0,
-          },
-        });
+        updatePostRowLayoutParams(
+          updatedPostsToShowUuids,
+          postCardWidthPercentage,
+          0
+        );
       } else if (leftToSet <= postCardWidthPercentage * -1) {
         const lastPostUuidObj = postsToShowUuids[postsToShowUuids.length - 1];
         const masterPostIndex = masterPosts.findIndex(
@@ -381,25 +369,9 @@ export default function useMovePostRow(
           );
         }
         updatedPostsToShowUuids.shift();
-        postRowsDispatch({
-          type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME,
-          payload: {
-            postRowUuid: postRowUuid,
-            postsToShowUuids: updatedPostsToShowUuids,
-            postLeft: 0,
-            transitionTime: 0,
-          },
-        });
+        updatePostRowLayoutParams(updatedPostsToShowUuids, 0, 0);
       } else {
-        postRowsDispatch({
-          type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME,
-          payload: {
-            postRowUuid: postRowUuid,
-            postsToShowUuids: postsToShowUuids,
-            postLeft: leftToSet,
-            transitionTime: 0,
-          },
-        });
+        updatePostRowLayoutParams(undefined, leftToSet, 0);
       }
       lastMouseDownX.current = eventX;
     },
@@ -407,10 +379,10 @@ export default function useMovePostRow(
       masterPosts,
       postCardWidthPercentage,
       postRowContentDivRef,
-      postRowUuid,
-      postRowsDispatch,
       postSliderLeft,
+      postsToShowInRow,
       postsToShowUuids,
+      updatePostRowLayoutParams,
     ]
   );
 
@@ -486,23 +458,40 @@ export default function useMovePostRow(
   }, [handleMouseLeave, menuOpenOnPostRowUuid, postRowUuid]);
 
   useLayoutEffect(() => {
-    if (postRowInitialized.current || postCardWidthPercentage == 0) {
+    const postRowContentDiv = postRowContentDivRef.current;
+    if (postRowInitialized.current || postRowContentDiv === null) {
       return;
     }
     if (masterPosts.length <= postsToShowInRow) {
-      postRowsDispatch({
-        type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME,
-        payload: {
-          postRowUuid: postRowUuid,
-          postsToShowUuids: masterPosts.map((post) =>
-            makePostsToShowUuidObj(post)
-          ),
-          postLeft: 0,
-          transitionTime: 0,
-        },
-      });
+      const postToShowUuidsToSet = masterPosts.map((post) =>
+        makePostsToShowUuidObj(post)
+      );
+      updatePostRowLayoutParams(postToShowUuidsToSet, 0, 0);
     } else if (postsToShowUuids.length !== 0) {
-      handleMouseLeave();
+      const rec = postRowContentDiv.getBoundingClientRect();
+      const currentLeftPercentage =
+        (rec.left / postRowContentDiv.clientWidth) * 100;
+
+      const transitionTime = Math.abs(
+        (currentLeftPercentage *
+          autoScrollPostRowRateSecondsForSinglePostCard) /
+          postCardWidthPercentage
+      );
+      let leftToSet: number | undefined;
+      if (
+        autoScrollPostRowDirectionOption ===
+        AutoScrollPostRowDirectionOptionEnum.Right
+      ) {
+        leftToSet = 0;
+      } else if (
+        autoScrollPostRowDirectionOption ===
+        AutoScrollPostRowDirectionOptionEnum.Left
+      ) {
+        leftToSet = postCardWidthPercentage * -1;
+      }
+      setTimeout(() => {
+        updatePostRowLayoutParams(undefined, leftToSet, transitionTime);
+      }, 10);
     } else {
       let postUuidsToSet: Array<PostsToShowUuidsObj> | undefined;
       let initialPostLeft: number | undefined;
@@ -537,15 +526,7 @@ export default function useMovePostRow(
         initialPostLeft !== undefined &&
         leftToGoToAfterInit !== undefined
       ) {
-        postRowsDispatch({
-          type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME,
-          payload: {
-            postRowUuid: postRowUuid,
-            postsToShowUuids: postUuidsToSet,
-            postLeft: initialPostLeft,
-            transitionTime: 0,
-          },
-        });
+        updatePostRowLayoutParams(postUuidsToSet, initialPostLeft, 0);
       }
 
       if (shouldAutoScroll) {
@@ -555,15 +536,11 @@ export default function useMovePostRow(
             initialPostLeft !== undefined &&
             leftToGoToAfterInit !== undefined
           ) {
-            postRowsDispatch({
-              type: PostRowsActionType.SET_POSTS_TO_SHOW_AND_POST_SLIDER_LEFT_AND_TRANSITION_TIME,
-              payload: {
-                postRowUuid: postRowUuid,
-                postsToShowUuids: postUuidsToSet,
-                postLeft: leftToGoToAfterInit,
-                transitionTime: autoScrollPostRowRateSecondsForSinglePostCard,
-              },
-            });
+            updatePostRowLayoutParams(
+              undefined,
+              leftToGoToAfterInit,
+              autoScrollPostRowRateSecondsForSinglePostCard
+            );
           }
         }, 0);
       }
@@ -573,13 +550,14 @@ export default function useMovePostRow(
   }, [
     autoScrollPostRowDirectionOption,
     autoScrollPostRowRateSecondsForSinglePostCard,
-    handleMouseLeave,
     masterPosts,
     postCardWidthPercentage,
     postRowUuid,
     postRowsDispatch,
     postsToShowInRow,
     postsToShowUuids,
+    postsToShowUuids.length,
     shouldAutoScroll,
+    updatePostRowLayoutParams,
   ]);
 }
