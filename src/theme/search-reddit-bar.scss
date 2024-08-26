@@ -66,12 +66,25 @@
 }
 
 .search-result-p {
-  margin-top: 0;
-  margin-bottom: 0;
+  margin-top: 0.2em;
+  margin-bottom: 0.1em;
+  margin-left: 0.5em;
+}
+
+.search-results-button-div {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5em;
+  padding: 0.2em 0.5em;
+  height: 2em;
 }
 
 .search-result-sub-unsub-button {
-  width: 100%;
-  height: 2em;
+  flex-grow: 1;
+  padding: 0;
+}
+
+.search-result-add-to-queue-button {
+  flex-grow: 1;
   padding: 0;
 }

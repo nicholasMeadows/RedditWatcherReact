@@ -4,6 +4,8 @@ import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
 import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
+import { RedditServiceDispatchContext } from "../context/reddit-service-context.ts";
+import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
 
 const SearchRedditBar: React.FC = () => {
   const darkmode = useContext(AppConfigStateContext).darkMode;
@@ -24,6 +26,8 @@ const SearchRedditBar: React.FC = () => {
   const [clearSearchInputImgSrc, setClearSearchInputImgSrc] = useState("");
 
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
+
+  const redditServiceDispatch = useContext(RedditServiceDispatchContext);
 
   useEffect(() => {
     let useDarkVersion = false;
@@ -132,14 +136,27 @@ const SearchRedditBar: React.FC = () => {
             {!searchResult.isUser && (
               <p className="search-result-p">{`Subs: ${searchResult.subscribers}`}</p>
             )}
-            <button
-              className="search-result-sub-unsub-button"
-              onClick={() => {
-                subOrUnSubFromSubreddit(searchResult);
-              }}
-            >
-              {searchResult.isSubscribed ? "UnSubscribe" : "Subscribe"}
-            </button>
+            <div className={"search-results-button-div"}>
+              <button
+                className="search-result-sub-unsub-button"
+                onClick={() => {
+                  subOrUnSubFromSubreddit(searchResult);
+                }}
+              >
+                {searchResult.isSubscribed ? "UnSubscribe" : "Subscribe"}
+              </button>
+              <button
+                className={"search-result-add-to-queue-button"}
+                onClick={() => {
+                  redditServiceDispatch({
+                    type: RedditServiceActions.ADD_ITEM_TO_SUBREDDIT_QUEUE,
+                    payload: searchResult,
+                  });
+                }}
+              >
+                Add to queue
+              </button>
+            </div>
           </div>
         ))}
       </div>
