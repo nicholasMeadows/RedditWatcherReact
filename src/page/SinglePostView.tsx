@@ -82,7 +82,22 @@ const SinglePostView: FC = () => {
     );
   }, [navigate, postIndex, postRow, postRowUuid]);
 
-  const singlePostPageZoom = useSinglePostPageZoom(
+  const {
+    resetImgPositionAndScale,
+    onTouchStart,
+    onTouchEnd,
+    onTouchMove,
+    imgScale,
+    imgXPercent,
+    imgYPercent,
+    postMediaElementOnMouseOUt,
+    postMediaElementOnWheel,
+    postMediaElementOnMouseUp,
+    postMediaElementOnMouseDown,
+    postMediaElementOnMouseMove,
+    postMediaElementOnTouchMove,
+    postMediaElementOnTouchStart,
+  } = useSinglePostPageZoom(
     postElementDivWrapperRef,
     goToNextPostClicked,
     goToPrevPostClicked
@@ -101,7 +116,7 @@ const SinglePostView: FC = () => {
       }
       const key = keyboardEvent.key;
 
-      singlePostPageZoom.resetImgPositionAndScale();
+      resetImgPositionAndScale();
       const attachmentsLength = post.attachments.length;
       const currentAttachmentIndex = post.currentAttachmentIndex;
       if (currentAttachmentIndex === 0 && key === "ArrowLeft") {
@@ -127,7 +142,7 @@ const SinglePostView: FC = () => {
     goToPrevPostClicked,
     incrementAttachmentHook,
     post,
-    singlePostPageZoom,
+    resetImgPositionAndScale,
   ]);
 
   return (
@@ -135,9 +150,9 @@ const SinglePostView: FC = () => {
       {post != undefined && (
         <div
           className="single-post-view flex flex-column max-width-height-percentage"
-          onTouchStart={singlePostPageZoom.onTouchStart}
-          onTouchMove={singlePostPageZoom.onTouchMove}
-          onTouchEnd={singlePostPageZoom.onTouchEnd}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
         >
           <h4 className="text-align-center text-color">
             {post.subreddit.displayNamePrefixed}
@@ -172,20 +187,18 @@ const SinglePostView: FC = () => {
                 jumpToPostAttachment:
                   incrementAttachmentHook.jumpToPostAttachment,
                 autoIncrementAttachments: false,
-                scale: singlePostPageZoom.imgScale,
-                imgXPercent: singlePostPageZoom.imgXPercent,
-                imgYPercent: singlePostPageZoom.imgYPercent,
-                onMouseOut: singlePostPageZoom.postMediaElementOnMouseOUt,
-                onMouseDown: singlePostPageZoom.postMediaElementOnMouseDown,
-                onMouseUp: singlePostPageZoom.postMediaElementOnMouseUp,
-                onMouseMove: singlePostPageZoom.postMediaElementOnMouseMove,
-                onWheel: singlePostPageZoom.postMediaElementOnWheel,
-                onTouchStart: singlePostPageZoom.postMediaElementOnTouchStart,
-                onTouchMove: singlePostPageZoom.postMediaElementOnTouchMove,
-                carouselLeftButtonClick:
-                  singlePostPageZoom.resetImgPositionAndScale,
-                carouselRightButtonClick:
-                  singlePostPageZoom.resetImgPositionAndScale,
+                scale: imgScale,
+                imgXPercent: imgXPercent,
+                imgYPercent: imgYPercent,
+                onMouseOut: postMediaElementOnMouseOUt,
+                onMouseDown: postMediaElementOnMouseDown,
+                onMouseUp: postMediaElementOnMouseUp,
+                onMouseMove: postMediaElementOnMouseMove,
+                onWheel: postMediaElementOnWheel,
+                onTouchStart: postMediaElementOnTouchStart,
+                onTouchMove: postMediaElementOnTouchMove,
+                carouselLeftButtonClick: resetImgPositionAndScale,
+                carouselRightButtonClick: resetImgPositionAndScale,
                 postImageQuality: PostImageQualityEnum.High,
               }}
             >
@@ -197,7 +210,10 @@ const SinglePostView: FC = () => {
               <div className="post-control-button-wrapper">
                 <button
                   className="post-control-button"
-                  onClick={goToPrevPostClicked}
+                  onClick={() => {
+                    resetImgPositionAndScale();
+                    goToPrevPostClicked();
+                  }}
                 >
                   Previous
                 </button>
@@ -205,7 +221,10 @@ const SinglePostView: FC = () => {
               <div className="post-control-button-wrapper">
                 <button
                   className="post-control-button"
-                  onClick={goToNextPostClicked}
+                  onClick={() => {
+                    resetImgPositionAndScale();
+                    goToNextPostClicked();
+                  }}
                 >
                   Next
                 </button>

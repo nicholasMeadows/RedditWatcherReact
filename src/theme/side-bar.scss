@@ -80,6 +80,7 @@ $content-div-padding: 0.4em 0.8em;
   flex-grow: 1;
   position: relative;
   overflow-y: auto;
+  overflow-x: hidden;
   margin: $content-div-padding;
 }
 
