@@ -132,6 +132,7 @@ const openContextMenuForPost = (
   const postRowUuid = action.payload.postRowUuid;
 
   const base = makeBaseContextState(true, x, y);
+  base.subreddit = post.subreddit;
   base.copyInfo = {
     url: post.attachments[post.currentAttachmentIndex].url,
     mediaType: post.attachments[post.currentAttachmentIndex].mediaType,
