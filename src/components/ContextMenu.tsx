@@ -194,7 +194,7 @@ const ContextMenu: React.FC = () => {
 
         <div
           className="context-menu-button"
-          hidden={!showButtonControls.showSkipToSubreddit}
+          hidden={!showButtonControls.showAddSubredditToQueue}
           onClick={() => {
             if (subreddit != undefined) {
               redditServiceDispatch({
@@ -207,7 +207,7 @@ const ContextMenu: React.FC = () => {
             });
           }}
         >
-          <p className="context-menu-button-label">Skip to Subreddit</p>
+          <p className="context-menu-button-label">Add to Queue</p>
         </div>
 
         <div

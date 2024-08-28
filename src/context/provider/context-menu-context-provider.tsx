@@ -23,7 +23,7 @@ const initialState: ContextMenuState = {
     showOpenPost: false,
     showOpenSubreddit: false,
     showCopy: false,
-    showSkipToSubreddit: false,
+    showAddSubredditToQueue: false,
     showAddToList: false,
     expandAddToList: false,
     showRemoveFromList: false,

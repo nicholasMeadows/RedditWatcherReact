@@ -25,7 +25,7 @@ type ShowButtonControls = {
   showOpenImageInNewTab: boolean;
   showOpenSubreddit: boolean;
   showCopy: boolean;
-  showSkipToSubreddit: boolean;
+  showAddSubredditToQueue: boolean;
   showAddToList: boolean;
   expandAddToList: boolean;
   showRemoveFromList: boolean;

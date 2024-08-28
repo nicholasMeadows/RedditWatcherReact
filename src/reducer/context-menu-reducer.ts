@@ -228,7 +228,7 @@ const makeBaseContextState = (
       showAddToList: false,
       showOpenSubreddit: false,
       showRemoveFromList: false,
-      showSkipToSubreddit: false,
+      showAddSubredditToQueue: false,
       showCopy: false,
       showUpdateListName: false,
       expandAddToList: false,
@@ -264,14 +264,14 @@ const setButtonControls = (
     state.showButtonControls.showOpenImageInNewTab = true;
     state.showButtonControls.showOpenSubreddit = true;
     state.showButtonControls.showCopy = true;
-    state.showButtonControls.showSkipToSubreddit = true;
+    state.showButtonControls.showAddSubredditToQueue = true;
     state.showButtonControls.showAddToList = true;
     state.showButtonControls.showRemoveFromList = true;
   }
 
   if (subreddit != undefined) {
     state.showButtonControls.showOpenSubreddit = true;
-    state.showButtonControls.showSkipToSubreddit = true;
+    state.showButtonControls.showAddSubredditToQueue = true;
     state.showButtonControls.showAddToList = true;
     state.showButtonControls.showRemoveFromList = true;
   }
@@ -283,7 +283,7 @@ const setButtonControls = (
 
   if (searchResultItem) {
     state.showButtonControls.showOpenSubreddit = true;
-    state.showButtonControls.showSkipToSubreddit = true;
+    state.showButtonControls.showAddSubredditToQueue = true;
     state.showButtonControls.showAddToList = true;
     state.showButtonControls.showRemoveFromList = true;
   }
