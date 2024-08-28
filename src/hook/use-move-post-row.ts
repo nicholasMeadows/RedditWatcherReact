@@ -348,7 +348,7 @@ export default function useMovePostRow(
         updatedPostsToShowUuids.pop();
         updatePostRowLayoutParams(
           updatedPostsToShowUuids,
-          postCardWidthPercentage,
+          postCardWidthPercentage * -1,
           0
         );
       } else if (leftToSet <= postCardWidthPercentage * -1) {
@@ -552,6 +552,7 @@ export default function useMovePostRow(
     autoScrollPostRowRateSecondsForSinglePostCard,
     masterPosts,
     postCardWidthPercentage,
+    postRowContentDivRef,
     postRowUuid,
     postRowsDispatch,
     postsToShowInRow,
