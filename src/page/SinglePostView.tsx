@@ -1,20 +1,21 @@
 import { FC, useCallback, useContext, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { PostRowsContext } from "../context/post-rows-context.ts";
-import useSinglePostPageZoom from "../hook/use-single-post-page-zoom.ts";
 import { Post } from "../model/Post/Post.ts";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
 import { PostImageQualityEnum } from "../model/config/enums/PostImageQualityEnum.ts";
 import PostMediaElement from "../components/PostMediaElement.tsx";
 import { PostRow } from "../model/PostRow.ts";
-import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 import {
   SINGLE_POST_PAGE_POST_ROW_UUID_KEY,
   SINGLE_POST_PAGE_POST_UUID_KEY,
   SINGLE_POST_ROUTE,
 } from "../RedditWatcherConstants.ts";
-import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
-import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
+import PostMediaElementZoomContext from "../context/post-media-element-zoom-context.ts";
+import useSinglePostPageZoom from "../hook/use-single-post-page-zoom.ts";
+import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
 
 const SinglePostView: FC = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const SinglePostView: FC = () => {
   const postRowUuid = queryParams.get("postRowUuid");
   const postUuid = queryParams.get("postUuid");
   const { postRows } = useContext(PostRowsContext);
-  const postElementDivWrapperRef = useRef(null);
+  const postElementDivWrapperRef = useRef<HTMLDivElement>(null);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
 
   let post: Post | undefined;
@@ -82,32 +83,15 @@ const SinglePostView: FC = () => {
     );
   }, [navigate, postIndex, postRow, postRowUuid]);
 
-  const {
-    resetImgPositionAndScale,
-    onTouchStart,
-    onTouchEnd,
-    onTouchMove,
-    imgScale,
-    imgXPercent,
-    imgYPercent,
-    postMediaElementOnMouseOUt,
-    postMediaElementOnWheel,
-    postMediaElementOnMouseUp,
-    postMediaElementOnMouseDown,
-    postMediaElementOnMouseMove,
-    postMediaElementOnTouchMove,
-    postMediaElementOnTouchStart,
-  } = useSinglePostPageZoom(
-    postElementDivWrapperRef,
-    goToNextPostClicked,
-    goToPrevPostClicked
-  );
+  const { resetImgPositionAndScale, imgScale, imgXPercent, imgYPercent } =
+    useSinglePostPageZoom(
+      postElementDivWrapperRef,
+      goToNextPostClicked,
+      goToPrevPostClicked
+    );
 
-  const incrementAttachmentHook = useIncrementAttachment(
-    post,
-    postRowUuid,
-    false
-  );
+  const { decrementPostAttachment, incrementPostAttachment } =
+    useIncrementAttachment(post, postRowUuid, false, true);
 
   useEffect(() => {
     const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
@@ -127,9 +111,9 @@ const SinglePostView: FC = () => {
       ) {
         goToNextPostClicked();
       } else if (key === "ArrowLeft") {
-        incrementAttachmentHook.decrementPostAttachment();
+        decrementPostAttachment();
       } else if (key === "ArrowRight") {
-        incrementAttachmentHook.incrementPostAttachment();
+        incrementPostAttachment();
       }
     };
 
@@ -138,22 +122,18 @@ const SinglePostView: FC = () => {
       document.body.removeEventListener("keyup", documentKeyUpEvent);
     };
   }, [
+    decrementPostAttachment,
     goToNextPostClicked,
     goToPrevPostClicked,
-    incrementAttachmentHook,
+    incrementPostAttachment,
     post,
     resetImgPositionAndScale,
   ]);
 
   return (
     <>
-      {post != undefined && (
-        <div
-          className="single-post-view flex flex-column max-width-height-percentage"
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-        >
+      {post != undefined && postRowUuid != undefined && (
+        <div className="single-post-view flex flex-column max-width-height-percentage">
           <h4 className="text-align-center text-color">
             {post.subreddit.displayNamePrefixed}
           </h4>
@@ -176,34 +156,25 @@ const SinglePostView: FC = () => {
             }}
             className="flex flex-column max-width-height-percentage single-post-view-post-element"
           >
-            <PostMediaElementContext.Provider
+            <PostMediaElementZoomContext.Provider
               value={{
-                post: post,
-                currentAttachmentIndex: post.currentAttachmentIndex,
-                incrementPostAttachment:
-                  incrementAttachmentHook.incrementPostAttachment,
-                decrementPostAttachment:
-                  incrementAttachmentHook.decrementPostAttachment,
-                jumpToPostAttachment:
-                  incrementAttachmentHook.jumpToPostAttachment,
-                autoIncrementAttachments: false,
-                scale: imgScale,
                 imgXPercent: imgXPercent,
                 imgYPercent: imgYPercent,
-                onMouseOut: postMediaElementOnMouseOUt,
-                onMouseDown: postMediaElementOnMouseDown,
-                onMouseUp: postMediaElementOnMouseUp,
-                onMouseMove: postMediaElementOnMouseMove,
-                onWheel: postMediaElementOnWheel,
-                onTouchStart: postMediaElementOnTouchStart,
-                onTouchMove: postMediaElementOnTouchMove,
-                carouselLeftButtonClick: resetImgPositionAndScale,
-                carouselRightButtonClick: resetImgPositionAndScale,
-                postImageQuality: PostImageQualityEnum.High,
+                scale: imgScale,
               }}
             >
-              <PostMediaElement />
-            </PostMediaElementContext.Provider>
+              <PostMediaElementContext.Provider
+                value={{
+                  post: post,
+                  postRowUuid: postRowUuid,
+                  autoIncrementAttachment: false,
+                  mouseOverPostCard: false,
+                  postImageQuality: PostImageQualityEnum.High,
+                }}
+              >
+                <PostMediaElement />
+              </PostMediaElementContext.Provider>
+            </PostMediaElementZoomContext.Provider>
           </div>
           {postRow !== undefined && postRow.posts.length > 1 && (
             <div className="post-control-button-box">

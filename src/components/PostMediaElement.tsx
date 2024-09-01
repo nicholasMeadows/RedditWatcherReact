@@ -1,6 +1,8 @@
 import React, {
   memo,
+  MouseEvent,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -11,53 +13,45 @@ import { PostImageQualityEnum } from "../model/config/enums/PostImageQualityEnum
 import { MediaType } from "../model/Post/MediaTypeEnum.ts";
 import { AttachmentResolution } from "../model/Post/AttachmentResolution.ts";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
+import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
+import PostMediaElementZoomContext from "../context/post-media-element-zoom-context.ts";
 
-// type Props = {
-//   post: Post;
-//   currentAttachmentIndex: number;
-//   decrementPostAttachment: () => void;
-//   incrementPostAttachment: () => void;
-//   jumpToPostAttachment: (index: number) => void;
-//   autoIncrementAttachments?: boolean;
-//   scale?: number;
-//   imgXPercent?: number;
-//   imgYPercent?: number;
-//   onMouseOut?: MouseEventHandler;
-//   onMouseDown?: MouseEventHandler;
-//   onMouseUp?: MouseEventHandler;
-//   onMouseMove?: MouseEventHandler;
-//   onWheel?: WheelEventHandler;
-//   onTouchStart?: TouchEventHandler;
-//   onTouchMove?: TouchEventHandler;
-//   carouselLeftButtonClick?: () => void;
-//   carouselRightButtonClick?: () => void;
-//   postImageQuality?: PostImageQualityEnum;
-// };
 const PostMediaElement: React.FC = memo(() => {
   const {
     post,
-    currentAttachmentIndex,
-    decrementPostAttachment,
-    incrementPostAttachment,
-    jumpToPostAttachment,
-    scale = 1,
-    imgXPercent = 50,
-    imgYPercent = 50,
-    onMouseOut,
-    onMouseDown,
-    onMouseUp,
-    onMouseMove,
-    onWheel,
-    onTouchStart,
-    onTouchMove,
-    carouselRightButtonClick,
-    carouselLeftButtonClick,
+    postRowUuid,
+    autoIncrementAttachment,
+    mouseOverPostCard,
     postImageQuality,
   } = useContext(PostMediaElementContext);
+
+  const postMediaElementZoomContext = useContext(PostMediaElementZoomContext);
+
+  let imgTop = 50;
+  let imgLeft = 50;
+  let imgScale = 1;
+  if (postMediaElementZoomContext !== undefined) {
+    imgTop = postMediaElementZoomContext.imgYPercent;
+    imgLeft = postMediaElementZoomContext.imgXPercent;
+    imgScale = postMediaElementZoomContext.scale;
+  }
+
+  const currentAttachmentIndex = post.currentAttachmentIndex;
 
   const [carouselArrowLightDarkPart, setCarouselArrowLightDarkPart] =
     useState("light");
   const [mediaSrc, setMediaSrc] = useState("");
+
+  const {
+    incrementPostAttachment,
+    decrementPostAttachment,
+    jumpToPostAttachment,
+  } = useIncrementAttachment(
+    post,
+    postRowUuid,
+    autoIncrementAttachment,
+    mouseOverPostCard
+  );
 
   useEffect(() => {
     if (
@@ -199,6 +193,24 @@ const PostMediaElement: React.FC = memo(() => {
     postImageQuality,
   ]);
 
+  const carouselLeftButtonClick = useCallback(
+    (event: MouseEvent) => {
+      event.stopPropagation();
+      event.preventDefault();
+      decrementPostAttachment();
+    },
+    [decrementPostAttachment]
+  );
+
+  const carouselRightButtonClick = useCallback(
+    (event: MouseEvent) => {
+      event.stopPropagation();
+      event.preventDefault();
+      incrementPostAttachment();
+    },
+    [incrementPostAttachment]
+  );
+
   return (
     <div className="post-element" ref={postElementRef}>
       <img
@@ -208,12 +220,7 @@ const PostMediaElement: React.FC = memo(() => {
         className="post-element-scroll-img-button left"
         draggable={false}
         onClick={(event) => {
-          event.stopPropagation();
-          event.preventDefault();
-          if (carouselLeftButtonClick !== undefined) {
-            carouselLeftButtonClick();
-          }
-          decrementPostAttachment();
+          carouselLeftButtonClick(event);
         }}
       />
       <img
@@ -223,12 +230,7 @@ const PostMediaElement: React.FC = memo(() => {
         className="post-element-scroll-img-button right"
         draggable={false}
         onClick={(event) => {
-          event.stopPropagation();
-          event.preventDefault();
-          if (carouselRightButtonClick !== undefined) {
-            carouselRightButtonClick();
-          }
-          incrementPostAttachment();
+          carouselRightButtonClick(event);
         }}
       />
 
@@ -246,17 +248,10 @@ const PostMediaElement: React.FC = memo(() => {
                 draggable={false}
                 src={mediaSrc}
                 className="post-element-img-element"
-                onMouseOut={onMouseOut}
-                onMouseDown={onMouseDown}
-                onMouseUp={onMouseUp}
-                onMouseMove={onMouseMove}
-                onWheel={onWheel}
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
                 style={{
-                  left: `${imgXPercent}%`,
-                  top: `${imgYPercent}%`,
-                  transform: `translate(-50%, -50%) scale(${scale})`,
+                  left: `${imgLeft}%`,
+                  top: `${imgTop}%`,
+                  transform: `translate(-50%, -50%) scale(${imgScale})`,
                 }}
               ></img>
             </div>

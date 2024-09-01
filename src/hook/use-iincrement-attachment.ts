@@ -6,10 +6,10 @@ import { Post } from "../model/Post/Post.ts";
 export default function useIncrementAttachment(
   post: Post | undefined,
   postRowUuid: string | null,
-  autoIncrementAttachments?: boolean
+  autoIncrementAttachments: boolean,
+  mouseOver: boolean
 ) {
   const postRowsDispatch = useContext(PostRowsDispatchContext);
-  // const [currentAttachmentIndex, setCurrentAttachmentIndex] = useState(0);
   const autoIncrementPostAttachmentInterval = useRef<
     NodeJS.Timeout | undefined
   >();
@@ -92,16 +92,18 @@ export default function useIncrementAttachment(
 
   const setupAutoIncrementPostAttachmentInterval = useCallback(() => {
     if (
-      post !== undefined &&
-      post.attachments !== undefined &&
-      post.attachments.length > 1 &&
-      autoIncrementAttachments
+      !autoIncrementAttachments ||
+      post === undefined ||
+      post.attachments === undefined ||
+      post.attachments.length <= 1 ||
+      mouseOver
     ) {
-      autoIncrementPostAttachmentInterval.current = setInterval(() => {
-        incrementPostAttachment();
-      }, 5000);
+      return;
     }
-  }, [post, autoIncrementAttachments, incrementPostAttachment]);
+    autoIncrementPostAttachmentInterval.current = setInterval(() => {
+      incrementPostAttachment();
+    }, 5000);
+  }, [post, autoIncrementAttachments, mouseOver, incrementPostAttachment]);
 
   const clearAutoIncrementPostAttachmentInterval = useCallback(() => {
     if (autoIncrementPostAttachmentInterval.current != undefined) {
@@ -120,10 +122,6 @@ export default function useIncrementAttachment(
   ]);
 
   return {
-    clearAutoIncrementPostAttachmentInterval:
-      clearAutoIncrementPostAttachmentInterval,
-    setupAutoIncrementPostAttachmentInterval:
-      setupAutoIncrementPostAttachmentInterval,
     incrementPostAttachment: incrementPostAttachment,
     decrementPostAttachment: decrementPostAttachment,
     jumpToPostAttachment: jumpToPostAttachment,

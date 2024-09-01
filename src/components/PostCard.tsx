@@ -1,4 +1,4 @@
-import { FC, memo, useContext, useRef } from "react";
+import { FC, memo, useContext, useRef, useState } from "react";
 import { PostCardContext } from "../context/post-card-context.ts";
 import "../theme/post-card.scss";
 import {
@@ -8,7 +8,6 @@ import {
 } from "../RedditWatcherConstants.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
 import { useNavigate } from "react-router-dom";
-import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
 import {
   ContextMenuDispatchContext,
@@ -25,17 +24,16 @@ const PostCard: FC = memo(() => {
   const initialMouseDownOrTouchX = useRef(0);
   const { showContextMenu } = useContext(ContextMenuStateContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
-  const {
-    clearAutoIncrementPostAttachmentInterval,
-    setupAutoIncrementPostAttachmentInterval,
-    incrementPostAttachment,
-    decrementPostAttachment,
-    jumpToPostAttachment,
-  } = useIncrementAttachment(post, postRowUuid, true);
+  const [mouseOverPostCard, setMouseOverPostCard] = useState(false);
 
   return (
     <div
       className={`post-card-outer`}
+      onMouseOver={() => {
+        console.log("Nicholas setting mouse over post card");
+        setMouseOverPostCard(true);
+      }}
+      onMouseLeave={() => setMouseOverPostCard(false)}
       onMouseDown={(event) => {
         initialMouseDownOrTouchX.current = event.clientX;
       }}
@@ -71,12 +69,6 @@ const PostCard: FC = memo(() => {
           payload: undefined,
         });
       }}
-      onMouseEnter={() => {
-        clearAutoIncrementPostAttachmentInterval();
-      }}
-      onMouseLeave={() => {
-        setupAutoIncrementPostAttachmentInterval();
-      }}
     >
       <div className="postCardHeader">
         <p className="postCardHeaderText">{`${post.subreddit.displayName}${
@@ -103,10 +95,9 @@ const PostCard: FC = memo(() => {
         <PostMediaElementContext.Provider
           value={{
             post: post,
-            incrementPostAttachment: incrementPostAttachment,
-            decrementPostAttachment: decrementPostAttachment,
-            jumpToPostAttachment: jumpToPostAttachment,
-            currentAttachmentIndex: post.currentAttachmentIndex,
+            postRowUuid: postRowUuid,
+            autoIncrementAttachment: true,
+            mouseOverPostCard: mouseOverPostCard,
           }}
         >
           <PostMediaElement />
