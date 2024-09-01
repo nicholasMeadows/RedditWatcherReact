@@ -40,8 +40,12 @@ const SinglePostView: FC = () => {
     }
   }
 
+  const { decrementPostAttachment, incrementPostAttachment } =
+    useIncrementAttachment(post, postRowUuid, false, true);
+
   const goToNextPostClicked = useCallback(() => {
     if (
+      post === undefined ||
       postIndex === undefined ||
       postRow === undefined ||
       postRowUuid === null
@@ -49,21 +53,35 @@ const SinglePostView: FC = () => {
       return;
     }
 
-    let postUuid: string;
-    if (postIndex < postRow.posts.length - 1) {
-      postUuid = postRow.posts[postIndex + 1].postUuid;
-    } else {
-      postUuid = postRow.posts[0].postUuid;
-    }
+    const attachmentsLength = post.attachments.length;
+    const currentAttachmentIndex = post.currentAttachmentIndex;
+    if (currentAttachmentIndex === attachmentsLength - 1) {
+      let postUuid: string;
+      if (postIndex < postRow.posts.length - 1) {
+        postUuid = postRow.posts[postIndex + 1].postUuid;
+      } else {
+        postUuid = postRow.posts[0].postUuid;
+      }
 
-    navigate(
-      `${SINGLE_POST_ROUTE}?${SINGLE_POST_PAGE_POST_ROW_UUID_KEY}=${postRowUuid}&${SINGLE_POST_PAGE_POST_UUID_KEY}=${postUuid}`,
-      { replace: true }
-    );
-  }, [navigate, postIndex, postRow, postRowUuid]);
+      navigate(
+        `${SINGLE_POST_ROUTE}?${SINGLE_POST_PAGE_POST_ROW_UUID_KEY}=${postRowUuid}&${SINGLE_POST_PAGE_POST_UUID_KEY}=${postUuid}`,
+        { replace: true }
+      );
+    } else {
+      incrementPostAttachment();
+    }
+  }, [
+    incrementPostAttachment,
+    navigate,
+    post,
+    postIndex,
+    postRow,
+    postRowUuid,
+  ]);
 
   const goToPrevPostClicked = useCallback(() => {
     if (
+      post === undefined ||
       postIndex === undefined ||
       postRow === undefined ||
       postRowUuid === null
@@ -71,17 +89,29 @@ const SinglePostView: FC = () => {
       return;
     }
 
-    let postUuid: string;
-    if (postIndex == 0) {
-      postUuid = postRow.posts[postRow.posts.length - 1].postUuid;
+    const currentAttachmentIndex = post.currentAttachmentIndex;
+    if (currentAttachmentIndex === 0) {
+      let postUuid: string;
+      if (postIndex == 0) {
+        postUuid = postRow.posts[postRow.posts.length - 1].postUuid;
+      } else {
+        postUuid = postRow.posts[postIndex - 1].postUuid;
+      }
+      navigate(
+        `${SINGLE_POST_ROUTE}?${SINGLE_POST_PAGE_POST_ROW_UUID_KEY}=${postRowUuid}&${SINGLE_POST_PAGE_POST_UUID_KEY}=${postUuid}`,
+        { replace: true }
+      );
     } else {
-      postUuid = postRow.posts[postIndex - 1].postUuid;
+      decrementPostAttachment();
     }
-    navigate(
-      `${SINGLE_POST_ROUTE}?${SINGLE_POST_PAGE_POST_ROW_UUID_KEY}=${postRowUuid}&${SINGLE_POST_PAGE_POST_UUID_KEY}=${postUuid}`,
-      { replace: true }
-    );
-  }, [navigate, postIndex, postRow, postRowUuid]);
+  }, [
+    decrementPostAttachment,
+    navigate,
+    post,
+    postIndex,
+    postRow,
+    postRowUuid,
+  ]);
 
   const { resetImgPositionAndScale, imgScale, imgXPercent, imgYPercent } =
     useSinglePostPageZoom(
@@ -89,9 +119,6 @@ const SinglePostView: FC = () => {
       goToNextPostClicked,
       goToPrevPostClicked
     );
-
-  const { decrementPostAttachment, incrementPostAttachment } =
-    useIncrementAttachment(post, postRowUuid, false, true);
 
   useEffect(() => {
     const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
@@ -101,19 +128,10 @@ const SinglePostView: FC = () => {
       const key = keyboardEvent.key;
 
       resetImgPositionAndScale();
-      const attachmentsLength = post.attachments.length;
-      const currentAttachmentIndex = post.currentAttachmentIndex;
-      if (currentAttachmentIndex === 0 && key === "ArrowLeft") {
+      if (key === "ArrowLeft") {
         goToPrevPostClicked();
-      } else if (
-        currentAttachmentIndex === attachmentsLength - 1 &&
-        key === "ArrowRight"
-      ) {
-        goToNextPostClicked();
-      } else if (key === "ArrowLeft") {
-        decrementPostAttachment();
       } else if (key === "ArrowRight") {
-        incrementPostAttachment();
+        goToNextPostClicked();
       }
     };
 
