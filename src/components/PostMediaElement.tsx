@@ -23,6 +23,8 @@ const PostMediaElement: React.FC = memo(() => {
     autoIncrementAttachment,
     mouseOverPostCard,
     postImageQuality,
+    onElementMouseLeave,
+    onElementMouseEnter,
   } = useContext(PostMediaElementContext);
 
   const postMediaElementZoomContext = useContext(PostMediaElementZoomContext);
@@ -252,6 +254,17 @@ const PostMediaElement: React.FC = memo(() => {
                   left: `${imgLeft}%`,
                   top: `${imgTop}%`,
                   transform: `translate(-50%, -50%) scale(${imgScale})`,
+                  background: "blue",
+                }}
+                onMouseEnter={(event) => {
+                  if (onElementMouseEnter !== undefined) {
+                    onElementMouseEnter(event);
+                  }
+                }}
+                onMouseLeave={(event) => {
+                  if (onElementMouseLeave !== undefined) {
+                    onElementMouseLeave(event);
+                  }
                 }}
               ></img>
             </div>

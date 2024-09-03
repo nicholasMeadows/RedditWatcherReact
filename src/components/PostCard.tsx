@@ -26,6 +26,7 @@ const PostCard: FC = memo(() => {
   const { showContextMenu } = useContext(ContextMenuStateContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const [mouseOverPostCard, setMouseOverPostCard] = useState(false);
+  const [showPostInfo, setShowPostInfo] = useState(false);
 
   const currentAttachment = post.attachments[post.currentAttachmentIndex];
   const attachmentUrl = currentAttachment.url;
@@ -81,9 +82,7 @@ const PostCard: FC = memo(() => {
         </div>
       )}
       <div
-        className={`post-info-div ${
-          mouseOverPostCard ? "post-info-div-hover" : ""
-        }`}
+        className={`post-info-div ${showPostInfo ? "post-info-div-hover" : ""}`}
         onTransitionEndCapture={(event) => {
           event.stopPropagation();
           event.preventDefault();
@@ -116,6 +115,12 @@ const PostCard: FC = memo(() => {
             postRowUuid: postRowUuid,
             autoIncrementAttachment: true,
             mouseOverPostCard: mouseOverPostCard,
+            onElementMouseEnter: () => {
+              setShowPostInfo(true);
+            },
+            onElementMouseLeave: () => {
+              setShowPostInfo(false);
+            },
           }}
         >
           <PostMediaElement />

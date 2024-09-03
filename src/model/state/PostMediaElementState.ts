@@ -1,5 +1,6 @@
 import { Post } from "../Post/Post.ts";
 import { PostImageQualityEnum } from "../config/enums/PostImageQualityEnum.ts";
+import { MouseEvent } from "react";
 
 export default interface PostMediaElementState {
   post: Post;
@@ -7,4 +8,6 @@ export default interface PostMediaElementState {
   autoIncrementAttachment: boolean;
   mouseOverPostCard: boolean;
   postImageQuality?: PostImageQualityEnum;
+  onElementMouseEnter?: (event: MouseEvent) => void;
+  onElementMouseLeave?: (event: MouseEvent) => void;
 }
