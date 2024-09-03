@@ -6,9 +6,7 @@ import {
   SINGLE_POST_PAGE_POST_UUID_KEY,
   SINGLE_POST_ROUTE,
 } from "../RedditWatcherConstants.ts";
-import PostMediaElement from "./PostMediaElement.tsx";
 import { useNavigate } from "react-router-dom";
-import PostMediaElementContext from "../context/post-media-element-context.ts";
 import {
   ContextMenuDispatchContext,
   ContextMenuStateContext,
@@ -16,6 +14,9 @@ import {
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
+import PostMediaElement from "./PostMediaElement.tsx";
+import PostMediaElementContext from "../context/post-media-element-context.ts";
+import { MediaType } from "../model/Post/MediaTypeEnum.ts";
 
 const PostCard: FC = memo(() => {
   const navigate = useNavigate();
@@ -25,6 +26,10 @@ const PostCard: FC = memo(() => {
   const { showContextMenu } = useContext(ContextMenuStateContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const [mouseOverPostCard, setMouseOverPostCard] = useState(false);
+
+  const currentAttachment = post.attachments[post.currentAttachmentIndex];
+  const attachmentUrl = currentAttachment.url;
+  const attachmentMediaType = currentAttachment.mediaType;
 
   return (
     <div
@@ -70,7 +75,20 @@ const PostCard: FC = memo(() => {
         });
       }}
     >
-      <div className="postCardHeader">
+      {attachmentMediaType !== MediaType.IFrame && (
+        <div className={"post-card-blur-background"}>
+          <img src={attachmentUrl} />
+        </div>
+      )}
+      <div
+        className={`post-info-div ${
+          mouseOverPostCard ? "post-info-div-hover" : ""
+        }`}
+        onTransitionEndCapture={(event) => {
+          event.stopPropagation();
+          event.preventDefault();
+        }}
+      >
         <p className="postCardHeaderText">{`${post.subreddit.displayName}${
           post.attachments.length > 1 ? " (Gallery)" : ""
         }`}</p>
