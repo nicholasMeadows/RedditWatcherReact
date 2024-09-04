@@ -37,7 +37,8 @@
 .post-element-img-element {
   z-index: 1;
   position: relative;
-  height: 100%;
+  max-height: 100%;
+  max-width: 100%;
   object-fit: contain;
   user-drag: none;
   user-select: none;
@@ -45,8 +46,9 @@
   -webkit-user-drag: none;
   -webkit-user-select: none;
   -ms-user-select: none;
+  top: 50%;
   left: 50%;
-  transform: translate(-50%, 0);
+  transform: translate(-50%, -50%);
 }
 
 .attachment-indicator-box {
