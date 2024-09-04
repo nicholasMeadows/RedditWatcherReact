@@ -12,11 +12,7 @@ import {
   SideBarStateContext,
 } from "../context/side-bar-context.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
-import {
-  RedditServiceDispatchContext,
-  RedditServiceStateContext,
-} from "../context/reddit-service-context.ts";
-import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
+import { RedditServiceStateContext } from "../context/reddit-service-context.ts";
 import SearchRedditBar from "./SearchRedditBar.tsx";
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
@@ -47,7 +43,6 @@ const SideBar: React.FC<SideBarProps> = ({
   const { subredditLists } = useContext(RedditListStateContext);
   const sideBarDispatch = useContext(SideBarDispatchContext);
   const { secondsTillGettingNextPosts } = useContext(RedditServiceStateContext);
-  const redditServiceDispatch = useContext(RedditServiceDispatchContext);
   const { darkMode } = useContext(AppConfigStateContext);
   const { showContextMenu } = useContext(ContextMenuStateContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
@@ -156,20 +151,6 @@ const SideBar: React.FC<SideBarProps> = ({
   };
 
   const searchRedditBarState = useSearchRedditBar();
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (secondsTillGettingNextPosts > 0) {
-        redditServiceDispatch({
-          type: RedditServiceActions.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
-          payload: secondsTillGettingNextPosts - 1,
-        });
-      }
-    }, 1000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, [sideBarDispatch, secondsTillGettingNextPosts, redditServiceDispatch]);
 
   useEffect(() => {
     let subredditsInSideBarToSet = subredditsToShowInSideBar;

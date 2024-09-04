@@ -6,6 +6,7 @@ import {
 import { RedditServiceState } from "../../model/state/RedditServiceState.ts";
 import RedditServiceReducer from "../../reducer/reddit-service-reducer.ts";
 import { RedditAuthenticationStatus } from "../../model/RedditAuthenticationState.ts";
+import { SECONDS_BETWEEN_GET_POST_ROWS } from "../../RedditWatcherConstants.ts";
 
 type Props = {
   children: ReactNode;
@@ -19,7 +20,7 @@ const RedditServiceContextProvider: FC<Props> = ({ children }) => {
     lastPostRowWasSortOrderNew: false,
     redditAuthenticationStatus: RedditAuthenticationStatus.NOT_YET_AUTHED,
     subredditQueue: [],
-    secondsTillGettingNextPosts: 0,
+    secondsTillGettingNextPosts: SECONDS_BETWEEN_GET_POST_ROWS,
   };
   const [redditServiceState, dispatch] = useReducer(
     RedditServiceReducer,
