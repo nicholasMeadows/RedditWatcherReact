@@ -109,80 +109,90 @@ export default function useMovePostRow(
     };
   };
 
-  const handleTransitionEnd = useCallback(() => {
-    if (
-      autoScrollPostRowDirectionOption ===
-      AutoScrollPostRowDirectionOptionEnum.Left
-    ) {
-      const lastPostUuidObj = postsToShowUuids[postsToShowUuids.length - 1];
-      const masterPostIndex = masterPosts.findIndex(
-        (post) => post.postUuid === lastPostUuidObj.postUuid
-      );
-      if (masterPostIndex === -1) {
+  const handleTransitionEnd = useCallback(
+    (event: TransitionEvent) => {
+      const postRowContentDiv = postRowContentDivRef.current;
+      if (
+        postRowContentDiv === undefined ||
+        event.target !== postRowContentDiv
+      ) {
         return;
       }
-      const updatedPostsToShowUuid = [...postsToShowUuids];
-
-      if (masterPostIndex === postsToShowInRow) {
-        updatedPostsToShowUuid.push(makePostsToShowUuidObj(masterPosts[0]));
-      } else {
-        updatedPostsToShowUuid.push(
-          makePostsToShowUuidObj(masterPosts[masterPostIndex + 1])
+      if (
+        autoScrollPostRowDirectionOption ===
+        AutoScrollPostRowDirectionOptionEnum.Left
+      ) {
+        const lastPostUuidObj = postsToShowUuids[postsToShowUuids.length - 1];
+        const masterPostIndex = masterPosts.findIndex(
+          (post) => post.postUuid === lastPostUuidObj.postUuid
         );
-      }
-      updatedPostsToShowUuid.shift();
-      updatePostRowLayoutParams(updatedPostsToShowUuid, 0, 0);
-      setTimeout(() => {
+        if (masterPostIndex === -1) {
+          return;
+        }
+        const updatedPostsToShowUuid = [...postsToShowUuids];
+
+        if (masterPostIndex === postsToShowInRow) {
+          updatedPostsToShowUuid.push(makePostsToShowUuidObj(masterPosts[0]));
+        } else {
+          updatedPostsToShowUuid.push(
+            makePostsToShowUuidObj(masterPosts[masterPostIndex + 1])
+          );
+        }
+        updatedPostsToShowUuid.shift();
+        updatePostRowLayoutParams(updatedPostsToShowUuid, 0, 0);
+        setTimeout(() => {
+          updatePostRowLayoutParams(
+            updatedPostsToShowUuid,
+            calcPostCardWidthPercentage() * -1,
+            autoScrollPostRowRateSecondsForSinglePostCard
+          );
+        }, 0);
+      } else if (
+        autoScrollPostRowDirectionOption ===
+        AutoScrollPostRowDirectionOptionEnum.Right
+      ) {
+        const firstPostUuidObj = postsToShowUuids[0];
+        const masterPostIndex = masterPosts.findIndex(
+          (post) => post.postUuid === firstPostUuidObj.postUuid
+        );
+        if (masterPostIndex === -1) {
+          return;
+        }
+        const updatedPostsToShowUuid = [...postsToShowUuids];
+
+        if (masterPostIndex === 0) {
+          updatedPostsToShowUuid.unshift(
+            makePostsToShowUuidObj(masterPosts[masterPosts.length - 1])
+          );
+        } else {
+          updatedPostsToShowUuid.unshift(
+            makePostsToShowUuidObj(masterPosts[masterPostIndex - 1])
+          );
+        }
+        updatedPostsToShowUuid.pop();
         updatePostRowLayoutParams(
           updatedPostsToShowUuid,
           calcPostCardWidthPercentage() * -1,
-          autoScrollPostRowRateSecondsForSinglePostCard
+          0
         );
-      }, 0);
-    } else if (
-      autoScrollPostRowDirectionOption ===
-      AutoScrollPostRowDirectionOptionEnum.Right
-    ) {
-      const firstPostUuidObj = postsToShowUuids[0];
-      const masterPostIndex = masterPosts.findIndex(
-        (post) => post.postUuid === firstPostUuidObj.postUuid
-      );
-      if (masterPostIndex === -1) {
-        return;
+        setTimeout(() => {
+          updatePostRowLayoutParams(
+            undefined,
+            0,
+            autoScrollPostRowRateSecondsForSinglePostCard
+          );
+        }, 0);
       }
-      const updatedPostsToShowUuid = [...postsToShowUuids];
-
-      if (masterPostIndex === 0) {
-        updatedPostsToShowUuid.unshift(
-          makePostsToShowUuidObj(masterPosts[masterPosts.length - 1])
-        );
-      } else {
-        updatedPostsToShowUuid.unshift(
-          makePostsToShowUuidObj(masterPosts[masterPostIndex - 1])
-        );
-      }
-      updatedPostsToShowUuid.pop();
-      updatePostRowLayoutParams(
-        updatedPostsToShowUuid,
-        calcPostCardWidthPercentage() * -1,
-        0
-      );
-      setTimeout(() => {
-        updatePostRowLayoutParams(
-          undefined,
-          0,
-          autoScrollPostRowRateSecondsForSinglePostCard
-        );
-      }, 0);
-    }
-  }, [
-    autoScrollPostRowDirectionOption,
-    autoScrollPostRowRateSecondsForSinglePostCard,
-    masterPosts,
-    postsToShowInRow,
-    postsToShowUuids,
-    updatePostRowLayoutParams,
-  ]);
+    },
+    [
+      autoScrollPostRowDirectionOption,
+      autoScrollPostRowRateSecondsForSinglePostCard,
+      masterPosts,
+      postsToShowInRow,
+      postsToShowUuids,
+      updatePostRowLayoutParams,
+    ]
+  );
 
   const handleMouseEnter = useCallback(() => {
     const postRowContentDiv = postRowContentDivRef.current;
