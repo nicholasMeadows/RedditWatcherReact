@@ -144,35 +144,29 @@ export default function useRedditService() {
     [redditCredentials, redditServiceDispatch]
   );
 
-  const getPostsForPostRow = useCallback(
-    async (
-      abortSignal: AbortSignal
-    ): Promise<{
+  const getPostsForPostRow = useCallback(async (): Promise<{
+    getPostsFromSubredditResponse: GetPostsFromSubredditResponse;
+    getPostsFromSubredditState: GetPostsFromSubredditState;
+  }> => {
+    const getPostsFromSubredditState: GetPostsFromSubredditState = JSON.parse(
+      JSON.stringify(currentGetPostsFromSubredditValues.current)
+    );
+    const redditService = new RedditService(redditCredentials);
+    return new Promise<{
       getPostsFromSubredditResponse: GetPostsFromSubredditResponse;
       getPostsFromSubredditState: GetPostsFromSubredditState;
-    }> => {
-      const getPostsFromSubredditState: GetPostsFromSubredditState = JSON.parse(
-        JSON.stringify(currentGetPostsFromSubredditValues.current)
-      );
-      const redditService = new RedditService(redditCredentials);
-      return new Promise<{
-        getPostsFromSubredditResponse: GetPostsFromSubredditResponse;
-        getPostsFromSubredditState: GetPostsFromSubredditState;
-      }>((resolve, reject) => {
-        abortSignal.addEventListener("abort", () => reject());
-        redditService
-          .getPostsForPostRow(getPostsFromSubredditState)
-          .then((response) => {
-            resolve({
-              getPostsFromSubredditResponse: response,
-              getPostsFromSubredditState: getPostsFromSubredditState,
-            });
-          })
-          .catch((err) => reject(err));
-      });
-    },
-    [redditCredentials]
-  );
+    }>((resolve, reject) => {
+      redditService
+        .getPostsForPostRow(getPostsFromSubredditState)
+        .then((response) => {
+          resolve({
+            getPostsFromSubredditResponse: response,
+            getPostsFromSubredditState: getPostsFromSubredditState,
+          });
+        })
+        .catch((err) => reject(err));
+    });
+  }, [redditCredentials]);
 
   const applyUpdatedStateValues = useCallback(
     (
@@ -224,17 +218,11 @@ export default function useRedditService() {
         });
       }
     },
-    [
-      postRowsDispatch,
-      redditServiceDispatch,
-      sideBarDispatch,
-      subredditLists,
-      redditServiceDispatch,
-    ]
+    [postRowsDispatch, redditServiceDispatch, sideBarDispatch]
   );
 
   const handleGottenPosts = useCallback(
-    async (
+    (
       getPostsFromSubredditState: GetPostsFromSubredditState,
       getPostsResponse: GetPostsFromSubredditResponse
     ) => {
