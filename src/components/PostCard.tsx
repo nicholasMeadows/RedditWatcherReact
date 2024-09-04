@@ -87,11 +87,32 @@ const PostCard: FC = memo(() => {
           });
         }}
       >
-        {attachmentMediaType !== MediaType.IFrame && (
-          <div className={"post-card-blur-background"}>
-            <img src={attachmentUrl} />
-          </div>
-        )}
+        {attachmentMediaType !== MediaType.IFrame &&
+          (() => {
+            let url = attachmentUrl;
+            if (
+              currentAttachment.attachmentResolutions != undefined &&
+              currentAttachment.attachmentResolutions.length > 0
+            ) {
+              const resolutions = currentAttachment.attachmentResolutions;
+              const sortedResolutions = resolutions.sort((res1, res2) => {
+                const pxCount1 = res1.width * res1.height;
+                const pxCount2 = res2.width * res2.height;
+                if (pxCount1 > pxCount2) {
+                  return 1;
+                } else if (pxCount1 < pxCount2) {
+                  return -1;
+                }
+                return 0;
+              });
+              url = sortedResolutions[0].url;
+            }
+            return (
+              <div className={"post-card-blur-background"}>
+                <img src={url} />
+              </div>
+            );
+          })()}
         <div
           className={`post-info-div ${
             showPostInfo ? "post-info-div-hover" : ""
