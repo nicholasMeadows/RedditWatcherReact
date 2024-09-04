@@ -2,7 +2,6 @@ import { FC, useContext, useEffect, useRef, useState } from "react";
 import SideBar from "../components/SideBar.tsx";
 import PostRow from "../components/PostRow.tsx";
 import "../theme/post-row-page.scss";
-import { AppConfigStateContext } from "../context/app-config-context.ts";
 import {
   PostRowsContext,
   PostRowsDispatchContext,
@@ -15,17 +14,12 @@ import useGetPostLoopPaused from "../hook/use-get-post-loop-paused.ts";
 const PostRowPage: FC = () => {
   const { postRows, playPauseButtonIsClicked } = useContext(PostRowsContext);
   const postRowsDispatch = useContext(PostRowsDispatchContext);
-  const { postsToShowInRow, postRowsToShowInView } = useContext(
-    AppConfigStateContext
-  );
+  // const { postRowsToShowInView } = useContext(AppConfigStateContext);
   const postRowsDivRef = useRef<HTMLDivElement>(null);
   const postRowPageRef = useRef<HTMLDivElement>(null);
   const redditSearchBarFocused = useRef(false);
 
   const [scrollBarWidth, setScrollBarWidth] = useState(0);
-  const [postCardWidthPercentage, setPostCardWidthPercentage] = useState<
-    number | undefined
-  >(undefined);
   const { isGetPostLoopPaused } = useGetPostLoopPaused();
 
   useEffect(() => {
@@ -53,17 +47,6 @@ const PostRowPage: FC = () => {
       postRowPage.removeEventListener("keyup", documentKeyUpEvent);
     };
   }, [playPauseButtonIsClicked, postRowsDispatch]);
-
-  useEffect(() => {
-    const postRowsDiv = postRowsDivRef.current;
-    if (postRowsDiv !== null) {
-      const postRowContentDivWidth = postRowsDiv.getBoundingClientRect().width;
-      const postCardWidthPx = postRowContentDivWidth / postsToShowInRow;
-      setPostCardWidthPercentage(
-        (postCardWidthPx / postRowContentDivWidth) * 100
-      );
-    }
-  }, [postsToShowInRow]);
 
   return (
     <LoopForPostsProvider>
@@ -94,35 +77,23 @@ const PostRowPage: FC = () => {
             });
           }}
         >
-          {postCardWidthPercentage !== undefined && (
-            <>
-              {postRows.map((postRow) => (
-                <div
-                  key={"post-row-" + postRow.postRowUuid}
-                  style={{
-                    height: `calc(100%/${postRowsToShowInView})`,
-                    maxHeight: `calc(100%/${postRowsToShowInView})`,
-                  }}
-                >
-                  <IndividualPostRowContext.Provider
-                    value={{
-                      posts: postRow.posts,
-                      postRowUuid: postRow.postRowUuid,
-                      postCardWidthPercentage: postCardWidthPercentage,
-                      postSliderLeft: postRow.postSliderLeft,
-                      postSliderLeftTransitionTime:
-                        postRow.postSliderLeftTransitionTime,
-                      postsToShowUuids: postRow.postsToShowUuids,
-                      gottenWithSubredditSourceOption:
-                        postRow.gottenWithSubredditSourceOption,
-                    }}
-                  >
-                    <PostRow />
-                  </IndividualPostRowContext.Provider>
-                </div>
-              ))}
-            </>
-          )}
+          {postRows.map((postRow) => (
+            <IndividualPostRowContext.Provider
+              value={{
+                posts: postRow.posts,
+                postRowUuid: postRow.postRowUuid,
+                postSliderLeft: postRow.postSliderLeft,
+                postSliderLeftTransitionTime:
+                  postRow.postSliderLeftTransitionTime,
+                postsToShowUuids: postRow.postsToShowUuids,
+                gottenWithSubredditSourceOption:
+                  postRow.gottenWithSubredditSourceOption,
+              }}
+              key={"post-row-" + postRow.postRowUuid}
+            >
+              <PostRow />
+            </IndividualPostRowContext.Provider>
+          ))}
         </div>
 
         <div

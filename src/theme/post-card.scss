@@ -1,12 +1,15 @@
-.post-card-outer {
+.post-card-inner {
+  width: calc(100% - (1em * var(--post-card-gap-em)));
+  margin-left: calc((1em * var(--post-card-gap-em)) / 2);
   position: relative;
   height: 100%;
   display: flex;
   flex-direction: column;
   border-radius: 1em;
+  overflow: hidden;
 }
 
-.post-card-outer > * {
+.post-card-inner > * {
   border-radius: 1em;
 }
 

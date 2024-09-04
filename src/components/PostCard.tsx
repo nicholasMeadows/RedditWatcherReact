@@ -17,9 +17,11 @@ import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
 import { MediaType } from "../model/Post/MediaTypeEnum.ts";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
 
 const PostCard: FC = memo(() => {
   const navigate = useNavigate();
+  const { postsToShowInRow } = useContext(AppConfigStateContext);
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const { postRowUuid, post } = useContext(PostCardContext);
   const initialMouseDownOrTouchX = useRef(0);
@@ -34,97 +36,109 @@ const PostCard: FC = memo(() => {
 
   return (
     <div
-      className={`post-card-outer`}
-      onMouseOver={() => {
-        console.log("Nicholas setting mouse over post card");
-        setMouseOverPostCard(true);
-      }}
-      onMouseLeave={() => setMouseOverPostCard(false)}
-      onMouseDown={(event) => {
-        initialMouseDownOrTouchX.current = event.clientX;
-      }}
-      onContextMenu={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        contextMenuDispatch({
-          type: ContextMenuActionType.OPEN_CONTEXT_MENU_FOR_POST,
-          payload: {
-            post: post,
-            x: event.clientX,
-            y: event.clientY,
-            postRowUuid: postRowUuid,
-          },
-        });
-      }}
-      onClickCapture={(event) => {
-        if (Math.abs(initialMouseDownOrTouchX.current - event.clientX) >= 50) {
-          event.stopPropagation();
-          event.preventDefault();
-        }
-        initialMouseDownOrTouchX.current = 0;
-      }}
-      onClick={() => {
-        if (showContextMenu) {
-          return;
-        }
-        navigate(
-          `${SINGLE_POST_ROUTE}?${SINGLE_POST_PAGE_POST_ROW_UUID_KEY}=${postRowUuid}&${SINGLE_POST_PAGE_POST_UUID_KEY}=${post.postUuid}`
-        );
-        postRowsDispatch({
-          type: PostRowsActionType.SET_MOUSE_OVER_POST_ROW_UUID,
-          payload: undefined,
-        });
+      style={{
+        minWidth: `calc(100vw/${postsToShowInRow})`,
+        width: `calc(100vw/${postsToShowInRow})`,
+        maxWidth: `calc(100vw/${postsToShowInRow})`,
       }}
     >
-      {attachmentMediaType !== MediaType.IFrame && (
-        <div className={"post-card-blur-background"}>
-          <img src={attachmentUrl} />
-        </div>
-      )}
       <div
-        className={`post-info-div ${showPostInfo ? "post-info-div-hover" : ""}`}
-        onTransitionEndCapture={(event) => {
-          event.stopPropagation();
+        className={`post-card-inner`}
+        onMouseOver={() => {
+          console.log("Nicholas setting mouse over post card");
+          setMouseOverPostCard(true);
+        }}
+        onMouseLeave={() => setMouseOverPostCard(false)}
+        onMouseDown={(event) => {
+          initialMouseDownOrTouchX.current = event.clientX;
+        }}
+        onContextMenu={(event) => {
           event.preventDefault();
+          event.stopPropagation();
+          contextMenuDispatch({
+            type: ContextMenuActionType.OPEN_CONTEXT_MENU_FOR_POST,
+            payload: {
+              post: post,
+              x: event.clientX,
+              y: event.clientY,
+              postRowUuid: postRowUuid,
+            },
+          });
+        }}
+        onClickCapture={(event) => {
+          if (
+            Math.abs(initialMouseDownOrTouchX.current - event.clientX) >= 50
+          ) {
+            event.stopPropagation();
+            event.preventDefault();
+          }
+          initialMouseDownOrTouchX.current = 0;
+        }}
+        onClick={() => {
+          if (showContextMenu) {
+            return;
+          }
+          navigate(
+            `${SINGLE_POST_ROUTE}?${SINGLE_POST_PAGE_POST_ROW_UUID_KEY}=${postRowUuid}&${SINGLE_POST_PAGE_POST_UUID_KEY}=${post.postUuid}`
+          );
+          postRowsDispatch({
+            type: PostRowsActionType.SET_MOUSE_OVER_POST_ROW_UUID,
+            payload: undefined,
+          });
         }}
       >
-        <p className="postCardHeaderText">{`${post.subreddit.displayName}${
-          post.attachments.length > 1 ? " (Gallery)" : ""
-        }`}</p>
-        {post.subreddit.fromList.length > 0 && (
-          <p className="postCardHeaderText">{`From List: ${post.subreddit.fromList}`}</p>
+        {attachmentMediaType !== MediaType.IFrame && (
+          <div className={"post-card-blur-background"}>
+            <img src={attachmentUrl} />
+          </div>
         )}
-        <p className="postCardHeaderText">
-          {new Date(post.created * 1000).toLocaleDateString("en-us", {
-            month: "long",
-            day: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </p>
-        {!post.subreddit.displayName.startsWith("u_") && (
-          <p className="postCardHeaderText">{`Subscribers: ${post.subreddit.subscribers.toLocaleString()}`}</p>
-        )}
-        <p className="postCardHeaderText">{post.randomSourceString}</p>
-      </div>
-      <div className="post-card-content">
-        <PostMediaElementContext.Provider
-          value={{
-            post: post,
-            postRowUuid: postRowUuid,
-            autoIncrementAttachment: true,
-            mouseOverPostCard: mouseOverPostCard,
-            onElementMouseEnter: () => {
-              setShowPostInfo(true);
-            },
-            onElementMouseLeave: () => {
-              setShowPostInfo(false);
-            },
+        <div
+          className={`post-info-div ${
+            showPostInfo ? "post-info-div-hover" : ""
+          }`}
+          onTransitionEndCapture={(event) => {
+            event.stopPropagation();
+            event.preventDefault();
           }}
         >
-          <PostMediaElement />
-        </PostMediaElementContext.Provider>
+          <p className="postCardHeaderText">{`${post.subreddit.displayName}${
+            post.attachments.length > 1 ? " (Gallery)" : ""
+          }`}</p>
+          {post.subreddit.fromList.length > 0 && (
+            <p className="postCardHeaderText">{`From List: ${post.subreddit.fromList}`}</p>
+          )}
+          <p className="postCardHeaderText">
+            {new Date(post.created * 1000).toLocaleDateString("en-us", {
+              month: "long",
+              day: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+          {!post.subreddit.displayName.startsWith("u_") && (
+            <p className="postCardHeaderText">{`Subscribers: ${post.subreddit.subscribers.toLocaleString()}`}</p>
+          )}
+          <p className="postCardHeaderText">{post.randomSourceString}</p>
+        </div>
+        <div className="post-card-content">
+          <PostMediaElementContext.Provider
+            value={{
+              post: post,
+              postRowUuid: postRowUuid,
+              autoIncrementAttachment: true,
+              mouseOverPostCard: mouseOverPostCard,
+              onElementMouseEnter: () => {
+                setShowPostInfo(true);
+              },
+              onElementMouseLeave: () => {
+                setShowPostInfo(false);
+              },
+            }}
+          >
+            <PostMediaElement />
+          </PostMediaElementContext.Provider>
+        </div>
       </div>
     </div>
   );

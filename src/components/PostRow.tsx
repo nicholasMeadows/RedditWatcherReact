@@ -2,19 +2,20 @@ import { FC, memo, useCallback, useContext, useRef } from "react";
 import getPlatform from "../util/PlatformUtil.ts";
 import { Platform } from "../model/Platform.ts";
 import useMovePostRow from "../hook/use-move-post-row.ts";
-import { PostCardContext } from "../context/post-card-context.ts";
-import PostCard from "./PostCard.tsx";
 import "../theme/post-row.scss";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
 import IndividualPostRowContext from "../context/individual-post-row-context.ts";
 import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
+import { PostCardContext } from "../context/post-card-context.ts";
+import PostCard from "../components/PostCard.tsx";
 
 const PostRow: FC = memo(() => {
-  const { darkMode, postsToShowInRow } = useContext(AppConfigStateContext);
+  const { darkMode, postsToShowInRow, postRowsToShowInView } = useContext(
+    AppConfigStateContext
+  );
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const {
-    postCardWidthPercentage,
     postRowUuid,
     posts,
     postSliderLeft,
@@ -33,15 +34,18 @@ const PostRow: FC = memo(() => {
     postRowUuid,
     posts,
     postRowContentDivRef,
-    postCardWidthPercentage,
-    postsToShowInRow,
     postSliderLeft,
     postsToShowUuids,
     gottenWithSubredditSourceOption
   );
 
   return (
-    <div className="postRow">
+    <div
+      className="postRow"
+      style={{
+        height: `calc(100%/${postRowsToShowInView})`,
+      }}
+    >
       <div
         hidden={hideScrollButtonDivs()}
         className="postRowScrollButton leftPostRowScrollButton"
@@ -90,23 +94,15 @@ const PostRow: FC = memo(() => {
               return <></>;
             }
             return (
-              <div
-                style={{
-                  width: `${postCardWidthPercentage}%`,
-                  minWidth: `calc(${postCardWidthPercentage}%)`,
+              <PostCardContext.Provider
+                value={{
+                  postRowUuid: postRowUuid,
+                  post: post,
                 }}
-                className={"post-card-wrapper"}
                 key={uuidObj.uiUuid}
               >
-                <PostCardContext.Provider
-                  value={{
-                    postRowUuid: postRowUuid,
-                    post: post,
-                  }}
-                >
-                  <PostCard />
-                </PostCardContext.Provider>
-              </div>
+                <PostCard />
+              </PostCardContext.Provider>
             );
           });
         })()}

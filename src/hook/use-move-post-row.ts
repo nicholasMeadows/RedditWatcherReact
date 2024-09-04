@@ -20,12 +20,11 @@ export default function useMovePostRow(
   postRowUuid: string,
   masterPosts: Array<Post>,
   postRowContentDivRef: RefObject<HTMLDivElement>,
-  postCardWidthPercentage: number,
-  postsToShowInRow: number,
   postSliderLeft: number,
   postsToShowUuids: Array<PostsToShowUuidsObj>,
   gottenWithSubredditSourceOption: SubredditSourceOptionsEnum
 ) {
+  const { postsToShowInRow } = useContext(AppConfigStateContext);
   const postRowsDispatch = useContext(PostRowsDispatchContext);
   const {
     autoScrollPostRowRateSecondsForSinglePostCard,
@@ -42,6 +41,16 @@ export default function useMovePostRow(
   const shouldAutoScroll =
     gottenWithSubredditSourceOption !== SubredditSourceOptionsEnum.FrontPage &&
     autoScrollPostRow;
+
+  const calcPostCardWidthPercentage = useCallback(() => {
+    const postRowContentDiv = postRowContentDivRef.current;
+    if (postRowContentDiv === null) {
+      return 0;
+    }
+    const rect = postRowContentDiv.getBoundingClientRect();
+    const widthPx = rect.width / postsToShowInRow;
+    return (widthPx / rect.width) * 100;
+  }, []);
 
   const updatePostRowLayoutParams = useCallback(
     (
@@ -126,7 +135,7 @@ export default function useMovePostRow(
       setTimeout(() => {
         updatePostRowLayoutParams(
           updatedPostsToShowUuid,
-          postCardWidthPercentage * -1,
+          calcPostCardWidthPercentage() * -1,
           autoScrollPostRowRateSecondsForSinglePostCard
         );
       }, 0);
@@ -155,7 +164,7 @@ export default function useMovePostRow(
       updatedPostsToShowUuid.pop();
       updatePostRowLayoutParams(
         updatedPostsToShowUuid,
-        postCardWidthPercentage * -1,
+        calcPostCardWidthPercentage() * -1,
         0
       );
       setTimeout(() => {
@@ -170,7 +179,6 @@ export default function useMovePostRow(
     autoScrollPostRowDirectionOption,
     autoScrollPostRowRateSecondsForSinglePostCard,
     masterPosts,
-    postCardWidthPercentage,
     postsToShowInRow,
     postsToShowUuids,
     updatePostRowLayoutParams,
@@ -202,7 +210,7 @@ export default function useMovePostRow(
       return;
     }
     const postCardWidthPx =
-      (postCardWidthPercentage / 100) * postRowContentDiv.clientWidth;
+      (calcPostCardWidthPercentage() / 100) * postRowContentDiv.clientWidth;
     const rect = postRowContentDiv.getBoundingClientRect();
     if (
       autoScrollPostRowDirectionOption ===
@@ -225,7 +233,7 @@ export default function useMovePostRow(
         postCardWidthPx;
       updatePostRowLayoutParams(
         undefined,
-        postCardWidthPercentage * -1,
+        calcPostCardWidthPercentage() * -1,
         transitionTime
       );
     }
@@ -233,7 +241,6 @@ export default function useMovePostRow(
     autoScrollPostRowDirectionOption,
     autoScrollPostRowRateSecondsForSinglePostCard,
     menuOpenOnPostRowUuid,
-    postCardWidthPercentage,
     postRowContentDivRef,
     postRowUuid,
     postsToShowInRow,
@@ -348,10 +355,10 @@ export default function useMovePostRow(
         updatedPostsToShowUuids.pop();
         updatePostRowLayoutParams(
           updatedPostsToShowUuids,
-          postCardWidthPercentage * -1,
+          calcPostCardWidthPercentage() * -1,
           0
         );
-      } else if (leftToSet <= postCardWidthPercentage * -1) {
+      } else if (leftToSet <= calcPostCardWidthPercentage() * -1) {
         const lastPostUuidObj = postsToShowUuids[postsToShowUuids.length - 1];
         const masterPostIndex = masterPosts.findIndex(
           (post) => post.postUuid === lastPostUuidObj.postUuid
@@ -377,7 +384,6 @@ export default function useMovePostRow(
     },
     [
       masterPosts,
-      postCardWidthPercentage,
       postRowContentDivRef,
       postSliderLeft,
       postsToShowInRow,
@@ -475,7 +481,7 @@ export default function useMovePostRow(
       const transitionTime = Math.abs(
         (currentLeftPercentage *
           autoScrollPostRowRateSecondsForSinglePostCard) /
-          postCardWidthPercentage
+          calcPostCardWidthPercentage()
       );
       let leftToSet: number | undefined;
       if (
@@ -487,7 +493,7 @@ export default function useMovePostRow(
         autoScrollPostRowDirectionOption ===
         AutoScrollPostRowDirectionOptionEnum.Left
       ) {
-        leftToSet = postCardWidthPercentage * -1;
+        leftToSet = calcPostCardWidthPercentage() * -1;
       }
       setTimeout(() => {
         updatePostRowLayoutParams(undefined, leftToSet, transitionTime);
@@ -505,7 +511,7 @@ export default function useMovePostRow(
           .slice(0, postsToShowInRow + 1)
           .map<PostsToShowUuidsObj>((post) => makePostsToShowUuidObj(post));
         initialPostLeft = 0;
-        leftToGoToAfterInit = postCardWidthPercentage * -1;
+        leftToGoToAfterInit = calcPostCardWidthPercentage() * -1;
       } else if (
         autoScrollPostRowDirectionOption ===
         AutoScrollPostRowDirectionOptionEnum.Right
@@ -517,7 +523,7 @@ export default function useMovePostRow(
           .slice(0, postsToShowInRow)
           .map<PostsToShowUuidsObj>((post) => makePostsToShowUuidObj(post));
         postUuidsToSet.unshift(firstPostUuidObj);
-        initialPostLeft = postCardWidthPercentage * -1;
+        initialPostLeft = calcPostCardWidthPercentage() * -1;
         leftToGoToAfterInit = 0;
       }
 
@@ -551,7 +557,6 @@ export default function useMovePostRow(
     autoScrollPostRowDirectionOption,
     autoScrollPostRowRateSecondsForSinglePostCard,
     masterPosts,
-    postCardWidthPercentage,
     postRowContentDivRef,
     postRowUuid,
     postRowsDispatch,
