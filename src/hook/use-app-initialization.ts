@@ -185,7 +185,7 @@ export function useAppInitialization() {
     do {
       try {
         const { getPostsFromSubredditResponse, getPostsFromSubredditState } =
-          await redditService.getPostsForPostRow(new AbortController().signal);
+          await redditService.getPostsForPostRow();
         getPostsResponse = getPostsFromSubredditResponse;
         initialState = getPostsFromSubredditState;
       } catch (e) {
