@@ -15,6 +15,8 @@ import { AttachmentResolution } from "../model/Post/AttachmentResolution.ts";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
 import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
 import PostMediaElementZoomContext from "../context/post-media-element-zoom-context.ts";
+import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
+import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
 
 const PostMediaElement: React.FC = memo(() => {
   const {
@@ -26,7 +28,7 @@ const PostMediaElement: React.FC = memo(() => {
   } = useContext(PostMediaElementContext);
 
   const postMediaElementZoomContext = useContext(PostMediaElementZoomContext);
-
+  const postRowPageDispatch = useContext(PostRowPageDispatchContext);
   let imgTop = 50;
   let imgLeft = 50;
   let imgScale = 1;
@@ -211,6 +213,19 @@ const PostMediaElement: React.FC = memo(() => {
     [incrementPostAttachment]
   );
 
+  const setShowPostCardInfo = useCallback(
+    (showPostCardInfoToSet: boolean) => {
+      postRowPageDispatch({
+        type: PostRowPageActionType.SET_SHOW_POST_CARD_INFO,
+        payload: {
+          showPostCardInfo: showPostCardInfoToSet,
+          postUuid: post.postUuid,
+          postRowUuid: postRowUuid,
+        },
+      });
+    },
+    [post.postUuid, postRowPageDispatch, postRowUuid]
+  );
   return (
     <div className="post-element" ref={postElementRef}>
       <img
@@ -254,6 +269,12 @@ const PostMediaElement: React.FC = memo(() => {
                   transform: `translate(-50%, -50%) scale(${imgScale})`,
                   background: "blue",
                 }}
+                onMouseEnter={() => {
+                  setShowPostCardInfo(true);
+                }}
+                onMouseLeave={() => {
+                  setShowPostCardInfo(false);
+                }}
               ></img>
             </div>
           );
@@ -262,7 +283,15 @@ const PostMediaElement: React.FC = memo(() => {
           MediaType.VideoMP4
         ) {
           mediaElement = (
-            <video className="post-element-media-element">
+            <video
+              className="post-element-media-element"
+              onMouseEnter={() => {
+                setShowPostCardInfo(true);
+              }}
+              onMouseLeave={() => {
+                setShowPostCardInfo(false);
+              }}
+            >
               {" "}
               <source src={mediaSrc} type="video/mp4" />{" "}
             </video>
@@ -274,6 +303,12 @@ const PostMediaElement: React.FC = memo(() => {
             <>
               <div className={"post-element-media-element"}>
                 <iframe
+                  onMouseEnter={() => {
+                    setShowPostCardInfo(true);
+                  }}
+                  onMouseLeave={() => {
+                    setShowPostCardInfo(false);
+                  }}
                   src={mediaSrc}
                   frameBorder="0"
                   scrolling="no"

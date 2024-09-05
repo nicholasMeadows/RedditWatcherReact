@@ -17,10 +17,10 @@ const PostRow: FC = memo(() => {
   const postRowPageDispatch = useContext(PostRowPageDispatchContext);
   const {
     postRowUuid,
-    posts,
+    allPosts,
     postSliderLeft,
     postSliderLeftTransitionTime,
-    postsToShowUuids,
+    postCards,
     gottenWithSubredditSourceOption,
   } = useContext(IndividualPostRowContext);
 
@@ -32,10 +32,10 @@ const PostRow: FC = memo(() => {
 
   useMovePostRow(
     postRowUuid,
-    posts,
+    allPosts,
     postRowContentDivRef,
     postSliderLeft,
-    postsToShowUuids,
+    postCards,
     gottenWithSubredditSourceOption
   );
 
@@ -51,7 +51,7 @@ const PostRow: FC = memo(() => {
         className="postRowScrollButton leftPostRowScrollButton"
         style={{
           visibility:
-            postsToShowUuids.length > postsToShowInRow ? "visible" : "hidden",
+            postCards.length > postsToShowInRow ? "visible" : "hidden",
         }}
       >
         <img
@@ -84,35 +84,26 @@ const PostRow: FC = memo(() => {
           });
         }}
       >
-        {(() => {
-          const mapOfPosts = new Map(
-            posts.map((post) => [post.postUuid, post])
+        {postCards.map((postCard) => {
+          return (
+            <PostCardContext.Provider
+              value={{
+                postRowUuid: postRowUuid,
+                postCard: postCard,
+              }}
+              key={postCard.postCardUuid}
+            >
+              <PostCard />
+            </PostCardContext.Provider>
           );
-          return postsToShowUuids.map((uuidObj) => {
-            const post = mapOfPosts.get(uuidObj.postUuid);
-            if (post === undefined) {
-              return <></>;
-            }
-            return (
-              <PostCardContext.Provider
-                value={{
-                  postRowUuid: postRowUuid,
-                  post: post,
-                }}
-                key={uuidObj.uiUuid}
-              >
-                <PostCard />
-              </PostCardContext.Provider>
-            );
-          });
-        })()}
+        })}
       </div>
       <div
         hidden={hideScrollButtonDivs()}
         className="postRowScrollButton rightPostRowScrollButton"
         style={{
           visibility:
-            postsToShowUuids.length > postsToShowInRow ? "visible" : "hidden",
+            postCards.length > postsToShowInRow ? "visible" : "hidden",
         }}
       >
         <img

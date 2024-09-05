@@ -80,12 +80,12 @@ const PostRowPage: FC = () => {
           {postRows.map((postRow) => (
             <IndividualPostRowContext.Provider
               value={{
-                posts: postRow.posts,
+                allPosts: postRow.allPosts,
                 postRowUuid: postRow.postRowUuid,
                 postSliderLeft: postRow.postSliderLeft,
                 postSliderLeftTransitionTime:
                   postRow.postSliderLeftTransitionTime,
-                postsToShowUuids: postRow.postsToShowUuids,
+                postCards: postRow.postCards,
                 gottenWithSubredditSourceOption:
                   postRow.gottenWithSubredditSourceOption,
               }}

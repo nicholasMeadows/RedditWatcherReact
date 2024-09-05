@@ -18,17 +18,26 @@ import { MediaType } from "../model/Post/MediaTypeEnum.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
 import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
 import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
+import IndividualPostRowContext from "../context/individual-post-row-context.ts";
 
 const PostCard: FC = memo(() => {
   const navigate = useNavigate();
   const { postsToShowInRow } = useContext(AppConfigStateContext);
   const postRowPageDispatch = useContext(PostRowPageDispatchContext);
-  const { postRowUuid, post } = useContext(PostCardContext);
+  const { allPosts } = useContext(IndividualPostRowContext);
+
+  const { postRowUuid, postCard } = useContext(PostCardContext);
   const initialMouseDownOrTouchX = useRef(0);
   const { showContextMenu } = useContext(ContextMenuStateContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const [mouseOverPostCard, setMouseOverPostCard] = useState(false);
 
+  const post = allPosts.find(
+    (post) => post.postUuid === postCard.postToDisplayUuid
+  );
+  if (post === undefined) {
+    return <></>;
+  }
   const currentAttachment = post.attachments[post.currentAttachmentIndex];
   const attachmentUrl = currentAttachment.url;
   const attachmentMediaType = currentAttachment.mediaType;
@@ -113,7 +122,7 @@ const PostCard: FC = memo(() => {
           })()}
         <div
           className={`post-info-div ${
-            mouseOverPostCard ? "post-info-div-hover" : ""
+            postCard.showPostCardInfo ? "post-info-div-hover" : ""
           }`}
         >
           <p className="postCardHeaderText">{`${post.subreddit.displayName}${

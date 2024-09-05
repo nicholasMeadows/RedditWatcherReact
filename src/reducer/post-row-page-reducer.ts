@@ -1,4 +1,4 @@
-import { PostRow, PostsToShowUuidsObj } from "../model/PostRow.ts";
+import { PostRow } from "../model/PostRow.ts";
 import {
   MAX_POST_ROWS_TO_SHOW_IN_VIEW,
   MAX_POSTS_PER_ROW,
@@ -10,6 +10,7 @@ import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptions
 import { v4 as uuidV4 } from "uuid";
 import { sortPostsByCreate } from "../util/RedditServiceUtil.ts";
 import { PostRowPageState } from "../model/state/PostRowsState.ts";
+import PostCard from "../model/PostCard.ts";
 
 export enum PostRowPageActionType {
   SET_CURRENT_LOCATION = "SET_CURRENT_LOCATION",
@@ -19,9 +20,10 @@ export enum PostRowPageActionType {
   SET_SCROLL_Y = "SET_SCROLL_Y",
   SET_MOUSE_OVER_POST_ROW_UUID = "SET_MOUSE_OVER_POST_ROW_UUID",
   ADD_POST_ROW = "ADD_POST_ROW",
-  SET_POSTS_TO_SHOW_UUIDS = "SET_POSTS_TO_SHOW_UUIDS",
+  SET_POST_CARDS_TO_SHOW_IN_ROW = "SET_POST_CARDS_TO_SHOW_IN_ROW",
   SET_POST_SLIDER_LEFT = "SET_POST_SLIDER_LEFT",
   SET_POST_SLIDER_TRANSITION_TIME = "SET_POST_SLIDER_TRANSITION_TIME",
+  SET_SHOW_POST_CARD_INFO = "SET_SHOW_POST_CARD_INFO",
 }
 
 export type PostRowPageStringPayloadAction = {
@@ -66,14 +68,22 @@ export type SetPostSliderLeftOrTransitionTimeAction = {
     value: number;
   };
 };
-export type SetPostsToShowUuidsAction = {
-  type: PostRowPageActionType.SET_POSTS_TO_SHOW_UUIDS;
+export type SetPostCardsAction = {
+  type: PostRowPageActionType.SET_POST_CARDS_TO_SHOW_IN_ROW;
   payload: {
     postRowUuid: string;
-    postsToShowUuids: Array<PostsToShowUuidsObj>;
+    postCards: Array<PostCard>;
   };
 };
 
+export type SetShowPostCardInfoAction = {
+  type: PostRowPageActionType.SET_SHOW_POST_CARD_INFO;
+  payload: {
+    postRowUuid: string;
+    postUuid: string;
+    showPostCardInfo: boolean;
+  };
+};
 export default function PostRowPageReducer(
   state: PostRowPageState,
   action:
@@ -85,7 +95,8 @@ export default function PostRowPageReducer(
     | AddPostRowAction
     | PostRowPageSetMouseOverPostRowUuidAction
     | SetPostSliderLeftOrTransitionTimeAction
-    | SetPostsToShowUuidsAction
+    | SetPostCardsAction
+    | SetShowPostCardInfoAction
 ) {
   switch (action.type) {
     case PostRowPageActionType.SET_CURRENT_LOCATION:
@@ -102,12 +113,14 @@ export default function PostRowPageReducer(
       return setMouseOverPostRowUuid(state, action);
     case PostRowPageActionType.ADD_POST_ROW:
       return addPostRow(state, action);
-    case PostRowPageActionType.SET_POSTS_TO_SHOW_UUIDS:
-      return setPostsToShowUuids(state, action);
+    case PostRowPageActionType.SET_POST_CARDS_TO_SHOW_IN_ROW:
+      return setPostCardsOnRow(state, action);
     case PostRowPageActionType.SET_POST_SLIDER_LEFT:
       return setPostSliderLeft(state, action);
     case PostRowPageActionType.SET_POST_SLIDER_TRANSITION_TIME:
       return setPostSliderTransitionTime(state, action);
+    case PostRowPageActionType.SET_SHOW_POST_CARD_INFO:
+      return setShowPostCardInfo(state, action);
     default:
       return state;
   }
@@ -140,14 +153,14 @@ const setPostAttachmentIndex = (
   const postRow = postRowsCopy[postRowIndex];
 
   const postUuid = action.payload.postUuid;
-  const postIndex = postRow.posts.findIndex(
+  const postIndex = postRow.allPosts.findIndex(
     (post) => post.postUuid === postUuid
   );
   if (postIndex === -1) {
     return state;
   }
-  postRow.posts[postIndex] = {
-    ...postRow.posts[postIndex],
+  postRow.allPosts[postIndex] = {
+    ...postRow.allPosts[postIndex],
     currentAttachmentIndex: action.payload.index,
   };
 
@@ -236,7 +249,7 @@ const addPostRow = (
     if (isFrontPageAndNew && mostRecentPostRowPostNewAndFrontPage) {
       sortPostsByCreate(posts);
       const postsToAddToViewModel = posts.filter((post) => {
-        return post.created > mostRecentPostRow.posts[0].created;
+        return post.created > mostRecentPostRow.allPosts[0].created;
       });
       const updatedPosts = [...postsToAddToViewModel, ...posts];
       trimPostsToMaxLength(updatedPosts);
@@ -269,9 +282,9 @@ const addPostRow = (
   };
 };
 
-const setPostsToShowUuids = (
+const setPostCardsOnRow = (
   state: PostRowPageState,
-  action: SetPostsToShowUuidsAction
+  action: SetPostCardsAction
 ): PostRowPageState => {
   const postRowUuid = action.payload.postRowUuid;
   const updatedPostRows = [...state.postRows];
@@ -281,7 +294,7 @@ const setPostsToShowUuids = (
   if (postRow === undefined) {
     return state;
   }
-  postRow.postsToShowUuids = action.payload.postsToShowUuids;
+  postRow.postCards = action.payload.postCards;
   return {
     ...state,
     postRows: updatedPostRows,
@@ -323,7 +336,34 @@ const setPostSliderTransitionTime = (
     postRows: updatedPostRows,
   };
 };
+const setShowPostCardInfo = (
+  state: PostRowPageState,
+  action: SetShowPostCardInfoAction
+): PostRowPageState => {
+  const payload = action.payload;
+  const { showPostCardInfo, postRowUuid, postUuid } = payload;
 
+  const updatedPostRows = state.postRows.map((row) => {
+    if (row.postRowUuid !== postRowUuid) {
+      return row;
+    }
+    const updatedRow = { ...row };
+    updatedRow.postCards = row.postCards.map((card) => {
+      if (card.postToDisplayUuid !== postUuid) {
+        return card;
+      }
+      return {
+        ...card,
+        showPostCardInfo: showPostCardInfo,
+      };
+    });
+    return updatedRow;
+  });
+  return {
+    ...state,
+    postRows: updatedPostRows,
+  };
+};
 const trimPostsToMaxLength = (posts: Array<Post>) => {
   if (posts.length > MAX_POSTS_PER_ROW) {
     posts.splice(MAX_POSTS_PER_ROW - 1);
@@ -337,11 +377,11 @@ const createPostRow = (
   const postRowUuid = uuidV4();
   return {
     postRowUuid: postRowUuid,
-    posts: posts,
+    allPosts: posts,
     gottenWithSubredditSourceOption: gottenWithSubredditSourceOption,
     gottenWithPostSortOrderOption: gottenWithPostSortOrderOption,
     postSliderLeftTransitionTime: 0,
     postSliderLeft: 0,
-    postsToShowUuids: [],
+    postCards: [],
   };
 };

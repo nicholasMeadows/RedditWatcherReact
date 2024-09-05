@@ -1,6 +1,6 @@
-import { Post } from "../Post/Post.ts";
+import PostCard from "../PostCard.ts";
 
 export interface PostCardState {
   postRowUuid: string;
-  post: Post;
+  postCard: PostCard;
 }
