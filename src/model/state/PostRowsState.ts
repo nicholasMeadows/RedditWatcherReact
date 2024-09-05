@@ -1,6 +1,6 @@
 import { PostRow } from "../PostRow.ts";
 
-export type PostRowsState = {
+export type PostRowPageState = {
   currentPath: string;
   postRows: Array<PostRow>;
   mouseOverPostRowUuid: string | undefined;

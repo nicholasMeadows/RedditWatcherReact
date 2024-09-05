@@ -2,18 +2,18 @@ import { FC, useContext, useEffect, useRef, useState } from "react";
 import SideBar from "../components/SideBar.tsx";
 import PostRow from "../components/PostRow.tsx";
 import "../theme/post-row-page.scss";
-import {
-  PostRowsContext,
-  PostRowsDispatchContext,
-} from "../context/post-rows-context.ts";
 import IndividualPostRowContext from "../context/individual-post-row-context.ts";
 import LoopForPostsProvider from "../components/LoopForPostsProvider.tsx";
-import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import useGetPostLoopPaused from "../hook/use-get-post-loop-paused.ts";
+import {
+  PostRowPageContext,
+  PostRowPageDispatchContext,
+} from "../context/post-row-page-context.ts";
+import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 
 const PostRowPage: FC = () => {
-  const { postRows, playPauseButtonIsClicked } = useContext(PostRowsContext);
-  const postRowsDispatch = useContext(PostRowsDispatchContext);
+  const { postRows, playPauseButtonIsClicked } = useContext(PostRowPageContext);
+  const postRowPageDispatch = useContext(PostRowPageDispatchContext);
   // const { postRowsToShowInView } = useContext(AppConfigStateContext);
   const postRowsDivRef = useRef<HTMLDivElement>(null);
   const postRowPageRef = useRef<HTMLDivElement>(null);
@@ -35,8 +35,8 @@ const PostRowPage: FC = () => {
     const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
       const key = keyboardEvent.key;
       if (key == " " && !redditSearchBarFocused.current) {
-        postRowsDispatch({
-          type: PostRowsActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED,
+        postRowPageDispatch({
+          type: PostRowPageActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED,
           payload: !playPauseButtonIsClicked,
         });
       }
@@ -46,7 +46,7 @@ const PostRowPage: FC = () => {
     return () => {
       postRowPage.removeEventListener("keyup", documentKeyUpEvent);
     };
-  }, [playPauseButtonIsClicked, postRowsDispatch]);
+  }, [playPauseButtonIsClicked, postRowPageDispatch]);
 
   return (
     <LoopForPostsProvider>
@@ -71,8 +71,8 @@ const PostRowPage: FC = () => {
           ref={postRowsDivRef}
           onScroll={(event) => {
             const target = event.target as HTMLElement;
-            postRowsDispatch({
-              type: PostRowsActionType.SET_SCROLL_Y,
+            postRowPageDispatch({
+              type: PostRowPageActionType.SET_SCROLL_Y,
               payload: target.scrollTop,
             });
           }}
@@ -99,8 +99,8 @@ const PostRowPage: FC = () => {
         <div
           className={"play-pause-button-div"}
           onClick={() => {
-            postRowsDispatch({
-              type: PostRowsActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED,
+            postRowPageDispatch({
+              type: PostRowPageActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED,
               payload: !playPauseButtonIsClicked,
             });
           }}

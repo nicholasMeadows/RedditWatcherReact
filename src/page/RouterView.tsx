@@ -32,17 +32,17 @@ import {
   AppConfigStateContext,
 } from "../context/app-config-context.ts";
 import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
-import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
-import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
+import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 import SideBarContextProvider from "../context/provider/side-bar-context-provider.tsx";
 import RedditListContextProvider from "../context/provider/reddit-list-context-provider.tsx";
 import RedditServiceContextProvider from "../context/provider/reddit-service-context-provider.tsx";
 import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
+import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
 
 const RouterView: React.FC = () => {
   const location = useLocation();
-  const postRowsDispatch = useContext(PostRowsDispatchContext);
+  const postRowPageDispatch = useContext(PostRowPageDispatchContext);
   const { rootFontSizeDispatch } = useContext(RootFontSizeContext);
   const appConfigDispatch = useContext(AppConfigDispatchContext);
   const darkmode = useContext(AppConfigStateContext).darkMode;
@@ -104,11 +104,11 @@ const RouterView: React.FC = () => {
   }, [contextMenuDispatch]);
 
   useEffect(() => {
-    postRowsDispatch({
-      type: PostRowsActionType.SET_CURRENT_LOCATION,
+    postRowPageDispatch({
+      type: PostRowPageActionType.SET_CURRENT_LOCATION,
       payload: location.pathname,
     });
-  }, [location, postRowsDispatch]);
+  }, [location, postRowPageDispatch]);
 
   useEffect(() => {
     let background = "white";

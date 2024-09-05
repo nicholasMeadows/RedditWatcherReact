@@ -9,9 +9,9 @@ import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOpt
 import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum.ts";
 import { v4 as uuidV4 } from "uuid";
 import { sortPostsByCreate } from "../util/RedditServiceUtil.ts";
-import { PostRowsState } from "../model/state/PostRowsState.ts";
+import { PostRowPageState } from "../model/state/PostRowsState.ts";
 
-export enum PostRowsActionType {
+export enum PostRowPageActionType {
   SET_CURRENT_LOCATION = "SET_CURRENT_LOCATION",
   SET_PLAY_PAUSE_BUTTON_IS_CLICKED = "SET_PLAY_PAUSE_BUTTON_IS_CLICKED",
   SET_POST_ATTACHMENT_INDEX = "SET_POST_ATTACHMENT_INDEX",
@@ -24,32 +24,32 @@ export enum PostRowsActionType {
   SET_POST_SLIDER_TRANSITION_TIME = "SET_POST_SLIDER_TRANSITION_TIME",
 }
 
-export type PostRowsStringPayloadAction = {
-  type: PostRowsActionType.SET_CURRENT_LOCATION;
+export type PostRowPageStringPayloadAction = {
+  type: PostRowPageActionType.SET_CURRENT_LOCATION;
   payload: string;
 };
-export type PostRowsNumberPayloadAction = {
-  type: PostRowsActionType.SET_SCROLL_Y;
+export type PostRowPageNumberPayloadAction = {
+  type: PostRowPageActionType.SET_SCROLL_Y;
   payload: number;
 };
-export type PostRowsBooleanPayloadAction = {
-  type: PostRowsActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED;
+export type PostRowPageBooleanPayloadAction = {
+  type: PostRowPageActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED;
   payload: boolean;
 };
-export type PostRowsNoPayloadAction = {
-  type: PostRowsActionType.CLEAR_POST_ROWS;
+export type PostRowPageNoPayloadAction = {
+  type: PostRowPageActionType.CLEAR_POST_ROWS;
 };
-export type PostRowsSetMouseOverPostRowUuidAction = {
-  type: PostRowsActionType.SET_MOUSE_OVER_POST_ROW_UUID;
+export type PostRowPageSetMouseOverPostRowUuidAction = {
+  type: PostRowPageActionType.SET_MOUSE_OVER_POST_ROW_UUID;
   payload: string | undefined;
 };
 export type SetPostAttachmentIndexAction = {
-  type: PostRowsActionType.SET_POST_ATTACHMENT_INDEX;
+  type: PostRowPageActionType.SET_POST_ATTACHMENT_INDEX;
   payload: { postRowUuid: string; postUuid: string; index: number };
 };
 
 export type AddPostRowAction = {
-  type: PostRowsActionType.ADD_POST_ROW;
+  type: PostRowPageActionType.ADD_POST_ROW;
   payload: {
     posts: Array<Post>;
     gottenWithSubredditSourceOption: SubredditSourceOptionsEnum;
@@ -59,63 +59,63 @@ export type AddPostRowAction = {
 
 export type SetPostSliderLeftOrTransitionTimeAction = {
   type:
-    | PostRowsActionType.SET_POST_SLIDER_LEFT
-    | PostRowsActionType.SET_POST_SLIDER_TRANSITION_TIME;
+    | PostRowPageActionType.SET_POST_SLIDER_LEFT
+    | PostRowPageActionType.SET_POST_SLIDER_TRANSITION_TIME;
   payload: {
     postRowUuid: string;
     value: number;
   };
 };
 export type SetPostsToShowUuidsAction = {
-  type: PostRowsActionType.SET_POSTS_TO_SHOW_UUIDS;
+  type: PostRowPageActionType.SET_POSTS_TO_SHOW_UUIDS;
   payload: {
     postRowUuid: string;
     postsToShowUuids: Array<PostsToShowUuidsObj>;
   };
 };
 
-export default function PostRowsReducer(
-  state: PostRowsState,
+export default function PostRowPageReducer(
+  state: PostRowPageState,
   action:
-    | PostRowsStringPayloadAction
-    | PostRowsNumberPayloadAction
-    | PostRowsNoPayloadAction
+    | PostRowPageStringPayloadAction
+    | PostRowPageNumberPayloadAction
+    | PostRowPageNoPayloadAction
     | SetPostAttachmentIndexAction
-    | PostRowsBooleanPayloadAction
+    | PostRowPageBooleanPayloadAction
     | AddPostRowAction
-    | PostRowsSetMouseOverPostRowUuidAction
+    | PostRowPageSetMouseOverPostRowUuidAction
     | SetPostSliderLeftOrTransitionTimeAction
     | SetPostsToShowUuidsAction
 ) {
   switch (action.type) {
-    case PostRowsActionType.SET_CURRENT_LOCATION:
+    case PostRowPageActionType.SET_CURRENT_LOCATION:
       return setCurrentLocation(state, action);
-    case PostRowsActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED:
+    case PostRowPageActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED:
       return setPlayPauseButtonIsClicked(state, action);
-    case PostRowsActionType.SET_POST_ATTACHMENT_INDEX:
+    case PostRowPageActionType.SET_POST_ATTACHMENT_INDEX:
       return setPostAttachmentIndex(state, action);
-    case PostRowsActionType.CLEAR_POST_ROWS:
+    case PostRowPageActionType.CLEAR_POST_ROWS:
       return clearPostRows(state);
-    case PostRowsActionType.SET_SCROLL_Y:
+    case PostRowPageActionType.SET_SCROLL_Y:
       return setScrollY(state, action);
-    case PostRowsActionType.SET_MOUSE_OVER_POST_ROW_UUID:
+    case PostRowPageActionType.SET_MOUSE_OVER_POST_ROW_UUID:
       return setMouseOverPostRowUuid(state, action);
-    case PostRowsActionType.ADD_POST_ROW:
+    case PostRowPageActionType.ADD_POST_ROW:
       return addPostRow(state, action);
-    case PostRowsActionType.SET_POSTS_TO_SHOW_UUIDS:
+    case PostRowPageActionType.SET_POSTS_TO_SHOW_UUIDS:
       return setPostsToShowUuids(state, action);
-    case PostRowsActionType.SET_POST_SLIDER_LEFT:
+    case PostRowPageActionType.SET_POST_SLIDER_LEFT:
       return setPostSliderLeft(state, action);
-    case PostRowsActionType.SET_POST_SLIDER_TRANSITION_TIME:
+    case PostRowPageActionType.SET_POST_SLIDER_TRANSITION_TIME:
       return setPostSliderTransitionTime(state, action);
     default:
       return state;
   }
 }
 const setCurrentLocation = (
-  state: PostRowsState,
-  action: PostRowsStringPayloadAction
-): PostRowsState => {
+  state: PostRowPageState,
+  action: PostRowPageStringPayloadAction
+): PostRowPageState => {
   return {
     ...state,
     currentPath: action.payload,
@@ -123,12 +123,12 @@ const setCurrentLocation = (
 };
 
 const setPostAttachmentIndex = (
-  state: PostRowsState,
+  state: PostRowPageState,
   action: {
     type: string;
     payload: { postRowUuid: string; postUuid: string; index: number };
   }
-): PostRowsState => {
+): PostRowPageState => {
   const postRowUuid = action.payload.postRowUuid;
   const postRowIndex = state.postRows.findIndex(
     (postRow) => postRow.postRowUuid === postRowUuid
@@ -156,7 +156,7 @@ const setPostAttachmentIndex = (
     postRows: postRowsCopy,
   };
 };
-const clearPostRows = (state: PostRowsState): PostRowsState => {
+const clearPostRows = (state: PostRowPageState): PostRowPageState => {
   state.postRows.forEach((postRow) => {
     sessionStorage.removeItem(
       `${postRow.postRowUuid}${MOVE_POST_ROW_SESSION_STORAGE_KEY_SUFFIX}`
@@ -169,36 +169,36 @@ const clearPostRows = (state: PostRowsState): PostRowsState => {
 };
 
 const setScrollY = (
-  state: PostRowsState,
-  action: PostRowsNumberPayloadAction
-): PostRowsState => {
+  state: PostRowPageState,
+  action: PostRowPageNumberPayloadAction
+): PostRowPageState => {
   return {
     ...state,
     scrollY: action.payload,
   };
 };
 const setPlayPauseButtonIsClicked = (
-  state: PostRowsState,
-  action: PostRowsBooleanPayloadAction
-): PostRowsState => {
+  state: PostRowPageState,
+  action: PostRowPageBooleanPayloadAction
+): PostRowPageState => {
   return {
     ...state,
     playPauseButtonIsClicked: action.payload,
   };
 };
 const setMouseOverPostRowUuid = (
-  state: PostRowsState,
-  action: PostRowsSetMouseOverPostRowUuidAction
-): PostRowsState => {
+  state: PostRowPageState,
+  action: PostRowPageSetMouseOverPostRowUuidAction
+): PostRowPageState => {
   return {
     ...state,
     mouseOverPostRowUuid: action.payload,
   };
 };
 const addPostRow = (
-  state: PostRowsState,
+  state: PostRowPageState,
   action: AddPostRowAction
-): PostRowsState => {
+): PostRowPageState => {
   const posts = [...action.payload.posts];
   if (posts.length === 0) {
     return state;
@@ -270,9 +270,9 @@ const addPostRow = (
 };
 
 const setPostsToShowUuids = (
-  state: PostRowsState,
+  state: PostRowPageState,
   action: SetPostsToShowUuidsAction
-): PostRowsState => {
+): PostRowPageState => {
   const postRowUuid = action.payload.postRowUuid;
   const updatedPostRows = [...state.postRows];
   const postRow = updatedPostRows.find(
@@ -288,9 +288,9 @@ const setPostsToShowUuids = (
   };
 };
 const setPostSliderLeft = (
-  state: PostRowsState,
+  state: PostRowPageState,
   action: SetPostSliderLeftOrTransitionTimeAction
-): PostRowsState => {
+): PostRowPageState => {
   const postRowUuid = action.payload.postRowUuid;
   const updatedPostRows = [...state.postRows];
   const postRow = updatedPostRows.find(
@@ -306,9 +306,9 @@ const setPostSliderLeft = (
   };
 };
 const setPostSliderTransitionTime = (
-  state: PostRowsState,
+  state: PostRowPageState,
   action: SetPostSliderLeftOrTransitionTimeAction
-): PostRowsState => {
+): PostRowPageState => {
   const postRowUuid = action.payload.postRowUuid;
   const updatedPostRows = [...state.postRows];
   const postRow = updatedPostRows.find(

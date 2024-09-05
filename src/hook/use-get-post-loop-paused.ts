@@ -1,12 +1,12 @@
 import { useContext, useEffect, useState } from "react";
-import { PostRowsContext } from "../context/post-rows-context.ts";
 import { ContextMenuStateContext } from "../context/context-menu-context.ts";
+import { PostRowPageContext } from "../context/post-row-page-context.ts";
 
 export default function useGetPostLoopPaused() {
   const [isGetPostLoopPaused, setIsGetPostLoopPaused] = useState(false);
 
   const { scrollY, playPauseButtonIsClicked, mouseOverPostRowUuid } =
-    useContext(PostRowsContext);
+    useContext(PostRowPageContext);
 
   const { menuOpenOnPostRowUuid } = useContext(ContextMenuStateContext);
   useEffect(() => {

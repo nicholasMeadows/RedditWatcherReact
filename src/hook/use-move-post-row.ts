@@ -8,13 +8,13 @@ import {
 } from "react";
 import { Post } from "../model/Post/Post.ts";
 import { PostsToShowUuidsObj } from "../model/PostRow.ts";
-import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { v4 as uuidV4 } from "uuid";
-import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
 import { ContextMenuStateContext } from "../context/context-menu-context.ts";
 import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
+import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
+import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 
 export default function useMovePostRow(
   postRowUuid: string,
@@ -25,7 +25,7 @@ export default function useMovePostRow(
   gottenWithSubredditSourceOption: SubredditSourceOptionsEnum
 ) {
   const { postsToShowInRow } = useContext(AppConfigStateContext);
-  const postRowsDispatch = useContext(PostRowsDispatchContext);
+  const postRowPageDispatch = useContext(PostRowPageDispatchContext);
   const {
     autoScrollPostRowRateSecondsForSinglePostCard,
     autoScrollPostRowDirectionOption,
@@ -50,7 +50,7 @@ export default function useMovePostRow(
     const rect = postRowContentDiv.getBoundingClientRect();
     const widthPx = rect.width / postsToShowInRow;
     return (widthPx / rect.width) * 100;
-  }, []);
+  }, [postRowContentDivRef, postsToShowInRow]);
 
   const updatePostRowLayoutParams = useCallback(
     (
@@ -59,8 +59,8 @@ export default function useMovePostRow(
       postSliderTransitionTime: number | undefined
     ) => {
       if (postsToShowUuids !== undefined) {
-        postRowsDispatch({
-          type: PostRowsActionType.SET_POSTS_TO_SHOW_UUIDS,
+        postRowPageDispatch({
+          type: PostRowPageActionType.SET_POSTS_TO_SHOW_UUIDS,
           payload: {
             postRowUuid,
             postsToShowUuids: postsToShowUuids,
@@ -69,8 +69,8 @@ export default function useMovePostRow(
       }
 
       if (postSliderLeft !== undefined) {
-        postRowsDispatch({
-          type: PostRowsActionType.SET_POST_SLIDER_LEFT,
+        postRowPageDispatch({
+          type: PostRowPageActionType.SET_POST_SLIDER_LEFT,
           payload: {
             postRowUuid,
             value: postSliderLeft,
@@ -78,8 +78,8 @@ export default function useMovePostRow(
         });
       }
       if (postSliderTransitionTime !== undefined) {
-        postRowsDispatch({
-          type: PostRowsActionType.SET_POST_SLIDER_TRANSITION_TIME,
+        postRowPageDispatch({
+          type: PostRowPageActionType.SET_POST_SLIDER_TRANSITION_TIME,
           payload: {
             postRowUuid,
             value: postSliderTransitionTime,
@@ -87,7 +87,7 @@ export default function useMovePostRow(
         });
       }
     },
-    [postRowUuid, postRowsDispatch]
+    [postRowUuid, postRowPageDispatch]
   );
   useLayoutEffect(() => {
     const postRowContentDiv = postRowContentDivRef.current;
@@ -187,7 +187,9 @@ export default function useMovePostRow(
     [
       autoScrollPostRowDirectionOption,
       autoScrollPostRowRateSecondsForSinglePostCard,
+      calcPostCardWidthPercentage,
       masterPosts,
+      postRowContentDivRef,
       postsToShowInRow,
       postsToShowUuids,
       updatePostRowLayoutParams,
@@ -250,6 +252,7 @@ export default function useMovePostRow(
   }, [
     autoScrollPostRowDirectionOption,
     autoScrollPostRowRateSecondsForSinglePostCard,
+    calcPostCardWidthPercentage,
     menuOpenOnPostRowUuid,
     postRowContentDivRef,
     postRowUuid,
@@ -393,6 +396,7 @@ export default function useMovePostRow(
       lastMouseDownX.current = eventX;
     },
     [
+      calcPostCardWidthPercentage,
       masterPosts,
       postRowContentDivRef,
       postSliderLeft,
@@ -569,11 +573,12 @@ export default function useMovePostRow(
     masterPosts,
     postRowContentDivRef,
     postRowUuid,
-    postRowsDispatch,
+    postRowPageDispatch,
     postsToShowInRow,
     postsToShowUuids,
     postsToShowUuids.length,
     shouldAutoScroll,
     updatePostRowLayoutParams,
+    calcPostCardWidthPercentage,
   ]);
 }

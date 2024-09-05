@@ -5,16 +5,16 @@ import useMovePostRow from "../hook/use-move-post-row.ts";
 import "../theme/post-row.scss";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
 import IndividualPostRowContext from "../context/individual-post-row-context.ts";
-import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
-import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import { PostCardContext } from "../context/post-card-context.ts";
 import PostCard from "../components/PostCard.tsx";
+import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
+import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 
 const PostRow: FC = memo(() => {
   const { darkMode, postsToShowInRow, postRowsToShowInView } = useContext(
     AppConfigStateContext
   );
-  const postRowsDispatch = useContext(PostRowsDispatchContext);
+  const postRowPageDispatch = useContext(PostRowPageDispatchContext);
   const {
     postRowUuid,
     posts,
@@ -72,14 +72,14 @@ const PostRow: FC = memo(() => {
         }}
         ref={postRowContentDivRef}
         onMouseEnter={() => {
-          postRowsDispatch({
-            type: PostRowsActionType.SET_MOUSE_OVER_POST_ROW_UUID,
+          postRowPageDispatch({
+            type: PostRowPageActionType.SET_MOUSE_OVER_POST_ROW_UUID,
             payload: postRowUuid,
           });
         }}
         onMouseLeave={() => {
-          postRowsDispatch({
-            type: PostRowsActionType.SET_MOUSE_OVER_POST_ROW_UUID,
+          postRowPageDispatch({
+            type: PostRowPageActionType.SET_MOUSE_OVER_POST_ROW_UUID,
             payload: undefined,
           });
         }}

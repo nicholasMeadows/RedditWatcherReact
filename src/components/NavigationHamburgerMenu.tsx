@@ -27,8 +27,6 @@ import {
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import ImportExportConfig from "../model/ImportExportConfig.ts";
-import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
-import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import { RedditListStateContext } from "../context/reddit-list-context.ts";
 import {
   RedditServiceDispatchContext,
@@ -37,9 +35,11 @@ import {
 import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
 import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
+import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
+import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
-  const postRowsDispatch = useContext(PostRowsDispatchContext);
+  const postRowPageDispatch = useContext(PostRowPageDispatchContext);
   const appConfigDispatch = useContext(AppConfigDispatchContext);
   const appConfigState = useContext(AppConfigStateContext);
   const { redditAuthenticationStatus } = useContext(RedditServiceStateContext);
@@ -200,7 +200,7 @@ const NavigationHamburgerMenu: React.FC = () => {
         }
 
         console.log("done importing");
-        postRowsDispatch({ type: PostRowsActionType.CLEAR_POST_ROWS });
+        postRowPageDispatch({ type: PostRowPageActionType.CLEAR_POST_ROWS });
         appConfigDispatch({ type: AppConfigActionType.RESET_CONFIG_LOADED });
       } catch (e) {
         console.log("exception", e);

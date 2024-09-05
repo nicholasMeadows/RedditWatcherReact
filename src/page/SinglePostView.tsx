@@ -1,6 +1,5 @@
 import { FC, useCallback, useContext, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { PostRowsContext } from "../context/post-rows-context.ts";
 import { Post } from "../model/Post/Post.ts";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
 import { PostImageQualityEnum } from "../model/config/enums/PostImageQualityEnum.ts";
@@ -16,13 +15,14 @@ import {
 import PostMediaElementZoomContext from "../context/post-media-element-zoom-context.ts";
 import useSinglePostPageZoom from "../hook/use-single-post-page-zoom.ts";
 import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
+import { PostRowPageContext } from "../context/post-row-page-context.ts";
 
 const SinglePostView: FC = () => {
   const navigate = useNavigate();
   const [queryParams] = useSearchParams();
   const postRowUuid = queryParams.get("postRowUuid");
   const postUuid = queryParams.get("postUuid");
-  const { postRows } = useContext(PostRowsContext);
+  const { postRows } = useContext(PostRowPageContext);
   const postElementDivWrapperRef = useRef<HTMLDivElement>(null);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
 
