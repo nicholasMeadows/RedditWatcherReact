@@ -303,6 +303,7 @@ const PostMediaElement: React.FC = memo(() => {
             <>
               <div className={"post-element-media-element"}>
                 <iframe
+                  className={"post-element-iframe-element"}
                   onMouseEnter={() => {
                     setShowPostCardInfo(true);
                   }}

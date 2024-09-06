@@ -51,6 +51,11 @@
   transform: translate(-50%, -50%);
 }
 
+.post-element-iframe-element {
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
 .attachment-indicator-box {
   position: absolute;
   bottom: 1em;
