@@ -92,6 +92,14 @@ const PostCard: FC = memo(() => {
             type: PostRowPageActionType.SET_MOUSE_OVER_POST_ROW_UUID,
             payload: undefined,
           });
+          postRowPageDispatch({
+            type: PostRowPageActionType.SET_SHOW_POST_CARD_INFO,
+            payload: {
+              postUuid: post.postUuid,
+              postRowUuid: postRowUuid,
+              showPostCardInfo: false,
+            },
+          });
         }}
       >
         {attachmentMediaType !== MediaType.IFrame &&
