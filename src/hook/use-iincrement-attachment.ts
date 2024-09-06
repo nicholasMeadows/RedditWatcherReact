@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useRef } from "react";
-import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
-import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
+import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 import { Post } from "../model/Post/Post.ts";
+import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
 
 export default function useIncrementAttachment(
   post: Post | undefined,
@@ -9,7 +9,7 @@ export default function useIncrementAttachment(
   autoIncrementAttachments: boolean,
   mouseOver: boolean
 ) {
-  const postRowsDispatch = useContext(PostRowsDispatchContext);
+  const postRowPageDispatch = useContext(PostRowPageDispatchContext);
   const autoIncrementPostAttachmentInterval = useRef<
     NodeJS.Timeout | undefined
   >();
@@ -30,15 +30,15 @@ export default function useIncrementAttachment(
     } else {
       attachmentIndex = 0;
     }
-    postRowsDispatch({
-      type: PostRowsActionType.SET_POST_ATTACHMENT_INDEX,
+    postRowPageDispatch({
+      type: PostRowPageActionType.SET_POST_ATTACHMENT_INDEX,
       payload: {
         postRowUuid: postRowUuid,
         postUuid: post.postUuid,
         index: attachmentIndex,
       },
     });
-  }, [post, postRowUuid, postRowsDispatch]);
+  }, [post, postRowUuid, postRowPageDispatch]);
 
   const decrementPostAttachment = useCallback(() => {
     if (
@@ -56,15 +56,15 @@ export default function useIncrementAttachment(
     } else {
       attachmentIndex = post.currentAttachmentIndex - 1;
     }
-    postRowsDispatch({
-      type: PostRowsActionType.SET_POST_ATTACHMENT_INDEX,
+    postRowPageDispatch({
+      type: PostRowPageActionType.SET_POST_ATTACHMENT_INDEX,
       payload: {
         postRowUuid: postRowUuid,
         postUuid: post.postUuid,
         index: attachmentIndex,
       },
     });
-  }, [post, postRowUuid, postRowsDispatch]);
+  }, [post, postRowUuid, postRowPageDispatch]);
 
   const jumpToPostAttachment = useCallback(
     (index: number) => {
@@ -77,8 +77,8 @@ export default function useIncrementAttachment(
         return;
       }
       if (index >= 0 && index < post.attachments.length) {
-        postRowsDispatch({
-          type: PostRowsActionType.SET_POST_ATTACHMENT_INDEX,
+        postRowPageDispatch({
+          type: PostRowPageActionType.SET_POST_ATTACHMENT_INDEX,
           payload: {
             postRowUuid: postRowUuid,
             postUuid: post.postUuid,
@@ -87,7 +87,7 @@ export default function useIncrementAttachment(
         });
       }
     },
-    [post, postRowUuid, postRowsDispatch]
+    [post, postRowUuid, postRowPageDispatch]
   );
 
   const setupAutoIncrementPostAttachmentInterval = useCallback(() => {

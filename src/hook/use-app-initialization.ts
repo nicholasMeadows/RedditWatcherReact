@@ -28,12 +28,12 @@ import {
   RedditServiceDispatchContext,
   RedditServiceStateContext,
 } from "../context/reddit-service-context.ts";
-import { PostRowsContext } from "../context/post-rows-context.ts";
 import {
   GetPostsFromSubredditResponse,
   GetPostsFromSubredditState,
 } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
 import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
+import { PostRowPageContext } from "../context/post-row-page-context.ts";
 
 enum AppInitializationStepEnum {
   NOT_STARTED,
@@ -67,7 +67,7 @@ export function useAppInitialization() {
   const { masterSubscribedSubredditList } = useContext(
     RedditServiceStateContext
   );
-  const { postRows } = useContext(PostRowsContext);
+  const { postRows } = useContext(PostRowPageContext);
 
   const loadConfigAsync = useCallback(async () => {
     setText("Loading App Config...");

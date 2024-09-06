@@ -12,23 +12,32 @@ import {
   ContextMenuStateContext,
 } from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
-import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
-import { PostRowsDispatchContext } from "../context/post-rows-context.ts";
 import PostMediaElement from "./PostMediaElement.tsx";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
 import { MediaType } from "../model/Post/MediaTypeEnum.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
+import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
+import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
+import IndividualPostRowContext from "../context/individual-post-row-context.ts";
 
 const PostCard: FC = memo(() => {
   const navigate = useNavigate();
   const { postsToShowInRow } = useContext(AppConfigStateContext);
-  const postRowsDispatch = useContext(PostRowsDispatchContext);
-  const { postRowUuid, post } = useContext(PostCardContext);
+  const postRowPageDispatch = useContext(PostRowPageDispatchContext);
+  const { allPosts } = useContext(IndividualPostRowContext);
+
+  const { postRowUuid, postCard } = useContext(PostCardContext);
   const initialMouseDownOrTouchX = useRef(0);
   const { showContextMenu } = useContext(ContextMenuStateContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const [mouseOverPostCard, setMouseOverPostCard] = useState(false);
 
+  const post = allPosts.find(
+    (post) => post.postUuid === postCard.postToDisplayUuid
+  );
+  if (post === undefined) {
+    return <></>;
+  }
   const currentAttachment = post.attachments[post.currentAttachmentIndex];
   const attachmentUrl = currentAttachment.url;
   const attachmentMediaType = currentAttachment.mediaType;
@@ -79,8 +88,8 @@ const PostCard: FC = memo(() => {
           navigate(
             `${SINGLE_POST_ROUTE}?${SINGLE_POST_PAGE_POST_ROW_UUID_KEY}=${postRowUuid}&${SINGLE_POST_PAGE_POST_UUID_KEY}=${post.postUuid}`
           );
-          postRowsDispatch({
-            type: PostRowsActionType.SET_MOUSE_OVER_POST_ROW_UUID,
+          postRowPageDispatch({
+            type: PostRowPageActionType.SET_MOUSE_OVER_POST_ROW_UUID,
             payload: undefined,
           });
         }}
@@ -113,7 +122,7 @@ const PostCard: FC = memo(() => {
           })()}
         <div
           className={`post-info-div ${
-            mouseOverPostCard ? "post-info-div-hover" : ""
+            postCard.showPostCardInfo ? "post-info-div-hover" : ""
           }`}
         >
           <p className="postCardHeaderText">{`${post.subreddit.displayName}${

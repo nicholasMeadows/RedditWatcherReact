@@ -11,17 +11,17 @@ import {
   GetPostsFromSubredditResponse,
   GetPostsFromSubredditState,
 } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
-import {
-  PostRowsContext,
-  PostRowsDispatchContext,
-} from "../context/post-rows-context.ts";
 import { RedditListStateContext } from "../context/reddit-list-context.ts";
 import { SideBarDispatchContext } from "../context/side-bar-context.ts";
 import RedditService from "../service/RedditService.ts";
 import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
 import { AppNotificationsActionType } from "../reducer/app-notifications-reducer.ts";
-import { PostRowsActionType } from "../reducer/post-rows-reducer.ts";
 import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
+import {
+  PostRowPageContext,
+  PostRowPageDispatchContext,
+} from "../context/post-row-page-context.ts";
+import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 
 export default function useRedditService() {
   const {
@@ -51,10 +51,10 @@ export default function useRedditService() {
 
   const redditServiceDispatch = useContext(RedditServiceDispatchContext);
 
-  const postRowsDispatch = useContext(PostRowsDispatchContext);
+  const postRowPageDispatch = useContext(PostRowPageDispatchContext);
   const sideBarDispatch = useContext(SideBarDispatchContext);
   const appNotificationDispatch = useContext(AppNotificationsDispatchContext);
-  const { postRows } = useContext(PostRowsContext);
+  const { postRows } = useContext(PostRowPageContext);
 
   const currentGetPostsFromSubredditValues =
     useRef<GetPostsFromSubredditState>();
@@ -206,8 +206,8 @@ export default function useRedditService() {
         });
       }
       if (getPostsResponse.posts.length > 0) {
-        postRowsDispatch({
-          type: PostRowsActionType.ADD_POST_ROW,
+        postRowPageDispatch({
+          type: PostRowPageActionType.ADD_POST_ROW,
           payload: {
             posts: getPostsResponse.posts,
             gottenWithPostSortOrderOption:
@@ -218,7 +218,7 @@ export default function useRedditService() {
         });
       }
     },
-    [postRowsDispatch, redditServiceDispatch, sideBarDispatch]
+    [postRowPageDispatch, redditServiceDispatch, sideBarDispatch]
   );
 
   const handleGottenPosts = useCallback(

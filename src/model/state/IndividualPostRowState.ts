@@ -1,12 +1,12 @@
 import { Post } from "../Post/Post.ts";
-import { PostsToShowUuidsObj } from "../PostRow.ts";
 import SubredditSourceOptionsEnum from "../config/enums/SubredditSourceOptionsEnum.ts";
+import PostCard from "../PostCard.ts";
 
 export interface IndividualPostRowState {
-  posts: Array<Post>;
+  allPosts: Array<Post>;
   postRowUuid: string;
   postSliderLeft: number;
   postSliderLeftTransitionTime: number;
-  postsToShowUuids: Array<PostsToShowUuidsObj>;
+  postCards: Array<PostCard>;
   gottenWithSubredditSourceOption: SubredditSourceOptionsEnum;
 }

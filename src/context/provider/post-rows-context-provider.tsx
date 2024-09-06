@@ -1,30 +1,33 @@
 import { FC, ReactNode, useReducer } from "react";
-import {
-  PostRowsContext,
-  PostRowsDispatchContext,
-} from "../post-rows-context.ts";
 import { PostRow } from "../../model/PostRow.ts";
-import { PostRowsState } from "../../model/state/PostRowsState.ts";
-import PostRowsReducer from "../../reducer/post-rows-reducer.ts";
+import PostRowPageReducer from "../../reducer/post-row-page-reducer.ts";
+import { PostRowPageState } from "../../model/state/PostRowsState.ts";
+import {
+  PostRowPageContext,
+  PostRowPageDispatchContext,
+} from "../post-row-page-context.ts";
 
 type Props = {
   children: ReactNode;
 };
 
 export const PostRowsContextProvider: FC<Props> = ({ children }) => {
-  const initialState: PostRowsState = {
+  const initialState: PostRowPageState = {
     currentPath: "",
     scrollY: 0,
     playPauseButtonIsClicked: false,
     postRows: new Array<PostRow>(),
     mouseOverPostRowUuid: undefined,
   };
-  const [postRowsState, dispatch] = useReducer(PostRowsReducer, initialState);
+  const [postRowsState, dispatch] = useReducer(
+    PostRowPageReducer,
+    initialState
+  );
   return (
-    <PostRowsContext.Provider value={postRowsState}>
-      <PostRowsDispatchContext.Provider value={dispatch}>
+    <PostRowPageContext.Provider value={postRowsState}>
+      <PostRowPageDispatchContext.Provider value={dispatch}>
         {children}
-      </PostRowsDispatchContext.Provider>
-    </PostRowsContext.Provider>
+      </PostRowPageDispatchContext.Provider>
+    </PostRowPageContext.Provider>
   );
 };
