@@ -301,15 +301,17 @@ const PostMediaElement: React.FC = memo(() => {
         ) {
           mediaElement = (
             <>
-              <div className={"post-element-media-element"}>
+              <div
+                className={"post-element-media-element"}
+                onMouseEnter={() => {
+                  setShowPostCardInfo(true);
+                }}
+                onMouseLeave={() => {
+                  setShowPostCardInfo(false);
+                }}
+              >
                 <iframe
                   className={"post-element-iframe-element"}
-                  onMouseEnter={() => {
-                    setShowPostCardInfo(true);
-                  }}
-                  onMouseLeave={() => {
-                    setShowPostCardInfo(false);
-                  }}
                   src={mediaSrc}
                   frameBorder="0"
                   scrolling="no"
