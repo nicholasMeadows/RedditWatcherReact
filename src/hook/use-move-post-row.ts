@@ -286,6 +286,7 @@ export default function useMovePostRow(
         if (touches.length === 0) {
           mouseDownOnPostRow.current = false;
           lastMouseDownX.current = 0;
+          startAutoScroll(postCards);
         } else if (touches.length === 1) {
           mouseDownOnPostRow.current = true;
           lastMouseDownX.current = touches[0].clientX;
@@ -297,7 +298,7 @@ export default function useMovePostRow(
         }
       }
     },
-    []
+    [postCards, startAutoScroll]
   );
 
   const handleMouseOrTouchMove = useCallback(
