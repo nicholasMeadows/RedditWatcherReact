@@ -470,16 +470,19 @@ export default function useMovePostRow(
     hookInitialized.current = true;
 
     let initialLeft: number | undefined;
+    let goToLeft: number | undefined;
     if (
       autoScrollPostRowDirectionOption ===
       AutoScrollPostRowDirectionOptionEnum.Left
     ) {
       initialLeft = 0;
+      goToLeft = Math.abs(calcPostCardWidthPercentage()) * -1;
     } else if (
       autoScrollPostRowDirectionOption ===
       AutoScrollPostRowDirectionOptionEnum.Right
     ) {
       initialLeft = calcPostCardWidthPercentage() * -1;
+      goToLeft = 0;
     }
     if (postCards.length === 0 && masterPosts.length <= postsToShowInRow) {
       const postsToSet = masterPosts.map((post) => makePostCard(post));
@@ -495,7 +498,15 @@ export default function useMovePostRow(
       postsToSet.push(...subPostCardsArr);
 
       updatePostRowLayoutParams(postsToSet, initialLeft, 0);
-      setTimeout(() => startAutoScroll(postsToSet), 0);
+      setTimeout(
+        () =>
+          updatePostRowLayoutParams(
+            undefined,
+            goToLeft,
+            autoScrollPostRowRateSecondsForSinglePostCard
+          ),
+        0
+      );
     } else if (
       postCards.length > 0 &&
       postCards.length === postsToShowInRow + 2
@@ -524,7 +535,15 @@ export default function useMovePostRow(
         cardsToSet.push(makePostCard(masterPosts[runningIndex]));
       }
       updatePostRowLayoutParams(cardsToSet, initialLeft, 0);
-      setTimeout(() => startAutoScroll(cardsToSet), 0);
+      setTimeout(
+        () =>
+          updatePostRowLayoutParams(
+            undefined,
+            goToLeft,
+            autoScrollPostRowRateSecondsForSinglePostCard
+          ),
+        0
+      );
     } else if (
       postCards.length > 0 &&
       postCards.length > postsToShowInRow + 2 &&
@@ -533,10 +552,19 @@ export default function useMovePostRow(
       const cardsToSet = postCards.slice(0, postsToShowInRow + 2);
 
       updatePostRowLayoutParams(cardsToSet, initialLeft, 0);
-      setTimeout(() => startAutoScroll(cardsToSet), 0);
+      setTimeout(
+        () =>
+          updatePostRowLayoutParams(
+            undefined,
+            goToLeft,
+            autoScrollPostRowRateSecondsForSinglePostCard
+          ),
+        0
+      );
     }
   }, [
     autoScrollPostRowDirectionOption,
+    autoScrollPostRowRateSecondsForSinglePostCard,
     calcPostCardWidthPercentage,
     masterPosts,
     postCards,
