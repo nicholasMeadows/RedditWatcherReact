@@ -503,7 +503,8 @@ export default function useMovePostRow(
       setTimeout(() => startAutoScroll(postCards), 0);
     } else if (
       postCards.length > 0 &&
-      postCards.length < postsToShowInRow + 2
+      postCards.length < postsToShowInRow + 2 &&
+      masterPosts.length > postsToShowInRow
     ) {
       const cardsToSet = [...postCards];
       const numOfCardsToAdd = postsToShowInRow + 2 - postCards.length;
@@ -526,7 +527,8 @@ export default function useMovePostRow(
       setTimeout(() => startAutoScroll(cardsToSet), 0);
     } else if (
       postCards.length > 0 &&
-      postCards.length > postsToShowInRow + 2
+      postCards.length > postsToShowInRow + 2 &&
+      masterPosts.length > postsToShowInRow
     ) {
       const cardsToSet = postCards.slice(0, postsToShowInRow + 2);
 
