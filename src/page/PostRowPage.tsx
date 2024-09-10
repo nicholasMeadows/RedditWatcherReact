@@ -10,6 +10,7 @@ import {
   PostRowPageDispatchContext,
 } from "../context/post-row-page-context.ts";
 import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
+import SecondsTillNextPostRowCounter from "../components/SecondsTillNextPostRowCounter.tsx";
 
 const PostRowPage: FC = () => {
   const { postRows, playPauseButtonIsClicked } = useContext(PostRowPageContext);
@@ -110,6 +111,7 @@ const PostRowPage: FC = () => {
             className={"play-pause-button-img"}
           />
         </div>
+        <SecondsTillNextPostRowCounter />
       </div>
     </LoopForPostsProvider>
   );

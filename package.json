@@ -1,7 +1,7 @@
 {
   "name": "reddit-watcher",
   "private": true,
-  "version": "4.9.7",
+  "version": "4.10.0",
   "type": "module",
   "main": "electron-entry.cjs",
   "author": "Nicholas",

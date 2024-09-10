@@ -12,7 +12,6 @@ import {
   SideBarStateContext,
 } from "../context/side-bar-context.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
-import { RedditServiceStateContext } from "../context/reddit-service-context.ts";
 import SearchRedditBar from "./SearchRedditBar.tsx";
 import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
 import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
@@ -42,7 +41,6 @@ const SideBar: React.FC<SideBarProps> = ({
   } = useContext(SideBarStateContext);
   const { subredditLists } = useContext(RedditListStateContext);
   const sideBarDispatch = useContext(SideBarDispatchContext);
-  const { secondsTillGettingNextPosts } = useContext(RedditServiceStateContext);
   const { darkMode } = useContext(AppConfigStateContext);
   const { showContextMenu } = useContext(ContextMenuStateContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
@@ -321,11 +319,6 @@ const SideBar: React.FC<SideBarProps> = ({
           ))}
         </div>
         <hr className="hr" />
-        <div className={"next-post-countdown-timer-text-box"}>
-          <p className={"next-post-countdown-timer-text"}>
-            {`Getting next posts in ${secondsTillGettingNextPosts} seconds`}
-          </p>
-        </div>
       </div>
     </div>
   );
