@@ -25,12 +25,12 @@
 
 .rightPostRowScrollButton {
   right: 0;
-  background: linear-gradient(-90deg, var(--background) 0%, rgba(0, 0, 0, 0) 100%);
+  background: linear-gradient(-90deg, rgb(0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
 }
 
 .leftPostRowScrollButton {
   left: 0;
-  background: linear-gradient(90deg, var(--background) 0%, rgba(0, 0, 0, 0) 100%);
+  background: linear-gradient(90deg, rgb(0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
 }
 
 .postRowContent {

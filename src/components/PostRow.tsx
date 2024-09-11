@@ -24,7 +24,10 @@ const PostRow: FC = memo(() => {
     gottenWithSubredditSourceOption,
   } = useContext(IndividualPostRowContext);
 
+  const postRowDivRef = useRef<HTMLDivElement>(null);
   const postRowContentDivRef = useRef<HTMLDivElement>(null);
+  const scrollPostRowLeftButtonRef = useRef<HTMLDivElement>(null);
+  const scrollPostRowRightButtonRef = useRef<HTMLDivElement>(null);
 
   const hideScrollButtonDivs = useCallback(() => {
     return getPlatform() == Platform.Android || getPlatform() == Platform.Ios;
@@ -33,20 +36,37 @@ const PostRow: FC = memo(() => {
   useMovePostRow(
     postRowUuid,
     allPosts,
+    postRowDivRef,
     postRowContentDivRef,
     postSliderLeft,
     postCards,
-    gottenWithSubredditSourceOption
+    gottenWithSubredditSourceOption,
+    scrollPostRowLeftButtonRef,
+    scrollPostRowRightButtonRef
   );
 
   return (
     <div
+      ref={postRowDivRef}
       className="postRow"
       style={{
         height: `calc(100%/${postRowsToShowInView})`,
       }}
+      onMouseEnter={() => {
+        postRowPageDispatch({
+          type: PostRowPageActionType.SET_MOUSE_OVER_POST_ROW_UUID,
+          payload: postRowUuid,
+        });
+      }}
+      onMouseLeave={() => {
+        postRowPageDispatch({
+          type: PostRowPageActionType.SET_MOUSE_OVER_POST_ROW_UUID,
+          payload: undefined,
+        });
+      }}
     >
       <div
+        ref={scrollPostRowLeftButtonRef}
         hidden={hideScrollButtonDivs()}
         className="postRowScrollButton leftPostRowScrollButton"
         style={{
@@ -71,18 +91,6 @@ const PostRow: FC = memo(() => {
           transition: `left ${postSliderLeftTransitionTime}s linear`,
         }}
         ref={postRowContentDivRef}
-        onMouseEnter={() => {
-          postRowPageDispatch({
-            type: PostRowPageActionType.SET_MOUSE_OVER_POST_ROW_UUID,
-            payload: postRowUuid,
-          });
-        }}
-        onMouseLeave={() => {
-          postRowPageDispatch({
-            type: PostRowPageActionType.SET_MOUSE_OVER_POST_ROW_UUID,
-            payload: undefined,
-          });
-        }}
       >
         {postCards.map((postCard) => {
           return (
@@ -99,6 +107,7 @@ const PostRow: FC = memo(() => {
         })}
       </div>
       <div
+        ref={scrollPostRowRightButtonRef}
         hidden={hideScrollButtonDivs()}
         className="postRowScrollButton rightPostRowScrollButton"
         style={{

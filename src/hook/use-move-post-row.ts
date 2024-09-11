@@ -19,10 +19,13 @@ import { v4 as uuidV4 } from "uuid";
 export default function useMovePostRow(
   postRowUuid: string,
   masterPosts: Array<Post>,
+  postRowDivRef: RefObject<HTMLDivElement>,
   postRowContentDivRef: RefObject<HTMLDivElement>,
   postSliderLeft: number,
   postCards: Array<PostCard>,
-  gottenWithSubredditSourceOption: SubredditSourceOptionsEnum
+  gottenWithSubredditSourceOption: SubredditSourceOptionsEnum,
+  scrollPostRowLeftButtonRef: RefObject<HTMLDivElement>,
+  scrollPostRowRightButtonRef: RefObject<HTMLDivElement>
 ) {
   const { postsToShowInRow } = useContext(AppConfigStateContext);
   const postRowPageDispatch = useContext(PostRowPageDispatchContext);
@@ -303,9 +306,9 @@ export default function useMovePostRow(
 
   const handleMouseOrTouchMove = useCallback(
     (event: MouseEvent | TouchEvent) => {
-      const postRowContentDiv = postRowContentDivRef.current;
+      const postRowDiv = postRowDivRef.current;
       if (
-        postRowContentDiv === null ||
+        postRowDiv === null ||
         !mouseDownOnPostRow.current ||
         postCards.length <= postsToShowInRow
       ) {
@@ -332,7 +335,7 @@ export default function useMovePostRow(
 
       const deltaX = eventX - lastMouseDownX.current;
       const deltaXPercentage =
-        (Math.abs(deltaX) / postRowContentDiv.clientWidth) * 100;
+        (Math.abs(deltaX) / postRowDiv.clientWidth) * 100;
       let leftToSet: number | undefined = undefined;
       if (deltaX < 0) {
         leftToSet = postSliderLeft - deltaXPercentage;
@@ -359,7 +362,7 @@ export default function useMovePostRow(
     [
       calcPostCardWidthPercentage,
       postCards.length,
-      postRowContentDivRef,
+      postRowDivRef,
       postSliderLeft,
       postsToShowInRow,
       shiftPostCardsLeft,
@@ -368,61 +371,135 @@ export default function useMovePostRow(
     ]
   );
 
-  useEffect(() => {
+  const leftScrollButtonCLick = useCallback(() => {
     const postRowContentDiv = postRowContentDivRef.current;
     if (postRowContentDiv === null) {
+      return;
+    }
+    let updatedPostCards: Array<PostCard> | undefined;
+    let updatedPostSliderLeft: number | undefined;
+
+    const postRowContentDivRect = postRowContentDiv.getBoundingClientRect();
+    const currentPostRowLeftPercentage =
+      (postRowContentDivRect.left / postRowContentDivRect.width) * 100;
+
+    if (
+      autoScrollPostRowDirectionOption ===
+      AutoScrollPostRowDirectionOptionEnum.Left
+    ) {
+      updatedPostSliderLeft = 0;
+      updatedPostCards = shiftPostCardsLeft();
+    } else if (
+      autoScrollPostRowDirectionOption ===
+      AutoScrollPostRowDirectionOptionEnum.Right
+    ) {
+      updatedPostSliderLeft = Math.abs(calcPostCardWidthPercentage()) * -1;
+      if (
+        currentPostRowLeftPercentage ===
+        Math.abs(calcPostCardWidthPercentage()) * -1
+      ) {
+        updatedPostCards = shiftPostCardsLeft();
+      }
+    }
+    updatePostRowLayoutParams(updatedPostCards, updatedPostSliderLeft, 0);
+  }, [
+    autoScrollPostRowDirectionOption,
+    calcPostCardWidthPercentage,
+    postRowContentDivRef,
+    shiftPostCardsLeft,
+    updatePostRowLayoutParams,
+  ]);
+
+  const rightScrollButtonCLick = useCallback(() => {
+    const postRowContentDiv = postRowContentDivRef.current;
+    if (postRowContentDiv === null) {
+      return;
+    }
+    let updatedPostCards: Array<PostCard> | undefined;
+    let updatedPostSliderLeft: number | undefined;
+
+    const postRowContentDivRect = postRowContentDiv.getBoundingClientRect();
+    const currentPostRowLeftPercentage =
+      (postRowContentDivRect.left / postRowContentDivRect.width) * 100;
+
+    if (
+      autoScrollPostRowDirectionOption ===
+      AutoScrollPostRowDirectionOptionEnum.Left
+    ) {
+      updatedPostSliderLeft = 0;
+      if (currentPostRowLeftPercentage === 0) {
+        updatedPostCards = shiftPostCardsRight();
+      }
+    } else if (
+      autoScrollPostRowDirectionOption ===
+      AutoScrollPostRowDirectionOptionEnum.Right
+    ) {
+      updatedPostSliderLeft = Math.abs(calcPostCardWidthPercentage()) * -1;
+      updatedPostCards = shiftPostCardsRight();
+    }
+    updatePostRowLayoutParams(updatedPostCards, updatedPostSliderLeft, 0);
+  }, [
+    autoScrollPostRowDirectionOption,
+    calcPostCardWidthPercentage,
+    postRowContentDivRef,
+    shiftPostCardsRight,
+    updatePostRowLayoutParams,
+  ]);
+
+  useEffect(() => {
+    const postRowDiv = postRowDivRef.current;
+    const postRowContentDiv = postRowContentDivRef.current;
+    const scrollPostRowLeftButton = scrollPostRowLeftButtonRef.current;
+    const scrollPostRowRightButton = scrollPostRowRightButtonRef.current;
+    if (
+      postRowContentDiv === null ||
+      scrollPostRowLeftButton === null ||
+      scrollPostRowRightButton === null ||
+      postRowDiv === null
+    ) {
       return;
     }
     const mouseLeave = () => {
       startAutoScroll(postCards);
     };
     postRowContentDiv.addEventListener("transitionend", handleTransitionEnd);
-    postRowContentDiv.addEventListener("mouseenter", stopPostRowTransition);
-    postRowContentDiv.addEventListener("mouseover", stopPostRowTransition);
-    postRowContentDiv.addEventListener("mouseleave", mouseLeave);
-    postRowContentDiv.addEventListener(
-      "mousedown",
-      handleMouseDownOrTouchStart
-    );
-    postRowContentDiv.addEventListener("mouseup", handleMouseUpTouchEnd);
-    postRowContentDiv.addEventListener("mousemove", handleMouseOrTouchMove);
+    postRowDiv.addEventListener("mouseenter", stopPostRowTransition);
+    postRowDiv.addEventListener("mouseover", stopPostRowTransition);
+    postRowDiv.addEventListener("mouseleave", mouseLeave);
+    postRowDiv.addEventListener("mousedown", handleMouseDownOrTouchStart);
+    postRowDiv.addEventListener("mouseup", handleMouseUpTouchEnd);
+    postRowDiv.addEventListener("mousemove", handleMouseOrTouchMove);
 
-    postRowContentDiv.addEventListener(
-      "touchstart",
-      handleMouseDownOrTouchStart
-    );
-    postRowContentDiv.addEventListener("touchend", handleMouseUpTouchEnd);
-    postRowContentDiv.addEventListener("touchmove", handleMouseOrTouchMove);
+    postRowDiv.addEventListener("touchstart", handleMouseDownOrTouchStart);
+    postRowDiv.addEventListener("touchend", handleMouseUpTouchEnd);
+    postRowDiv.addEventListener("touchmove", handleMouseOrTouchMove);
+
+    scrollPostRowLeftButton.addEventListener("click", leftScrollButtonCLick);
+    scrollPostRowRightButton.addEventListener("click", rightScrollButtonCLick);
 
     return () => {
       postRowContentDiv.removeEventListener(
         "transitionend",
         handleTransitionEnd
       );
-      postRowContentDiv.removeEventListener(
-        "mouseenter",
-        stopPostRowTransition
-      );
-      postRowContentDiv.removeEventListener("mouseover", stopPostRowTransition);
-      postRowContentDiv.removeEventListener("mouseleave", mouseLeave);
-      postRowContentDiv.removeEventListener(
-        "mousedown",
-        handleMouseDownOrTouchStart
-      );
-      postRowContentDiv.removeEventListener("mouseup", handleMouseUpTouchEnd);
-      postRowContentDiv.removeEventListener(
-        "mousemove",
-        handleMouseOrTouchMove
-      );
+      postRowDiv.removeEventListener("mouseenter", stopPostRowTransition);
+      postRowDiv.removeEventListener("mouseover", stopPostRowTransition);
+      postRowDiv.removeEventListener("mouseleave", mouseLeave);
+      postRowDiv.removeEventListener("mousedown", handleMouseDownOrTouchStart);
+      postRowDiv.removeEventListener("mouseup", handleMouseUpTouchEnd);
+      postRowDiv.removeEventListener("mousemove", handleMouseOrTouchMove);
 
-      postRowContentDiv.removeEventListener(
-        "touchstart",
-        handleMouseDownOrTouchStart
+      postRowDiv.removeEventListener("touchstart", handleMouseDownOrTouchStart);
+      postRowDiv.removeEventListener("touchend", handleMouseUpTouchEnd);
+      postRowDiv.removeEventListener("touchmove", handleMouseOrTouchMove);
+
+      scrollPostRowLeftButton.removeEventListener(
+        "click",
+        leftScrollButtonCLick
       );
-      postRowContentDiv.removeEventListener("touchend", handleMouseUpTouchEnd);
-      postRowContentDiv.removeEventListener(
-        "touchmove",
-        handleMouseOrTouchMove
+      scrollPostRowRightButton.removeEventListener(
+        "click",
+        rightScrollButtonCLick
       );
     };
   }, [
@@ -430,8 +507,13 @@ export default function useMovePostRow(
     handleMouseOrTouchMove,
     handleMouseUpTouchEnd,
     handleTransitionEnd,
+    leftScrollButtonCLick,
     postCards,
     postRowContentDivRef,
+    postRowDivRef,
+    rightScrollButtonCLick,
+    scrollPostRowLeftButtonRef,
+    scrollPostRowRightButtonRef,
     startAutoScroll,
     stopPostRowTransition,
   ]);
