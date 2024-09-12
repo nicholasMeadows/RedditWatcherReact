@@ -114,8 +114,8 @@ export class ElectronCapacitorApp {
     const icon = nativeImage.createFromPath(
       join(
         app.getAppPath(),
-        "assets",
-        process.platform === "win32" ? "appIcon.ico" : "appIcon.png"
+        "app",
+        process.platform === "win32" ? "icon.ico" : "icon.png"
       )
     );
     this.mainWindowState = windowStateKeeper({
