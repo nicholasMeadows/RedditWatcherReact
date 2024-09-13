@@ -19,6 +19,7 @@ import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { v4 as uuidV4 } from "uuid";
 import { RedditCredentials } from "../model/config/RedditCredentials.ts";
 import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum.ts";
+import { PostConverterFilteringOptions } from "../model/config/PostConverterFilteringOptions.ts";
 
 const REDDIT_BASE_URL = "https://www.reddit.com";
 const REDDIT_OAUTH_BASE_URL = "https://oauth.reddit.com";
@@ -182,7 +183,8 @@ export default class RedditClient {
     topTimeFrame: TopTimeFrameOptionsEnum,
     redditApiItemLimit: number,
     masterSubscribedSubredditList: Array<Subreddit>,
-    redditLists: Array<SubredditLists>
+    redditLists: Array<SubredditLists>,
+    filteringOption: PostConverterFilteringOptions
   ): Promise<Array<Post>> {
     return new Promise<Array<Post>>((resolve, reject) => {
       this.getAuthInfo()
@@ -285,7 +287,8 @@ export default class RedditClient {
                     const post = convertPost(
                       child.data,
                       masterSubscribedSubredditList,
-                      redditLists
+                      redditLists,
+                      filteringOption
                     );
                     if (
                       post != null &&
@@ -309,7 +312,8 @@ export default class RedditClient {
   async getPostsForSubredditUri(
     uri: string,
     masterSubscribedSubredditList: Array<Subreddit>,
-    redditLists: Array<SubredditLists>
+    redditLists: Array<SubredditLists>,
+    filteringOption: PostConverterFilteringOptions
   ): Promise<Array<Post>> {
     return new Promise<Array<Post>>((resolve, reject) => {
       console.log(`getting posts from uri ${uri}`);
@@ -341,7 +345,8 @@ export default class RedditClient {
                 const post = convertPost(
                   child.data,
                   masterSubscribedSubredditList,
-                  redditLists
+                  redditLists,
+                  filteringOption
                 );
                 if (
                   post != undefined &&

@@ -6,6 +6,7 @@ import { Subreddit } from "../Subreddit/Subreddit";
 import { SubredditLists } from "../SubredditList/SubredditLists.ts";
 import { AttachmentResolution } from "../Post/AttachmentResolution.ts";
 import { MediaType } from "../Post/MediaTypeEnum.ts";
+import { PostConverterFilteringOptions } from "../config/PostConverterFilteringOptions.ts";
 
 const DOMAIN_REDGIFS = "redgifs.com";
 const DOMAIN_IMGUR1 = "i.imgur.com";
@@ -30,7 +31,8 @@ const ALLOWED_DOMAINS = [
 export function convertPost(
   post: T3,
   masterSubscribedSubredditList: Array<Subreddit>,
-  subredditLists: Array<SubredditLists>
+  subredditLists: Array<SubredditLists>,
+  filteringOption: PostConverterFilteringOptions
 ): Post {
   const subredditDisplayName = post.subreddit;
 
@@ -69,7 +71,7 @@ export function convertPost(
     postId: post.name,
     over18: post.over_18,
     domain: post.domain,
-    attachments: createAttachments(post),
+    attachments: createAttachments(post, filteringOption),
     permaLink: post.permalink,
     randomSourceString: "",
     currentAttachmentIndex: 0,
@@ -83,7 +85,10 @@ const unescapeUrl = (url: string) => {
   return decodeURI(textAreaElement.value);
 };
 
-function createAttachments(post: T3): Array<Attachment> {
+function createAttachments(
+  post: T3,
+  filteringOption: PostConverterFilteringOptions
+): Array<Attachment> {
   let postUrl: string = post.url;
   const domain: string = post.domain;
 
@@ -96,6 +101,7 @@ function createAttachments(post: T3): Array<Attachment> {
   ) {
     if (
       (DOMAIN_REDDIT3 == domain || DOMAIN_REDDIT4 == domain) &&
+      filteringOption.redditGalleries &&
       postUrl.includes("/gallery")
     ) {
       const galleryAttachments = convertMediaMetadata(post);
@@ -154,10 +160,18 @@ function createAttachments(post: T3): Array<Attachment> {
         attachmentResolutions.push(...mappedResolutions);
       }
       const baseUrl = postUrl.split("?")[0];
-      if (
-        baseUrl.endsWith(".jpg") ||
-        baseUrl.endsWith(".jpeg") ||
-        baseUrl.endsWith(".png")
+      if (baseUrl.endsWith(".jpg") && filteringOption.urlsThatEndWithDotJpg) {
+        attachment = {
+          mediaType: MediaType.Image,
+          url: unescapeUrl(postUrl),
+          status: "VALID",
+          attachmentResolutions: attachmentResolutions,
+          base64Img: undefined,
+        };
+        attachments.push(attachment);
+      } else if (
+        baseUrl.endsWith(".jpeg") &&
+        filteringOption.urlsThatEndWithDotJpeg
       ) {
         attachment = {
           mediaType: MediaType.Image,
@@ -167,7 +181,22 @@ function createAttachments(post: T3): Array<Attachment> {
           base64Img: undefined,
         };
         attachments.push(attachment);
-      } else if (baseUrl.endsWith(".gif")) {
+      } else if (
+        baseUrl.endsWith(".png") &&
+        filteringOption.urlsThatEndWithDotPng
+      ) {
+        attachment = {
+          mediaType: MediaType.Image,
+          url: unescapeUrl(postUrl),
+          status: "VALID",
+          attachmentResolutions: attachmentResolutions,
+          base64Img: undefined,
+        };
+        attachments.push(attachment);
+      } else if (
+        baseUrl.endsWith(".gif") &&
+        filteringOption.urlsThatEndWithDotGif
+      ) {
         attachment = {
           mediaType: MediaType.Gif,
           url: unescapeUrl(postUrl),
@@ -176,7 +205,7 @@ function createAttachments(post: T3): Array<Attachment> {
           base64Img: undefined,
         };
         attachments.push(attachment);
-      } else if (domain == DOMAIN_GIPHY) {
+      } else if (domain == DOMAIN_GIPHY && filteringOption.urlsInGiphyDomain) {
         attachment = {
           mediaType: MediaType.IFrame,
           url: unescapeUrl(postUrl),
@@ -187,6 +216,7 @@ function createAttachments(post: T3): Array<Attachment> {
         attachments.push(attachment);
       } else if (
         (domain == DOMAIN_IMGUR1 || domain == DOMAIN_IMGUR2) &&
+        filteringOption.urlsInImgurDomain &&
         postUrl == ".gifv"
       ) {
         attachment = {
@@ -197,7 +227,10 @@ function createAttachments(post: T3): Array<Attachment> {
           base64Img: undefined,
         };
         attachments.push(attachment);
-      } else if (domain == DOMAIN_REDGIFS) {
+      } else if (
+        domain == DOMAIN_REDGIFS &&
+        filteringOption.urlsInRedGifsDomain
+      ) {
         console.log("GOT IFRAME!!! redgifs");
         if (postUrl.startsWith("https://redgifs.com")) {
           postUrl = postUrl.replace(

@@ -39,6 +39,7 @@ export default function useRedditService() {
     randomIterationSelectWeightOption,
     useInMemoryImagesAndGifs,
     postsToShowInRow,
+    postConverterFilteringOptions,
   } = useContext(AppConfigStateContext);
   const { subredditLists } = useContext(RedditListStateContext);
   const {
@@ -60,6 +61,16 @@ export default function useRedditService() {
     useRef<GetPostsFromSubredditState>();
 
   useEffect(() => {
+    const {
+      redditGalleries,
+      urlsThatEndWithDotJpeg,
+      urlsThatEndWithDotJpg,
+      urlsThatEndWithDotPng,
+      urlsThatEndWithDotGif,
+      urlsInRedGifsDomain,
+      urlsInImgurDomain,
+      urlsInGiphyDomain,
+    } = postConverterFilteringOptions;
     currentGetPostsFromSubredditValues.current = {
       postRows: postRows,
       subredditSourceOption: subredditSourceOption,
@@ -81,6 +92,16 @@ export default function useRedditService() {
       selectSubredditIterationMethodOption:
         selectSubredditIterationMethodOption,
       sortOrderDirection: sortOrderDirectionOption,
+      postConverterFilteringOptions: {
+        redditGalleries: redditGalleries,
+        urlsInGiphyDomain: urlsInGiphyDomain,
+        urlsInImgurDomain: urlsInImgurDomain,
+        urlsInRedGifsDomain: urlsInRedGifsDomain,
+        urlsThatEndWithDotJpeg: urlsThatEndWithDotJpeg,
+        urlsThatEndWithDotGif: urlsThatEndWithDotGif,
+        urlsThatEndWithDotPng: urlsThatEndWithDotPng,
+        urlsThatEndWithDotJpg: urlsThatEndWithDotJpg,
+      },
     };
   }, [
     concatRedditUrlMaxLength,
@@ -104,6 +125,7 @@ export default function useRedditService() {
     masterSubscribedSubredditList,
     subredditIndex,
     sortOrderDirectionOption,
+    postConverterFilteringOptions,
   ]);
 
   const loadSubscribedSubreddits = useCallback(

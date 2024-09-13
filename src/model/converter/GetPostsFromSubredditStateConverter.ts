@@ -11,6 +11,7 @@ import { PostRow } from "../PostRow.ts";
 import SelectSubredditIterationMethodOptionsEnum from "../config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
 import RandomIterationSelectWeightOptionsEnum from "../config/enums/RandomIterationSelectWeightOptionsEnum.ts";
 import { SubredditQueueItem } from "../Subreddit/SubredditQueueItem.ts";
+import { PostConverterFilteringOptions } from "../config/PostConverterFilteringOptions.ts";
 
 export type GetPostsFromSubredditState = {
   postRows: Array<PostRow>;
@@ -32,6 +33,7 @@ export type GetPostsFromSubredditState = {
   lastPostRowWasSortOrderNew: boolean;
   randomIterationSelectWeightOption: RandomIterationSelectWeightOptionsEnum;
   useInMemoryImagesAndGifs: boolean;
+  postConverterFilteringOptions: PostConverterFilteringOptions;
 };
 
 export type GetPostsFromSubredditResponse = {

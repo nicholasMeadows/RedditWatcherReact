@@ -57,6 +57,14 @@ export enum AppConfigActionType {
   SET_APP_CONFIG = "SET_APP_CONFIG",
   CLEAR_REDDIT_API_ITEM_LIMIT_VALIDATION_ERROR = "CLEAR_REDDIT_API_ITEM_LIMIT_VALIDATION_ERROR",
   SET_USE_IN_MEMORY_IMAGES_AND_GIFS = "SET_USE_IN_MEMORY_IMAGES_AND_GIFS",
+  SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_JPG = "SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_JPG",
+  SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_JPEG = "SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_JPEG",
+  SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_PNG = "SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_PNG",
+  SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_GIF = "SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_GIF",
+  SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_GIPHY_DOMAIN = "SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_GIPHY_DOMAIN",
+  SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_IMGUR_DOMAIN = "SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_IMGUR_DOMAIN",
+  SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_REDGIFS_DOMAIN = "SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_REDGIFS_DOMAIN",
+  SET_POST_CONVERTER_FILTER_OPTION_REDDIT_GALLERIES = "SET_POST_CONVERTER_FILTER_OPTION_REDDIT_GALLERIES",
 }
 
 export type AppConfigActionStringPayload = {
@@ -84,7 +92,15 @@ export type AppConfigActionBooleanPayload = {
   type:
     | AppConfigActionType.SET_GET_ALL_SUBREDDITS_AT_ONCE
     | AppConfigActionType.SET_USE_IN_MEMORY_IMAGES_AND_GIFS
-    | AppConfigActionType.SET_AUTO_SCROLL_POST_ROW;
+    | AppConfigActionType.SET_AUTO_SCROLL_POST_ROW
+    | AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_JPG
+    | AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_JPEG
+    | AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_PNG
+    | AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_GIF
+    | AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_GIPHY_DOMAIN
+    | AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_IMGUR_DOMAIN
+    | AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_REDGIFS_DOMAIN
+    | AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_REDDIT_GALLERIES;
   payload: boolean;
 };
 
@@ -229,6 +245,22 @@ export default function AppConfigReducer(
       return clearRedditApiItemLimitValidationError(state);
     case AppConfigActionType.SET_USE_IN_MEMORY_IMAGES_AND_GIFS:
       return setUseInMemoryImagesAndGifs(state, action);
+    case AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_JPG:
+      return setPostConverterFilterOptionUrlsThatEndWithDotJpg(state, action);
+    case AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_JPEG:
+      return setPostConverterFilterOptionUrlsThatEndWithDotJpeg(state, action);
+    case AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_PNG:
+      return setPostConverterFilterOptionUrlsThatEndWithDotPng(state, action);
+    case AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_GIF:
+      return setPostConverterFilterOptionUrlsThatEndWithDotGif(state, action);
+    case AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_GIPHY_DOMAIN:
+      return setPostConverterFilterOptionUrlsInGiphyDomain(state, action);
+    case AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_IMGUR_DOMAIN:
+      return setPostConverterFilterOptionUrlsInImgurDomain(state, action);
+    case AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_REDGIFS_DOMAIN:
+      return setPostConverterFilterOptionUrlsInRedgifsDomain(state, action);
+    case AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_REDDIT_GALLERIES:
+      return setPostConverterFilterOptionRedditGalleries(state, action);
     default:
       return state;
   }
@@ -611,6 +643,119 @@ const setAppConfig = (
   action: AppConfigActionAppConfigPayload
 ): AppConfigState => {
   return { ...(action.payload as AppConfigState), configLoaded: true };
+};
+
+const setPostConverterFilterOptionUrlsThatEndWithDotJpg = (
+  state: AppConfigState,
+  action: AppConfigActionBooleanPayload
+): AppConfigState => {
+  const updatedState = {
+    ...state,
+    postConverterFilteringOptions: {
+      ...state.postConverterFilteringOptions,
+      urlsThatEndWithDotJpg: action.payload,
+    },
+  };
+  saveConfig(updatedState);
+  return updatedState;
+};
+const setPostConverterFilterOptionUrlsThatEndWithDotJpeg = (
+  state: AppConfigState,
+  action: AppConfigActionBooleanPayload
+): AppConfigState => {
+  const updatedState = {
+    ...state,
+    postConverterFilteringOptions: {
+      ...state.postConverterFilteringOptions,
+      urlsThatEndWithDotJpeg: action.payload,
+    },
+  };
+  saveConfig(updatedState);
+  return updatedState;
+};
+const setPostConverterFilterOptionUrlsThatEndWithDotPng = (
+  state: AppConfigState,
+  action: AppConfigActionBooleanPayload
+): AppConfigState => {
+  const updatedState = {
+    ...state,
+    postConverterFilteringOptions: {
+      ...state.postConverterFilteringOptions,
+      urlsThatEndWithDotPng: action.payload,
+    },
+  };
+  saveConfig(updatedState);
+  return updatedState;
+};
+const setPostConverterFilterOptionUrlsThatEndWithDotGif = (
+  state: AppConfigState,
+  action: AppConfigActionBooleanPayload
+): AppConfigState => {
+  const updatedState = {
+    ...state,
+    postConverterFilteringOptions: {
+      ...state.postConverterFilteringOptions,
+      urlsThatEndWithDotGif: action.payload,
+    },
+  };
+  saveConfig(updatedState);
+  return updatedState;
+};
+const setPostConverterFilterOptionUrlsInGiphyDomain = (
+  state: AppConfigState,
+  action: AppConfigActionBooleanPayload
+): AppConfigState => {
+  const updatedState = {
+    ...state,
+    postConverterFilteringOptions: {
+      ...state.postConverterFilteringOptions,
+      urlsInGiphyDomain: action.payload,
+    },
+  };
+  saveConfig(updatedState);
+  return updatedState;
+};
+const setPostConverterFilterOptionUrlsInImgurDomain = (
+  state: AppConfigState,
+  action: AppConfigActionBooleanPayload
+): AppConfigState => {
+  const updatedState = {
+    ...state,
+    postConverterFilteringOptions: {
+      ...state.postConverterFilteringOptions,
+      urlsInImgurDomain: action.payload,
+    },
+  };
+  saveConfig(updatedState);
+  return updatedState;
+};
+const setPostConverterFilterOptionUrlsInRedgifsDomain = (
+  state: AppConfigState,
+  action: AppConfigActionBooleanPayload
+): AppConfigState => {
+  const updatedState = {
+    ...state,
+    postConverterFilteringOptions: {
+      ...state.postConverterFilteringOptions,
+      urlsInRedGifsDomain: action.payload,
+    },
+  };
+  saveConfig(updatedState);
+  return updatedState;
+};
+const setPostConverterFilterOptionRedditGalleries = (
+  state: AppConfigState,
+  action: AppConfigActionBooleanPayload
+): AppConfigState => {
+  const updatedState = {
+    ...state,
+    postConverterFilteringOptions: {
+      ...state.postConverterFilteringOptions,
+      redditGalleries: action.payload,
+    },
+  };
+  saveConfig(updatedState);
+  return updatedState;
 };
 
 const validateAutoScrollPostRowRateSecondsForSinglePostCardField = (

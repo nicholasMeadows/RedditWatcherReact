@@ -9,6 +9,7 @@ import SubredditSortOrderOptionsEnum from "./enums/SubredditSortOrderOptionsEnum
 import TopTimeFrameOptionsEnum from "./enums/TopTimeFrameOptionsEnum";
 import { AutoScrollPostRowDirectionOptionEnum } from "./enums/AutoScrollPostRowDirectionOptionEnum.ts";
 import SubredditSourceOptionsEnum from "./enums/SubredditSourceOptionsEnum.ts";
+import { PostConverterFilteringOptions } from "./PostConverterFilteringOptions.ts";
 
 export interface AppConfig {
   redditCredentials: RedditCredentials;
@@ -31,4 +32,5 @@ export interface AppConfig {
   postRowsToShowInView: number;
   darkMode: boolean;
   useInMemoryImagesAndGifs: boolean;
+  postConverterFilteringOptions: PostConverterFilteringOptions;
 }

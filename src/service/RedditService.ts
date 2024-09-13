@@ -26,6 +26,7 @@ import { RedditListDotComConverter } from "../model/converter/RedditListDotComCo
 import { getSubredditsFromRedditListDotCom } from "./RedditListDotComClient.ts";
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum.ts";
 import { MAX_POSTS_PER_ROW } from "../RedditWatcherConstants.ts";
+import { PostConverterFilteringOptions } from "../model/config/PostConverterFilteringOptions.ts";
 
 export default class RedditService {
   declare redditClient: RedditClient;
@@ -96,7 +97,8 @@ export default class RedditService {
         getPostsFromSubredditsState.redditApiItemLimit,
         getPostsFromSubredditsState.masterSubredditList,
         getPostsFromSubredditsState.subredditLists,
-        getPostsFromSubredditsState.useInMemoryImagesAndGifs
+        getPostsFromSubredditsState.useInMemoryImagesAndGifs,
+        getPostsFromSubredditsState.postConverterFilteringOptions
       )
         .then((posts) => {
           resolve({
@@ -124,7 +126,8 @@ export default class RedditService {
           getPostsFromSubredditsState.topTimeFrame,
           getPostsFromSubredditsState.redditApiItemLimit,
           getPostsFromSubredditsState.masterSubredditList,
-          getPostsFromSubredditsState.subredditLists
+          getPostsFromSubredditsState.subredditLists,
+          getPostsFromSubredditsState.postConverterFilteringOptions
         )
         .then((postsFromSubreddit) => {
           resolve({
@@ -160,7 +163,8 @@ export default class RedditService {
         getPostsFromSubredditsState.selectSubredditIterationMethodOption,
         getPostsFromSubredditsState.randomIterationSelectWeightOption,
         getPostsFromSubredditsState.getAllSubredditsAtOnce,
-        getPostsFromSubredditsState.useInMemoryImagesAndGifs
+        getPostsFromSubredditsState.useInMemoryImagesAndGifs,
+        getPostsFromSubredditsState.postConverterFilteringOptions
       )
         .then((res) => {
           resolve({
@@ -193,7 +197,8 @@ export default class RedditService {
     selectSubredditIterationMethodOption: SelectSubredditIterationMethodOptionsEnum,
     randomIterationSelectWeightOption: RandomIterationSelectWeightOptionsEnum,
     getAllSubredditsAtOnce: boolean,
-    useInMemoryImagesAndGifs: boolean
+    useInMemoryImagesAndGifs: boolean,
+    postConverterFilteringOptions: PostConverterFilteringOptions
   ): Promise<{
     posts: Array<Post>;
     fromSubreddits: Array<Subreddit>;
@@ -239,7 +244,8 @@ export default class RedditService {
             redditApiItemLimit,
             masterSubredditList,
             subredditLists,
-            useInMemoryImagesAndGifs
+            useInMemoryImagesAndGifs,
+            postConverterFilteringOptions
           )
             .then((posts) => {
               resolve({
@@ -481,7 +487,8 @@ export default class RedditService {
     redditApiItemLimit: number,
     masterSubredditList: Subreddit[],
     subredditLists: SubredditLists[],
-    useInMemoryImagesAndGifs: boolean
+    useInMemoryImagesAndGifs: boolean,
+    postConverterFilteringOptions: PostConverterFilteringOptions
   ) {
     return new Promise<Array<Post>>((resolve, reject) => {
       const urlConverter = new GetPostsForSubredditUrlConverter();
@@ -493,7 +500,12 @@ export default class RedditService {
         redditApiItemLimit
       );
       this.redditClient
-        .getPostsForSubredditUri(url, masterSubredditList, subredditLists)
+        .getPostsForSubredditUri(
+          url,
+          masterSubredditList,
+          subredditLists,
+          postConverterFilteringOptions
+        )
         .then((posts) => {
           const mappedPosts = posts.map<Post>((value) => {
             value.randomSourceString = randomSourceString;

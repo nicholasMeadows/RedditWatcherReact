@@ -41,6 +41,15 @@ const defaultPostRowsToShowInView = 3;
 const defaultDarkMode = false;
 const defaultUseInMemoryImagesAndGifs = false;
 
+const defaultPostConvertFilteringOptionUrlsThatEndWithDotGif = true;
+const defaultPostConvertFilteringOptionUrlsThatEndWithDotJpg = true;
+const defaultPostConvertFilteringOptionUrlsThatEndWithDotJpeg = true;
+const defaultPostConvertFilteringOptionUrlsThatEndWithDotPng = true;
+const defaultPostConvertFilteringOptionUrlsInGiphyDomain = true;
+const defaultPostConvertFilteringOptionUrlsInImgurDomain = true;
+const defaultPostConvertFilteringOptionUrlsInRedgifsDomain = true;
+const defaultPostConvertFilteringOptionRedditGalleries = true;
+
 const initialState: AppConfigState = {
   redditCredentials: {
     username: "",
@@ -79,6 +88,20 @@ const initialState: AppConfigState = {
   configLoaded: false,
   darkMode: defaultDarkMode,
   useInMemoryImagesAndGifs: defaultUseInMemoryImagesAndGifs,
+  postConverterFilteringOptions: {
+    urlsInGiphyDomain: defaultPostConvertFilteringOptionUrlsInGiphyDomain,
+    urlsInImgurDomain: defaultPostConvertFilteringOptionUrlsInImgurDomain,
+    urlsInRedGifsDomain: defaultPostConvertFilteringOptionUrlsInRedgifsDomain,
+    urlsThatEndWithDotGif:
+      defaultPostConvertFilteringOptionUrlsThatEndWithDotGif,
+    urlsThatEndWithDotJpeg:
+      defaultPostConvertFilteringOptionUrlsThatEndWithDotJpeg,
+    urlsThatEndWithDotJpg:
+      defaultPostConvertFilteringOptionUrlsThatEndWithDotJpg,
+    urlsThatEndWithDotPng:
+      defaultPostConvertFilteringOptionUrlsThatEndWithDotPng,
+    redditGalleries: defaultPostConvertFilteringOptionRedditGalleries,
+  },
 };
 
 type Props = {

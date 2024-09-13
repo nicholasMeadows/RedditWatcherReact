@@ -1,0 +1,29 @@
+.post-converter-option-section {
+  justify-content: flex-start;
+}
+
+.sub-section-label {
+  align-self: unset;
+}
+
+.post-converter-option-sub-section {
+  display: grid;
+  grid-template-columns: min-content;
+  margin-left: 1em;
+}
+
+.post-converter-option-sub-section > hr {
+  grid-column-start: 1;
+  grid-column-end: 3;
+  margin-left: 0;
+}
+
+.post-converter-option-label {
+  grid-column: 1;
+  white-space: nowrap;
+  align-self: center;
+}
+
+.post-converter-option-checkbox {
+  grid-column: 2;
+}

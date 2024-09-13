@@ -50,6 +50,16 @@ const POST_ROWS_TO_SHOW_IN_VIEW = "postRowsToShowInView";
 const DARK_MODE = "darkMode";
 const USE_IN_MEMORY_IMAGES_AND_GIFS = "useInMemoryImagesAndGifs";
 
+const POST_CONVERTER_FILTERING_OPTIONS = "postConverterFilteringOptions";
+const URLS_IN_REDGIFS_DOMAIN = "urlsInRedGifsDomain";
+const URLS_IN_IMGUR_DOMAIN = "urlsInImgurDomain";
+const URLS_IN_GIPHY_DOMAIN = "urlsInGiphyDomain";
+const URLS_THAT_END_WITH_DOT_GIF = "urlsThatEndWithDotGif";
+const URLS_THAT_END_WITH_DOT_PNG = "urlsThatEndWithDotPng";
+const URLS_THAT_END_WITH_DOT_JPEG = "urlsThatEndWithDotJpeg";
+const URLS_THAT_END_WITH_DOT_JPG = "urlsThatEndWithDotJpg";
+const REDDIT_GALLERIES = "redditGalleries";
+
 export async function loadSubredditListsFromFile() {
   await checkForOrCreateConfigFolder();
   await checkForOrCreateSubredditListsFile(encode("[]"));
@@ -150,6 +160,32 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
     useInMemoryImagesAndGifs = false;
   }
 
+  let urlsInRedGifsDomain = true;
+  let urlsInImgurDomain = true;
+  let urlsInGiphyDomain = true;
+  let urlsThatEndWithDotGif = true;
+  let urlsThatEndWithDotPng = true;
+  let urlsThatEndWithDotJpeg = true;
+  let urlsThatEndWithDotJpg = true;
+  let redditGalleries = true;
+
+  const postConverterFilteringOptions =
+    configJsonObj[POST_CONVERTER_FILTERING_OPTIONS];
+  if (postConverterFilteringOptions !== undefined) {
+    urlsInRedGifsDomain = postConverterFilteringOptions[URLS_IN_REDGIFS_DOMAIN];
+    urlsInImgurDomain = postConverterFilteringOptions[URLS_IN_IMGUR_DOMAIN];
+    urlsInGiphyDomain = postConverterFilteringOptions[URLS_IN_GIPHY_DOMAIN];
+    urlsThatEndWithDotGif =
+      postConverterFilteringOptions[URLS_THAT_END_WITH_DOT_GIF];
+    urlsThatEndWithDotPng =
+      postConverterFilteringOptions[URLS_THAT_END_WITH_DOT_PNG];
+    urlsThatEndWithDotJpeg =
+      postConverterFilteringOptions[URLS_THAT_END_WITH_DOT_JPEG];
+    urlsThatEndWithDotJpg =
+      postConverterFilteringOptions[URLS_THAT_END_WITH_DOT_JPG];
+    redditGalleries = postConverterFilteringOptions[REDDIT_GALLERIES];
+  }
+
   const loadedConfig: AppConfig = {
     redditCredentials: {
       username: redditUsername,
@@ -177,6 +213,16 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
     postRowsToShowInView: postRowsToShowInView,
     darkMode: darkMode,
     useInMemoryImagesAndGifs: useInMemoryImagesAndGifs,
+    postConverterFilteringOptions: {
+      urlsInRedGifsDomain: urlsInRedGifsDomain,
+      urlsInImgurDomain: urlsInImgurDomain,
+      urlsInGiphyDomain: urlsInGiphyDomain,
+      urlsThatEndWithDotGif: urlsThatEndWithDotGif,
+      urlsThatEndWithDotPng: urlsThatEndWithDotPng,
+      urlsThatEndWithDotJpeg: urlsThatEndWithDotJpeg,
+      urlsThatEndWithDotJpg: urlsThatEndWithDotJpg,
+      redditGalleries: redditGalleries,
+    },
   };
 
   return loadedConfig;

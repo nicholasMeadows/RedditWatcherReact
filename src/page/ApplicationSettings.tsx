@@ -10,6 +10,7 @@ import {
 import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
 import getPlatform from "../util/PlatformUtil.ts";
 import { Platform } from "../model/Platform.ts";
+import "../theme/app-settings.scss";
 
 const ApplicationSettings: React.FC = () => {
   const appConfigDispatch = useContext(AppConfigDispatchContext);
@@ -28,7 +29,19 @@ const ApplicationSettings: React.FC = () => {
     postRowsToShowInView,
     postRowsToShowInViewValidationError,
     useInMemoryImagesAndGifs,
+    postConverterFilteringOptions,
   } = useContext(AppConfigStateContext);
+
+  const {
+    urlsThatEndWithDotPng,
+    urlsThatEndWithDotGif,
+    urlsThatEndWithDotJpg,
+    urlsThatEndWithDotJpeg,
+    urlsInRedGifsDomain,
+    urlsInGiphyDomain,
+    urlsInImgurDomain,
+    redditGalleries,
+  } = postConverterFilteringOptions;
 
   return (
     <div className="reddit-watcher-settings">
@@ -263,6 +276,165 @@ const ApplicationSettings: React.FC = () => {
         <p className="settings-item-error">
           {postRowsToShowInViewValidationError}
         </p>
+      </div>
+      <hr />
+      <div className="settings-item flex-column post-converter-option-section">
+        <label className="select-label-relative sub-section-label">
+          Allow posts with URLS
+        </label>
+        <div className={"post-converter-option-sub-section"}>
+          <label
+            className={
+              "post-converter-option-label post-converter-option-label"
+            }
+          >
+            Urls that end with .jpg
+          </label>
+          <input
+            type={"checkbox"}
+            className={"settings-checkbox-input post-converter-option-checkbox"}
+            checked={urlsThatEndWithDotJpg}
+            onChange={() => {
+              appConfigDispatch({
+                type: AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_JPG,
+                payload: !urlsThatEndWithDotJpg,
+              });
+            }}
+          />
+          <hr />
+          <label
+            className={
+              "post-converter-option-label post-converter-option-label"
+            }
+          >
+            Urls that end with .jpeg
+          </label>
+          <input
+            type={"checkbox"}
+            className={"settings-checkbox-input post-converter-option-checkbox"}
+            checked={urlsThatEndWithDotJpeg}
+            onChange={() => {
+              appConfigDispatch({
+                type: AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_JPEG,
+                payload: !urlsThatEndWithDotJpeg,
+              });
+            }}
+          />
+          <hr />
+          <label
+            className={
+              "post-converter-option-label post-converter-option-label"
+            }
+          >
+            Urls that end with .png
+          </label>
+          <input
+            type={"checkbox"}
+            className={"settings-checkbox-input post-converter-option-checkbox"}
+            checked={urlsThatEndWithDotPng}
+            onChange={() => {
+              appConfigDispatch({
+                type: AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_PNG,
+                payload: !urlsThatEndWithDotPng,
+              });
+            }}
+          />
+          <hr />
+          <label
+            className={
+              "post-converter-option-label post-converter-option-label"
+            }
+          >
+            Urls that end with .gif
+          </label>
+          <input
+            type={"checkbox"}
+            className={"settings-checkbox-input post-converter-option-checkbox"}
+            checked={urlsThatEndWithDotGif}
+            onChange={() => {
+              appConfigDispatch({
+                type: AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_THAT_END_WITH_DOT_GIF,
+                payload: !urlsThatEndWithDotGif,
+              });
+            }}
+          />
+          <hr />
+          <label
+            className={
+              "post-converter-option-label post-converter-option-label"
+            }
+          >
+            Urls from Imgur
+          </label>
+          <input
+            type={"checkbox"}
+            className={"settings-checkbox-input post-converter-option-checkbox"}
+            checked={urlsInImgurDomain}
+            onChange={() => {
+              appConfigDispatch({
+                type: AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_IMGUR_DOMAIN,
+                payload: !urlsInImgurDomain,
+              });
+            }}
+          />
+          <hr />
+          <label
+            className={
+              "post-converter-option-label post-converter-option-label"
+            }
+          >
+            Urls from Giphy
+          </label>
+          <input
+            type={"checkbox"}
+            className={"settings-checkbox-input post-converter-option-checkbox"}
+            checked={urlsInGiphyDomain}
+            onChange={() => {
+              appConfigDispatch({
+                type: AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_GIPHY_DOMAIN,
+                payload: !urlsInGiphyDomain,
+              });
+            }}
+          />
+          <hr />
+          <label
+            className={
+              "post-converter-option-label post-converter-option-label"
+            }
+          >
+            Urls from Redgifs
+          </label>
+          <input
+            type={"checkbox"}
+            className={"settings-checkbox-input post-converter-option-checkbox"}
+            checked={urlsInRedGifsDomain}
+            onChange={() => {
+              appConfigDispatch({
+                type: AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_REDGIFS_DOMAIN,
+                payload: !urlsInRedGifsDomain,
+              });
+            }}
+          />
+          <hr />
+          <label
+            className={
+              "post-converter-option-label post-converter-option-label"
+            }
+          >
+            Urls from Reddit Galleries
+          </label>
+          <input
+            type={"checkbox"}
+            className={"settings-checkbox-input post-converter-option-checkbox"}
+            checked={redditGalleries}
+            onChange={() => {
+              appConfigDispatch({
+                type: AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_REDDIT_GALLERIES,
+                payload: !redditGalleries,
+              });
+            }}
+          />
+        </div>
       </div>
       <hr />
     </div>
