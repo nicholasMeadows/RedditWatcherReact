@@ -1,4 +1,11 @@
-import { FC, useCallback, useContext, useEffect, useRef } from "react";
+import {
+  FC,
+  TransitionEvent,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+} from "react";
 import { AppNotification } from "../model/AppNotification.ts";
 import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
 import { AppNotificationsActionType } from "../reducer/app-notifications-reducer.ts";
@@ -9,68 +16,39 @@ type Props = {
 };
 const AppNotification: FC<Props> = ({ appNotification }) => {
   const appNotificationsDispatch = useContext(AppNotificationsDispatchContext);
+  const notificationDivRef = useRef<HTMLDivElement>(null);
   const hideNotificationTimeoutRef = useRef<NodeJS.Timeout>();
-  const deleteNotificationTimeoutRef = useRef<NodeJS.Timeout>();
 
-  const clearHideNotificationTimeout = useCallback(() => {
+  useEffect(() => {
     if (hideNotificationTimeoutRef.current !== undefined) {
-      clearTimeout(hideNotificationTimeoutRef.current);
-      hideNotificationTimeoutRef.current = undefined;
+      return;
     }
+    hideNotificationTimeoutRef.current = setTimeout(() => {
+      appNotificationsDispatch({
+        type: AppNotificationsActionType.HIDE_APP_NOTIFICATION,
+        notificationUuid: appNotification.notificationUuid,
+      });
+    }, appNotification.displayTimeMS);
   }, []);
 
-  const clearDeleteNotificationTimeout = useCallback(() => {
-    if (deleteNotificationTimeoutRef.current !== undefined) {
-      clearTimeout(deleteNotificationTimeoutRef.current);
-      deleteNotificationTimeoutRef.current = undefined;
+  const handleOpacityTransitionEnd = useCallback((event: TransitionEvent) => {
+    if (
+      notificationDivRef.current === undefined ||
+      notificationDivRef.current !== event.target ||
+      event.propertyName !== "opacity"
+    ) {
+      return;
     }
-  }, []);
-
-  const hideNotification = useCallback(() => {
-    appNotificationsDispatch({
-      type: AppNotificationsActionType.HIDE_APP_NOTIFICATION,
-      notificationUuid: appNotification.notificationUuid,
-    });
-  }, [appNotification, appNotificationsDispatch]);
-
-  const deleteNotification = useCallback(() => {
     appNotificationsDispatch({
       type: AppNotificationsActionType.DELETE_APP_NOTIFICATION,
       notificationUuid: appNotification.notificationUuid,
     });
-  }, [appNotification, appNotificationsDispatch]);
-
-  useEffect(() => {
-    clearHideNotificationTimeout();
-    clearDeleteNotificationTimeout();
-    if (appNotification.displayTimeMS === undefined) {
-      deleteNotification();
-      return;
-    }
-
-    hideNotificationTimeoutRef.current = setTimeout(() => {
-      hideNotification();
-    }, appNotification.displayTimeMS);
-
-    deleteNotificationTimeoutRef.current = setTimeout(() => {
-      deleteNotification();
-    }, appNotification.displayTimeMS + NOTIFICATION_FADE_TIME_SECONDS * 1000);
-    return () => {
-      clearHideNotificationTimeout();
-      clearDeleteNotificationTimeout();
-    };
-  }, [
-    appNotification,
-    appNotification.displayTimeMS,
-    appNotificationsDispatch,
-    clearDeleteNotificationTimeout,
-    clearHideNotificationTimeout,
-    deleteNotification,
-    hideNotification,
-  ]);
+  }, []);
 
   return (
     <div
+      ref={notificationDivRef}
+      onTransitionEnd={handleOpacityTransitionEnd}
       className={`notification-box ${
         appNotification.showNotification ? "show-notification" : ""
       }`}
@@ -78,12 +56,13 @@ const AppNotification: FC<Props> = ({ appNotification }) => {
         transition: `opacity ${NOTIFICATION_FADE_TIME_SECONDS}s ease-out`,
       }}
       onClick={() => {
-        clearHideNotificationTimeout();
-        clearDeleteNotificationTimeout();
-        hideNotification();
-        setTimeout(() => {
-          deleteNotification();
-        }, NOTIFICATION_FADE_TIME_SECONDS * 1000);
+        if (hideNotificationTimeoutRef.current !== undefined) {
+          clearTimeout(hideNotificationTimeoutRef.current);
+        }
+        appNotificationsDispatch({
+          type: AppNotificationsActionType.HIDE_APP_NOTIFICATION,
+          notificationUuid: appNotification.notificationUuid,
+        });
       }}
     >
       <p className="notification-text">{appNotification.message}</p>
