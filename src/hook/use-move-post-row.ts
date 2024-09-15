@@ -591,16 +591,17 @@ export default function useMovePostRow(
       );
     } else if (
       postCards.length > 0 &&
-      postCards.length === postsToShowInRow + 2
+      postCards.length === Math.ceil(postsToShowInRow + 2)
     ) {
       setTimeout(() => startAutoScroll(postCards), 0);
     } else if (
       postCards.length > 0 &&
-      postCards.length < postsToShowInRow + 2 &&
-      masterPosts.length > postsToShowInRow
+      postCards.length < Math.ceil(postsToShowInRow + 2) &&
+      masterPosts.length > Math.ceil(postsToShowInRow)
     ) {
       const cardsToSet = [...postCards];
-      const numOfCardsToAdd = postsToShowInRow + 2 - postCards.length;
+      const numOfCardsToAdd =
+        Math.ceil(postsToShowInRow) + 2 - postCards.length;
       let runningIndex = masterPosts.findIndex(
         (post) =>
           post.postUuid === postCards[postCards.length - 1].postToDisplayUuid
@@ -628,10 +629,10 @@ export default function useMovePostRow(
       );
     } else if (
       postCards.length > 0 &&
-      postCards.length > postsToShowInRow + 2 &&
-      masterPosts.length > postsToShowInRow
+      postCards.length > Math.ceil(postsToShowInRow) + 2 &&
+      masterPosts.length > Math.ceil(postsToShowInRow)
     ) {
-      const cardsToSet = postCards.slice(0, postsToShowInRow + 2);
+      const cardsToSet = postCards.slice(0, Math.ceil(postsToShowInRow) + 2);
 
       updatePostRowLayoutParams(cardsToSet, initialLeft, 0);
       setTimeout(
