@@ -7,4 +7,5 @@ export default interface PostMediaElementState {
   autoIncrementAttachment: boolean;
   mouseOverPostCard: boolean;
   postImageQuality?: PostImageQualityEnum;
+  postCardUuid: string | undefined;
 }

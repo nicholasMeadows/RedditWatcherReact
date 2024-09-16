@@ -190,6 +190,7 @@ const SinglePostView: FC = () => {
                   autoIncrementAttachment: false,
                   mouseOverPostCard: false,
                   postImageQuality: PostImageQualityEnum.High,
+                  postCardUuid: undefined,
                 }}
               >
                 <PostMediaElement />

@@ -9,7 +9,7 @@ import {
   SetPostAttachmentIndexAction,
   SetPostCardsAction,
   SetPostSliderLeftOrTransitionTimeAction,
-  SetShowPostCardInfoAction,
+  SetShowPostCardInfoOnPostUuidAction,
 } from "../../../reducer/post-row-page-reducer.ts";
 
 type PostRowPageDispatch = Dispatch<
@@ -22,6 +22,6 @@ type PostRowPageDispatch = Dispatch<
   | PostRowPageSetMouseOverPostRowUuidAction
   | SetPostCardsAction
   | SetPostSliderLeftOrTransitionTimeAction
-  | SetShowPostCardInfoAction
+  | SetShowPostCardInfoOnPostUuidAction
 >;
 export default PostRowPageDispatch;

@@ -18,6 +18,7 @@ export const PostRowsContextProvider: FC<Props> = ({ children }) => {
     playPauseButtonIsClicked: false,
     postRows: new Array<PostRow>(),
     mouseOverPostRowUuid: undefined,
+    showCardInfoOnCardUuid: undefined,
   };
   const [postRowsState, dispatch] = useReducer(
     PostRowPageReducer,

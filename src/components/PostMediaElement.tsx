@@ -15,8 +15,8 @@ import { AttachmentResolution } from "../model/Post/AttachmentResolution.ts";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
 import useIncrementAttachment from "../hook/use-iincrement-attachment.ts";
 import PostMediaElementZoomContext from "../context/post-media-element-zoom-context.ts";
-import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
+import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 
 const PostMediaElement: React.FC = memo(() => {
   const {
@@ -25,6 +25,7 @@ const PostMediaElement: React.FC = memo(() => {
     autoIncrementAttachment,
     mouseOverPostCard,
     postImageQuality,
+    postCardUuid,
   } = useContext(PostMediaElementContext);
 
   const postMediaElementZoomContext = useContext(PostMediaElementZoomContext);
@@ -214,17 +215,15 @@ const PostMediaElement: React.FC = memo(() => {
   );
 
   const setShowPostCardInfo = useCallback(
-    (showPostCardInfoToSet: boolean) => {
+    (postCardUuid: string | undefined) => {
       postRowPageDispatch({
-        type: PostRowPageActionType.SET_SHOW_POST_CARD_INFO,
+        type: PostRowPageActionType.SET_SHOW_POST_CARD_INFO_ON_POST_UUID,
         payload: {
-          showPostCardInfo: showPostCardInfoToSet,
-          postUuid: post.postUuid,
-          postRowUuid: postRowUuid,
+          showCardInfoOnCardUuid: postCardUuid,
         },
       });
     },
-    [post.postUuid, postRowPageDispatch, postRowUuid]
+    [postRowPageDispatch]
   );
   return (
     <div className="post-element" ref={postElementRef}>
@@ -270,10 +269,10 @@ const PostMediaElement: React.FC = memo(() => {
                   background: "blue",
                 }}
                 onMouseEnter={() => {
-                  setShowPostCardInfo(true);
+                  setShowPostCardInfo(postCardUuid);
                 }}
                 onMouseLeave={() => {
-                  setShowPostCardInfo(false);
+                  setShowPostCardInfo(undefined);
                 }}
               ></img>
             </div>
@@ -286,10 +285,10 @@ const PostMediaElement: React.FC = memo(() => {
             <video
               className="post-element-media-element"
               onMouseEnter={() => {
-                setShowPostCardInfo(true);
+                setShowPostCardInfo(postCardUuid);
               }}
               onMouseLeave={() => {
-                setShowPostCardInfo(false);
+                setShowPostCardInfo(undefined);
               }}
             >
               {" "}
@@ -304,10 +303,10 @@ const PostMediaElement: React.FC = memo(() => {
               <div
                 className={"post-element-media-element"}
                 onMouseEnter={() => {
-                  setShowPostCardInfo(true);
+                  setShowPostCardInfo(postCardUuid);
                 }}
                 onMouseLeave={() => {
-                  setShowPostCardInfo(false);
+                  setShowPostCardInfo(undefined);
                 }}
               >
                 <iframe

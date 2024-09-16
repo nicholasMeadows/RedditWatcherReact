@@ -6,4 +6,5 @@ export type PostRowPageState = {
   mouseOverPostRowUuid: string | undefined;
   scrollY: number;
   playPauseButtonIsClicked: boolean;
+  showCardInfoOnCardUuid: undefined | string;
 };

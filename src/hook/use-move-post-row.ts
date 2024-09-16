@@ -205,7 +205,6 @@ export default function useMovePostRow(
     return {
       postToDisplayUuid: post.postUuid,
       postCardUuid: `${uuidV4()}`,
-      showPostCardInfo: false,
     };
   };
 

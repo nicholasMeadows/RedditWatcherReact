@@ -23,7 +23,7 @@ export enum PostRowPageActionType {
   SET_POST_CARDS_TO_SHOW_IN_ROW = "SET_POST_CARDS_TO_SHOW_IN_ROW",
   SET_POST_SLIDER_LEFT = "SET_POST_SLIDER_LEFT",
   SET_POST_SLIDER_TRANSITION_TIME = "SET_POST_SLIDER_TRANSITION_TIME",
-  SET_SHOW_POST_CARD_INFO = "SET_SHOW_POST_CARD_INFO",
+  SET_SHOW_POST_CARD_INFO_ON_POST_UUID = "SET_SHOW_POST_CARD_INFO_ON_POST_UUID",
 }
 
 export type PostRowPageStringPayloadAction = {
@@ -76,12 +76,10 @@ export type SetPostCardsAction = {
   };
 };
 
-export type SetShowPostCardInfoAction = {
-  type: PostRowPageActionType.SET_SHOW_POST_CARD_INFO;
+export type SetShowPostCardInfoOnPostUuidAction = {
+  type: PostRowPageActionType.SET_SHOW_POST_CARD_INFO_ON_POST_UUID;
   payload: {
-    postRowUuid: string;
-    postUuid: string;
-    showPostCardInfo: boolean;
+    showCardInfoOnCardUuid: undefined | string;
   };
 };
 export default function PostRowPageReducer(
@@ -96,7 +94,7 @@ export default function PostRowPageReducer(
     | PostRowPageSetMouseOverPostRowUuidAction
     | SetPostSliderLeftOrTransitionTimeAction
     | SetPostCardsAction
-    | SetShowPostCardInfoAction
+    | SetShowPostCardInfoOnPostUuidAction
 ) {
   switch (action.type) {
     case PostRowPageActionType.SET_CURRENT_LOCATION:
@@ -119,8 +117,8 @@ export default function PostRowPageReducer(
       return setPostSliderLeft(state, action);
     case PostRowPageActionType.SET_POST_SLIDER_TRANSITION_TIME:
       return setPostSliderTransitionTime(state, action);
-    case PostRowPageActionType.SET_SHOW_POST_CARD_INFO:
-      return setShowPostCardInfo(state, action);
+    case PostRowPageActionType.SET_SHOW_POST_CARD_INFO_ON_POST_UUID:
+      return setShowPostCardInfoOnPostUuid(state, action);
     default:
       return state;
   }
@@ -336,34 +334,16 @@ const setPostSliderTransitionTime = (
     postRows: updatedPostRows,
   };
 };
-const setShowPostCardInfo = (
+const setShowPostCardInfoOnPostUuid = (
   state: PostRowPageState,
-  action: SetShowPostCardInfoAction
+  action: SetShowPostCardInfoOnPostUuidAction
 ): PostRowPageState => {
-  const payload = action.payload;
-  const { showPostCardInfo, postRowUuid, postUuid } = payload;
-
-  const updatedPostRows = state.postRows.map((row) => {
-    if (row.postRowUuid !== postRowUuid) {
-      return row;
-    }
-    const updatedRow = { ...row };
-    updatedRow.postCards = row.postCards.map((card) => {
-      if (card.postToDisplayUuid !== postUuid) {
-        return card;
-      }
-      return {
-        ...card,
-        showPostCardInfo: showPostCardInfo,
-      };
-    });
-    return updatedRow;
-  });
   return {
     ...state,
-    postRows: updatedPostRows,
+    showCardInfoOnCardUuid: action.payload.showCardInfoOnCardUuid,
   };
 };
+
 const trimPostsToMaxLength = (posts: Array<Post>) => {
   if (posts.length > MAX_POSTS_PER_ROW) {
     posts.splice(MAX_POSTS_PER_ROW - 1);

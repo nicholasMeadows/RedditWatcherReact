@@ -16,7 +16,10 @@ import PostMediaElement from "./PostMediaElement.tsx";
 import PostMediaElementContext from "../context/post-media-element-context.ts";
 import { MediaType } from "../model/Post/MediaTypeEnum.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
-import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
+import {
+  PostRowPageContext,
+  PostRowPageDispatchContext,
+} from "../context/post-row-page-context.ts";
 import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 import IndividualPostRowContext from "../context/individual-post-row-context.ts";
 
@@ -32,6 +35,7 @@ const PostCard: FC = memo(() => {
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
   const [mouseOverPostCard, setMouseOverPostCard] = useState(false);
 
+  const { showCardInfoOnCardUuid } = useContext(PostRowPageContext);
   const post = allPosts.find(
     (post) => post.postUuid === postCard.postToDisplayUuid
   );
@@ -93,11 +97,9 @@ const PostCard: FC = memo(() => {
             payload: undefined,
           });
           postRowPageDispatch({
-            type: PostRowPageActionType.SET_SHOW_POST_CARD_INFO,
+            type: PostRowPageActionType.SET_SHOW_POST_CARD_INFO_ON_POST_UUID,
             payload: {
-              postUuid: post.postUuid,
-              postRowUuid: postRowUuid,
-              showPostCardInfo: false,
+              showCardInfoOnCardUuid: undefined,
             },
           });
         }}
@@ -130,7 +132,9 @@ const PostCard: FC = memo(() => {
           })()}
         <div
           className={`post-info-div ${
-            postCard.showPostCardInfo ? "post-info-div-hover" : ""
+            showCardInfoOnCardUuid === postCard.postCardUuid
+              ? "post-info-div-hover"
+              : ""
           }`}
         >
           <p className="postCardHeaderText">{`${post.subreddit.displayName}${
@@ -160,6 +164,7 @@ const PostCard: FC = memo(() => {
               postRowUuid: postRowUuid,
               autoIncrementAttachment: true,
               mouseOverPostCard: mouseOverPostCard,
+              postCardUuid: postCard.postCardUuid,
             }}
           >
             <PostMediaElement />
