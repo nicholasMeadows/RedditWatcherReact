@@ -87,8 +87,11 @@ const PostRow: FC = memo(() => {
       <div
         className="postRowContent"
         style={{
-          left: `${postSliderLeft}%`,
-          transition: `left ${postSliderLeftTransitionTime}s linear`,
+          left: `${postSliderLeft.toFixed(2)}%`,
+          transition:
+            postSliderLeftTransitionTime === 0
+              ? ""
+              : `left ${postSliderLeftTransitionTime}s linear`,
         }}
         ref={postRowContentDivRef}
       >

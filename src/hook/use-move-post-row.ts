@@ -278,90 +278,71 @@ export default function useMovePostRow(
     },
     []
   );
+
   const handleMouseUpTouchEnd = useCallback(
     (event: MouseEvent | TouchEvent) => {
       if (event instanceof MouseEvent) {
         mouseDownOnPostRow.current = false;
-        lastMouseDownX.current = 0;
       } else if (event instanceof TouchEvent) {
         const touches = event.touches;
         if (touches.length === 0) {
           mouseDownOnPostRow.current = false;
-          lastMouseDownX.current = 0;
           startAutoScroll(postCards);
         } else if (touches.length === 1) {
           mouseDownOnPostRow.current = true;
-          lastMouseDownX.current = touches[0].clientX;
         } else if (touches.length == 2) {
           mouseDownOnPostRow.current = true;
-          const touch1 = touches[0];
-          const touch2 = touches[1];
-          lastMouseDownX.current = (touch1.clientX + touch2.clientX) / 2;
         }
       }
     },
-    [postCards, startAutoScroll]
+    []
   );
 
   const handleMouseOrTouchMove = useCallback(
     (event: MouseEvent | TouchEvent) => {
-      const postRowDiv = postRowDivRef.current;
+      const postRowContentDiv = postRowContentDivRef.current;
       if (
-        postRowDiv === null ||
         !mouseDownOnPostRow.current ||
+        postRowContentDiv === null ||
         postCards.length <= postsToShowInRow
       ) {
         return;
       }
-
-      let eventX: number;
+      let pxMoved: number;
       if (event instanceof MouseEvent) {
-        eventX = event.clientX;
+        pxMoved = event.movementX;
       } else if (event instanceof TouchEvent) {
         const touches = event.touches;
         if (touches.length === 1) {
-          eventX = touches[0].clientX;
+          pxMoved = touches[0].clientX - lastMouseDownX.current;
         } else if (touches.length === 2) {
           const touch1 = touches[0];
           const touch2 = touches[1];
-          eventX = (touch1.clientX + touch2.clientX) / 2;
+          pxMoved =
+            (touch1.clientX + touch2.clientX) / 2 - lastMouseDownX.current;
         } else {
           return;
         }
       } else {
         return;
       }
+      let updatedPostSliderLeft =
+        postSliderLeft + (pxMoved / postRowContentDiv.clientWidth) * 100;
+      let updatedPostCards: Array<PostCard> | undefined;
 
-      const deltaX = eventX - lastMouseDownX.current;
-      const deltaXPercentage =
-        (Math.abs(deltaX) / postRowDiv.clientWidth) * 100;
-      let leftToSet: number | undefined = undefined;
-      if (deltaX < 0) {
-        leftToSet = postSliderLeft - deltaXPercentage;
-      } else if (deltaX > 0) {
-        leftToSet = postSliderLeft + deltaXPercentage;
+      if (updatedPostSliderLeft >= 0) {
+        updatedPostCards = shiftPostCardsRight();
+        updatedPostSliderLeft = calcPostCardWidthPercentage() * -1;
+      } else if (updatedPostSliderLeft <= calcPostCardWidthPercentage() * -1) {
+        updatedPostCards = shiftPostCardsLeft();
+        updatedPostSliderLeft = 0;
       }
-
-      if (leftToSet === undefined) {
-        return;
-      }
-      if (leftToSet >= 0) {
-        updatePostRowLayoutParams(
-          shiftPostCardsRight(),
-          calcPostCardWidthPercentage() * -1,
-          0
-        );
-      } else if (leftToSet <= calcPostCardWidthPercentage() * -1) {
-        updatePostRowLayoutParams(shiftPostCardsLeft(), 0, 0);
-      } else {
-        updatePostRowLayoutParams(undefined, leftToSet, 0);
-      }
-      lastMouseDownX.current = eventX;
+      updatePostRowLayoutParams(updatedPostCards, updatedPostSliderLeft, 0);
     },
     [
       calcPostCardWidthPercentage,
       postCards.length,
-      postRowDivRef,
+      postRowContentDivRef,
       postSliderLeft,
       postsToShowInRow,
       shiftPostCardsLeft,
