@@ -64,6 +64,18 @@ const PostRow: FC = memo(() => {
           payload: undefined,
         });
       }}
+      onTouchStart={() => {
+        postRowPageDispatch({
+          type: PostRowPageActionType.SET_MOUSE_OVER_POST_ROW_UUID,
+          payload: postRowUuid,
+        });
+      }}
+      onTouchEnd={() => {
+        postRowPageDispatch({
+          type: PostRowPageActionType.SET_MOUSE_OVER_POST_ROW_UUID,
+          payload: undefined,
+        });
+      }}
     >
       <div
         ref={scrollPostRowLeftButtonRef}

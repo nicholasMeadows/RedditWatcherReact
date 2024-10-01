@@ -260,42 +260,46 @@ export default function useMovePostRow(
     ]
   );
 
-  const handleMouseDownOrTouchStart = useCallback(
-    (event: MouseEvent | TouchEvent) => {
+  const handleMouseDown = useCallback((event: MouseEvent) => {
+    mouseDownOnPostRow.current = true;
+    lastMouseDownX.current = event.x;
+  }, []);
+
+  const handleTouchStart = useCallback(
+    (event: TouchEvent) => {
       mouseDownOnPostRow.current = true;
-      if (event instanceof MouseEvent) {
-        lastMouseDownX.current = event.x;
-      } else if (event instanceof TouchEvent) {
-        const touches = event.touches;
-        if (touches.length == 1) {
-          lastMouseDownX.current = touches[0].clientX;
-        } else if (touches.length == 2) {
-          const touch1 = touches[0];
-          const touch2 = touches[1];
-          lastMouseDownX.current = (touch1.clientX + touch2.clientX) / 2;
-        }
+      const touches = event.touches;
+      if (touches.length !== 0) {
+        stopPostRowTransition();
+      }
+      if (touches.length == 1) {
+        lastMouseDownX.current = touches[0].clientX;
+      } else if (touches.length == 2) {
+        const touch1 = touches[0];
+        const touch2 = touches[1];
+        lastMouseDownX.current = (touch1.clientX + touch2.clientX) / 2;
       }
     },
-    []
+    [stopPostRowTransition]
   );
 
-  const handleMouseUpTouchEnd = useCallback(
-    (event: MouseEvent | TouchEvent) => {
-      if (event instanceof MouseEvent) {
+  const handleMouseUp = useCallback(() => {
+    mouseDownOnPostRow.current = false;
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (event: TouchEvent) => {
+      const touches = event.touches;
+      if (touches.length === 0) {
         mouseDownOnPostRow.current = false;
-      } else if (event instanceof TouchEvent) {
-        const touches = event.touches;
-        if (touches.length === 0) {
-          mouseDownOnPostRow.current = false;
-          startAutoScroll(postCards);
-        } else if (touches.length === 1) {
-          mouseDownOnPostRow.current = true;
-        } else if (touches.length == 2) {
-          mouseDownOnPostRow.current = true;
-        }
+        startAutoScroll(postCards);
+      } else if (touches.length === 1) {
+        mouseDownOnPostRow.current = true;
+      } else if (touches.length == 2) {
+        mouseDownOnPostRow.current = true;
       }
     },
-    []
+    [postCards, startAutoScroll]
   );
 
   const handleMouseOrTouchMove = useCallback(
@@ -315,11 +319,13 @@ export default function useMovePostRow(
         const touches = event.touches;
         if (touches.length === 1) {
           pxMoved = touches[0].clientX - lastMouseDownX.current;
+          lastMouseDownX.current = touches[0].clientX;
         } else if (touches.length === 2) {
           const touch1 = touches[0];
           const touch2 = touches[1];
           pxMoved =
             (touch1.clientX + touch2.clientX) / 2 - lastMouseDownX.current;
+          lastMouseDownX.current = (touch1.clientX + touch2.clientX) / 2;
         } else {
           return;
         }
@@ -446,12 +452,12 @@ export default function useMovePostRow(
     postRowDiv.addEventListener("mouseenter", stopPostRowTransition);
     postRowDiv.addEventListener("mouseover", stopPostRowTransition);
     postRowDiv.addEventListener("mouseleave", mouseLeave);
-    postRowDiv.addEventListener("mousedown", handleMouseDownOrTouchStart);
-    postRowDiv.addEventListener("mouseup", handleMouseUpTouchEnd);
+    postRowDiv.addEventListener("mousedown", handleMouseDown);
+    postRowDiv.addEventListener("mouseup", handleMouseUp);
     postRowDiv.addEventListener("mousemove", handleMouseOrTouchMove);
 
-    postRowDiv.addEventListener("touchstart", handleMouseDownOrTouchStart);
-    postRowDiv.addEventListener("touchend", handleMouseUpTouchEnd);
+    postRowDiv.addEventListener("touchstart", handleTouchStart);
+    postRowDiv.addEventListener("touchend", handleTouchEnd);
     postRowDiv.addEventListener("touchmove", handleMouseOrTouchMove);
 
     scrollPostRowLeftButton.addEventListener("click", leftScrollButtonCLick);
@@ -465,12 +471,12 @@ export default function useMovePostRow(
       postRowDiv.removeEventListener("mouseenter", stopPostRowTransition);
       postRowDiv.removeEventListener("mouseover", stopPostRowTransition);
       postRowDiv.removeEventListener("mouseleave", mouseLeave);
-      postRowDiv.removeEventListener("mousedown", handleMouseDownOrTouchStart);
-      postRowDiv.removeEventListener("mouseup", handleMouseUpTouchEnd);
+      postRowDiv.removeEventListener("mousedown", handleMouseDown);
+      postRowDiv.removeEventListener("mouseup", handleMouseUp);
       postRowDiv.removeEventListener("mousemove", handleMouseOrTouchMove);
 
-      postRowDiv.removeEventListener("touchstart", handleMouseDownOrTouchStart);
-      postRowDiv.removeEventListener("touchend", handleMouseUpTouchEnd);
+      postRowDiv.removeEventListener("touchstart", handleTouchStart);
+      postRowDiv.removeEventListener("touchend", handleTouchEnd);
       postRowDiv.removeEventListener("touchmove", handleMouseOrTouchMove);
 
       scrollPostRowLeftButton.removeEventListener(
@@ -483,9 +489,11 @@ export default function useMovePostRow(
       );
     };
   }, [
-    handleMouseDownOrTouchStart,
+    handleMouseDown,
     handleMouseOrTouchMove,
-    handleMouseUpTouchEnd,
+    handleMouseUp,
+    handleTouchEnd,
+    handleTouchStart,
     handleTransitionEnd,
     leftScrollButtonCLick,
     postCards,
