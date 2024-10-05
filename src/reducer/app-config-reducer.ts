@@ -65,6 +65,8 @@ export enum AppConfigActionType {
   SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_IMGUR_DOMAIN = "SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_IMGUR_DOMAIN",
   SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_REDGIFS_DOMAIN = "SET_POST_CONVERTER_FILTER_OPTION_URLS_IN_REDGIFS_DOMAIN",
   SET_POST_CONVERTER_FILTER_OPTION_REDDIT_GALLERIES = "SET_POST_CONVERTER_FILTER_OPTION_REDDIT_GALLERIES",
+  SET_GET_POST_ROW_ITERATION_TIME = "SET_GET_POST_ROW_ITERATION_TIME",
+  CLEAR_GET_POST_ROW_ITERATION_TIME_VALIDATION_ERROR = "CLEAR_GET_POST_ROW_ITERATION_TIME_VALIDATION_ERROR",
 }
 
 export type AppConfigActionStringPayload = {
@@ -143,7 +145,8 @@ export type AppConfigActionNumberPayload = {
     | AppConfigActionType.SET_CONCAT_REDDIT_URL_MAX_LENGTH
     | AppConfigActionType.SET_REDDIT_API_ITEM_LIMIT
     | AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW
-    | AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW;
+    | AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW
+    | AppConfigActionType.SET_GET_POST_ROW_ITERATION_TIME;
   payload: number;
 };
 
@@ -155,7 +158,8 @@ export type AppConfigActionNoPayload = {
     | AppConfigActionType.CLEAR_POST_ROWS_TO_SHOW_IN_VIEW_VALIDATION_ERROR
     | AppConfigActionType.TOGGLE_DARK_MODE
     | AppConfigActionType.RESET_CONFIG_LOADED
-    | AppConfigActionType.CLEAR_REDDIT_API_ITEM_LIMIT_VALIDATION_ERROR;
+    | AppConfigActionType.CLEAR_REDDIT_API_ITEM_LIMIT_VALIDATION_ERROR
+    | AppConfigActionType.CLEAR_GET_POST_ROW_ITERATION_TIME_VALIDATION_ERROR;
 };
 
 export type AppConfigActionAppConfigPayload = {
@@ -261,6 +265,10 @@ export default function AppConfigReducer(
       return setPostConverterFilterOptionUrlsInRedgifsDomain(state, action);
     case AppConfigActionType.SET_POST_CONVERTER_FILTER_OPTION_REDDIT_GALLERIES:
       return setPostConverterFilterOptionRedditGalleries(state, action);
+    case AppConfigActionType.SET_GET_POST_ROW_ITERATION_TIME:
+      return setGetPostRowIterationTime(state, action);
+    case AppConfigActionType.CLEAR_GET_POST_ROW_ITERATION_TIME_VALIDATION_ERROR:
+      return clearGetPostRowIterationTimeValidationError(state);
     default:
       return state;
   }
@@ -756,6 +764,41 @@ const setPostConverterFilterOptionRedditGalleries = (
   };
   saveConfig(updatedState);
   return updatedState;
+};
+
+const setGetPostRowIterationTime = (
+  state: AppConfigState,
+  action: AppConfigActionNumberPayload
+): AppConfigState => {
+  const validationError = ValidationUtil.validateNumber(
+    "Get Post Row Iteration Time",
+    action.payload,
+    5,
+    60
+  );
+  const updatedState = { ...state };
+  if (validationError !== undefined) {
+    if (action.payload < 5) {
+      updatedState.getPostRowIterationTime = 5;
+    } else if (action.payload > 60) {
+      updatedState.getPostRowIterationTime = 60;
+    }
+    updatedState.getPostRowIterationTimeValidationError = validationError;
+  } else {
+    updatedState.getPostRowIterationTimeValidationError = undefined;
+    updatedState.getPostRowIterationTime = action.payload;
+  }
+  saveConfig(updatedState);
+  return updatedState;
+};
+
+const clearGetPostRowIterationTimeValidationError = (
+  state: AppConfigState
+): AppConfigState => {
+  return {
+    ...state,
+    getPostRowIterationTimeValidationError: undefined,
+  };
 };
 
 const validateAutoScrollPostRowRateSecondsForSinglePostCardField = (

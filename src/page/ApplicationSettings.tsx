@@ -30,6 +30,8 @@ const ApplicationSettings: React.FC = () => {
     postRowsToShowInViewValidationError,
     useInMemoryImagesAndGifs,
     postConverterFilteringOptions,
+    getPostRowIterationTime,
+    getPostRowIterationTimeValidationError,
   } = useContext(AppConfigStateContext);
 
   const {
@@ -278,6 +280,32 @@ const ApplicationSettings: React.FC = () => {
         </p>
       </div>
       <hr />
+
+      <div className="settings-item flex-column">
+        <label className="select-label">Get Post Row Iteration Time</label>
+        <input
+          value={getPostRowIterationTime}
+          className="input"
+          type="number"
+          onChange={(event) => {
+            const inputValue = parseFloat(event.target.value);
+            appConfigDispatch({
+              type: AppConfigActionType.SET_GET_POST_ROW_ITERATION_TIME,
+              payload: inputValue,
+            });
+          }}
+          onBlur={() => {
+            appConfigDispatch({
+              type: AppConfigActionType.CLEAR_POST_ROWS_TO_SHOW_IN_VIEW_VALIDATION_ERROR,
+            });
+          }}
+        />
+        <p className="settings-item-error">
+          {getPostRowIterationTimeValidationError}
+        </p>
+      </div>
+      <hr />
+
       <div className="settings-item flex-column post-converter-option-section">
         <label className="select-label-relative sub-section-label">
           Allow posts with URLS

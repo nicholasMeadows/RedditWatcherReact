@@ -11,4 +11,5 @@ export interface AppConfigState extends AppConfig {
   autoScrollPostRowRateSecondsForSinglePostCardValidationError:
     | string
     | undefined;
+  getPostRowIterationTimeValidationError: string | undefined;
 }

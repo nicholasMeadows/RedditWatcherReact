@@ -33,4 +33,5 @@ export interface AppConfig {
   darkMode: boolean;
   useInMemoryImagesAndGifs: boolean;
   postConverterFilteringOptions: PostConverterFilteringOptions;
+  getPostRowIterationTime: number;
 }

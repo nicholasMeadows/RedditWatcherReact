@@ -59,6 +59,7 @@ const URLS_THAT_END_WITH_DOT_PNG = "urlsThatEndWithDotPng";
 const URLS_THAT_END_WITH_DOT_JPEG = "urlsThatEndWithDotJpeg";
 const URLS_THAT_END_WITH_DOT_JPG = "urlsThatEndWithDotJpg";
 const REDDIT_GALLERIES = "redditGalleries";
+const GET_POST_ROW_ITERATION_TIME = "getPostRowIterationTime";
 
 export async function loadSubredditListsFromFile() {
   await checkForOrCreateConfigFolder();
@@ -185,6 +186,8 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
       postConverterFilteringOptions[URLS_THAT_END_WITH_DOT_JPG];
     redditGalleries = postConverterFilteringOptions[REDDIT_GALLERIES];
   }
+  const getPostRowIterationTime =
+    configJsonObj[GET_POST_ROW_ITERATION_TIME] || 10;
 
   const loadedConfig: AppConfig = {
     redditCredentials: {
@@ -223,6 +226,7 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
       urlsThatEndWithDotJpg: urlsThatEndWithDotJpg,
       redditGalleries: redditGalleries,
     },
+    getPostRowIterationTime: getPostRowIterationTime,
   };
 
   return loadedConfig;

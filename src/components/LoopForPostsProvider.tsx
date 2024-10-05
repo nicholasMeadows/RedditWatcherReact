@@ -13,6 +13,7 @@ import {
 import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
 import useRedditService from "../hook/use-reddit-service.ts";
 import useGetPostLoopPaused from "../hook/use-get-post-loop-paused.ts";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
 
 type Props = {
   children: ReactNode;
@@ -23,6 +24,8 @@ const LoopForPostsProvider: FC<Props> = ({ children }) => {
   const { secondsTillGettingNextPosts } = useContext(RedditServiceStateContext);
   const { getPostsForPostRow, handleGottenPosts } = useRedditService();
   const { isGetPostLoopPaused } = useGetPostLoopPaused();
+
+  const { getPostRowIterationTime } = useContext(AppConfigStateContext);
 
   const isGetPostLoopPausedRef = useRef(isGetPostLoopPaused);
 
@@ -67,11 +70,16 @@ const LoopForPostsProvider: FC<Props> = ({ children }) => {
       getPostRow().then(() => {
         redditServiceDispatch({
           type: RedditServiceActions.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
-          payload: 10,
+          payload: getPostRowIterationTime,
         });
       });
     }
-  }, [getPostRow, redditServiceDispatch, secondsTillGettingNextPosts]);
+  }, [
+    getPostRow,
+    getPostRowIterationTime,
+    redditServiceDispatch,
+    secondsTillGettingNextPosts,
+  ]);
   return <>{children}</>;
 };
 export default LoopForPostsProvider;

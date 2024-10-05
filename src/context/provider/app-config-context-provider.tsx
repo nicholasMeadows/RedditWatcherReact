@@ -50,6 +50,8 @@ const defaultPostConvertFilteringOptionUrlsInImgurDomain = true;
 const defaultPostConvertFilteringOptionUrlsInRedgifsDomain = true;
 const defaultPostConvertFilteringOptionRedditGalleries = true;
 
+const defaultPostRowIterationTime = 10;
+
 const initialState: AppConfigState = {
   redditCredentials: {
     username: "",
@@ -102,6 +104,8 @@ const initialState: AppConfigState = {
       defaultPostConvertFilteringOptionUrlsThatEndWithDotPng,
     redditGalleries: defaultPostConvertFilteringOptionRedditGalleries,
   },
+  getPostRowIterationTime: defaultPostRowIterationTime,
+  getPostRowIterationTimeValidationError: undefined,
 };
 
 type Props = {
