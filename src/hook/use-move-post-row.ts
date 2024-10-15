@@ -41,6 +41,8 @@ export default function useMovePostRow(
   const lastMouseDownX = useRef(0);
   const hookInitialized = useRef(false);
 
+  const lastMouseOrTouchMoveExecution = useRef(Date.now());
+
   const shouldAutoScroll =
     gottenWithSubredditSourceOption !== SubredditSourceOptionsEnum.FrontPage &&
     autoScrollPostRow;
@@ -103,34 +105,15 @@ export default function useMovePostRow(
       postSliderLeft: number | undefined,
       postSliderTransitionTime: number | undefined
     ) => {
-      if (postCards !== undefined) {
-        postRowPageDispatch({
-          type: PostRowPageActionType.SET_POST_CARDS_TO_SHOW_IN_ROW,
-          payload: {
-            postRowUuid: postRowUuid,
-            postCards: postCards,
-          },
-        });
-      }
-
-      if (postSliderLeft !== undefined) {
-        postRowPageDispatch({
-          type: PostRowPageActionType.SET_POST_SLIDER_LEFT,
-          payload: {
-            postRowUuid,
-            value: postSliderLeft,
-          },
-        });
-      }
-      if (postSliderTransitionTime !== undefined) {
-        postRowPageDispatch({
-          type: PostRowPageActionType.SET_POST_SLIDER_TRANSITION_TIME,
-          payload: {
-            postRowUuid,
-            value: postSliderTransitionTime,
-          },
-        });
-      }
+      postRowPageDispatch({
+        type: PostRowPageActionType.UPDATE_MOVE_POST_ROW_VALUES,
+        payload: {
+          postRowUuid: postRowUuid,
+          postSliderLeft: postSliderLeft,
+          updatedPostCards: postCards,
+          postSliderTransitionTime: postSliderTransitionTime,
+        },
+      });
     },
     [postRowUuid, postRowPageDispatch]
   );
@@ -304,6 +287,12 @@ export default function useMovePostRow(
 
   const handleMouseOrTouchMove = useCallback(
     (event: MouseEvent | TouchEvent) => {
+      const now = Date.now();
+      if (now - lastMouseOrTouchMoveExecution.current < 16) {
+        return;
+      }
+      lastMouseOrTouchMoveExecution.current = now;
+
       const postRowContentDiv = postRowContentDivRef.current;
       if (
         !mouseDownOnPostRow.current ||
@@ -450,7 +439,6 @@ export default function useMovePostRow(
     };
     postRowContentDiv.addEventListener("transitionend", handleTransitionEnd);
     postRowDiv.addEventListener("mouseenter", stopPostRowTransition);
-    postRowDiv.addEventListener("mouseover", stopPostRowTransition);
     postRowDiv.addEventListener("mouseleave", mouseLeave);
     postRowDiv.addEventListener("mousedown", handleMouseDown);
     postRowDiv.addEventListener("mouseup", handleMouseUp);
@@ -469,7 +457,6 @@ export default function useMovePostRow(
         handleTransitionEnd
       );
       postRowDiv.removeEventListener("mouseenter", stopPostRowTransition);
-      postRowDiv.removeEventListener("mouseover", stopPostRowTransition);
       postRowDiv.removeEventListener("mouseleave", mouseLeave);
       postRowDiv.removeEventListener("mousedown", handleMouseDown);
       postRowDiv.removeEventListener("mouseup", handleMouseUp);

@@ -1,5 +1,4 @@
 import React, {
-  memo,
   MouseEvent,
   ReactNode,
   useCallback,
@@ -18,7 +17,7 @@ import PostMediaElementZoomContext from "../context/post-media-element-zoom-cont
 import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
 import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 
-const PostMediaElement: React.FC = memo(() => {
+const PostMediaElement: React.FC = () => {
   const {
     post,
     postRowUuid,
@@ -347,6 +346,6 @@ const PostMediaElement: React.FC = memo(() => {
       )}
     </div>
   );
-});
+};
 
 export default PostMediaElement;

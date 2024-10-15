@@ -1,4 +1,4 @@
-import { FC, memo, useContext, useRef, useState } from "react";
+import { FC, useContext, useRef, useState } from "react";
 import { PostCardContext } from "../context/post-card-context.ts";
 import "../theme/post-card.scss";
 import {
@@ -23,7 +23,7 @@ import {
 import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 import IndividualPostRowContext from "../context/individual-post-row-context.ts";
 
-const PostCard: FC = memo(() => {
+const PostCard: FC = () => {
   const navigate = useNavigate();
   const { postsToShowInRow } = useContext(AppConfigStateContext);
   const postRowPageDispatch = useContext(PostRowPageDispatchContext);
@@ -173,5 +173,5 @@ const PostCard: FC = memo(() => {
       </div>
     </div>
   );
-});
+};
 export default PostCard;

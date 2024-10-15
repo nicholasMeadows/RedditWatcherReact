@@ -1,4 +1,4 @@
-import { FC, memo, useCallback, useContext, useRef } from "react";
+import { FC, useCallback, useContext, useRef } from "react";
 import getPlatform from "../util/PlatformUtil.ts";
 import { Platform } from "../model/Platform.ts";
 import useMovePostRow from "../hook/use-move-post-row.ts";
@@ -10,7 +10,7 @@ import PostCard from "../components/PostCard.tsx";
 import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
 import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 
-const PostRow: FC = memo(() => {
+const PostRow: FC = () => {
   const { darkMode, postsToShowInRow, postRowsToShowInView } = useContext(
     AppConfigStateContext
   );
@@ -142,6 +142,6 @@ const PostRow: FC = memo(() => {
       </div>
     </div>
   );
-});
+};
 
 export default PostRow;

@@ -20,9 +20,7 @@ export enum PostRowPageActionType {
   SET_SCROLL_Y = "SET_SCROLL_Y",
   SET_MOUSE_OVER_POST_ROW_UUID = "SET_MOUSE_OVER_POST_ROW_UUID",
   ADD_POST_ROW = "ADD_POST_ROW",
-  SET_POST_CARDS_TO_SHOW_IN_ROW = "SET_POST_CARDS_TO_SHOW_IN_ROW",
-  SET_POST_SLIDER_LEFT = "SET_POST_SLIDER_LEFT",
-  SET_POST_SLIDER_TRANSITION_TIME = "SET_POST_SLIDER_TRANSITION_TIME",
+  UPDATE_MOVE_POST_ROW_VALUES = "UPDATE_MOVE_POST_ROW_VALUES",
   SET_SHOW_POST_CARD_INFO_ON_POST_UUID = "SET_SHOW_POST_CARD_INFO_ON_POST_UUID",
 }
 
@@ -59,20 +57,13 @@ export type AddPostRowAction = {
   };
 };
 
-export type SetPostSliderLeftOrTransitionTimeAction = {
-  type:
-    | PostRowPageActionType.SET_POST_SLIDER_LEFT
-    | PostRowPageActionType.SET_POST_SLIDER_TRANSITION_TIME;
+export type UpdateMovePostRowValuesAction = {
+  type: PostRowPageActionType.UPDATE_MOVE_POST_ROW_VALUES;
   payload: {
     postRowUuid: string;
-    value: number;
-  };
-};
-export type SetPostCardsAction = {
-  type: PostRowPageActionType.SET_POST_CARDS_TO_SHOW_IN_ROW;
-  payload: {
-    postRowUuid: string;
-    postCards: Array<PostCard>;
+    postSliderLeft: number | undefined;
+    postSliderTransitionTime: number | undefined;
+    updatedPostCards: Array<PostCard> | undefined;
   };
 };
 
@@ -92,8 +83,7 @@ export default function PostRowPageReducer(
     | PostRowPageBooleanPayloadAction
     | AddPostRowAction
     | PostRowPageSetMouseOverPostRowUuidAction
-    | SetPostSliderLeftOrTransitionTimeAction
-    | SetPostCardsAction
+    | UpdateMovePostRowValuesAction
     | SetShowPostCardInfoOnPostUuidAction
 ) {
   switch (action.type) {
@@ -111,12 +101,8 @@ export default function PostRowPageReducer(
       return setMouseOverPostRowUuid(state, action);
     case PostRowPageActionType.ADD_POST_ROW:
       return addPostRow(state, action);
-    case PostRowPageActionType.SET_POST_CARDS_TO_SHOW_IN_ROW:
-      return setPostCardsOnRow(state, action);
-    case PostRowPageActionType.SET_POST_SLIDER_LEFT:
-      return setPostSliderLeft(state, action);
-    case PostRowPageActionType.SET_POST_SLIDER_TRANSITION_TIME:
-      return setPostSliderTransitionTime(state, action);
+    case PostRowPageActionType.UPDATE_MOVE_POST_ROW_VALUES:
+      return updateMovePostRowValues(state, action);
     case PostRowPageActionType.SET_SHOW_POST_CARD_INFO_ON_POST_UUID:
       return setShowPostCardInfoOnPostUuid(state, action);
     default:
@@ -280,60 +266,45 @@ const addPostRow = (
   };
 };
 
-const setPostCardsOnRow = (
+const updateMovePostRowValues = (
   state: PostRowPageState,
-  action: SetPostCardsAction
+  action: UpdateMovePostRowValuesAction
 ): PostRowPageState => {
-  const postRowUuid = action.payload.postRowUuid;
+  const payload = action.payload;
+  const postRowUuid = payload.postRowUuid;
+  const updatedPostSliderTransitionTime = payload.postSliderTransitionTime;
+  const updatedPostSliderLeft = payload.postSliderLeft;
+  const updatedPostCards = payload.updatedPostCards;
+
   const updatedPostRows = [...state.postRows];
-  const postRow = updatedPostRows.find(
+
+  const foundPostRowIndex = updatedPostRows.findIndex(
     (postRow) => postRow.postRowUuid === postRowUuid
   );
-  if (postRow === undefined) {
+  if (foundPostRowIndex === -1) {
     return state;
   }
-  postRow.postCards = action.payload.postCards;
-  return {
-    ...state,
-    postRows: updatedPostRows,
-  };
-};
-const setPostSliderLeft = (
-  state: PostRowPageState,
-  action: SetPostSliderLeftOrTransitionTimeAction
-): PostRowPageState => {
-  const postRowUuid = action.payload.postRowUuid;
-  const updatedPostRows = [...state.postRows];
-  const postRow = updatedPostRows.find(
-    (postRow) => postRow.postRowUuid === postRowUuid
-  );
-  if (postRow === undefined) {
-    return state;
+
+  const updatedPostRow = { ...updatedPostRows[foundPostRowIndex] };
+  updatedPostRows[foundPostRowIndex] = updatedPostRow;
+
+  if (updatedPostSliderTransitionTime !== undefined) {
+    updatedPostRow.postSliderLeftTransitionTime =
+      updatedPostSliderTransitionTime;
   }
-  postRow.postSliderLeft = action.payload.value;
-  return {
-    ...state,
-    postRows: updatedPostRows,
-  };
-};
-const setPostSliderTransitionTime = (
-  state: PostRowPageState,
-  action: SetPostSliderLeftOrTransitionTimeAction
-): PostRowPageState => {
-  const postRowUuid = action.payload.postRowUuid;
-  const updatedPostRows = [...state.postRows];
-  const postRow = updatedPostRows.find(
-    (postRow) => postRow.postRowUuid === postRowUuid
-  );
-  if (postRow === undefined) {
-    return state;
+  if (updatedPostSliderLeft !== undefined) {
+    updatedPostRow.postSliderLeft = updatedPostSliderLeft;
   }
-  postRow.postSliderLeftTransitionTime = action.payload.value;
+  if (updatedPostCards !== undefined) {
+    updatedPostRow.postCards = updatedPostCards;
+  }
+
   return {
     ...state,
-    postRows: updatedPostRows,
+    postRows: [...updatedPostRows],
   };
 };
+
 const setShowPostCardInfoOnPostUuid = (
   state: PostRowPageState,
   action: SetShowPostCardInfoOnPostUuidAction
