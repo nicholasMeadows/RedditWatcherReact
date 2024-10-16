@@ -14,6 +14,7 @@ import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
 import useRedditService from "../hook/use-reddit-service.ts";
 import useGetPostLoopPaused from "../hook/use-get-post-loop-paused.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
+import { CountdownTimerOnCLickContext } from "../page/PostRowPage.tsx";
 
 type Props = {
   children: ReactNode;
@@ -26,6 +27,7 @@ const LoopForPostsProvider: FC<Props> = ({ children }) => {
   const { isGetPostLoopPaused } = useGetPostLoopPaused();
 
   const { getPostRowIterationTime } = useContext(AppConfigStateContext);
+  const { onCountdownClickRef } = useContext(CountdownTimerOnCLickContext);
 
   const isGetPostLoopPausedRef = useRef(isGetPostLoopPaused);
 
@@ -51,6 +53,15 @@ const LoopForPostsProvider: FC<Props> = ({ children }) => {
     }
   }, [getPostsForPostRow, handleGottenPosts]);
 
+  const getPostRowAndResetCounter = useCallback(() => {
+    getPostRow().then(() => {
+      redditServiceDispatch({
+        type: RedditServiceActions.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
+        payload: getPostRowIterationTime,
+      });
+    });
+  }, [getPostRow, getPostRowIterationTime, redditServiceDispatch]);
+
   useEffect(() => {
     if (secondsTillGettingNextPosts > 0) {
       const timeout = setTimeout(() => {
@@ -67,12 +78,7 @@ const LoopForPostsProvider: FC<Props> = ({ children }) => {
 
   useEffect(() => {
     if (secondsTillGettingNextPosts === 0) {
-      getPostRow().then(() => {
-        redditServiceDispatch({
-          type: RedditServiceActions.SET_SECONDS_TILL_GETTING_NEXT_POSTS,
-          payload: getPostRowIterationTime,
-        });
-      });
+      getPostRowAndResetCounter();
     }
   }, [
     getPostRow,
@@ -80,6 +86,7 @@ const LoopForPostsProvider: FC<Props> = ({ children }) => {
     redditServiceDispatch,
     secondsTillGettingNextPosts,
   ]);
+  onCountdownClickRef.current = getPostRowAndResetCounter;
   return <>{children}</>;
 };
 export default LoopForPostsProvider;

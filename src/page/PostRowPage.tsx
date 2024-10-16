@@ -1,4 +1,12 @@
-import { FC, useContext, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  FC,
+  MutableRefObject,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import SideBar from "../components/SideBar.tsx";
 import PostRow from "../components/PostRow.tsx";
 import "../theme/post-row-page.scss";
@@ -11,6 +19,14 @@ import {
 } from "../context/post-row-page-context.ts";
 import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 import SecondsTillNextPostRowCounter from "../components/SecondsTillNextPostRowCounter.tsx";
+
+interface CountdownTimerOnClickContextState {
+  onCountdownClickRef: MutableRefObject<() => void>;
+}
+
+export const CountdownTimerOnCLickContext = createContext(
+  {} as CountdownTimerOnClickContextState
+);
 
 const PostRowPage: FC = () => {
   const { postRows, playPauseButtonIsClicked } = useContext(PostRowPageContext);
@@ -49,71 +65,79 @@ const PostRowPage: FC = () => {
     };
   }, [playPauseButtonIsClicked, postRowPageDispatch]);
 
-  return (
-    <LoopForPostsProvider>
-      <div className="post-row-page" ref={postRowPageRef}>
-        <div
-          className="post-rows-side-bar-div"
-          style={{
-            right: `${scrollBarWidth}px`,
-          }}
-        >
-          <SideBar
-            onRedditSearchBarFocus={() =>
-              (redditSearchBarFocused.current = true)
-            }
-            onRedditSearchBarBlur={() =>
-              (redditSearchBarFocused.current = false)
-            }
-          />
-        </div>
-        <div
-          className="post-rows-div"
-          ref={postRowsDivRef}
-          onScroll={(event) => {
-            const target = event.target as HTMLElement;
-            postRowPageDispatch({
-              type: PostRowPageActionType.SET_SCROLL_Y,
-              payload: target.scrollTop,
-            });
-          }}
-        >
-          {postRows.map((postRow) => (
-            <IndividualPostRowContext.Provider
-              value={{
-                allPosts: postRow.allPosts,
-                postRowUuid: postRow.postRowUuid,
-                postSliderLeft: postRow.postSliderLeft,
-                postSliderLeftTransitionTime:
-                  postRow.postSliderLeftTransitionTime,
-                postCards: postRow.postCards,
-                gottenWithSubredditSourceOption:
-                  postRow.gottenWithSubredditSourceOption,
-              }}
-              key={"post-row-" + postRow.postRowUuid}
-            >
-              <PostRow />
-            </IndividualPostRowContext.Provider>
-          ))}
-        </div>
+  const countdownTimerOnClick = useRef(() => {});
 
-        <div
-          className={"play-pause-button-div"}
-          onClick={() => {
-            postRowPageDispatch({
-              type: PostRowPageActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED,
-              payload: !playPauseButtonIsClicked,
-            });
-          }}
-        >
-          <img
-            src={`assets/${isGetPostLoopPaused ? "pause" : "play"}_black.png`}
-            className={"play-pause-button-img"}
-          />
+  return (
+    <CountdownTimerOnCLickContext.Provider
+      value={{
+        onCountdownClickRef: countdownTimerOnClick,
+      }}
+    >
+      <LoopForPostsProvider>
+        <div className="post-row-page" ref={postRowPageRef}>
+          <div
+            className="post-rows-side-bar-div"
+            style={{
+              right: `${scrollBarWidth}px`,
+            }}
+          >
+            <SideBar
+              onRedditSearchBarFocus={() =>
+                (redditSearchBarFocused.current = true)
+              }
+              onRedditSearchBarBlur={() =>
+                (redditSearchBarFocused.current = false)
+              }
+            />
+          </div>
+          <div
+            className="post-rows-div"
+            ref={postRowsDivRef}
+            onScroll={(event) => {
+              const target = event.target as HTMLElement;
+              postRowPageDispatch({
+                type: PostRowPageActionType.SET_SCROLL_Y,
+                payload: target.scrollTop,
+              });
+            }}
+          >
+            {postRows.map((postRow) => (
+              <IndividualPostRowContext.Provider
+                value={{
+                  allPosts: postRow.allPosts,
+                  postRowUuid: postRow.postRowUuid,
+                  postSliderLeft: postRow.postSliderLeft,
+                  postSliderLeftTransitionTime:
+                    postRow.postSliderLeftTransitionTime,
+                  postCards: postRow.postCards,
+                  gottenWithSubredditSourceOption:
+                    postRow.gottenWithSubredditSourceOption,
+                }}
+                key={"post-row-" + postRow.postRowUuid}
+              >
+                <PostRow />
+              </IndividualPostRowContext.Provider>
+            ))}
+          </div>
+
+          <div
+            className={"play-pause-button-div"}
+            onClick={() => {
+              postRowPageDispatch({
+                type: PostRowPageActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED,
+                payload: !playPauseButtonIsClicked,
+              });
+            }}
+          >
+            <img
+              src={`assets/${isGetPostLoopPaused ? "pause" : "play"}_black.png`}
+              className={"play-pause-button-img"}
+            />
+          </div>
+          <SecondsTillNextPostRowCounter />
         </div>
-        <SecondsTillNextPostRowCounter />
-      </div>
-    </LoopForPostsProvider>
+      </LoopForPostsProvider>
+    </CountdownTimerOnCLickContext.Provider>
   );
 };
 
