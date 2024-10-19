@@ -11,8 +11,8 @@ pipeline {
         stage("Checkout") {
             steps {
                 discordSend description: 'Reddit Watcher Jenkins Pipeline Starting', footer: '', image: '', link: env.BUILD_URL, result: '', scmWebUrl: '', thumbnail: '', title: env.JOB_NAME, webhookURL: 'https://discord.com/api/webhooks/1259260941963493406/ZmHH4ZdTBe6FKKYzx7BZiaWwbDsSGeev7a3BHqh07P-Xi6AFlHLvGM0jRrkUQykS-1ps'
-
-                cleanWs()
+//              Disable cleanWS due to scm polling kickcing off builds constantly
+//                 cleanWs()
                 checkout scmGit(branches: [[name: 'main']], userRemoteConfigs: [[credentialsId: 'Github-SSH', url: 'https://github.com/nicholasMeadows/RedditWatcherReact.git']])
                 
                 script {
