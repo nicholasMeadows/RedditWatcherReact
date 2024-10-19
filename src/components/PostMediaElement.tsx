@@ -7,7 +7,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { v4 as uuidV4 } from "uuid";
 import { PostImageQualityEnum } from "../model/config/enums/PostImageQualityEnum.ts";
 import { MediaType } from "../model/Post/MediaTypeEnum.ts";
 import { AttachmentResolution } from "../model/Post/AttachmentResolution.ts";
@@ -330,7 +329,9 @@ const PostMediaElement: React.FC = () => {
           {post.attachments.map((attachment, index) => {
             return (
               <div
-                key={uuidV4()}
+                key={
+                  postRowUuid + "-" + postCardUuid + "attachmentNumber" + index
+                }
                 className={`attachment-indicator ${
                   post.attachments[currentAttachmentIndex] == attachment
                     ? "attachment-indicator-active"
