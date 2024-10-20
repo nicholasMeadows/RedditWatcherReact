@@ -263,10 +263,11 @@ function convertMediaMetadata(post: T3): Array<Attachment> {
   const attachments = new Array<Attachment>();
 
   const mediaMetadata = post.media_metadata;
-
-  if (mediaMetadata != null) {
-    Object.keys(mediaMetadata).forEach((key) => {
-      const mediaMetadataObj = mediaMetadata[key];
+  const galleryData = post.gallery_data;
+  if (mediaMetadata !== undefined && galleryData !== undefined) {
+    galleryData.items.forEach((galleryDataItem) => {
+      const mediaId = galleryDataItem.media_id;
+      const mediaMetadataObj = mediaMetadata[mediaId];
       if (mediaMetadataObj != undefined) {
         const mediaType = mediaMetadataObj.m;
         const mediaMetadataItem = mediaMetadataObj.s;
