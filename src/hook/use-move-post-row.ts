@@ -147,7 +147,12 @@ export default function useMovePostRow(
       let goToTransitionTime: number | undefined;
 
       const absCardWidthPercentage = Math.abs(calcPostCardWidthPercentage());
-
+      const contentDivBoundingClientRect =
+        postRowContentDiv.getBoundingClientRect();
+      const currentLeftPercentage =
+        (contentDivBoundingClientRect.left /
+          contentDivBoundingClientRect.width) *
+        100;
       if (
         autoScrollPostRowDirectionOption ===
         AutoScrollPostRowDirectionOptionEnum.Right
@@ -155,7 +160,7 @@ export default function useMovePostRow(
         goToSliderLeft = 0;
         goToTransitionTime =
           autoScrollPostRowRateSecondsForSinglePostCard *
-          (Math.abs(postSliderLeft) / absCardWidthPercentage);
+          (Math.abs(currentLeftPercentage) / absCardWidthPercentage);
         goToTransitionTime = Math.abs(goToTransitionTime);
       } else if (
         autoScrollPostRowDirectionOption ===
@@ -164,10 +169,11 @@ export default function useMovePostRow(
         goToSliderLeft = absCardWidthPercentage * -1;
         goToTransitionTime =
           autoScrollPostRowRateSecondsForSinglePostCard *
-          ((absCardWidthPercentage - Math.abs(postSliderLeft)) /
+          ((absCardWidthPercentage - Math.abs(currentLeftPercentage)) /
             absCardWidthPercentage);
         goToTransitionTime = Math.abs(goToTransitionTime);
       }
+
       updatePostRowLayoutParams(undefined, goToSliderLeft, goToTransitionTime);
     },
     [
