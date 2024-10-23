@@ -1,7 +1,8 @@
 import { createContext } from "react";
 import { SearchRedditBarState } from "../model/state/SearchRedditBarState.ts";
+import SearchRedditBarDispatch from "../model/state/dispatch/SearchRedditBarDispatch.ts";
 
-const SearchRedditBarContext = createContext<SearchRedditBarState>(
-  {} as SearchRedditBarState
+export const SearchRedditBarContext = createContext({} as SearchRedditBarState);
+export const SearchRedditBarDispatchContext = createContext(
+  {} as SearchRedditBarDispatch
 );
-export default SearchRedditBarContext;

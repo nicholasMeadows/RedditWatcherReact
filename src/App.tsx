@@ -23,6 +23,7 @@ import { RootFontSizeContext } from "./context/root-font-size-context.ts";
 import AppConfigContextProvider from "./context/provider/app-config-context-provider.tsx";
 import ContextMenuContextProvider from "./context/provider/context-menu-context-provider.tsx";
 import { PostRowsContextProvider } from "./context/provider/post-rows-context-provider.tsx";
+import SearchRedditBarContextProvider from "./context/provider/search-reddit-bar-context-provider.tsx";
 
 const App: React.FC = () => {
   const [rootFontSize, rootFontSizeDispatch] = useState(0);
@@ -37,7 +38,9 @@ const App: React.FC = () => {
                 rootFontSizeDispatch: rootFontSizeDispatch,
               }}
             >
-              <RouterView />
+              <SearchRedditBarContextProvider>
+                <RouterView />
+              </SearchRedditBarContextProvider>
             </RootFontSizeContext.Provider>
           </PostRowsContextProvider>
         </ContextMenuContextProvider>

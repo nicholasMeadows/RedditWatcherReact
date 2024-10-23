@@ -13,8 +13,6 @@ import {
 } from "../context/side-bar-context.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
 import SearchRedditBar from "./SearchRedditBar.tsx";
-import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
-import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
 import { Subreddit } from "../model/Subreddit/Subreddit.ts";
 import {
   ContextMenuDispatchContext,
@@ -25,14 +23,7 @@ import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../RedditWatcherConstants.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 
-type SideBarProps = {
-  onRedditSearchBarFocus: () => void;
-  onRedditSearchBarBlur: () => void;
-};
-const SideBar: React.FC<SideBarProps> = ({
-  onRedditSearchBarFocus,
-  onRedditSearchBarBlur,
-}) => {
+const SideBar: React.FC = () => {
   const {
     sideBarOpen,
     openSidebarButtonTopPercent,
@@ -148,8 +139,6 @@ const SideBar: React.FC<SideBarProps> = ({
     sideBarButtonMovedRef.current = false;
   };
 
-  const searchRedditBarState = useSearchRedditBar();
-
   useEffect(() => {
     let subredditsInSideBarToSet = subredditsToShowInSideBar;
     const subredditListsInSideBarToSet = subredditLists.filter((list) => {
@@ -231,15 +220,7 @@ const SideBar: React.FC<SideBarProps> = ({
         } `}
       >
         <div className="side-bar-search-bar">
-          <SearchRedditBarContext.Provider
-            value={{
-              ...searchRedditBarState,
-              onFocus: onRedditSearchBarFocus,
-              onBlur: onRedditSearchBarBlur,
-            }}
-          >
-            <SearchRedditBar />
-          </SearchRedditBarContext.Provider>
+          <SearchRedditBar />
         </div>
 
         <hr className="hr" />

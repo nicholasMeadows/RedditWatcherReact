@@ -34,7 +34,6 @@ const PostRowPage: FC = () => {
   // const { postRowsToShowInView } = useContext(AppConfigStateContext);
   const postRowsDivRef = useRef<HTMLDivElement>(null);
   const postRowPageRef = useRef<HTMLDivElement>(null);
-  const redditSearchBarFocused = useRef(false);
 
   const [scrollBarWidth, setScrollBarWidth] = useState(0);
   const { isGetPostLoopPaused } = useGetPostLoopPaused();
@@ -45,13 +44,9 @@ const PostRowPage: FC = () => {
   }, [postRowsDivRef, postRows]);
 
   useEffect(() => {
-    const postRowPage = postRowPageRef.current;
-    if (postRowPage === null) {
-      return;
-    }
-    const documentKeyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
+    const keyUpEvent = (keyboardEvent: globalThis.KeyboardEvent) => {
       const key = keyboardEvent.key;
-      if (key == " " && !redditSearchBarFocused.current) {
+      if (key == " ") {
         postRowPageDispatch({
           type: PostRowPageActionType.SET_PLAY_PAUSE_BUTTON_IS_CLICKED,
           payload: !playPauseButtonIsClicked,
@@ -59,9 +54,9 @@ const PostRowPage: FC = () => {
       }
     };
 
-    postRowPage.addEventListener("keyup", documentKeyUpEvent);
+    window.addEventListener("keyup", keyUpEvent);
     return () => {
-      postRowPage.removeEventListener("keyup", documentKeyUpEvent);
+      window.removeEventListener("keyup", keyUpEvent);
     };
   }, [playPauseButtonIsClicked, postRowPageDispatch]);
 
@@ -81,14 +76,7 @@ const PostRowPage: FC = () => {
               right: `${scrollBarWidth}px`,
             }}
           >
-            <SideBar
-              onRedditSearchBarFocus={() =>
-                (redditSearchBarFocused.current = true)
-              }
-              onRedditSearchBarBlur={() =>
-                (redditSearchBarFocused.current = false)
-              }
-            />
+            <SideBar />
           </div>
           <div
             className="post-rows-div"

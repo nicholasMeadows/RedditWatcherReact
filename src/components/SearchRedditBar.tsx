@@ -1,58 +1,58 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import useSearchReddit from "../hook/use-search-reddit.ts";
-import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
-import { AppConfigStateContext } from "../context/app-config-context.ts";
-import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 import { RedditServiceDispatchContext } from "../context/reddit-service-context.ts";
-import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
+import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
+import { AppConfigStateContext } from "../context/app-config-context.ts";
+import {
+  SearchRedditBarContext,
+  SearchRedditBarDispatchContext,
+} from "../context/search-reddit-bar-context.ts";
+import { SearchRedditBarActionType } from "../reducer/search-reddit-bar-reducer.ts";
+import useSearchReddit from "../hook/use-search-reddit.ts";
 
 const SearchRedditBar: React.FC = () => {
-  const darkmode = useContext(AppConfigStateContext).darkMode;
-  const {
-    searchResultsOpen,
-    setSearchResultsOpen,
-    darkmodeOverride,
-    onFocus,
-    onBlur,
-  } = useContext(SearchRedditBarContext);
+  const { darkMode } = useContext(AppConfigStateContext);
+  const { searchResults, searchResultsOpen } = useContext(
+    SearchRedditBarContext
+  );
+  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
+  const redditServiceDispatch = useContext(RedditServiceDispatchContext);
+  const searchRedditBarDispatch = useContext(SearchRedditBarDispatchContext);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const { searchResults, clearSearchResults, subOrUnSubFromSubreddit } =
-    useSearchReddit(searchInputRef);
+
+  const { subOrUnSubFromSubreddit } = useSearchReddit(
+    searchResults,
+    searchInputRef
+  );
+
   const [
     expandCollapseSearchResultsImgSrc,
     setExpandCollapseSearchResultsImgSrc,
   ] = useState("");
   const [clearSearchInputImgSrc, setClearSearchInputImgSrc] = useState("");
 
-  const contextMenuDispatch = useContext(ContextMenuDispatchContext);
-
-  const redditServiceDispatch = useContext(RedditServiceDispatchContext);
-
   useEffect(() => {
-    let useDarkVersion = false;
-    if (darkmodeOverride == undefined) {
-      useDarkVersion = darkmode;
-    } else {
-      useDarkVersion = darkmodeOverride;
-    }
-
-    const lightDark = useDarkVersion ? "dark" : "light";
+    const lightDark = darkMode ? "dark" : "light";
     const expandCollapseImgSrc = `assets/left_chevron_${lightDark}_mode.png`;
     const clearSearchInputImgSrc = `assets/x_close_${lightDark}_mode.png`;
 
     setExpandCollapseSearchResultsImgSrc(expandCollapseImgSrc);
     setClearSearchInputImgSrc(clearSearchInputImgSrc);
-  }, [darkmode, darkmodeOverride]);
+  }, [darkMode]);
 
   return (
-    <div className="reddit-search-bar" onFocus={onFocus} onBlur={onBlur}>
+    <div className="reddit-search-bar" /*onFocus={onFocus} onBlur={onBlur}*/>
       <div className="reddit-search-input-wrapper">
         <input
           ref={searchInputRef}
           type="text"
           className="reddit-search-input"
           placeholder="Search Reddit"
+          onKeyUp={(event) => {
+            event.stopPropagation();
+            event.preventDefault();
+          }}
         />
 
         <div className="reddit-search-bar-control-imgs-div">
@@ -66,7 +66,10 @@ const SearchRedditBar: React.FC = () => {
                 : "expand-search-results-img"
             }`}
             onClick={() => {
-              setSearchResultsOpen(!searchResultsOpen);
+              searchRedditBarDispatch({
+                type: SearchRedditBarActionType.SET_SEARCH_RESULTS_OPEN,
+                payload: !searchResultsOpen,
+              });
             }}
           />
           <img
@@ -82,9 +85,15 @@ const SearchRedditBar: React.FC = () => {
               if (searchInputRef.current !== null) {
                 searchInputRef.current.value = "";
               }
-              setSearchResultsOpen(false);
+              searchRedditBarDispatch({
+                type: SearchRedditBarActionType.SET_SEARCH_RESULTS_OPEN,
+                payload: false,
+              });
               setTimeout(() => {
-                clearSearchResults();
+                searchRedditBarDispatch({
+                  type: SearchRedditBarActionType.SET_SEARCH_RESULTS,
+                  payload: [],
+                });
               }, 200);
             }}
           />
@@ -101,13 +110,15 @@ const SearchRedditBar: React.FC = () => {
                 ).getBoundingClientRect().height
           }px)`,
           maxHeight: `calc( 100vh - ${
-            searchInputRef.current == undefined
-              ? "100vh"
-              : `${
-                  (
-                    searchInputRef.current as unknown as HTMLDivElement
-                  ).getBoundingClientRect().bottom
-                }px`
+            searchResultsOpen
+              ? searchInputRef.current == undefined
+                ? "100vh"
+                : `${
+                    (
+                      searchInputRef.current as unknown as HTMLDivElement
+                    ).getBoundingClientRect().bottom
+                  }px`
+              : "100vh"
           })`,
         }}
       >

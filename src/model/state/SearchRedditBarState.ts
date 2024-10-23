@@ -1,7 +1,6 @@
+import { SubredditAccountSearchResult } from "../SubredditAccountSearchResult.ts";
+
 export type SearchRedditBarState = {
+  searchResults: SubredditAccountSearchResult[];
   searchResultsOpen: boolean;
-  setSearchResultsOpen: (isOpen: boolean) => void;
-  darkmodeOverride?: boolean | undefined;
-  onFocus?: () => void;
-  onBlur?: () => void;
 };

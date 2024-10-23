@@ -6,8 +6,6 @@ import SearchRedditBar from "../components/SearchRedditBar";
 import SelectSubredditListMenuSortOptionEnum from "../model/config/enums/SelectSubredditListMenuSortOptionEnum.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum.ts";
-import SearchRedditBarContext from "../context/search-reddit-bar-context.ts";
-import useSearchRedditBar from "../hook/use-search-reddit-bar.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
 import {
   RedditListDispatchContext,
@@ -95,8 +93,6 @@ const ModifySubredditLists: React.FC = () => {
   const [subredditListUuidClicked, setSubredditListUuidClicked] = useState<
     string | undefined
   >(undefined);
-
-  const searchRedditBarState = useSearchRedditBar();
 
   let modifyListBoxTitle: string = "";
   let createUpdateButtonText = "";
@@ -210,9 +206,7 @@ const ModifySubredditLists: React.FC = () => {
           position: "relative",
         }}
       >
-        <SearchRedditBarContext.Provider value={searchRedditBarState}>
-          <SearchRedditBar />
-        </SearchRedditBarContext.Provider>
+        <SearchRedditBar />
         <div className="subredditListsExpander">
           {sortedSubredditLists.map((subredditList) => (
             <ModifySubredditListAccordion
