@@ -52,6 +52,14 @@ const SearchRedditBar: React.FC = () => {
           onKeyUp={(event) => {
             event.stopPropagation();
             event.preventDefault();
+            searchRedditBarDispatch({
+              type: SearchRedditBarActionType.SET_SEARCH_RESULTS,
+              payload: [],
+            });
+            searchRedditBarDispatch({
+              type: SearchRedditBarActionType.SET_SEARCH_RESULTS_OPEN,
+              payload: false,
+            });
           }}
         />
 
