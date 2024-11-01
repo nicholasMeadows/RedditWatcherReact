@@ -320,6 +320,7 @@ const setSubredditListSelected = (
 
   const updatedLists = [...state.subredditLists];
   updatedLists[foundListIndex] = updatedList;
+  saveSubredditLists(updatedLists);
   return {
     ...state,
     subredditLists: updatedLists,
