@@ -7,6 +7,7 @@ import {
   MODIFY_SUBREDDIT_LISTS_ROUTE,
   MODIFY_SUBREDDIT_QUEUE_ROUTE,
   NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT,
+  NOT_FOUND_404,
   POST_CARD_GAP_EM,
   POST_ROW_ROUTE,
   POST_ROW_SCROLL_BTN_WIDTH_EM,
@@ -39,6 +40,7 @@ import RedditServiceContextProvider from "../context/provider/reddit-service-con
 import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
 import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
+import NotFound from "./NotFound.tsx";
 
 const RouterView: React.FC = () => {
   const location = useLocation();
@@ -216,6 +218,7 @@ const RouterView: React.FC = () => {
                     path={MODIFY_SUBREDDIT_QUEUE_ROUTE}
                     element={<ModifySubredditQueue />}
                   />
+                  <Route path={NOT_FOUND_404} element={<NotFound />} />
                 </Routes>
               </div>
             </div>

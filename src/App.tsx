@@ -1,6 +1,4 @@
-import { HashRouter } from "react-router-dom";
-
-/* Theme variables */
+import { HashRouter } from "react-router-dom"; /* Theme variables */
 import "./theme/app-initialization.scss";
 import "./theme/app-notifications.scss";
 import "./theme/app-notification.scss";
@@ -24,6 +22,7 @@ import AppConfigContextProvider from "./context/provider/app-config-context-prov
 import ContextMenuContextProvider from "./context/provider/context-menu-context-provider.tsx";
 import { PostRowsContextProvider } from "./context/provider/post-rows-context-provider.tsx";
 import SearchRedditBarContextProvider from "./context/provider/search-reddit-bar-context-provider.tsx";
+import NodeRedProvider from "./context/provider/node-red-provider.tsx";
 
 const App: React.FC = () => {
   const [rootFontSize, rootFontSizeDispatch] = useState(0);
@@ -39,7 +38,9 @@ const App: React.FC = () => {
               }}
             >
               <SearchRedditBarContextProvider>
-                <RouterView />
+                <NodeRedProvider>
+                  <RouterView />
+                </NodeRedProvider>
               </SearchRedditBarContextProvider>
             </RootFontSizeContext.Provider>
           </PostRowsContextProvider>

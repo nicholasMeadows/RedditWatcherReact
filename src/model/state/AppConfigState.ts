@@ -12,4 +12,5 @@ export interface AppConfigState extends AppConfig {
     | string
     | undefined;
   getPostRowIterationTimeValidationError: string | undefined;
+  nodeRedUrlValidationError: string | undefined;
 }

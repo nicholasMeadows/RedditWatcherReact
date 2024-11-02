@@ -67,6 +67,7 @@ export enum AppConfigActionType {
   SET_POST_CONVERTER_FILTER_OPTION_REDDIT_GALLERIES = "SET_POST_CONVERTER_FILTER_OPTION_REDDIT_GALLERIES",
   SET_GET_POST_ROW_ITERATION_TIME = "SET_GET_POST_ROW_ITERATION_TIME",
   CLEAR_GET_POST_ROW_ITERATION_TIME_VALIDATION_ERROR = "CLEAR_GET_POST_ROW_ITERATION_TIME_VALIDATION_ERROR",
+  SET_NODE_RED_URL = "SET_NODE_RED_URL",
 }
 
 export type AppConfigActionStringPayload = {
@@ -78,7 +79,8 @@ export type AppConfigActionStringPayload = {
     | AppConfigActionType.CLEAR_AUTO_SCROLL_POST_ROW_RATE_SECONDS_FOR_SINGLE_POST_CARD_VALIDATION_ERROR
     | AppConfigActionType.CLEAR_CONCAT_REDDIT_URL_MAX_LENGTH_VALIDATION_ERROR
     | AppConfigActionType.CLEAR_POSTS_TO_SHOW_IN_ROW_VALIDATION_ERROR
-    | AppConfigActionType.CLEAR_POST_ROWS_TO_SHOW_IN_VIEW_VALIDATION_ERROR;
+    | AppConfigActionType.CLEAR_POST_ROWS_TO_SHOW_IN_VIEW_VALIDATION_ERROR
+    | AppConfigActionType.SET_NODE_RED_URL;
   payload: string;
 };
 export type AppConfigActionSubredditSourceOptionEnumPayload = {
@@ -269,6 +271,8 @@ export default function AppConfigReducer(
       return setGetPostRowIterationTime(state, action);
     case AppConfigActionType.CLEAR_GET_POST_ROW_ITERATION_TIME_VALIDATION_ERROR:
       return clearGetPostRowIterationTimeValidationError(state);
+    case AppConfigActionType.SET_NODE_RED_URL:
+      return setNodeRedUrl(state, action);
     default:
       return state;
   }
@@ -799,6 +803,24 @@ const clearGetPostRowIterationTimeValidationError = (
     ...state,
     getPostRowIterationTimeValidationError: undefined,
   };
+};
+
+const setNodeRedUrl = (
+  state: AppConfigState,
+  action: AppConfigActionStringPayload
+): AppConfigState => {
+  const input = action.payload;
+  const validationError = ValidationUtil.validateIpAddressWithPortAndHttp(
+    "Node red url",
+    input
+  );
+  const updatedState = { ...state };
+  updatedState.nodeRedUrlValidationError = validationError;
+  updatedState.nodeRedUrl = input;
+  if (validationError === undefined) {
+    saveConfig(updatedState);
+  }
+  return updatedState;
 };
 
 const validateAutoScrollPostRowRateSecondsForSinglePostCardField = (

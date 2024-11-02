@@ -51,7 +51,7 @@ const defaultPostConvertFilteringOptionUrlsInRedgifsDomain = true;
 const defaultPostConvertFilteringOptionRedditGalleries = true;
 
 const defaultPostRowIterationTime = 10;
-
+const defaultNodeRedUrl = undefined;
 const initialState: AppConfigState = {
   redditCredentials: {
     username: "",
@@ -106,6 +106,8 @@ const initialState: AppConfigState = {
   },
   getPostRowIterationTime: defaultPostRowIterationTime,
   getPostRowIterationTimeValidationError: undefined,
+  nodeRedUrl: defaultNodeRedUrl,
+  nodeRedUrlValidationError: undefined,
 };
 
 type Props = {

@@ -32,6 +32,8 @@ const ApplicationSettings: React.FC = () => {
     postConverterFilteringOptions,
     getPostRowIterationTime,
     getPostRowIterationTimeValidationError,
+    nodeRedUrl,
+    nodeRedUrlValidationError,
   } = useContext(AppConfigStateContext);
 
   const {
@@ -463,6 +465,24 @@ const ApplicationSettings: React.FC = () => {
             }}
           />
         </div>
+      </div>
+      <hr />
+
+      <div className="settings-item flex-column">
+        <label className="select-label">Node red url</label>
+        <input
+          value={nodeRedUrl === undefined ? "" : nodeRedUrl}
+          className="input"
+          type="text"
+          onChange={(event) => {
+            console.log("Nicholas test");
+            appConfigDispatch({
+              type: AppConfigActionType.SET_NODE_RED_URL,
+              payload: event.target.value,
+            });
+          }}
+        />
+        <p className="settings-item-error">{nodeRedUrlValidationError}</p>
       </div>
       <hr />
     </div>

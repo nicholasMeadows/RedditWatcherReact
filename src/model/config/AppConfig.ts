@@ -34,4 +34,5 @@ export interface AppConfig {
   useInMemoryImagesAndGifs: boolean;
   postConverterFilteringOptions: PostConverterFilteringOptions;
   getPostRowIterationTime: number;
+  nodeRedUrl: string | undefined;
 }

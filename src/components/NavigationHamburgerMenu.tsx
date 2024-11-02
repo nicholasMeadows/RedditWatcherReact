@@ -6,6 +6,7 @@ import {
   MODIFY_SUBREDDIT_LISTS_ROUTE,
   MODIFY_SUBREDDIT_QUEUE_ROUTE,
   NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT,
+  NOT_FOUND_404,
   POST_ROW_ROUTE,
   REDDIT_SIGN_IN_ROUTE,
   REDDIT_SOURCE_SETTINGS_ROUTE,
@@ -95,6 +96,9 @@ const NavigationHamburgerMenu: React.FC = () => {
         break;
       case MODIFY_SUBREDDIT_QUEUE_ROUTE:
         pageName = "Modify Subreddit Queue";
+        break;
+      case NOT_FOUND_404:
+        pageName = "Not Found";
         break;
     }
 

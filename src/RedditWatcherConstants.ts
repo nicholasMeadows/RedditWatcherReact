@@ -15,6 +15,7 @@ export const SINGLE_POST_PAGE_POST_UUID_KEY = "postUuid";
 export const SINGLE_POST_PAGE_POST_ROW_UUID_KEY = "postRowUuid";
 export const MODIFY_SUBREDDIT_LISTS_ROUTE = "/modifysubredditlists";
 export const MODIFY_SUBREDDIT_QUEUE_ROUTE = "/modifysubredditqueue";
+export const NOT_FOUND_404 = "/notFound";
 export const NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT = "56px";
 
 export const MIN_CONCAT_REDDIT_URL_LENGTH = 1;
