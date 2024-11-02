@@ -7,9 +7,9 @@ import {
   useRef,
 } from "react";
 import { AppConfigStateContext } from "../app-config-context.ts";
-import NodeRedWebSocketPayload from "../../model/NodeRedWebSocketPayload.ts";
 import { useNavigate } from "react-router-dom";
 import { NOT_FOUND_404 } from "../../RedditWatcherConstants.ts";
+import NodeRedWebSocketPayload from "../../model/NodeRedWebSocketPayload.ts";
 
 type Props = {
   children: ReactNode;
@@ -39,6 +39,7 @@ const NodeRedProvider: FC<Props> = ({ children }) => {
     const webSocket = nodeRedWebSocketRef.current;
     if (webSocket !== undefined) {
       webSocket.close();
+      nodeRedWebSocketRef.current = undefined;
     }
   }, []);
 
@@ -66,6 +67,22 @@ const NodeRedProvider: FC<Props> = ({ children }) => {
       closeExistingWebSocket();
     };
   }, [closeExistingWebSocket, nodeRedUrl, openNodeRedWebSocket]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const nodeRedWebsocket = nodeRedWebSocketRef.current;
+      if (
+        nodeRedWebsocket === undefined ||
+        nodeRedWebsocket.readyState === WebSocket.CLOSED
+      ) {
+        console.log("Nicholas Test");
+        openNodeRedWebSocket();
+      }
+    }, 10000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [openNodeRedWebSocket]);
 
   return <>{children}</>;
 };
