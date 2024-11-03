@@ -155,6 +155,7 @@ const ContextMenu: React.FC = () => {
           className="context-menu-button"
           hidden={!showButtonControls.showOpenPost}
           onClick={() => {
+            console.log("Nicholas opening link", openPostPermaLink);
             window.open(openPostPermaLink);
             contextMenuDispatch({
               type: ContextMenuActionType.CLOSE_CONTEXT_MENU,
