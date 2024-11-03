@@ -14,7 +14,10 @@ import { AppConfigStateContext } from "../context/app-config-context.ts";
 import IndividualPostRowContext from "../context/individual-post-row-context.ts";
 import { PostCardContext } from "../context/post-card-context.ts";
 import PostCard from "../components/PostCard.tsx";
-import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
+import {
+  PostRowPageContext,
+  PostRowPageDispatchContext,
+} from "../context/post-row-page-context.ts";
 import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
 import { NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT } from "../RedditWatcherConstants.ts";
 
@@ -30,9 +33,8 @@ const PostRow: FC = () => {
     postSliderLeftTransitionTime,
     postCards,
     gottenWithSubredditSourceOption,
-    scrollY,
-    postRows,
   } = useContext(IndividualPostRowContext);
+  const { scrollY, postRows } = useContext(PostRowPageContext);
 
   const postRowDivRef = useRef<HTMLDivElement>(null);
   const postRowContentDivRef = useRef<HTMLDivElement>(null);

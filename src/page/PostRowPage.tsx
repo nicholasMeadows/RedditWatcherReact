@@ -100,8 +100,6 @@ const PostRowPage: FC = () => {
                   postCards: postRow.postCards,
                   gottenWithSubredditSourceOption:
                     postRow.gottenWithSubredditSourceOption,
-                  scrollY: scrollY,
-                  postRows: postRows,
                 }}
                 key={"post-row-" + postRow.postRowUuid}
               >
