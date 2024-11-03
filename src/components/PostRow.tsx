@@ -66,9 +66,10 @@ const PostRow: FC = () => {
     const navToolbarHeightPxNumber = parseInt(
       NAVIGATION_HAMBURGER_TOOLBAR_HEIGHT.replace("px", "")
     );
+
     setRenderPostRowContent(
-      postRowDivBoundingRec.top >= window.innerHeight ||
-        postRowDivBoundingRec.bottom <= navToolbarHeightPxNumber
+      postRowDivBoundingRec.top < window.innerHeight &&
+        postRowDivBoundingRec.bottom > navToolbarHeightPxNumber
     );
   }, [scrollY, setRenderPostRowContent, postRows]);
 
