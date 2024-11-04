@@ -22,6 +22,8 @@ import { RedditListStateContext } from "../context/reddit-list-context.ts";
 import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
 import { SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED } from "../RedditWatcherConstants.ts";
 import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
+import { SearchRedditBarDispatchContext } from "../context/search-reddit-bar-context.ts";
+import { SearchRedditBarActionType } from "../reducer/search-reddit-bar-reducer.ts";
 
 const SideBar: React.FC = () => {
   const {
@@ -35,6 +37,7 @@ const SideBar: React.FC = () => {
   const { darkMode } = useContext(AppConfigStateContext);
   const { showContextMenu } = useContext(ContextMenuStateContext);
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
+  const searchRedditBarDispatch = useContext(SearchRedditBarDispatchContext);
 
   const [listToFilterByUuid, setListToFilterByUuid] = useState<string>(
     SIDE_BAR_SUBREDDIT_LIST_FILTER_NOT_SELECTED
@@ -134,6 +137,10 @@ const SideBar: React.FC = () => {
       sideBarDispatch({
         type: SideBarActionType.SET_SIDE_BAR_OPEN,
         payload: !sideBarOpen,
+      });
+      searchRedditBarDispatch({
+        type: SearchRedditBarActionType.SET_SEARCH_RESULTS_OPEN,
+        payload: false,
       });
     }
     sideBarButtonMovedRef.current = false;
