@@ -264,7 +264,6 @@ const PostMediaElement: React.FC = () => {
                   left: `${imgLeft}%`,
                   top: `${imgTop}%`,
                   transform: `translate(-50%, -50%) scale(${imgScale})`,
-                  background: "blue",
                 }}
                 onMouseEnter={() => {
                   setShowPostCardInfo(postCardUuid);
