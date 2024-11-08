@@ -1,5 +1,4 @@
 import { Directory, Filesystem } from "@capacitor/filesystem";
-import { Buffer } from "buffer";
 import {
   CONFIG_DIR,
   CONFIG_FILE,
@@ -317,11 +316,11 @@ export async function saveSubredditLists(
 }
 
 function encode(config: string) {
-  return Buffer.from(config).toString("base64");
+  return btoa(config);
 }
 
 function decode(json: string) {
-  return Buffer.from(json, "base64").toString("ascii");
+  return atob(json);
 }
 
 async function checkForOrCreateConfigFolder() {

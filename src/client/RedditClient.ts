@@ -1,5 +1,4 @@
 import { CapacitorHttp, HttpResponse } from "@capacitor/core";
-import { Buffer } from "buffer";
 import { SubredditAccountSearchSeperateArrs } from "../model/SubredditAccountSearchSeperateArrs.ts";
 import RedditApiResponse from "../model/RedditApiResponse/RedditApiResponse.ts";
 import { T2 } from "../model/RedditApiResponse/Types/T2/T2.ts";
@@ -57,9 +56,7 @@ export default class RedditClient {
           password
         );
 
-      const encodedAuth = Buffer.from(`${clientId}:${clientSecret}`).toString(
-        "base64"
-      );
+      const encodedAuth = btoa(`${clientId}:${clientSecret}`);
 
       CapacitorHttp.post({
         url: url,
@@ -94,9 +91,7 @@ export default class RedditClient {
             return;
           }
           const tokenClaim = accessToken.split(".")[1];
-          const decodedClaim = Buffer.from(tokenClaim, "base64").toString(
-            "ascii"
-          );
+          const decodedClaim = atob(tokenClaim)
           const jwtClaim = JSON.parse(decodedClaim);
           accessTokenExpiration = jwtClaim["exp"];
           resolve();
