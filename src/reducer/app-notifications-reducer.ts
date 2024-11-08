@@ -1,5 +1,5 @@
 import { AppNotificationsState } from "../model/state/AppNotificationState.ts";
-import { AppNotification } from "../model/AppNotification.ts";
+import { AppNotificationModel } from "../model/AppNotificationModel.ts";
 import { v4 as uuidV4 } from "uuid";
 
 export enum AppNotificationsActionType {
@@ -43,7 +43,7 @@ const handleSubmitAppNotification = (
   state: AppNotificationsState,
   action: AppNotificationSubmitAction
 ): AppNotificationsState => {
-  const appNotification: AppNotification = {
+  const appNotification: AppNotificationModel = {
     displayTimeMS:
       action.payload.displayTimeMS === undefined
         ? 10000
@@ -69,7 +69,7 @@ const handleHideNotification = (
   if (notificationIndex === -1) {
     return state;
   }
-  const updatedNotification: AppNotification = {
+  const updatedNotification: AppNotificationModel = {
     ...state.appNotifications[notificationIndex],
     showNotification: false,
   };

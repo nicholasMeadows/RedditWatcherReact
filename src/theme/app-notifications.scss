@@ -7,8 +7,10 @@
   margin-left: 2em;
   margin-bottom: 0.7em;
   max-width: 50%;
+}
 
-  @media (max-width: 801px) {
+@media (max-width: 801px) {
+  .app-notification-root {
     left: 0;
     max-width: 100%;
   }

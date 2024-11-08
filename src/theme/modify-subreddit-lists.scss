@@ -19,8 +19,9 @@
   flex-direction: column;
   padding: 10px;
   z-index: 21;
-
-  @media (min-width: 801px) {
+}
+@media (min-width: 801px) {
+  .modify-list-box {
     top: 50%;
     right: 50%;
     transform: translate(50%, -50%);
@@ -129,7 +130,9 @@ div.active:after {
   flex-direction: column;
   margin-top: auto;
   /* tablet, landscape iPad, lo-res laptops ands desktops */
-  @media (min-width: 801px) {
+}
+@media (min-width: 801px) {
+  .button-box{
     flex-direction: row;
   }
 }

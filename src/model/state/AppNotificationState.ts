@@ -1,5 +1,5 @@
-import { AppNotification } from "../AppNotification.ts";
+import { AppNotificationModel } from "../AppNotificationModel.ts";
 
 export type AppNotificationsState = {
-  appNotifications: AppNotification[];
+  appNotifications: AppNotificationModel[];
 };

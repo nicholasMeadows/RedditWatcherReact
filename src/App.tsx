@@ -25,29 +25,29 @@ import SearchRedditBarContextProvider from "./context/provider/search-reddit-bar
 import NodeRedProvider from "./context/provider/node-red-provider.tsx";
 
 const App: React.FC = () => {
-  const [rootFontSize, rootFontSizeDispatch] = useState(0);
-  return (
-    <HashRouter>
-      <AppConfigContextProvider>
-        <ContextMenuContextProvider>
-          <PostRowsContextProvider>
-            <RootFontSizeContext.Provider
-              value={{
-                fontSize: rootFontSize,
-                rootFontSizeDispatch: rootFontSizeDispatch,
-              }}
-            >
-              <SearchRedditBarContextProvider>
-                <NodeRedProvider>
-                  <RouterView />
-                </NodeRedProvider>
-              </SearchRedditBarContextProvider>
-            </RootFontSizeContext.Provider>
-          </PostRowsContextProvider>
-        </ContextMenuContextProvider>
-      </AppConfigContextProvider>
-    </HashRouter>
-  );
+    const [rootFontSize, rootFontSizeDispatch] = useState(0);
+    return (
+        <HashRouter>
+            <AppConfigContextProvider>
+                <ContextMenuContextProvider>
+                    <PostRowsContextProvider>
+                        <RootFontSizeContext.Provider
+                            value={{
+                                fontSize: rootFontSize,
+                                rootFontSizeDispatch: rootFontSizeDispatch,
+                            }}
+                        >
+                            <SearchRedditBarContextProvider>
+                                <NodeRedProvider>
+                                    <RouterView />
+                                </NodeRedProvider>
+                            </SearchRedditBarContextProvider>
+                        </RootFontSizeContext.Provider>
+                    </PostRowsContextProvider>
+                </ContextMenuContextProvider>
+            </AppConfigContextProvider>
+        </HashRouter>
+    );
 };
 
 export default App;

@@ -6,13 +6,13 @@ import {
   useEffect,
   useRef,
 } from "react";
-import { AppNotification } from "../model/AppNotification.ts";
+import { AppNotificationModel } from "../model/AppNotificationModel.ts";
 import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
 import { AppNotificationsActionType } from "../reducer/app-notifications-reducer.ts";
 
 const NOTIFICATION_FADE_TIME_SECONDS = 1;
 type Props = {
-  appNotification: AppNotification;
+  appNotification: AppNotificationModel;
 };
 const AppNotification: FC<Props> = ({ appNotification }) => {
   const appNotificationsDispatch = useContext(AppNotificationsDispatchContext);

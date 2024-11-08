@@ -3,7 +3,7 @@ import { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "com.nicholas.redditWatcher",
   appName: "Reddit Watcher",
-  webDir: "dist",
+  webDir: "dist/react-app",
   server: {
     androidScheme: "https",
   },
