@@ -69,6 +69,7 @@ pipeline {
                     releaseId=$(echo "$releaseResponseBody" | sed -n -e \'s/"id":\\ \\([0-9]\\+\\),/\\1/p\' | head -n 1 | sed \'s/[[:blank:]]//g\')
 
                     curl -XPOST -H "Authorization:token $REDDIT_WATCHER_GITHUB_PUBLISH_CRED" -H "Content-Type:application/octet-stream" -T "./dist/electron-builder-dist/reddit-watcher-$version.exe" https://uploads.github.com/repos/nicholasMeadows/RedditWatcherReact/releases/$releaseId/assets?name=reddit-watcher-$version.exe
+                    curl -XPOST -H "Authorization:token $REDDIT_WATCHER_GITHUB_PUBLISH_CRED" -H "Content-Type:application/octet-stream" -T "./dist/electron-builder-dist/latest.yml" https://uploads.github.com/repos/nicholasMeadows/RedditWatcherReact/releases/$releaseId/assets?name=latest.yml
                     curl -XPOST -H "Authorization:token $REDDIT_WATCHER_GITHUB_PUBLISH_CRED" -H "Content-Type:application/octet-stream" -T "./android/app/build/outputs/apk/release/app-release.apk" https://uploads.github.com/repos/nicholasMeadows/RedditWatcherReact/releases/$releaseId/assets?name=reddit-watcher-$version.apk
                     curl -L -X PATCH -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $REDDIT_WATCHER_GITHUB_PUBLISH_CRED" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/nicholasMeadows/RedditWatcherReact/releases/$releaseId -d \"{\\"prerelease\\":false, \\"make_latest\\": true}\"
                 '''

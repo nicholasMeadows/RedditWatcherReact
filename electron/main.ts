@@ -2,6 +2,7 @@ import { app, BrowserWindow, globalShortcut, ipcMain, session, IpcMainInvokeEven
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import * as fs from "fs";
+import {autoUpdater, type AppUpdater } from 'electron-updater';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // The built directory structure
@@ -237,3 +238,5 @@ const saveSubredditLists = async (event: IpcMainInvokeEvent, encodedContent: str
   );
   fs.writeFileSync(subredditListsFilePath, encodedContent);
 };
+
+autoUpdater.checkForUpdatesAndNotify();
