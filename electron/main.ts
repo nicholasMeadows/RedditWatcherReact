@@ -3,6 +3,9 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import * as fs from "fs";
 import AutoUpdater from "./auto-updater.ts";
+import WindowPositionSizeManager, {
+  WindowPositionSizeConfig
+} from "./window-position-size-manager.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // The built directory structure
@@ -27,14 +30,26 @@ let win: BrowserWindow | null
 
 const autoUpdater = new AutoUpdater();
 
-function createWindow() {
+function createWindow(windowPositionSizeConfig: WindowPositionSizeConfig | undefined) {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },
+    show: false
   })
 
+  if(windowPositionSizeConfig !== undefined) {
+    const size = windowPositionSizeConfig.size;
+    const position = windowPositionSizeConfig.position;
+    win.setSize(size.width, size.height);
+    win.setPosition(position.x, position.y);
+    if(windowPositionSizeConfig.isMaximized) {
+      win.maximize();
+    }
+  }
+
+  win.show();
   if(app.isPackaged) {
     win.removeMenu();
   }
@@ -50,6 +65,12 @@ function createWindow() {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
   }
+
+  win.on("close", () => {
+    if(win != null) {
+      new WindowPositionSizeManager().saveWindowConfig(win);
+    }
+  });
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -67,11 +88,14 @@ app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow()
+    const windowConfig = new WindowPositionSizeManager().getWindowConfig();
+    createWindow(windowConfig);
   }
 })
 setupIpcHandlers();
-app.whenReady().then(createWindow).then(() => {
+app.whenReady().then(() => {
+  const windowConfig = new WindowPositionSizeManager().getWindowConfig();
+  createWindow(windowConfig);
   autoUpdater.initAutoUpdater();
   setupGlobalShortcut()
   setupOriginHeaderRemoval();
