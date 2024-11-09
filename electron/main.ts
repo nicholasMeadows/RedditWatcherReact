@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import * as fs from "fs";
 import {autoUpdater } from 'electron-updater';
+import AutoUpdater from "./auto-updater.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // The built directory structure
@@ -24,6 +25,8 @@ export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'react-app')
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 'public') : RENDERER_DIST
 
 let win: BrowserWindow | null
+
+const autoUpdater = new AutoUpdater();
 
 function createWindow() {
   win = new BrowserWindow({
@@ -54,6 +57,7 @@ function createWindow() {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
+  autoUpdater.destroy();
   if (process.platform !== 'darwin') {
     app.quit()
     win = null
@@ -69,6 +73,7 @@ app.on('activate', () => {
 })
 setupIpcHandlers();
 app.whenReady().then(createWindow).then(() => {
+  autoUpdater.initAutoUpdater();
   setupGlobalShortcut()
   setupOriginHeaderRemoval();
 })
@@ -238,10 +243,3 @@ const saveSubredditLists = async (event: IpcMainInvokeEvent, encodedContent: str
   );
   fs.writeFileSync(subredditListsFilePath, encodedContent);
 };
-
-autoUpdater.autoInstallOnAppQuit = false;
-autoUpdater.autoRunAppAfterInstall = true;
-autoUpdater.checkForUpdatesAndNotify({
-  title:"Update available",
-  body:"There is a new update available"
-})
