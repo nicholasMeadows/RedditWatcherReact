@@ -239,4 +239,7 @@ const saveSubredditLists = async (event: IpcMainInvokeEvent, encodedContent: str
   fs.writeFileSync(subredditListsFilePath, encodedContent);
 };
 
-autoUpdater.checkForUpdatesAndNotify();
+autoUpdater.checkForUpdatesAndNotify({
+  title:"Update available",
+  body:"There is a new update available"
+});
