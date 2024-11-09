@@ -2,7 +2,6 @@ import { app, BrowserWindow, globalShortcut, ipcMain, session, IpcMainInvokeEven
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import * as fs from "fs";
-import {autoUpdater } from 'electron-updater';
 import AutoUpdater from "./auto-updater.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
