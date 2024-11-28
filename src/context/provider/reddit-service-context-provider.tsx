@@ -21,6 +21,7 @@ const RedditServiceContextProvider: FC<Props> = ({ children }) => {
     redditAuthenticationStatus: RedditAuthenticationStatus.NOT_YET_AUTHED,
     subredditQueue: [],
     secondsTillGettingNextPosts: SECONDS_BETWEEN_GET_POST_ROWS,
+    isGettingPosts: false
   };
   const [redditServiceState, dispatch] = useReducer(
     RedditServiceReducer,
