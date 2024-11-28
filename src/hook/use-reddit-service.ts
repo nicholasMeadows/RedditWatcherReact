@@ -1,27 +1,21 @@
-import { useCallback, useContext, useEffect, useRef } from "react";
+import {useCallback, useContext, useEffect, useRef} from "react";
 import RedditClient from "../client/RedditClient.ts";
-import { AppConfigStateContext } from "../context/app-config-context.ts";
-import {
-  RedditServiceDispatchContext,
-  RedditServiceStateContext,
-} from "../context/reddit-service-context.ts";
-import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
-import { Subreddit } from "../model/Subreddit/Subreddit.ts";
+import {AppConfigStateContext} from "../context/app-config-context.ts";
+import {RedditServiceDispatchContext, RedditServiceStateContext,} from "../context/reddit-service-context.ts";
+import {RedditServiceActions} from "../reducer/reddit-service-reducer.ts";
+import {Subreddit} from "../model/Subreddit/Subreddit.ts";
 import {
   GetPostsFromSubredditResponse,
   GetPostsFromSubredditState,
 } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
-import { RedditListStateContext } from "../context/reddit-list-context.ts";
-import { SideBarDispatchContext } from "../context/side-bar-context.ts";
+import {RedditListStateContext} from "../context/reddit-list-context.ts";
+import {SideBarDispatchContext} from "../context/side-bar-context.ts";
 import RedditService from "../service/RedditService.ts";
-import { AppNotificationsDispatchContext } from "../context/app-notifications-context.ts";
-import { AppNotificationsActionType } from "../reducer/app-notifications-reducer.ts";
-import { SideBarActionType } from "../reducer/side-bar-reducer.ts";
-import {
-  PostRowPageContext,
-  PostRowPageDispatchContext,
-} from "../context/post-row-page-context.ts";
-import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
+import {AppNotificationsDispatchContext} from "../context/app-notifications-context.ts";
+import {AppNotificationsActionType} from "../reducer/app-notifications-reducer.ts";
+import {SideBarActionType} from "../reducer/side-bar-reducer.ts";
+import {PostRowPageContext, PostRowPageDispatchContext,} from "../context/post-row-page-context.ts";
+import {PostRowPageActionType} from "../reducer/post-row-page-reducer.ts";
 
 export default function useRedditService() {
   const {
@@ -170,6 +164,10 @@ export default function useRedditService() {
     getPostsFromSubredditResponse: GetPostsFromSubredditResponse;
     getPostsFromSubredditState: GetPostsFromSubredditState;
   }> => {
+    redditServiceDispatch({
+      type: RedditServiceActions.SET_CURRENTLY_GETTING_POSTS,
+      payload: true
+    });
     const getPostsFromSubredditState: GetPostsFromSubredditState = JSON.parse(
       JSON.stringify(currentGetPostsFromSubredditValues.current)
     );
@@ -186,9 +184,14 @@ export default function useRedditService() {
             getPostsFromSubredditState: getPostsFromSubredditState,
           });
         })
-        .catch((err) => reject(err));
+        .catch((err) => reject(err)).finally(() => {
+          redditServiceDispatch({
+            type: RedditServiceActions.SET_CURRENTLY_GETTING_POSTS,
+            payload: false
+          });
+        });
     });
-  }, [redditCredentials]);
+  }, [redditCredentials, redditServiceDispatch]);
 
   const applyUpdatedStateValues = useCallback(
     (

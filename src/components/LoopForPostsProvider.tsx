@@ -22,7 +22,7 @@ type Props = {
 
 const LoopForPostsProvider: FC<Props> = ({ children }) => {
   const redditServiceDispatch = useContext(RedditServiceDispatchContext);
-  const { secondsTillGettingNextPosts } = useContext(RedditServiceStateContext);
+  const { secondsTillGettingNextPosts, isGettingPosts } = useContext(RedditServiceStateContext);
   const { getPostsForPostRow, handleGottenPosts } = useRedditService();
   const { isGetPostLoopPaused } = useGetPostLoopPaused();
 
@@ -80,13 +80,12 @@ const LoopForPostsProvider: FC<Props> = ({ children }) => {
     if (secondsTillGettingNextPosts === 0) {
       getPostRowAndResetCounter();
     }
-  }, [
-    getPostRow,
-    getPostRowIterationTime,
-    redditServiceDispatch,
-    secondsTillGettingNextPosts,
-  ]);
-  onCountdownClickRef.current = getPostRowAndResetCounter;
+  }, [getPostRow, getPostRowAndResetCounter, getPostRowIterationTime, redditServiceDispatch, secondsTillGettingNextPosts]);
+  onCountdownClickRef.current = () => {
+    if(!isGettingPosts) {
+      getPostRowAndResetCounter()
+    }
+  };
   return <>{children}</>;
 };
 export default LoopForPostsProvider;

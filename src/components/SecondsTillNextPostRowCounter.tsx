@@ -4,7 +4,7 @@ import { RedditServiceStateContext } from "../context/reddit-service-context.ts"
 import { CountdownTimerOnCLickContext } from "../page/PostRowPage.tsx";
 
 const SecondsTillNextPostRowCounter: FC = () => {
-  const { secondsTillGettingNextPosts } = useContext(RedditServiceStateContext);
+  const { secondsTillGettingNextPosts, isGettingPosts } = useContext(RedditServiceStateContext);
   const { onCountdownClickRef } = useContext(CountdownTimerOnCLickContext);
 
   const [mouseOverCounter, setMouseOverCounter] = useState(false);
@@ -17,10 +17,18 @@ const SecondsTillNextPostRowCounter: FC = () => {
       onMouseEnter={() => setMouseOverCounter(true)}
       onMouseLeave={() => setMouseOverCounter(false)}
     >
-      {!mouseOverCounter && (
-        <p>{`Getting next posts in ${secondsTillGettingNextPosts} seconds`}</p>
-      )}
-      {mouseOverCounter && <p>{`Get post row now?`}</p>}
+        {(() => {
+            if(mouseOverCounter) {
+                if(isGettingPosts) {
+                    return <p>{`Already getting posts...`}</p>;
+                } else {
+                    return <p>{`Get post row now?`}</p>;
+                }
+
+            } else {
+                return <p>{`Getting next posts in ${secondsTillGettingNextPosts} seconds`}</p>;
+            }
+        })()}
     </div>
   );
 };

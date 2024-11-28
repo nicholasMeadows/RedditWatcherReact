@@ -14,6 +14,7 @@ export enum RedditServiceActions {
   MOVE_SUBREDDIT_QUEUE_ITEM_FORWARD = "MOVE_SUBREDDIT_QUEUE_ITEM_FORWARD",
   MOVE_SUBREDDIT_QUEUE_ITEM_BACKWARD = "MOVE_SUBREDDIT_QUEUE_ITEM_BACKWARD",
   SET_SECONDS_TILL_GETTING_NEXT_POSTS = "SET_SECONDS_TILL_GETTING_NEXT_POSTS",
+  SET_CURRENTLY_GETTING_POSTS = "SET_CURRENTLY_GETTING_POSTS"
 }
 
 export type RedditServiceAddSubredditsToMasterSubscribedList = {
@@ -52,6 +53,11 @@ export type MoveSubredditQueueItemAction = {
     | RedditServiceActions.MOVE_SUBREDDIT_QUEUE_ITEM_FORWARD;
   payload: SubredditQueueItem;
 };
+
+export type SetIsGettingPostsAction = {
+  type: RedditServiceActions.SET_CURRENTLY_GETTING_POSTS;
+  payload: boolean;
+}
 export default function RedditServiceReducer(
   state: RedditServiceState,
   action:
@@ -61,6 +67,7 @@ export default function RedditServiceReducer(
     | AddItemToSubredditQueueAction
     | RemoveSubredditQueueItemActionAction
     | MoveSubredditQueueItemAction
+  | SetIsGettingPostsAction
 ) {
   switch (action.type) {
     case RedditServiceActions.ADD_TO_MASTER_SUBSCRIBED_SUBREDDIT_LIST:
@@ -81,6 +88,7 @@ export default function RedditServiceReducer(
       return moveSubredditQueueItemForward(state, action);
     case RedditServiceActions.MOVE_SUBREDDIT_QUEUE_ITEM_BACKWARD:
       return moveSubredditQueueItemBackwards(state, action);
+    case RedditServiceActions.SET_CURRENTLY_GETTING_POSTS: return setGettingPosts(state, action);
     default:
       return state;
   }
@@ -212,5 +220,14 @@ const moveSubredditQueueItemBackwards = (
   return {
     ...state,
     subredditQueue: updatedQueue,
+  };
+};
+const setGettingPosts = (
+    state: RedditServiceState,
+    action: SetIsGettingPostsAction
+): RedditServiceState => {
+  return {
+    ...state,
+    isGettingPosts: action.payload
   };
 };

@@ -5,7 +5,7 @@ import {
   RedditServiceActionNumberPayload,
   RedditServiceAddSubredditsToMasterSubscribedList,
   RedditServiceSetAuthenticationStatus,
-  RemoveSubredditQueueItemActionAction,
+  RemoveSubredditQueueItemActionAction, SetIsGettingPostsAction,
 } from "../../../reducer/reddit-service-reducer.ts";
 
 type RedditServiceDispatch = Dispatch<
@@ -15,5 +15,6 @@ type RedditServiceDispatch = Dispatch<
   | AddItemToSubredditQueueAction
   | RemoveSubredditQueueItemActionAction
   | MoveSubredditQueueItemAction
+  | SetIsGettingPostsAction
 >;
 export default RedditServiceDispatch;
