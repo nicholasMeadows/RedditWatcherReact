@@ -11,10 +11,10 @@ import {
   RedditServiceStateContext,
 } from "../context/reddit-service-context.ts";
 import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
-import useRedditService from "../hook/use-reddit-service.ts";
 import useGetPostLoopPaused from "../hook/use-get-post-loop-paused.ts";
 import { AppConfigStateContext } from "../context/app-config-context.ts";
 import { CountdownTimerOnCLickContext } from "../page/PostRowPage.tsx";
+import useReddit from "../hook/use-reddit.ts";
 
 type Props = {
   children: ReactNode;
@@ -23,7 +23,7 @@ type Props = {
 const LoopForPostsProvider: FC<Props> = ({ children }) => {
   const redditServiceDispatch = useContext(RedditServiceDispatchContext);
   const { secondsTillGettingNextPosts, isGettingPosts } = useContext(RedditServiceStateContext);
-  const { getPostsForPostRow, handleGottenPosts } = useRedditService();
+  const { getPostsForPostRow, handleGottenPosts } = useReddit();
   const { isGetPostLoopPaused } = useGetPostLoopPaused();
 
   const { getPostRowIterationTime } = useContext(AppConfigStateContext);

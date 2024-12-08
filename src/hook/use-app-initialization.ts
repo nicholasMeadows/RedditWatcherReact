@@ -23,7 +23,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState.ts";
 import RedditClient from "../client/RedditClient.ts";
-import useRedditService from "./use-reddit-service.ts";
 import {
   RedditServiceDispatchContext,
   RedditServiceStateContext,
@@ -34,6 +33,7 @@ import {
 } from "../model/converter/GetPostsFromSubredditStateConverter.ts";
 import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
 import { PostRowPageContext } from "../context/post-row-page-context.ts";
+import useReddit from "./use-reddit.ts";
 
 enum AppInitializationStepEnum {
   NOT_STARTED,
@@ -62,7 +62,7 @@ export function useAppInitialization() {
   const { subredditListsLoaded } = useContext(RedditListStateContext);
   const { redditAuthenticationStatus } = useContext(RedditServiceStateContext);
   const redditServiceDispatch = useContext(RedditServiceDispatchContext);
-  const redditService = useRedditService();
+  const {loadSubscribedSubreddits, getPostsForPostRow, handleGottenPosts} = useReddit();
 
   const { masterSubscribedSubredditList } = useContext(
     RedditServiceStateContext
@@ -169,14 +169,14 @@ export function useAppInitialization() {
     ) {
       navigate(REDDIT_SIGN_IN_ROUTE);
     }
-  }, [appConfig, navigate, redditAuthenticationStatus]);
+  }, [appConfig, navigate, redditAuthenticationStatus, redditServiceDispatch]);
 
   const fetchSubscribedSubreddits = useCallback(async () => {
     setText("Loading Subscribed Subreddits...");
-    await redditService.loadSubscribedSubreddits(appConfig.redditApiItemLimit);
+    await loadSubscribedSubreddits(appConfig.redditApiItemLimit);
     appInitializationStep.current =
       AppInitializationStepEnum.SUBSCRIBED_SUBREDDITS_LOADED;
-  }, [appConfig.redditApiItemLimit, redditService]);
+  }, [appConfig.redditApiItemLimit, loadSubscribedSubreddits]);
 
   const getFirstPosts = useCallback(async () => {
     console.log("App Initialization - getFirstPosts");
@@ -185,7 +185,7 @@ export function useAppInitialization() {
     do {
       try {
         const { getPostsFromSubredditResponse, getPostsFromSubredditState } =
-          await redditService.getPostsForPostRow();
+          await getPostsForPostRow();
         getPostsResponse = getPostsFromSubredditResponse;
         initialState = getPostsFromSubredditState;
       } catch (e) {
@@ -209,9 +209,9 @@ export function useAppInitialization() {
       getPostsResponse.fromSubreddits !== undefined &&
       initialState !== undefined
     ) {
-      redditService.handleGottenPosts(initialState, getPostsResponse);
+      handleGottenPosts(initialState, getPostsResponse);
     }
-  }, [redditService]);
+  }, [getPostsForPostRow, handleGottenPosts]);
 
   useEffect(() => {
     const step = appInitializationStep.current;
@@ -265,7 +265,6 @@ export function useAppInitialization() {
     navigate,
     postRows.length,
     redditAuthenticationStatus,
-    redditService,
     subredditListsLoaded,
   ]);
 

@@ -2,6 +2,8 @@ import { Post } from "../model/Post/Post";
 import { Subreddit } from "../model/Subreddit/Subreddit";
 import { SubredditLists } from "../model/SubredditList/SubredditLists";
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum";
+import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum.ts";
+import {MediaType} from "../model/Post/MediaTypeEnum.ts";
 
 export function sortSubredditsBySubscribers(
   subreddits: Array<Subreddit>,
@@ -174,4 +176,103 @@ export function sortSubredditsRandomly(
     [subreddits[i], subreddits[j]] = [subreddits[j], subreddits[i]];
   }
   return subreddits;
+}
+
+export function filterPostContent(
+    contentFiltering: ContentFilteringOptionEnum,
+    posts: Array<Post>
+) {
+  if (ContentFilteringOptionEnum.SFW === contentFiltering) {
+    return posts.filter((post) => !post.over18);
+  }
+
+  if (ContentFilteringOptionEnum.NSFW === contentFiltering) {
+    return posts.filter((post) => post.over18);
+  }
+  return posts;
+}
+
+export async function getBase64ForImages(posts: Array<Post>)  {
+  return new Promise<void>((resolve) => {
+    const promiseArr = new Array<Promise<string | ArrayBuffer | null>>();
+
+    posts.forEach((post) => {
+      post.attachments.forEach((attachment) => {
+        if (
+            attachment.mediaType === MediaType.Image ||
+            attachment.mediaType === MediaType.Gif
+        ) {
+          const prom = getBase64ForImgUrl(attachment.url);
+          prom
+              .then((res) => {
+                attachment.base64Img = res;
+              })
+              .catch((err) => {
+                console.log("Caught error while fetching base64 img", err);
+              });
+          promiseArr.push(prom);
+          if (attachment.mediaType === MediaType.Image) {
+            const resolutions = attachment.attachmentResolutions;
+            if (resolutions !== undefined) {
+              resolutions.forEach((resolution) => {
+                const resolutionPromise = getBase64ForImgUrl(
+                    resolution.url
+                );
+                resolutionPromise
+                    .then((res) => (resolution.base64Img = res))
+                    .catch((err) => {
+                      console.log(
+                          "Caught error while fetching base64 attachment",
+                          err
+                      );
+                    });
+                promiseArr.push(resolutionPromise);
+              });
+            }
+          }
+        }
+      });
+    });
+    Promise.allSettled(promiseArr).then(() => resolve());
+  });
+}
+
+const getBase64ForImgUrl = (imgUrl: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const timeoutController = new AbortController();
+    const timeoutId = setTimeout(() => timeoutController.abort(), 30000);
+    fetch(imgUrl, { signal: timeoutController.signal })
+        .then((fetchResponse) => {
+          if (fetchResponse.status === 200) {
+            fetchResponse
+                .blob()
+                .then((blob) => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    const result = reader.result;
+                    if (result === null) {
+                      reject("reader returned null");
+                    } else {
+                      resolve(result.toString());
+                    }
+                  };
+                  reader.onerror = (err) => {
+                    reject(err);
+                  };
+                  reader.readAsDataURL(blob);
+                })
+                .catch((err) => {
+                  reject(err);
+                });
+          } else {
+            reject(
+                `Fetch response did not return OK response. Actual was ${fetchResponse.status}`
+            );
+          }
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    clearTimeout(timeoutId);
+  });
 }
