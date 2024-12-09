@@ -4,6 +4,9 @@ import { SubredditLists } from "../model/SubredditList/SubredditLists";
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum";
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum.ts";
 import {MediaType} from "../model/Post/MediaTypeEnum.ts";
+import {useCallback} from "react";
+import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
+import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum.ts";
 
 export function sortSubredditsBySubscribers(
   subreddits: Array<Subreddit>,
@@ -275,4 +278,30 @@ const getBase64ForImgUrl = (imgUrl: string): Promise<string> => {
         });
     clearTimeout(timeoutId);
   });
+}
+
+export function sortSourceSubreddits(
+    subreddits: Subreddit[],
+    subredditSourceOption: SubredditSourceOptionsEnum,
+    subredditSortOption: SubredditSortOrderOptionsEnum,
+    sortOrderDirection: SortOrderDirectionOptionsEnum
+) {
+  if (
+      subredditSourceOption ===
+      SubredditSourceOptionsEnum.RedditListDotComRecentActivity ||
+      subredditSourceOption ===
+      SubredditSourceOptionsEnum.RedditListDotComSubscribers ||
+      subredditSourceOption ===
+      SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth
+  ) {
+    return subreddits;
+  }
+  switch (subredditSortOption) {
+    case SubredditSortOrderOptionsEnum.Alphabetically:
+      return sortByDisplayName(subreddits, sortOrderDirection);
+    case SubredditSortOrderOptionsEnum.SubCount:
+      return sortSubredditsBySubscribers(subreddits, sortOrderDirection);
+    case SubredditSortOrderOptionsEnum.SubCountAndListName:
+      return sortByFromListThenSubscribers(subreddits, sortOrderDirection);
+  }
 }

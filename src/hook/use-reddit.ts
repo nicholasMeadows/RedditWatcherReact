@@ -28,7 +28,7 @@ import {Post} from "../model/Post/Post.ts";
 import {
     filterPostContent,
     filterSubredditsListByUsersOnly, getBase64ForImages,
-    sortByDisplayName, sortByFromListThenSubscribers,
+    sortByDisplayName, sortByFromListThenSubscribers, sortSourceSubreddits,
     sortSubredditsBySubscribers
 } from "../util/RedditServiceUtil.ts";
 import {RedditListDotComConverter} from "../model/converter/RedditListDotComConverter.ts";
@@ -491,32 +491,6 @@ export default function useReddit() {
             mostRecentSubredditGotten: singleSubredditToGet,
         };
     }, []);
-
-    const sortSourceSubreddits = useCallback((
-        subreddits: Subreddit[],
-        subredditSourceOption: SubredditSourceOptionsEnum,
-        subredditSortOption: SubredditSortOrderOptionsEnum,
-        sortOrderDirection: SortOrderDirectionOptionsEnum
-    ) => {
-        if (
-            subredditSourceOption ===
-            SubredditSourceOptionsEnum.RedditListDotComRecentActivity ||
-            subredditSourceOption ===
-            SubredditSourceOptionsEnum.RedditListDotComSubscribers ||
-            subredditSourceOption ===
-            SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth
-        ) {
-            return subreddits;
-        }
-        switch (subredditSortOption) {
-            case SubredditSortOrderOptionsEnum.Alphabetically:
-                return sortByDisplayName(subreddits, sortOrderDirection);
-            case SubredditSortOrderOptionsEnum.SubCount:
-                return sortSubredditsBySubscribers(subreddits, sortOrderDirection);
-            case SubredditSortOrderOptionsEnum.SubCountAndListName:
-                return sortByFromListThenSubscribers(subreddits, sortOrderDirection);
-        }
-    }, [])
 
     const handleGetPosts = useCallback((getPostsFromSubredditsState: GetPostsFromSubredditState) => {
         return new Promise<GetPostsFromSubredditResponse>((resolve, reject) => {

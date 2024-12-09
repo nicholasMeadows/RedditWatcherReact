@@ -24,7 +24,15 @@ export class GetPostsForSubredditUrlConverter {
     let url = "/r/";
     const subredditNamesAlreadyAdded = new Array<string>();
 
-    for (const subreddit of subreddits) {
+
+    const randomizedSubredditArray = [...subreddits];
+
+    for (let i = randomizedSubredditArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [randomizedSubredditArray[i], randomizedSubredditArray[j]] = [randomizedSubredditArray[j], randomizedSubredditArray[i]];
+    }
+
+    for (const subreddit of randomizedSubredditArray) {
       const displayName = subreddit.displayName;
       if (!subredditNamesAlreadyAdded.includes(displayName)) {
         if (
