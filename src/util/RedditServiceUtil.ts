@@ -4,7 +4,6 @@ import { SubredditLists } from "../model/SubredditList/SubredditLists";
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum";
 import ContentFilteringOptionEnum from "../model/config/enums/ContentFilteringOptionEnum.ts";
 import {MediaType} from "../model/Post/MediaTypeEnum.ts";
-import {useCallback} from "react";
 import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
 import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum.ts";
 

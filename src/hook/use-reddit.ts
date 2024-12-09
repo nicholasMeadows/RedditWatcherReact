@@ -21,15 +21,12 @@ import SelectSubredditIterationMethodOptionsEnum
 import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum.ts";
 import SortOrderDirectionOptionsEnum from "../model/config/enums/SortOrderDirectionOptionsEnum.ts";
 import {SubredditLists} from "../model/SubredditList/SubredditLists.ts";
-import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum.ts";
 import TopTimeFrameOptionsEnum from "../model/config/enums/TopTimeFrameOptionsEnum.ts";
 import {PostConverterFilteringOptions} from "../model/config/PostConverterFilteringOptions.ts";
 import {Post} from "../model/Post/Post.ts";
 import {
     filterPostContent,
-    filterSubredditsListByUsersOnly, getBase64ForImages,
-    sortByDisplayName, sortByFromListThenSubscribers, sortSourceSubreddits,
-    sortSubredditsBySubscribers
+    filterSubredditsListByUsersOnly, getBase64ForImages, sortSourceSubreddits,
 } from "../util/RedditServiceUtil.ts";
 import {RedditListDotComConverter} from "../model/converter/RedditListDotComConverter.ts";
 import {getSubredditsFromRedditListDotCom} from "../service/RedditListDotComClient.ts";
