@@ -570,7 +570,15 @@ export default function useReddit() {
         } else if (getPostsFromSubredditState.subredditQueue.length > 0) {
             getPostsPromise = new Promise((getPostsResolve, getPostsReject) => {
                 const firstQueuedSubreddit = getPostsFromSubredditState.subredditQueue[0];
-                getPostsForSubreddit([firstQueuedSubreddit], getPostsForPostRowResponse).then(() => {
+                const fromSubreddits = [firstQueuedSubreddit];
+                getPostsForPostRowResponse.newValues.subredditQueueItemToRemove = firstQueuedSubreddit;
+                getPostsForPostRowResponse.newValues.fromSubreddits = fromSubreddits;
+                getPostsForPostRowResponse.newValues.mostRecentSubredditGotten = firstQueuedSubreddit;
+                getPostsForPostRowResponse.newValues.subredditIndex = undefined;
+                getPostsForPostRowResponse.newValues.nsfwRedditListIndex = undefined;
+                getPostsForPostRowResponse.newValues.subredditsToShowInSideBar = undefined;
+                
+                getPostsForSubreddit(fromSubreddits, getPostsForPostRowResponse).then(() => {
                     getPostsResolve();
                 }).catch(err => {
                     getPostsReject(err)
