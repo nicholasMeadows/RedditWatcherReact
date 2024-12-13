@@ -27,13 +27,9 @@ import {
   RedditServiceDispatchContext,
   RedditServiceStateContext,
 } from "../context/reddit-service-context.ts";
-import {
-  GetPostsFromSubredditResponse,
-  GetPostsFromSubredditState,
-} from "../model/converter/GetPostsFromSubredditStateConverter.ts";
 import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
 import { PostRowPageContext } from "../context/post-row-page-context.ts";
-import useReddit from "./use-reddit.ts";
+import useReddit, {GetPostsForPostRowResponse} from "./use-reddit.ts";
 
 enum AppInitializationStepEnum {
   NOT_STARTED,
@@ -180,20 +176,13 @@ export function useAppInitialization() {
 
   const getFirstPosts = useCallback(async () => {
     console.log("App Initialization - getFirstPosts");
-    let getPostsResponse: GetPostsFromSubredditResponse | undefined = undefined;
-    let initialState: GetPostsFromSubredditState | undefined = undefined;
+    let getPostsForPostRowResponse: GetPostsForPostRowResponse;
     do {
-      try {
-        const { getPostsFromSubredditResponse, getPostsFromSubredditState } =
-          await getPostsForPostRow();
-        getPostsResponse = getPostsFromSubredditResponse;
-        initialState = getPostsFromSubredditState;
-      } catch (e) {
-        console.log("Caught error while fetching posts for first post row", e);
-      }
+      getPostsForPostRowResponse = await getPostsForPostRow();
+      handleGottenPosts(getPostsForPostRowResponse);
       if (
-        getPostsResponse === undefined ||
-        getPostsResponse.posts.length === 0
+          getPostsForPostRowResponse.newValues.posts === undefined ||
+          getPostsForPostRowResponse.newValues.posts.length === 0
       ) {
         console.log(
           "Got 0 posts while trying to get first post row. Pausing for 5 second then trying again."
@@ -201,16 +190,9 @@ export function useAppInitialization() {
         await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
       }
     } while (
-      getPostsResponse === undefined ||
-      getPostsResponse.posts.length === 0
+        getPostsForPostRowResponse.newValues.posts === undefined ||
+        getPostsForPostRowResponse.newValues.posts.length === 0
     );
-
-    if (
-      getPostsResponse.fromSubreddits !== undefined &&
-      initialState !== undefined
-    ) {
-      handleGottenPosts(initialState, getPostsResponse);
-    }
   }, [getPostsForPostRow, handleGottenPosts]);
 
   useEffect(() => {

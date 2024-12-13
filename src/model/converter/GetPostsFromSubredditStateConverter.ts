@@ -37,12 +37,11 @@ export type GetPostsFromSubredditState = {
 };
 
 export type GetPostsFromSubredditResponse = {
-  posts: Array<Post>;
-  fromSubreddits: Array<Subreddit>;
-  subredditQueueItemToRemove: SubredditQueueItem | undefined;
-  mostRecentSubredditGotten: Subreddit | undefined;
-  subredditsToShowInSideBar: Array<Subreddit> | undefined;
-  masterSubscribedSubredditList: Array<Subreddit> | undefined;
+  posts: undefined | Array<Post>;
+  fromSubreddits: undefined | Array<Subreddit>;
+  subredditQueueItemToRemove: undefined | SubredditQueueItem;
+  mostRecentSubredditGotten: undefined | Subreddit;
+  subredditsToShowInSideBar: undefined | Array<Subreddit>;
   subredditIndex: number | undefined;
   nsfwRedditListIndex: number | undefined;
 };

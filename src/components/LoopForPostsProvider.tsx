@@ -41,13 +41,10 @@ const LoopForPostsProvider: FC<Props> = ({ children }) => {
       while (isGetPostLoopPausedRef.current) {
         await new Promise<void>((resolve) => setTimeout(() => resolve(), 100));
       }
-      handleGottenPosts(
-        getPostsResponse.getPostsFromSubredditState,
-        getPostsResponse.getPostsFromSubredditResponse
-      );
+      handleGottenPosts(getPostsResponse);
     } catch (error) {
       console.log(
-        "Caught error while fetching posts for first post row",
+        "Caught error while fetching posts for post row",
         error
       );
     }

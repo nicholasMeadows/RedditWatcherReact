@@ -173,6 +173,75 @@ export default class RedditClient {
     });
   }
 
+  private createUserFrontPageUrl(redditApiItemLimit: number, postSortOrder: PostSortOrderOptionsEnum, topTimeFrame: TopTimeFrameOptionsEnum){
+      let queryStr = `?feed=home&limit=${redditApiItemLimit}`;
+      let uri = "/";
+
+      const setTopUri = (topTimeFrame: TopTimeFrameOptionsEnum) => {
+        queryStr += `&t=${topTimeFrame.toLowerCase()}`;
+        uri = "/top";
+      };
+      const setNewUri = () => {
+        uri = "/new";
+      };
+      const setHotUri = () => {
+        uri = "/hot";
+      };
+      const handlePostSortOrderRandom = () => {
+        switch (Math.floor(Math.random() * 3)) {
+          case 0:
+            setNewUri();
+            break;
+          case 1:
+            setHotUri();
+            break;
+          case 2:
+            {
+              const randomIndex = Math.floor(Math.random() * 6);
+              let randomTopTimeFrame: TopTimeFrameOptionsEnum =
+                TopTimeFrameOptionsEnum.All;
+              switch (randomIndex) {
+                case 0:
+                  randomTopTimeFrame = TopTimeFrameOptionsEnum.All;
+                  break;
+                case 1:
+                  randomTopTimeFrame = TopTimeFrameOptionsEnum.Day;
+                  break;
+                case 2:
+                  randomTopTimeFrame = TopTimeFrameOptionsEnum.Hour;
+                  break;
+                case 3:
+                  randomTopTimeFrame = TopTimeFrameOptionsEnum.Year;
+                  break;
+                case 4:
+                  randomTopTimeFrame = TopTimeFrameOptionsEnum.Week;
+                  break;
+                case 5:
+                  randomTopTimeFrame = TopTimeFrameOptionsEnum.Month;
+                  break;
+              }
+              setTopUri(randomTopTimeFrame);
+            }
+            break;
+        }
+      };
+      switch (postSortOrder) {
+        case PostSortOrderOptionsEnum.Top:
+          setTopUri(topTimeFrame);
+          break;
+        case PostSortOrderOptionsEnum.New:
+          setNewUri();
+          break;
+        case PostSortOrderOptionsEnum.Hot:
+          setHotUri();
+          break;
+        case PostSortOrderOptionsEnum.Random:
+          handlePostSortOrderRandom();
+          break;
+      }
+      return REDDIT_OAUTH_BASE_URL + uri + queryStr;
+  }
+
   async getUserFrontPage(
     postSortOrder: PostSortOrderOptionsEnum,
     topTimeFrame: TopTimeFrameOptionsEnum,
@@ -186,72 +255,7 @@ export default class RedditClient {
         .then((authInfo) => {
           // CheckIsUserLoggedIn();
           this.checkRateLimits();
-          let queryStr = `?feed=home&limit=${redditApiItemLimit}`;
-          let uri = "/";
-
-          const setTopUri = (topTimeFrame: TopTimeFrameOptionsEnum) => {
-            queryStr += `&t=${topTimeFrame.toLowerCase()}`;
-            uri = "/top";
-          };
-          const setNewUri = () => {
-            uri = "/new";
-          };
-          const setHotUri = () => {
-            uri = "/hot";
-          };
-          const handlePostSortOrderRandom = () => {
-            switch (Math.floor(Math.random() * 3)) {
-              case 0:
-                setNewUri();
-                break;
-              case 1:
-                setHotUri();
-                break;
-              case 2:
-                {
-                  const randomIndex = Math.floor(Math.random() * 6);
-                  let randomTopTimeFrame: TopTimeFrameOptionsEnum =
-                    TopTimeFrameOptionsEnum.All;
-                  switch (randomIndex) {
-                    case 0:
-                      randomTopTimeFrame = TopTimeFrameOptionsEnum.All;
-                      break;
-                    case 1:
-                      randomTopTimeFrame = TopTimeFrameOptionsEnum.Day;
-                      break;
-                    case 2:
-                      randomTopTimeFrame = TopTimeFrameOptionsEnum.Hour;
-                      break;
-                    case 3:
-                      randomTopTimeFrame = TopTimeFrameOptionsEnum.Year;
-                      break;
-                    case 4:
-                      randomTopTimeFrame = TopTimeFrameOptionsEnum.Week;
-                      break;
-                    case 5:
-                      randomTopTimeFrame = TopTimeFrameOptionsEnum.Month;
-                      break;
-                  }
-                  setTopUri(randomTopTimeFrame);
-                }
-                break;
-            }
-          };
-          switch (postSortOrder) {
-            case PostSortOrderOptionsEnum.Top:
-              setTopUri(topTimeFrame);
-              break;
-            case PostSortOrderOptionsEnum.New:
-              setNewUri();
-              break;
-            case PostSortOrderOptionsEnum.Hot:
-              setHotUri();
-              break;
-            case PostSortOrderOptionsEnum.Random:
-              handlePostSortOrderRandom();
-              break;
-          }
-          const url = REDDIT_OAUTH_BASE_URL + uri + queryStr;
+          const url = this.createUserFrontPageUrl(redditApiItemLimit, postSortOrder, topTimeFrame);
           console.log("Getting User front page @ URL: ", url);
           fetch(url, {
             method: "GET",
