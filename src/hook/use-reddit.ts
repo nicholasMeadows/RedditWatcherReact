@@ -245,30 +245,6 @@ export default function useReddit() {
         [postRowPageDispatch, redditServiceDispatch, sideBarDispatch]
     );
 
-    const handleGottenPosts = useCallback(
-        (getPostsForPostRowResponse:GetPostsForPostRowResponse
-        ) => {
-            const newValues = getPostsForPostRowResponse.newValues;
-            const posts = newValues.posts;
-            const fromSubreddits = newValues.fromSubreddits;
-            if (posts === undefined || posts.length === 0) {
-                let msg = `Got 0 posts. Trying again in a little bit.`;
-                if (fromSubreddits !== undefined && fromSubreddits.length == 1) {
-                    msg = `Got 0 posts from ${fromSubreddits[0].displayNamePrefixed}. Trying again in a little bit.`;
-                }
-                appNotificationDispatch({
-                    type: AppNotificationsActionType.SUBMIT_APP_NOTIFICATION,
-                    payload: {
-                        message: msg,
-                        displayTimeMS: 10000,
-                    },
-                });
-            }
-            applyUpdatedStateValues(getPostsForPostRowResponse);
-        },
-        [appNotificationDispatch, applyUpdatedStateValues]
-    );
-
     const getPostsForSubreddit = useCallback((
         subreddits: Array<Subreddit>,
         getPostsForPostRowResponse: GetPostsForPostRowResponse): Promise<void> => {
@@ -306,8 +282,12 @@ export default function useReddit() {
                     }
                 })
                 .catch((error) => {
+                    let message ="Error getting posts for subreddits: ";
+                    if(subreddits.length == 1) {
+                        message = `Error getting posts from ${subreddits[0].displayNamePrefixed}: `
+                    }
                     reject({
-                        notificationMessage: "Error getting posts for subreddit: "+ error,
+                        notificationMessage: message + error.friendlyMessage,
                         emitNotification: true
                     })
                 });
@@ -341,7 +321,7 @@ export default function useReddit() {
                 .catch((err) => {
                     reject({
                         emitNotification: true,
-                        notificationMessage: "Error while getting subreddits from redditlist.com: " + err
+                        notificationMessage: "Error while getting subreddits from redditlist.com: " + err.friendlyMessage
                     })
                 });
         });
@@ -380,7 +360,7 @@ export default function useReddit() {
                 .catch((err) => {
                     reject({
                         emitNotification: true,
-                        notificationMessage: "Error while getting user front page " + err
+                        notificationMessage: "Error while getting user front page: " + err.friendlyMessage
                     })
                 });
         });
@@ -647,6 +627,6 @@ export default function useReddit() {
     return {
         loadSubscribedSubreddits,
         getPostsForPostRow,
-        handleGottenPosts,
+        applyUpdatedStateValues,
     };
 }

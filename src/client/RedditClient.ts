@@ -19,6 +19,13 @@ import { v4 as uuidV4 } from "uuid";
 import { RedditCredentials } from "../model/config/RedditCredentials.ts";
 import PostSortOrderOptionsEnum from "../model/config/enums/PostSortOrderOptionsEnum.ts";
 import { PostConverterFilteringOptions } from "../model/config/PostConverterFilteringOptions.ts";
+import StringUtil from "../util/StringUtil.ts";
+import {
+    FAILED_TO_PARSE_REDDIT_API_RESPONSE_FRIENDLY_ERROR_MESSAGE,
+    HTTP_REQUEST_FAILED_FRIENDLY_ERROR_MESSAGE,
+    HTTP_REQUEST_FAILED_WITH_STATUS_FRIENDLY_ERROR_MESSAGE,
+    UNABLE_TO_GET_AUTH_INFO_FRIENDLY_ERROR_MESSAGE
+} from "../RedditWatcherConstants.ts";
 
 const REDDIT_BASE_URL = "https://www.reddit.com";
 const REDDIT_OAUTH_BASE_URL = "https://oauth.reddit.com";
@@ -292,19 +299,25 @@ export default class RedditClient {
                     if (
                       post != null &&
                       post.attachments != null &&
-                      post.attachments.length > 0
+                        post.attachments.length > 0
                     ) {
-                      posts.push(post);
+                        posts.push(post);
                     }
                   });
 
-                  resolve(posts);
+                    resolve(posts);
                 })
-                .catch((err) => reject(err));
+                  .catch(() => reject({
+                      statusCode: undefined,
+                      friendlyMessage: FAILED_TO_PARSE_REDDIT_API_RESPONSE_FRIENDLY_ERROR_MESSAGE
+                  }));
             })
-            .catch((err) => reject(err));
+              .catch(() => reject({
+                  statusCode: undefined,
+                  friendlyMessage: HTTP_REQUEST_FAILED_FRIENDLY_ERROR_MESSAGE
+              }));
         })
-        .catch((err) => reject(err));
+          .catch(() => reject({statusCode: undefined, friendlyMessage: HTTP_REQUEST_FAILED_WITH_STATUS_FRIENDLY_ERROR_MESSAGE}));
     });
   }
 
@@ -314,7 +327,7 @@ export default class RedditClient {
     redditLists: Array<SubredditLists>,
     filteringOption: PostConverterFilteringOptions
   ): Promise<Array<Post>> {
-    return new Promise<Array<Post>>((resolve, reject) => {
+    return new Promise<Array<Post>>((resolve, reject: (err: {statusCode: number | undefined, friendlyMessage: string}) => void) => {
       console.log(`getting posts from uri ${uri}`);
       // CheckIsUserLoggedIn();
       this.getAuthInfo()
@@ -329,11 +342,7 @@ export default class RedditClient {
           })
             .then((response) => {
               if (response.status < 200 || response.status > 300) {
-                reject(
-                  new RangeError(
-                    `Reddit responded with ${response.status} status code.`
-                  )
-                );
+                  reject({statusCode: response.status, friendlyMessage: StringUtil.format(HTTP_REQUEST_FAILED_WITH_STATUS_FRIENDLY_ERROR_MESSAGE, response.status)})
               }
               this.updateRateLimitVariables(response);
               const responseObj: RedditApiResponse<T3> = response.data;
@@ -357,9 +366,9 @@ export default class RedditClient {
               });
               resolve(posts);
             })
-            .catch((err) => reject(err));
+            .catch(() => reject({statusCode: undefined, friendlyMessage: HTTP_REQUEST_FAILED_FRIENDLY_ERROR_MESSAGE}));
         })
-        .catch((err) => reject(err));
+        .catch(() => reject({statusCode: undefined, friendlyMessage: UNABLE_TO_GET_AUTH_INFO_FRIENDLY_ERROR_MESSAGE}));
     });
   }
 

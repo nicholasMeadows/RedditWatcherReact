@@ -23,7 +23,7 @@ type Props = {
 const LoopForPostsProvider: FC<Props> = ({ children }) => {
   const redditServiceDispatch = useContext(RedditServiceDispatchContext);
   const { secondsTillGettingNextPosts, isGettingPosts } = useContext(RedditServiceStateContext);
-  const { getPostsForPostRow, handleGottenPosts } = useReddit();
+  const { getPostsForPostRow, applyUpdatedStateValues } = useReddit();
   const { isGetPostLoopPaused } = useGetPostLoopPaused();
 
   const { getPostRowIterationTime } = useContext(AppConfigStateContext);
@@ -41,14 +41,14 @@ const LoopForPostsProvider: FC<Props> = ({ children }) => {
       while (isGetPostLoopPausedRef.current) {
         await new Promise<void>((resolve) => setTimeout(() => resolve(), 100));
       }
-      handleGottenPosts(getPostsResponse);
+      applyUpdatedStateValues(getPostsResponse);
     } catch (error) {
       console.log(
         "Caught error while fetching posts for post row",
         error
       );
     }
-  }, [getPostsForPostRow, handleGottenPosts]);
+  }, [getPostsForPostRow, applyUpdatedStateValues]);
 
   const getPostRowAndResetCounter = useCallback(() => {
     getPostRow().then(() => {

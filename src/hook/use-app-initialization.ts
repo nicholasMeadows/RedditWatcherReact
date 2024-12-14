@@ -58,7 +58,7 @@ export function useAppInitialization() {
   const { subredditListsLoaded } = useContext(RedditListStateContext);
   const { redditAuthenticationStatus } = useContext(RedditServiceStateContext);
   const redditServiceDispatch = useContext(RedditServiceDispatchContext);
-  const {loadSubscribedSubreddits, getPostsForPostRow, handleGottenPosts} = useReddit();
+  const {loadSubscribedSubreddits, getPostsForPostRow, applyUpdatedStateValues} = useReddit();
 
   const { masterSubscribedSubredditList } = useContext(
     RedditServiceStateContext
@@ -179,7 +179,7 @@ export function useAppInitialization() {
     let getPostsForPostRowResponse: GetPostsForPostRowResponse;
     do {
       getPostsForPostRowResponse = await getPostsForPostRow();
-      handleGottenPosts(getPostsForPostRowResponse);
+      applyUpdatedStateValues(getPostsForPostRowResponse);
       if (
           getPostsForPostRowResponse.newValues.posts === undefined ||
           getPostsForPostRowResponse.newValues.posts.length === 0
@@ -193,7 +193,7 @@ export function useAppInitialization() {
         getPostsForPostRowResponse.newValues.posts === undefined ||
         getPostsForPostRowResponse.newValues.posts.length === 0
     );
-  }, [getPostsForPostRow, handleGottenPosts]);
+  }, [getPostsForPostRow, applyUpdatedStateValues]);
 
   useEffect(() => {
     const step = appInitializationStep.current;
