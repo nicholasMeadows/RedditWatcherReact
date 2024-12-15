@@ -441,81 +441,73 @@ export default function useReddit() {
         }
     }, [getAllSubredditsAtOnce, nsfwSubredditIndex, randomIterationSelectWeightOption, selectSubredditIterationMethodOption, subredditIndex, subredditSourceOption]);
 
-    const getSubredditsToGetPostsForBasedOnRedditSource = useCallback((getPostsFromSubredditsState: GetPostsFromSubredditState): Promise<GetSubredditsAndUpdatedInfo> => {
-        return new Promise<GetSubredditsAndUpdatedInfo>((getSourceSubredditsResolve, getSourceSubredditsReject) => {
-            if (
-                subredditSourceOption ==
-                SubredditSourceOptionsEnum.RedditListDotComRecentActivity ||
-                subredditSourceOption ==
-                SubredditSourceOptionsEnum.RedditListDotComSubscribers ||
-                subredditSourceOption ==
-                SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth
-            ) {
-                getSubredditsToGetPostsForFromRedditListDotCom(
-                    subredditSourceOption
-                ).then(redditDotComSubreddits => {
-                    getSourceSubredditsResolve(extractSubredditsToGetFromSourceList(redditDotComSubreddits, getPostsFromSubredditsState));
-                }).catch(err => getSourceSubredditsReject(err));
-                return;
-            } else if (
-                subredditSourceOption ===
-                SubredditSourceOptionsEnum.SubscribedSubreddits
-            ) {
-                getSourceSubredditsResolve(extractSubredditsToGetFromSourceList(getPostsFromSubredditsState.masterSubredditList, getPostsFromSubredditsState));
-                return;
-            } else if (
-                subredditSourceOption === SubredditSourceOptionsEnum.RedditUsersOnly
-            ) {
-                //Sort subscribed reddits by users only. Get random or next in iteration based on iteration method
-                getSourceSubredditsResolve(
-                    extractSubredditsToGetFromSourceList(
-                        filterSubredditsListByUsersOnly(
-                            getPostsFromSubredditsState.masterSubredditList,
-                            getPostsFromSubredditsState.sortOrderDirection
-                        ),
-                        getPostsFromSubredditsState
-                    )
-                );
-                return;
-            } else if (
-                subredditSourceOption ===
-                SubredditSourceOptionsEnum.SelectedSubRedditLists
-            ) {
-                const subreddits = new Array<Subreddit>();
-                const selectedLists = subredditLists.filter(
-                    (subredditList) => subredditList.selected
-                );
-                selectedLists.forEach((list) => {
-                    list.subreddits.forEach((subreddit) => {
-                        const foundSubreddit = subreddits.find(
-                            (sub) => sub.displayName === subreddit.displayName
-                        );
-                        if (foundSubreddit === undefined) {
-                            subreddits.push(subreddit);
-                        }
+    const getSubredditsToGetPostsForBasedOnRedditSource = useCallback((getPostsFromSubredditsState: GetPostsFromSubredditState) /*: Promise<GetSubredditsAndUpdatedInfo>*/ => {
+        const getSubredditsPromise = new Promise<Subreddit[]>((getSubredditsResolve, getSubredditsReject) => {
+            switch (subredditSourceOption) {
+                case SubredditSourceOptionsEnum.RedditListDotComRecentActivity:
+                case SubredditSourceOptionsEnum.RedditListDotComSubscribers:
+                case SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth: {
+                    getSubredditsToGetPostsForFromRedditListDotCom(
+                        subredditSourceOption
+                    ).then(result => getSubredditsResolve(result)).catch(err => getSubredditsReject(err))
+                }
+                    break;
+                case SubredditSourceOptionsEnum.SubscribedSubreddits: {
+                    getSubredditsResolve(getPostsFromSubredditsState.masterSubredditList)
+                }
+                    break;
+                case SubredditSourceOptionsEnum.RedditUsersOnly: {
+                    getSubredditsResolve(filterSubredditsListByUsersOnly(
+                        getPostsFromSubredditsState.masterSubredditList,
+                        getPostsFromSubredditsState.sortOrderDirection
+                    ))
+                }
+                    break;
+                case SubredditSourceOptionsEnum.SelectedSubRedditLists: {
+                    const subreddits = new Array<Subreddit>();
+                    const selectedLists = subredditLists.filter((subredditList) => subredditList.selected);
+                    selectedLists.forEach((list) => {
+                        list.subreddits.forEach((subreddit) => {
+                            const foundSubreddit = subreddits.find((sub) => sub.displayName === subreddit.displayName);
+                            if (foundSubreddit === undefined) {
+                                subreddits.push(subreddit);
+                            }
+                        });
                     });
-                });
-                getSourceSubredditsResolve(extractSubredditsToGetFromSourceList(subreddits, getPostsFromSubredditsState));
-                return;
-            } else if (
-                subredditSourceOption === SubredditSourceOptionsEnum.AllSubRedditLists
-            ) {
-                const subreddits = new Array<Subreddit>();
-                subredditLists.forEach((list) => {
-                    list.subreddits.forEach((subreddit) => {
-                        const foundSubreddit = subreddits.find(
-                            (sub) => sub.displayName === subreddit.displayName
-                        );
-                        if (foundSubreddit === undefined) {
-                            subreddits.push(subreddit);
-                        }
+                    getSubredditsResolve(subreddits);
+                }
+                    break;
+                case SubredditSourceOptionsEnum.AllSubRedditLists: {
+                    const subreddits = new Array<Subreddit>();
+                    subredditLists.forEach((list) => {
+                        list.subreddits.forEach((subreddit) => {
+                            const foundSubreddit = subreddits.find(
+                                (sub) => sub.displayName === subreddit.displayName
+                            );
+                            if (foundSubreddit === undefined) {
+                                subreddits.push(subreddit);
+                            }
+                        });
                     });
-                });
-                getSourceSubredditsResolve(extractSubredditsToGetFromSourceList(subreddits, getPostsFromSubredditsState));
-                return;
+                    getSubredditsResolve(subreddits);
+                }
+                    break;
+                default: {
+                    getSubredditsReject({
+                        emitNotification: true,
+                        notificationMessage: "Error while getting subreddits. Invalid source option selected"
+                    })
+                }
             }
-            getSourceSubredditsResolve(extractSubredditsToGetFromSourceList([], getPostsFromSubredditsState));
         });
+
+        return new Promise((resolve, reject) => {
+            getSubredditsPromise.then(subreddits => {
+                resolve(extractSubredditsToGetFromSourceList(subreddits, getPostsFromSubredditsState))
+            }).catch(err => {
+                reject(err);
+            })
+        })
     }, [extractSubredditsToGetFromSourceList, getSubredditsToGetPostsForFromRedditListDotCom, subredditLists, subredditSourceOption]);
 
     const getPostsForPostRow = useCallback(async (): Promise<GetPostsForPostRowResponse> => {
@@ -603,6 +595,7 @@ export default function useReddit() {
                             );
                         }
                     }
+                    getPostsForPostRowResponse.newValues.posts = filteredPostsFromSubreddit;
                 }).catch((err: GetPostsForPostRowError) => {
                 console.log("Error while getting posts for post row", err);
                 if (err.emitNotification) {
