@@ -441,7 +441,7 @@ export default function useReddit() {
         }
     }, [getAllSubredditsAtOnce, nsfwSubredditIndex, randomIterationSelectWeightOption, selectSubredditIterationMethodOption, subredditIndex, subredditSourceOption]);
 
-    const getSubredditsToGetPostsForBasedOnRedditSource = useCallback((getPostsFromSubredditsState: GetPostsFromSubredditState) /*: Promise<GetSubredditsAndUpdatedInfo>*/ => {
+    const getSubredditsToGetPostsForBasedOnRedditSource = useCallback((getPostsFromSubredditsState: GetPostsFromSubredditState): Promise<GetSubredditsAndUpdatedInfo> => {
         const getSubredditsPromise = new Promise<Subreddit[]>((getSubredditsResolve, getSubredditsReject) => {
             switch (subredditSourceOption) {
                 case SubredditSourceOptionsEnum.RedditListDotComRecentActivity:
