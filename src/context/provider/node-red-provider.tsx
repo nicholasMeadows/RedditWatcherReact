@@ -28,7 +28,7 @@ const NodeRedProvider: FC<Props> = ({ children }) => {
     (event: MessageEvent) => {
       const data = event.data;
       const message = JSON.parse(data) as NodeRedWebSocketPayload;
-      if (message.payload.open) {
+      if (message.payload.open && !window.location.href.endsWith(NOT_FOUND_404)) {
         navigate(NOT_FOUND_404, { replace: false });
       }
     },
