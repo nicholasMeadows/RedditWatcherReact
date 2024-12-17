@@ -111,11 +111,11 @@ export default function useMovePostRow(
           postRowUuid: postRowUuid,
           postSliderLeft: postSliderLeft,
           updatedPostCards: postCards,
-          postSliderTransitionTime: postSliderTransitionTime,
+          postSliderTransitionTime: shouldAutoScroll ? postSliderTransitionTime:0,
         },
       });
     },
-    [postRowUuid, postRowPageDispatch]
+    [postRowPageDispatch, postRowUuid, shouldAutoScroll]
   );
 
   const stopPostRowTransition = useCallback(() => {

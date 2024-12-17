@@ -235,7 +235,7 @@ const addPostRow = (
       const postsToAddToViewModel = posts.filter((post) => {
         return post.created > mostRecentPostRow.allPosts[0].created;
       });
-      const updatedPosts = [...postsToAddToViewModel, ...posts];
+      const updatedPosts = [...postsToAddToViewModel, ...mostRecentPostRow.allPosts];
       trimPostsToMaxLength(updatedPosts);
 
       updatedPostRows[0] = createPostRow(
