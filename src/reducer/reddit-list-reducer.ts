@@ -20,6 +20,7 @@ export enum RedditListActionType {
   SHOW_DELETE_LIST_CONFIRMATION = "SHOW_DELETE_LIST_CONFIRMATION",
   DELETE_LIST = "DELETE_LIST",
   SET_SUBREDDIT_LISTS = "SET_SUBREDDIT_LISTS",
+  RESET_SUBREDDIT_LISTS = "RESET_SUBREDDIT_LISTS"
 }
 
 export type RedditListNoPayloadAction = {
@@ -30,7 +31,8 @@ export type RedditListNoPayloadAction = {
     | RedditListActionType.SHOW_CREATE_LIST_BOX
     | RedditListActionType.RESET_MODIFY_LIST_BOX
     | RedditListActionType.DELETE_LIST
-    | RedditListActionType.CREATE_OR_MODIFY_LIST;
+    | RedditListActionType.CREATE_OR_MODIFY_LIST
+  | RedditListActionType.RESET_SUBREDDIT_LISTS;
 };
 
 export type RedditListSubredditListsPayloadAction = {
@@ -105,6 +107,7 @@ export default function RedditListReducer(
       return showUpdateListBox(state, action);
     case RedditListActionType.SET_SUBREDDIT_LIST_SELECTED:
       return setSubredditListSelected(state, action);
+    case RedditListActionType.RESET_SUBREDDIT_LISTS: return resetSubredditLists(state);
     default:
       return state;
   }
@@ -299,6 +302,16 @@ const setSubredditLists = (
     ...state,
     subredditLists: action.payload,
     subredditListsLoaded: true,
+  };
+};
+
+const resetSubredditLists = (
+    state: RedditListState,
+): RedditListState => {
+  return {
+    ...state,
+    subredditLists: [],
+    subredditListsLoaded: false,
   };
 };
 

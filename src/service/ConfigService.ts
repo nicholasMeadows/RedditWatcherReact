@@ -19,6 +19,7 @@ import { AutoScrollPostRowDirectionOptionEnum } from "../model/config/enums/Auto
 import { WindowElectronAPI } from "../model/WindowElectronAPI.ts";
 import SubredditSourceOptionsEnum from "../model/config/enums/SubredditSourceOptionsEnum.ts";
 import SubredditSortOrderOptionsEnum from "../model/config/enums/SubredditSortOrderOptionsEnum.ts";
+import {Subreddit} from "../model/Subreddit/Subreddit.ts";
 
 const REDDIT_CREDENTIALS_KEY = "redditCredentials";
 const REDDIT_USERNAME_KEY = "username";
@@ -409,4 +410,76 @@ async function checkForOrCreateSubredditListsFile(defaultFileValue: string) {
       });
     }
   }
+}
+
+export function importParsedAppConfig(parsedConfigFile: never): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    try {
+      const appConfig = validateAndParseAppConfig(parsedConfigFile);
+      const subredditList = validateAndParseRedditLists(parsedConfigFile);
+
+      saveConfig(appConfig).then(() => {
+        saveSubredditLists(subredditList).then(() => {
+          resolve();
+        }).catch(err => reject(err))
+      }).catch(err => reject(err))
+    } catch(err) {
+      reject(err);
+    }
+  });
+}
+
+function validateAndParseAppConfig(parsedImportFile: never): AppConfig {
+  if (parsedImportFile["appConfig"] === undefined) {
+    throw "Import file missing appConfig property"
+  }
+  console.log("appConfig was not undefined. Creating new app config");
+  return fillInMissingFieldsInConfigObj(parsedImportFile["appConfig"] as AppConfig);
+}
+
+function validateAndParseRedditLists(parsedImportFile: never):Array<SubredditLists> {
+  const subredditListsToSave = new Array<SubredditLists>();
+  const subredditListsFromFile = parsedImportFile["subredditLists"];
+  if (!Array.isArray(subredditListsFromFile)) {
+    throw "Invalid subredditLists in config file";
+  }
+  const subredditLists = subredditListsFromFile as Array<never>;
+  for (let listIndex = 0; listIndex < subredditLists.length; listIndex++) {
+    const list = subredditLists[listIndex];
+        if (
+        !Object.hasOwn(list, "subredditListUuid") ||
+        !Object.hasOwn(list, "listName") ||
+        !Object.hasOwn(list, "subreddits") ||
+        !Object.hasOwn(list, "selected")
+    ) {
+      throw `Required field missing on reddit list #${listIndex}`;
+    }
+
+    if (list["subreddits"] === undefined || !Array.isArray(list["subreddits"])) {
+      throw "Subreddit list in import file is undefined"
+    }
+
+    const parsedSubreddits = new Array<Subreddit>();
+    const subreddits = list["subreddits"] as Array<never>;
+
+    for (const subreddit of subreddits) {
+      if (
+          !Object.hasOwn(subreddit, "displayName") ||
+          !Object.hasOwn(subreddit, "displayNamePrefixed") ||
+          !Object.hasOwn(subreddit, "subscribers") ||
+          !Object.hasOwn(subreddit, "isSubscribed") ||
+          !Object.hasOwn(subreddit, "fromList") ||
+          !Object.hasOwn(subreddit, "subredditUuid")
+      ) {
+        throw "Subreddit missing field."
+      }
+      const parsedSubreddit = Object.assign({}, subreddit);
+      parsedSubreddits.push(parsedSubreddit as Subreddit);
+    }
+
+    const subredditList: SubredditLists = Object.assign({}, list);
+    subredditList.subreddits = parsedSubreddits;
+    subredditListsToSave.push(subredditList);
+  }
+  return subredditListsToSave;
 }

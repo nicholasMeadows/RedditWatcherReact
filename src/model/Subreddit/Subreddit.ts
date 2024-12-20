@@ -1,4 +1,4 @@
-export interface Subreddit {
+export type Subreddit = {
   displayName: string;
   displayNamePrefixed: string;
   subscribers: number;

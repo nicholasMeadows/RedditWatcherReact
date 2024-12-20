@@ -1,5 +1,5 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import {FormEvent, useCallback, useContext, useEffect, useRef, useState} from "react";
+import {useLocation, useNavigate} from "react-router-dom";
 import {
   APP_INITIALIZATION_ROUTE,
   APPLICATION_SETTINGS_ROUTE,
@@ -12,39 +12,28 @@ import {
   REDDIT_SOURCE_SETTINGS_ROUTE,
   SINGLE_POST_ROUTE,
 } from "../RedditWatcherConstants";
-import { RedditAuthenticationStatus } from "../model/RedditAuthenticationState";
+import {RedditAuthenticationStatus} from "../model/RedditAuthenticationState";
 import packageJson from "../../package.json";
-import {
-  AppConfigDispatchContext,
-  AppConfigStateContext,
-} from "../context/app-config-context.ts";
-import { AppConfigActionType } from "../reducer/app-config-reducer.ts";
-import {
-  exportConfigDownload,
-  fillInMissingFieldsInConfigObj,
-  saveConfig,
-  saveSubredditLists,
-} from "../service/ConfigService.ts";
-import { SubredditLists } from "../model/SubredditList/SubredditLists.ts";
-import { Subreddit } from "../model/Subreddit/Subreddit.ts";
+import {AppConfigDispatchContext, AppConfigStateContext,} from "../context/app-config-context.ts";
+import {AppConfigActionType} from "../reducer/app-config-reducer.ts";
+import {exportConfigDownload, importParsedAppConfig,} from "../service/ConfigService.ts";
 import ImportExportConfig from "../model/ImportExportConfig.ts";
-import { RedditListStateContext } from "../context/reddit-list-context.ts";
-import {
-  RedditServiceDispatchContext,
-  RedditServiceStateContext,
-} from "../context/reddit-service-context.ts";
-import { RedditServiceActions } from "../reducer/reddit-service-reducer.ts";
-import { ContextMenuDispatchContext } from "../context/context-menu-context.ts";
-import { ContextMenuActionType } from "../reducer/context-menu-reducer.ts";
-import { PostRowPageDispatchContext } from "../context/post-row-page-context.ts";
-import { PostRowPageActionType } from "../reducer/post-row-page-reducer.ts";
+import {RedditListDispatchContext, RedditListStateContext} from "../context/reddit-list-context.ts";
+import {RedditServiceDispatchContext, RedditServiceStateContext,} from "../context/reddit-service-context.ts";
+import {RedditServiceActions} from "../reducer/reddit-service-reducer.ts";
+import {ContextMenuDispatchContext} from "../context/context-menu-context.ts";
+import {ContextMenuActionType} from "../reducer/context-menu-reducer.ts";
+import {RedditListActionType} from "../reducer/reddit-list-reducer.ts";
+import {PostRowPageDispatchContext} from "../context/post-row-page-context.ts";
+import {PostRowPageActionType} from "../reducer/post-row-page-reducer.ts";
 
 const NavigationHamburgerMenu: React.FC = () => {
-  const postRowPageDispatch = useContext(PostRowPageDispatchContext);
   const appConfigDispatch = useContext(AppConfigDispatchContext);
   const appConfigState = useContext(AppConfigStateContext);
   const { redditAuthenticationStatus } = useContext(RedditServiceStateContext);
   const redditServiceDispatch = useContext(RedditServiceDispatchContext);
+  const redditListDispatch = useContext(RedditListDispatchContext);
+  const postRowPageDispatch = useContext(PostRowPageDispatchContext);
   const navigate = useNavigate();
   const location = useLocation();
   const redditListsState = useContext(RedditListStateContext);
@@ -54,18 +43,8 @@ const NavigationHamburgerMenu: React.FC = () => {
 
   const [popoutDrawerOpen, setPopoutDrawerOpen] = useState(false);
   const fileSelectorRef = useRef(null);
-
-  const [importClicked, setImportClicked] = useState(false);
-  const configLoaded = useContext(AppConfigStateContext).configLoaded;
   const contextMenuDispatch = useContext(ContextMenuDispatchContext);
-
-  useEffect(() => {
-    if (!configLoaded && importClicked) {
-      setImportClicked(false);
-      setPopoutDrawerOpen(false);
-      navigate(APP_INITIALIZATION_ROUTE);
-    }
-  }, [navigate, configLoaded, importClicked]);
+  
   useEffect(() => {
     console.log(
       `The current URL is ${location.pathname}${location.search}${location.hash}`
@@ -122,102 +101,10 @@ const NavigationHamburgerMenu: React.FC = () => {
     }
   };
 
-  const importAppConfig = useCallback(
-    async (file: File) => {
-      try {
-        console.log("importing app config");
-        const text = await file.text();
-        const parsed = JSON.parse(text);
-        if (parsed["appConfig"] != undefined) {
-          console.log(
-            "appConfig was not undefined. Setting up app config",
-            parsed["appConfig"]
-          );
-          const config = fillInMissingFieldsInConfigObj(parsed["appConfig"]);
-          await saveConfig(config);
-        }
-
-        if (parsed["subredditLists"] != undefined) {
-          const subredditListsToSave = new Array<SubredditLists>();
-          let failedParsing = false;
-          const subredditLists = parsed["subredditLists"];
-          if (Array.isArray(subredditLists)) {
-            for (const list of subredditLists) {
-              if (
-                Object.hasOwn(list, "subredditListUuid") &&
-                Object.hasOwn(list, "listName") &&
-                Object.hasOwn(list, "subreddits") &&
-                Object.hasOwn(list, "selected")
-              ) {
-                const parsedSubreddits = new Array<Subreddit>();
-                if (Array.isArray(list["subreddits"])) {
-                  const subreddits = list["subreddits"];
-                  for (const subreddit of subreddits) {
-                    if (
-                      Object.hasOwn(subreddit, "displayName") &&
-                      Object.hasOwn(subreddit, "displayNamePrefixed") &&
-                      Object.hasOwn(subreddit, "subscribers") &&
-                      Object.hasOwn(subreddit, "over18") &&
-                      Object.hasOwn(subreddit, "isSubscribed") &&
-                      Object.hasOwn(subreddit, "fromList") &&
-                      Object.hasOwn(subreddit, "subredditUuid")
-                    ) {
-                      parsedSubreddits.push({
-                        displayName: subreddit["displayName"],
-                        displayNamePrefixed: subreddit["displayNamePrefixed"],
-                        subscribers: subreddit["subscribers"],
-                        over18: subreddit["over18"],
-                        isSubscribed: subreddit["isSubscribed"],
-                        fromList: subreddit["fromList"],
-                        subredditUuid: subreddit["subredditUuid"],
-                        isUser: subreddit["isUser"],
-                      });
-                    } else {
-                      failedParsing = true;
-                      break;
-                    }
-                  }
-                }
-                if (failedParsing) {
-                  break;
-                } else {
-                  const subredditList: SubredditLists = {
-                    subredditListUuid: "",
-                    listName: list["listName"],
-                    subreddits: parsedSubreddits,
-                    selected: list["selected"],
-                  };
-                  subredditListsToSave.push(subredditList);
-                }
-              } else {
-                failedParsing = false;
-                break;
-              }
-            }
-          } else {
-            failedParsing = true;
-          }
-
-          if (!failedParsing) {
-            await saveSubredditLists(subredditListsToSave);
-          }
-        }
-
-        console.log("done importing");
-        postRowPageDispatch({ type: PostRowPageActionType.CLEAR_POST_ROWS });
-        appConfigDispatch({ type: AppConfigActionType.RESET_CONFIG_LOADED });
-      } catch (e) {
-        console.log("exception", e);
-      }
-    },
-    [appConfigDispatch]
-  );
-
-  const exportAppConfig = useCallback(
-    async (subredditLists: Array<SubredditLists>) => {
+  const exportAppConfig = useCallback(async () => {
       const configObj: ImportExportConfig = {
         appConfig: appConfigState,
-        subredditLists: subredditLists,
+        subredditLists: redditListsState.subredditLists,
       };
       const myFile = new File(
         [JSON.stringify(configObj)],
@@ -225,8 +112,60 @@ const NavigationHamburgerMenu: React.FC = () => {
       );
       exportConfigDownload(myFile);
     },
-    [appConfigState]
+    [appConfigState, redditListsState.subredditLists]
   );
+
+  const importConfigFileSelected = useCallback((event: FormEvent< HTMLInputElement>) => {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if(files === null || files.length == 0) {
+      console.log("No file import file was selected");
+      return;
+    }
+
+    console.log("importing app config");
+    new Promise<void>((resolve, reject) => {
+      files[0].text().then((text) => {
+        try {
+          const parsed = JSON.parse(text);
+          importParsedAppConfig(parsed as never)
+              .then(() => resolve())
+              .catch(err => reject(err));
+        } catch (err) {
+          reject("Failed to parse import file");
+        }
+      }).catch(() => reject("Failed to read input file"));
+    }).then(() => {
+      redditServiceDispatch({
+        type: RedditServiceActions.SET_REDDIT_AUTHENTICATION_STATUS,
+        payload: {
+          authenticationStatus:
+          RedditAuthenticationStatus.NOT_YET_AUTHED,
+        },
+      });
+      setPopoutDrawerOpen(false);
+      appConfigDispatch({
+        type: AppConfigActionType.RESET_CONFIG_LOADED
+      })
+      redditListDispatch({
+        type: RedditListActionType.RESET_SUBREDDIT_LISTS
+      })
+      redditServiceDispatch({
+        type: RedditServiceActions.SET_REDDIT_AUTHENTICATION_STATUS,
+        payload: {
+          authenticationStatus: RedditAuthenticationStatus.NOT_YET_AUTHED
+        }
+      })
+      postRowPageDispatch({
+        type: PostRowPageActionType.CLEAR_POST_ROWS
+      })
+
+      navigate(APP_INITIALIZATION_ROUTE);
+    }).catch(err => {
+        console.log("Import failed with error", err);
+      });
+  },[appConfigDispatch, navigate, postRowPageDispatch, redditListDispatch, redditServiceDispatch])
+
   return (
     <>
       <div
@@ -380,27 +319,14 @@ const NavigationHamburgerMenu: React.FC = () => {
                 style={{ display: "hidden" }}
                 hidden={true}
                 ref={fileSelectorRef}
-                onInput={(event) => {
-                  const input = event.target as HTMLInputElement;
-                  if (input.files != undefined) {
-                    setImportClicked(true);
-                    importAppConfig(input.files[0]);
-                    redditServiceDispatch({
-                      type: RedditServiceActions.SET_REDDIT_AUTHENTICATION_STATUS,
-                      payload: {
-                        authenticationStatus:
-                          RedditAuthenticationStatus.NOT_YET_AUTHED,
-                      },
-                    });
-                  }
-                }}
+                onInput={importConfigFileSelected}
               />
               <p className="drawer-popout-item-text">Import Config</p>
             </div>
             <hr />
             <div
               className="drawer-popout-item"
-              onClick={() => exportAppConfig(redditListsState.subredditLists)}
+              onClick={() => exportAppConfig()}
             >
               <p className="drawer-popout-item-text">Export Config</p>
             </div>
