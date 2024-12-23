@@ -74,10 +74,10 @@
 }
 
 .subredditListCheckbox {
-  margin-right: 1em;
   width: 2em;
   height: 2em;
-  margin-left: 0.7em;
+  margin-left: auto;
+  margin-right: 0.7em;
 }
 
 .subredditListLabel {
@@ -95,23 +95,33 @@
   cursor: default;
 }
 
-/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
-.active,
-.accordion:hover {
-  background-color: var(--accordion-hover-color);
+.accordion {
+  display: flex;
+  flex-direction: row;
 }
 
-.accordion:after {
-  content: "\02795\fe0e";
-  /* Unicode character for "plus" sign (+) */
-  font-size: 1.8em;
+.accordion-expand-collapse-icon-box {
+  height: 100%;
+  width: 2em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.accordion-expand-collapse-icon {
+  margin-top: -0.2em;
+}
+
+.accordion-expand-collapse-icon.active {
+  transform: rotate(90deg);
+  margin-left: 0.4em;
+  margin-top: 0.1em;
+}
+
+.accordion-expand-collapse-icon:before {
+  content: "\276F\fe0e";
   color: var(--text-color);
-  margin-left: auto;
-  margin-right: 0.5em;
-}
-
-div.active:after {
-  content: "\2796\fe0e";
+  font-size: 2em;
 }
 
 .panel {
