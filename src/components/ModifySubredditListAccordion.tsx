@@ -43,20 +43,6 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
                 });
             }}
         >
-            <div className={'accordion-expand-collapse-icon-box'} onClick={(event) => {
-                const panelDiv = panelDivRef.current as unknown as HTMLDivElement;
-                panelDiv.style.setProperty(
-                    "--panel-div-max-height",
-                    `${panelDiv.scrollHeight}px`
-                );
-                accordionOnClick(event);
-            }}>
-                <div
-                    className={`accordion-expand-collapse-icon ${subredditListUuidClicked == subredditList.subredditListUuid ? "active" : ''}`}></div>
-            </div>
-            <label className="subredditListLabel text-color">
-                {subredditList.listName}
-            </label>
             <input
                 type="checkbox"
                 defaultChecked={subredditList.selected}
@@ -76,6 +62,21 @@ const ModifySubredditListAccordion: React.FC<Props> = ({
                     });
                 }}
             />
+
+            <div className={'accordion-expand-collapse-icon-box'} onClick={(event) => {
+                const panelDiv = panelDivRef.current as unknown as HTMLDivElement;
+                panelDiv.style.setProperty(
+                    "--panel-div-max-height",
+                    `${panelDiv.scrollHeight}px`
+                );
+                accordionOnClick(event);
+            }}>
+                <div
+                    className={`accordion-expand-collapse-icon ${subredditListUuidClicked == subredditList.subredditListUuid ? "active" : ''}`}></div>
+            </div>
+            <label className="subredditListLabel text-color">
+                {subredditList.listName}
+            </label>
         </div>
 
         <div
