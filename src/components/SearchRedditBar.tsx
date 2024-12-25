@@ -152,7 +152,7 @@ const SearchRedditBar: React.FC = () => {
                 searchResult.displayName +
                 (searchResult.over18 ? " NSFW" : "")}
             </p>
-            {!searchResult.isUser && (
+            {!searchResult.isUser && searchResult.subscribers != null && (
               <p className="search-result-p">{`Subs: ${searchResult.subscribers.toLocaleString()}`}</p>
             )}
             <div className={"search-results-button-div"}>
