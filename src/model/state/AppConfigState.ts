@@ -13,4 +13,5 @@ export interface AppConfigState extends AppConfig {
     | undefined;
   getPostRowIterationTimeValidationError: string | undefined;
   nodeRedUrlValidationError: string | undefined;
+  redditListDotComNumOfSubredditsToGetValidationError: string | undefined;
 }

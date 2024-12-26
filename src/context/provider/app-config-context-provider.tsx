@@ -52,6 +52,8 @@ const defaultPostConvertFilteringOptionRedditGalleries = true;
 
 const defaultPostRowIterationTime = 10;
 const defaultNodeRedUrl = undefined;
+const defaultRedditListDotComNumOfSubredditsToGet = 100;
+
 const initialState: AppConfigState = {
   redditCredentials: {
     username: "",
@@ -108,6 +110,8 @@ const initialState: AppConfigState = {
   getPostRowIterationTimeValidationError: undefined,
   nodeRedUrl: defaultNodeRedUrl,
   nodeRedUrlValidationError: undefined,
+  redditListDotComNumOfSubredditsToGet: defaultRedditListDotComNumOfSubredditsToGet,
+  redditListDotComNumOfSubredditsToGetValidationError: undefined
 };
 
 type Props = {

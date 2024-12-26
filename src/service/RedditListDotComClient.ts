@@ -3,46 +3,25 @@ import {
   REDDIT_LIST_DOT_COM_HTTP_REQUEST_FAILED_FRIENDLY_ERROR_MESSAGE
 } from "../RedditWatcherConstants.ts";
 
-export function getSubredditsFromRedditListDotCom(): Promise<Array<string>> {
-  return new Promise((resolve) => {
-    try {
-      callGetRedditListDotComHtml().then((promiseResultArr) => {
-        const fulfilledPromises = promiseResultArr.filter(
-          (promise) => promise.status == "fulfilled"
-        );
-        const htmlArray = fulfilledPromises.map(
-          (result) => (result as PromiseFulfilledResult<string>).value
-        );
-        resolve(htmlArray);
-      });
-    } catch (e) {
-      console.log("caught e", e);
-    }
-  });
-}
+export default class RedditListDotComClient {
+  private readonly redditListDotComUrlTemplate = `https://redditlist.com/nsfw{page_number}.html`;
 
-function callGetRedditListDotComHtml() {
-  const promiseArr: Array<Promise<string>> = [];
-  for (let i = 0; i < 5; ++i) {
-    promiseArr.push(
-      new Promise((httpResolve, reject) => {
-        const url = `https://redditlist.com/nsfw${
-          i == 0 ? "" : (i + 1).toString()
-        }.html`;
-        CapacitorHttp.get({
-          url: url,
-        }).then((response) => {
-          response.data;
-          const html = response.data.replace(/[\r\n\t]/gm, "");
-          httpResolve(html);
-        }).catch(() => {
-          reject({
-            statusCode: undefined,
-            friendlyMessage: REDDIT_LIST_DOT_COM_HTTP_REQUEST_FAILED_FRIENDLY_ERROR_MESSAGE
-          })
-        });
-      })
-    );
+  getRedditListDotComHtmlForPage(pageNumber: number): Promise<string> {
+    console.log(`Getting html for redditlist.com page #${pageNumber}`)
+    return new Promise<string>((resolve, reject) => {
+      const url = this.redditListDotComUrlTemplate.replace("{page_number}", pageNumber.toString());
+      CapacitorHttp.get({
+        url: url,
+      }).then((response) => {
+        response.data;
+        const html = response.data.replace(/[\r\n\t]/gm, "");
+        resolve(html);
+      }).catch(() => {
+        reject({
+          statusCode: undefined,
+          friendlyMessage: REDDIT_LIST_DOT_COM_HTTP_REQUEST_FAILED_FRIENDLY_ERROR_MESSAGE
+        })
+      });
+    });
   }
-  return Promise.allSettled(promiseArr);
 }

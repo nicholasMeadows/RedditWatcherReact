@@ -68,6 +68,7 @@ export enum AppConfigActionType {
   SET_GET_POST_ROW_ITERATION_TIME = "SET_GET_POST_ROW_ITERATION_TIME",
   CLEAR_GET_POST_ROW_ITERATION_TIME_VALIDATION_ERROR = "CLEAR_GET_POST_ROW_ITERATION_TIME_VALIDATION_ERROR",
   SET_NODE_RED_URL = "SET_NODE_RED_URL",
+  SET_REDDIT_LIST_DOT_COM_NUM_OF_SUBREDDITS_TO_GET = "SET_REDDIT_LIST_DOT_COM_NUM_OF_SUBREDDITS_TO_GET"
 }
 
 export type AppConfigActionStringPayload = {
@@ -148,7 +149,8 @@ export type AppConfigActionNumberPayload = {
     | AppConfigActionType.SET_REDDIT_API_ITEM_LIMIT
     | AppConfigActionType.SET_POSTS_TO_SHOW_IN_ROW
     | AppConfigActionType.SET_POST_ROWS_TO_SHOW_IN_VIEW
-    | AppConfigActionType.SET_GET_POST_ROW_ITERATION_TIME;
+    | AppConfigActionType.SET_GET_POST_ROW_ITERATION_TIME
+    | AppConfigActionType.SET_REDDIT_LIST_DOT_COM_NUM_OF_SUBREDDITS_TO_GET;
   payload: number;
 };
 
@@ -273,6 +275,7 @@ export default function AppConfigReducer(
       return clearGetPostRowIterationTimeValidationError(state);
     case AppConfigActionType.SET_NODE_RED_URL:
       return setNodeRedUrl(state, action);
+    case AppConfigActionType.SET_REDDIT_LIST_DOT_COM_NUM_OF_SUBREDDITS_TO_GET: return setRedditListDotComNumOfSubredditsToGet(state, action);
     default:
       return state;
   }
@@ -821,6 +824,23 @@ const setNodeRedUrl = (
     saveConfig(updatedState);
   }
   return updatedState;
+};
+
+const setRedditListDotComNumOfSubredditsToGet = (state: AppConfigState, action: AppConfigActionNumberPayload): AppConfigState => {
+  const validationError = ValidationUtil.validateNumber("Redditlist.com number of subreddits to get", action.payload, 1, 500);
+  if(validationError) {
+    return {
+      ...state,
+
+      redditListDotComNumOfSubredditsToGetValidationError: validationError
+    }
+  }
+
+  return {
+    ...state,
+    redditListDotComNumOfSubredditsToGetValidationError: undefined,
+    redditListDotComNumOfSubredditsToGet: action.payload
+  }
 };
 
 const validateAutoScrollPostRowRateSecondsForSinglePostCardField = (

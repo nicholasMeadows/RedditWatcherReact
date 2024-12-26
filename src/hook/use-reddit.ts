@@ -26,7 +26,7 @@ import {MAX_POSTS_PER_ROW} from "../RedditWatcherConstants.ts";
 import {Post} from "../model/Post/Post.ts";
 import {GetPostsForSubredditUrlConverter} from "../model/converter/GetPostsForSubredditUrlConverter.ts";
 import {RedditListDotComConverter} from "../model/converter/RedditListDotComConverter.ts";
-import {getSubredditsFromRedditListDotCom} from "../service/RedditListDotComClient.ts";
+import RedditListDotComClient from "../service/RedditListDotComClient.ts";
 import RandomIterationSelectWeightOptionsEnum from "../model/config/enums/RandomIterationSelectWeightOptionsEnum.ts";
 import SelectSubredditIterationMethodOptionsEnum
     from "../model/config/enums/SelectSubredditIterationMethodOptionsEnum.ts";
@@ -72,6 +72,7 @@ export default function useReddit() {
         useInMemoryImagesAndGifs,
         postsToShowInRow,
         postConverterFilteringOptions,
+        redditListDotComNumOfSubredditsToGet
     } = useContext(AppConfigStateContext);
     const {subredditLists} = useContext(RedditListStateContext);
     const {
@@ -118,6 +119,7 @@ export default function useReddit() {
             selectSubredditIterationMethodOption:
             selectSubredditIterationMethodOption,
             sortOrderDirection: sortOrderDirectionOption,
+            redditListDotComNumOfSubredditsToGet: redditListDotComNumOfSubredditsToGet,
             postConverterFilteringOptions: {
                 redditGalleries: redditGalleries,
                 urlsInGiphyDomain: urlsInGiphyDomain,
@@ -129,30 +131,7 @@ export default function useReddit() {
                 urlsThatEndWithDotJpg: urlsThatEndWithDotJpg,
             },
         };
-    }, [
-        concatRedditUrlMaxLength,
-        contentFiltering,
-        postRows,
-        postsToShowInRow,
-        randomIterationSelectWeightOption,
-        redditApiItemLimit,
-        redditCredentials,
-        selectSubredditIterationMethodOption,
-        subredditLists,
-        subredditQueue,
-        subredditSortOrderOption,
-        subredditSourceOption,
-        getAllSubredditsAtOnce,
-        useInMemoryImagesAndGifs,
-        lastPostRowWasSortOrderNew,
-        postSortOrderOption,
-        topTimeFrameOption,
-        nsfwSubredditIndex,
-        masterSubscribedSubredditList,
-        subredditIndex,
-        sortOrderDirectionOption,
-        postConverterFilteringOptions,
-    ]);
+    }, [concatRedditUrlMaxLength, contentFiltering, postRows, postsToShowInRow, randomIterationSelectWeightOption, redditApiItemLimit, redditCredentials, selectSubredditIterationMethodOption, subredditLists, subredditQueue, subredditSortOrderOption, subredditSourceOption, getAllSubredditsAtOnce, useInMemoryImagesAndGifs, lastPostRowWasSortOrderNew, postSortOrderOption, topTimeFrameOption, nsfwSubredditIndex, masterSubscribedSubredditList, subredditIndex, sortOrderDirectionOption, postConverterFilteringOptions, redditListDotComNumOfSubredditsToGet]);
 
     const loadSubscribedSubreddits = useCallback(
         async (redditApiItemLimit: number, async: boolean = true) => {
@@ -294,37 +273,36 @@ export default function useReddit() {
         });
     }, [redditCredentials]);
 
-    const getSubredditsToGetPostsForFromRedditListDotCom = useCallback((
-        subredditSourceOption: SubredditSourceOptionsEnum
+    const getSubredditsToGetPostsForFromRedditListDotCom = useCallback(async (
+        subredditSourceOption: SubredditSourceOptionsEnum,
+        subredditsToGet: number
     ): Promise<Subreddit[]> => {
-        return new Promise<Array<Subreddit>>((resolve, reject: (err: GetPostsForPostRowError) => void) => {
-            console.log("getting from redditlist.com");
-            const converter = new RedditListDotComConverter();
-            getSubredditsFromRedditListDotCom()
-                .then((htmlArray) => {
-                    switch (subredditSourceOption) {
-                        case SubredditSourceOptionsEnum.RedditListDotComRecentActivity:
-                            resolve(
-                                converter.convertToReddListDotComRecentActivity(htmlArray)
-                            );
-                            break;
-                        case SubredditSourceOptionsEnum.RedditListDotComSubscribers:
-                            resolve(converter.convertToReddListDotComSubscribers(htmlArray));
-                            break;
-                        case SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth:
-                            resolve(converter.convertToReddListDotCom24HourGrowth(htmlArray));
-                            break;
-                        default:
-                            resolve([]);
-                    }
-                })
-                .catch((err) => {
-                    reject({
-                        emitNotification: true,
-                        notificationMessage: "Error while getting subreddits from redditlist.com: " + err.friendlyMessage
-                    })
-                });
-        });
+        const redditListDotComClient = new RedditListDotComClient();
+        const redditListDogComConverter = new RedditListDotComConverter();
+
+        let pageNum = 1;
+        const subreddits = new Array<Subreddit>();
+
+        while(subreddits.length < subredditsToGet) {
+            const html = await redditListDotComClient.getRedditListDotComHtmlForPage(pageNum);
+            switch (subredditSourceOption) {
+                case SubredditSourceOptionsEnum.RedditListDotComRecentActivity:
+                   subreddits.push(...redditListDogComConverter.convertToReddListDotComRecentActivity(html));
+                    break;
+                case SubredditSourceOptionsEnum.RedditListDotComSubscribers:
+                    subreddits.push(...redditListDogComConverter.convertToReddListDotComSubscribers(html));
+                    break;
+                case SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth:
+                    subreddits.push(...redditListDogComConverter.convertToReddListDotCom24HourGrowth(html));
+                    break;
+            }
+            pageNum++;
+        }
+
+        if(subreddits.length > subredditsToGet) {
+            return subreddits.slice(0, subredditsToGet);
+        }
+        return subreddits;
     }, []);
 
     const handleGetPostsForUserFrontPage = useCallback((
@@ -448,8 +426,11 @@ export default function useReddit() {
                 case SubredditSourceOptionsEnum.RedditListDotComSubscribers:
                 case SubredditSourceOptionsEnum.RedditListDotCom24HourGrowth: {
                     getSubredditsToGetPostsForFromRedditListDotCom(
-                        subredditSourceOption
-                    ).then(result => getSubredditsResolve(result)).catch(err => getSubredditsReject(err))
+                        subredditSourceOption,
+                        getPostsFromSubredditsState.redditListDotComNumOfSubredditsToGet
+                    ).then(result => {
+                        getSubredditsResolve(result)
+                    }).catch(err => getSubredditsReject(err))
                 }
                     break;
                 case SubredditSourceOptionsEnum.SubscribedSubreddits: {

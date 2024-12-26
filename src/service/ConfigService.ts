@@ -61,6 +61,7 @@ const URLS_THAT_END_WITH_DOT_JPG = "urlsThatEndWithDotJpg";
 const REDDIT_GALLERIES = "redditGalleries";
 const GET_POST_ROW_ITERATION_TIME = "getPostRowIterationTime";
 const NODE_RED_URL = "nodeRedUrl";
+const REDDIT_LIST_DOT_COM_NUM_OF_SUBREDDITS_TO_GET = "redditListDotComNumOfSubredditsToGet";
 
 export async function loadSubredditListsFromFile() {
   await checkForOrCreateConfigFolder();
@@ -191,6 +192,8 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
     configJsonObj[GET_POST_ROW_ITERATION_TIME] || 10;
 
   const nodeRedUrl = configJsonObj[NODE_RED_URL] || undefined;
+
+  const redditListDotComNumOfSubredditsToGet = configJsonObj[REDDIT_LIST_DOT_COM_NUM_OF_SUBREDDITS_TO_GET] || 100;
   const loadedConfig: AppConfig = {
     redditCredentials: {
       username: redditUsername,
@@ -230,6 +233,7 @@ export function fillInMissingFieldsInConfigObj(configJsonObj: AppConfig) {
     },
     getPostRowIterationTime: getPostRowIterationTime,
     nodeRedUrl: nodeRedUrl,
+    redditListDotComNumOfSubredditsToGet: redditListDotComNumOfSubredditsToGet
   };
 
   return loadedConfig;

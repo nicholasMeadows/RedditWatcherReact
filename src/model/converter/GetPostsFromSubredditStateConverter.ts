@@ -34,6 +34,7 @@ export type GetPostsFromSubredditState = {
   randomIterationSelectWeightOption: RandomIterationSelectWeightOptionsEnum;
   useInMemoryImagesAndGifs: boolean;
   postConverterFilteringOptions: PostConverterFilteringOptions;
+  redditListDotComNumOfSubredditsToGet: number
 };
 
 export type GetPostsFromSubredditResponse = {

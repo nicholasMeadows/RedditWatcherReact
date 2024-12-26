@@ -35,4 +35,5 @@ export interface AppConfig {
   postConverterFilteringOptions: PostConverterFilteringOptions;
   getPostRowIterationTime: number;
   nodeRedUrl: string | undefined;
+  redditListDotComNumOfSubredditsToGet: number;
 }
