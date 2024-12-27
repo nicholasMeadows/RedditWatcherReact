@@ -47,7 +47,7 @@ const NodeRedProvider: FC<Props> = ({ children }) => {
     if (nodeRedUrl === undefined) {
       return;
     }
-    let webSocketUrl = "ws://";
+    let webSocketUrl = "wss://";
     if (nodeRedUrl.startsWith("https")) {
       webSocketUrl += nodeRedUrl.replace("https://", "");
     } else {
