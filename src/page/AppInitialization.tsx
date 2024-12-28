@@ -1,7 +1,8 @@
-import { useAppInitialization } from "../hook/use-app-initialization.ts";
+import {useContext} from "react";
+import {AppInitializationTextContext} from "./RouterView.tsx";
 
 const AppInitialization: React.FC = () => {
-  const { text } = useAppInitialization();
+  const text = useContext(AppInitializationTextContext)
   return (
     <>
       <div className="app-initialization-wrapper">
