@@ -31,6 +31,7 @@ let win: BrowserWindow | null
 const autoUpdater = new AutoUpdater();
 
 // SSL/TSL: this is the self signed certificate support
+//@ts-expect-error The callback method requires these params but we dont need them.
 app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
   // On certificate error we disable default behaviour (stop loading the page)
   // and we then say "it is all fine - true" to the callback
