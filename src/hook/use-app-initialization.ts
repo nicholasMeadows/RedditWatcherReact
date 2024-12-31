@@ -33,6 +33,7 @@ export function useAppInitialization(setInitializationText: (text: string) => vo
     const {loadSubscribedSubreddits, getPostsForPostRow, applyUpdatedStateValues} = useReddit();
 
     const gettingFirstPostRow = useRef(false);
+    const startedFetchingSubscribedSubreddits = useRef(false);
 
     useEffect(() => {
         if (location.pathname !== APP_INITIALIZATION_ROUTE &&
@@ -179,8 +180,11 @@ export function useAppInitialization(setInitializationText: (text: string) => vo
             authReddit();
         } else if (redditAuthenticationStatus === RedditAuthenticationStatus.AUTHENTICATED && !subredditListsLoaded) {
             loadSubredditListsAsync();
-        } else if (subredditListsLoaded && masterSubscribedSubredditList.length === 0) {
-            fetchSubscribedSubreddits();
+        } else if (subredditListsLoaded && !startedFetchingSubscribedSubreddits.current && masterSubscribedSubredditList.length === 0) {
+            startedFetchingSubscribedSubreddits.current = true;
+            fetchSubscribedSubreddits().then(() => {
+                startedFetchingSubscribedSubreddits.current = false;
+            });
         } else if (!gettingFirstPostRow.current && masterSubscribedSubredditList.length > 0 && postRows.length === 0) {
             gettingFirstPostRow.current = true;
             getFirstPosts().then(() => {
