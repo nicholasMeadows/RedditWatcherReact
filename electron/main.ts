@@ -157,6 +157,7 @@ function setupIpcHandlers() {
     ipcMain.handle("readSubredditListsFromFile", readSubredditListsFromFile);
     ipcMain.handle("saveConfig", saveConfig);
     ipcMain.handle("saveSubredditLists", saveSubredditLists);
+    ipcMain.handle("minimizeWindow", minimizeWindow);
   });
 }
 
@@ -274,3 +275,9 @@ const saveSubredditLists = async (event: IpcMainInvokeEvent, encodedContent: str
   );
   fs.writeFileSync(subredditListsFilePath, encodedContent);
 };
+
+const minimizeWindow = () => {
+  if(win !== null) {
+    win.minimize();
+  }
+}

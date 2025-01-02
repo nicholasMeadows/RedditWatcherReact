@@ -8,8 +8,11 @@ import {
 } from "react";
 import { AppConfigStateContext } from "../app-config-context.ts";
 import { useNavigate } from "react-router-dom";
-import { NOT_FOUND_404 } from "../../RedditWatcherConstants.ts";
+import { NOT_FOUND_404} from "../../RedditWatcherConstants.ts";
 import NodeRedWebSocketPayload from "../../model/NodeRedWebSocketPayload.ts";
+import getPlatform from "../../util/PlatformUtil.ts";
+import {Platform} from "../../model/Platform.ts";
+import {WindowElectronAPI} from "../../model/WindowElectronAPI.ts";
 
 type Props = {
   children: ReactNode;
@@ -19,6 +22,13 @@ const NodeRedProvider: FC<Props> = ({ children }) => {
   const { nodeRedUrl } = useContext(AppConfigStateContext);
 
   const nodeRedWebSocketRef = useRef<WebSocket | undefined>();
+
+  const minimizeWindow = useCallback(() => {
+    if (getPlatform() === Platform.Electron) {
+      const windowElectronAPI = window as unknown as WindowElectronAPI;
+      windowElectronAPI.electronAPI.minimizeWindow();
+    }
+  },[]);
 
   const onWebsocketError = useCallback((event: Event) => {
     console.log(`Error connecting to websocket`, event);
@@ -31,8 +41,9 @@ const NodeRedProvider: FC<Props> = ({ children }) => {
       if (message.payload.open && !window.location.href.endsWith(NOT_FOUND_404)) {
         navigate(NOT_FOUND_404, { replace: false });
       }
+      minimizeWindow();
     },
-    [navigate]
+    [minimizeWindow, navigate]
   );
 
   const closeExistingWebSocket = useCallback(() => {

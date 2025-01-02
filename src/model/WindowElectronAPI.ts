@@ -18,4 +18,5 @@ interface ElectronAPI {
   saveConfig(encodedFileContent: string): Promise<void>;
 
   saveSubredditLists(encodedFileContent: string): Promise<void>;
+  minimizeWindow(): Promise<void>;
 }

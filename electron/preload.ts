@@ -37,4 +37,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.invoke("saveConfig", encodedContent),
   saveSubredditLists: (encodedContent: string | NodeJS.ArrayBufferView) =>
       ipcRenderer.invoke("saveSubredditLists", encodedContent),
+  minimizeWindow: () => ipcRenderer.invoke("minimizeWindow")
 });
